@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/mock/server"
+	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/sdk-go/vela"
 
@@ -480,12 +480,12 @@ func TestExecutor_DestroyBuild_Success(t *testing.T) {
 	// setup context
 	gin.SetMode(gin.TestMode)
 	s := httptest.NewServer(server.FakeHandler())
-	vela, _ := vela.NewClient(s.URL, nil)
+	c, _ := vela.NewClient(s.URL, nil)
 
 	// setup types
 	r, _ := docker.NewMock()
 
-	e, _ := New(vela, r)
+	e, _ := New(c, r)
 
 	tests := []struct {
 		build    *library.Build
