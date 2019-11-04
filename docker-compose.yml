@@ -1,0 +1,55 @@
+# Copyright (c) 2019 Target Brands, Inc. All rights reserved.
+#
+# Use of this source code is governed by the LICENSE file in this repository.
+
+version: '3'
+services:
+
+  worker_1:
+    build:
+      context: .
+    container_name: worker_1
+    image: worker:local
+    networks:
+      - vela
+    environment:
+      VELA_ADDR: http://vela:8080
+      VELA_EXECUTOR_THREADS: 1
+      VELA_LOG_LEVEL: debug
+      VELA_QUEUE_DRIVER: redis
+      VELA_QUEUE_CONFIG: redis://redis:6379
+      VELA_RUNTIME_DRIVER: docker
+      VELA_SECRET: zB7mrKDTZqNeNTD8z47yG4DHywspAh
+      VELA_VAULT_ADDR: http://vault:8200
+      VELA_VAULT_TOKEN: vela
+    restart: always
+    ports:
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  worker_2:
+    container_name: worker_2
+    image: worker:local
+    networks:
+      - vela
+    environment:
+      VELA_ADDR: http://vela:8080
+      VELA_EXECUTOR_THREADS: 1
+      VELA_LOG_LEVEL: debug
+      VELA_QUEUE_DRIVER: redis
+      VELA_QUEUE_CONFIG: redis://redis:6379
+      VELA_RUNTIME_DRIVER: docker
+      VELA_SECRET: zB7mrKDTZqNeNTD8z47yG4DHywspAh
+      VELA_VAULT_ADDR: http://vault:8200
+      VELA_VAULT_TOKEN: vela
+    restart: always
+    ports:
+      - "8082:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+networks:
+  vela:
+    external:
+      name: server_vela
