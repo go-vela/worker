@@ -9,12 +9,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-vela/worker/runtime/docker"
-	"github.com/go-vela/sdk-go/vela"
+	"github.com/gin-gonic/gin"
 	"github.com/go-vela/mock/server"
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-	"github.com/gin-gonic/gin"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestExecutor_CreateService_Success(t *testing.T) {
@@ -25,9 +25,9 @@ func TestExecutor_CreateService_Success(t *testing.T) {
 	// setup context
 	gin.SetMode(gin.TestMode)
 	s := httptest.NewServer(server.FakeHandler())
-	vela, _ := vela.NewClient(s.URL, nil)
+	c, _ := vela.NewClient(s.URL, nil)
 
-	e, _ := New(vela, r)
+	e, _ := New(c, r)
 	e.WithPipeline(&pipeline.Build{
 		Version: "1",
 		ID:      "__0",
@@ -58,9 +58,9 @@ func TestExecutor_PlanService_Success(t *testing.T) {
 	// setup context
 	gin.SetMode(gin.TestMode)
 	s := httptest.NewServer(server.FakeHandler())
-	vela, _ := vela.NewClient(s.URL, nil)
+	c, _ := vela.NewClient(s.URL, nil)
 
-	e, _ := New(vela, r)
+	e, _ := New(c, r)
 	e.WithBuild(&library.Build{
 		Number:       vela.Int(1),
 		Parent:       vela.Int(1),
@@ -134,9 +134,9 @@ func TestExecutor_ExecService_Success(t *testing.T) {
 	// setup context
 	gin.SetMode(gin.TestMode)
 	s := httptest.NewServer(server.FakeHandler())
-	vela, _ := vela.NewClient(s.URL, nil)
+	c, _ := vela.NewClient(s.URL, nil)
 
-	e, _ := New(vela, r)
+	e, _ := New(c, r)
 	e.WithBuild(&library.Build{
 		Number:       vela.Int(1),
 		Parent:       vela.Int(1),
@@ -211,9 +211,9 @@ func TestExecutor_DestroyService_Success(t *testing.T) {
 	// setup context
 	gin.SetMode(gin.TestMode)
 	s := httptest.NewServer(server.FakeHandler())
-	vela, _ := vela.NewClient(s.URL, nil)
+	c, _ := vela.NewClient(s.URL, nil)
 
-	e, _ := New(vela, r)
+	e, _ := New(c, r)
 	e.WithPipeline(&pipeline.Build{
 		Version: "1",
 		ID:      "__0",
