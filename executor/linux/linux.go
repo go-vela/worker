@@ -10,15 +10,15 @@ import (
 
 	"github.com/go-vela/worker/executor"
 
-	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime"
 	"github.com/sirupsen/logrus"
 )
 
 type client struct {
-	Vela  *vela.Client
+	Vela     *vela.Client
 	Runtime  runtime.Engine
 	Secrets  map[string]*library.Secret
 	Hostname string
@@ -56,7 +56,7 @@ func New(c *vela.Client, r runtime.Engine) (*client, error) {
 	})
 
 	return &client{
-		Vela:  c,
+		Vela:     c,
 		Runtime:  r,
 		Hostname: h,
 		logger:   l,

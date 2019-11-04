@@ -42,7 +42,7 @@ func Logger(logger *logrus.Logger, timeFormat string, utc bool) gin.HandlerFunc 
 				"path":        path,
 				"ip":          c.ClientIP(),
 				"latency":     latency,
-				"user-worker":  c.Request.UserAgent(),
+				"user-worker": c.Request.UserAgent(),
 				"time":        end.Format(timeFormat),
 			}
 

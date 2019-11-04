@@ -5,9 +5,9 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/go-vela/worker/api"
 	"github.com/go-vela/worker/router/middleware"
-	"github.com/gin-gonic/gin"
 )
 
 const (
