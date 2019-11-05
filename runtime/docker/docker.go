@@ -5,8 +5,8 @@
 package docker
 
 import (
-	"github.com/go-vela/worker/runtime/docker/testdata/mock"
 	docker "github.com/docker/docker/client"
+	"github.com/go-vela/worker/runtime/docker/testdata/mock"
 	"github.com/sirupsen/logrus"
 )
 
