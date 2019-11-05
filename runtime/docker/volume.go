@@ -7,8 +7,8 @@ package docker
 import (
 	"context"
 
-	"github.com/go-vela/types/pipeline"
 	types "github.com/docker/docker/api/types/volume"
+	"github.com/go-vela/types/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
