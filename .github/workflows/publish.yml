@@ -16,7 +16,7 @@ jobs:
     - name: build
       env:
         GOOS: linux
-        CGO_ENABLED: '1'
+        CGO_ENABLED: '0'
       run: go build -a -ldflags '-s -w -extldflags "-static"' -o release/vela-worker github.com/go-vela/worker/cmd/server
 
     - name: publish
