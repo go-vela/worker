@@ -13,9 +13,9 @@ require (
 	github.com/drone/envsubst v1.0.2
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-redis/redis v6.15.6+incompatible
-	github.com/go-vela/mock v0.1.0
-	github.com/go-vela/sdk-go v0.1.0
-	github.com/go-vela/types v0.1.0
+	github.com/go-vela/mock v0.1.1
+	github.com/go-vela/sdk-go v0.1.1
+	github.com/go-vela/types v0.1.1
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
