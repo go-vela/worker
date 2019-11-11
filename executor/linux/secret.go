@@ -215,7 +215,7 @@ func injectSecrets(ctn *pipeline.Container, m map[string]*library.Secret) error 
 		logrus.Tracef("matching secret %s to container %s", secret.Source, ctn.Name)
 		// ensure the secret matches with the container
 		if s.Match(ctn) {
-			ctn.Environment[strings.ToUpper(secret.Target)] = *m[secret.Source].Value
+			ctn.Environment[strings.ToUpper(secret.Target)] = s.GetValue()
 		}
 	}
 
