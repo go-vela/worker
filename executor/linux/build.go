@@ -287,7 +287,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		// destroy the step
 		err = c.DestroyStep(ctx, s)
 		if err != nil {
-			c.logger.Errorf("unable to destory step: %w", err)
+			c.logger.Errorf("unable to destroy step: %w", err)
 		}
 	}
 
@@ -297,7 +297,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		// destroy the stage
 		err = c.DestroyStage(ctx, s)
 		if err != nil {
-			c.logger.Errorf("unable to destory stage: %w", err)
+			c.logger.Errorf("unable to destroy stage: %w", err)
 		}
 	}
 
