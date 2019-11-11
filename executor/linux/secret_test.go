@@ -116,7 +116,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Images: &[]string{""}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{""}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -126,7 +126,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Images: &[]string{"alpine"}, Events: &[]string{}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"alpine"}, Events: &[]string{}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
@@ -136,7 +136,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Images: &[]string{"alpine:latest"}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"alpine:latest"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
@@ -146,7 +146,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Images: &[]string{"centos"}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"centos"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -163,7 +163,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"tag"}, Images: &[]string{}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}, Images: &[]string{}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -178,7 +178,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
@@ -193,7 +193,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"tag"}, Images: &[]string{}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}, Images: &[]string{}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -208,7 +208,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
@@ -225,7 +225,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -240,7 +240,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
@@ -255,7 +255,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -270,7 +270,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			Environment: make(map[string]string),
 			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": &library.Secret{Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
