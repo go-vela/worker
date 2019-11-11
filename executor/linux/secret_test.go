@@ -111,170 +111,190 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 		want *pipeline.Container
 	}{
 		// Tests for secrets with image ACLs
-		{step: &pipeline.Container{
-			Image:       "alpine:latest",
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
-		},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: make(map[string]string),
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{""}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
-			}},
-		{step: &pipeline.Container{
-			Image:       "alpine:latest",
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
 		},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"alpine"}, Events: &[]string{}}},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: make(map[string]string),
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"alpine"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
-			}},
-		{step: &pipeline.Container{
-			Image:       "alpine:latest",
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
 		},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: make(map[string]string),
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"alpine:latest"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo"},
-			}},
-		{step: &pipeline.Container{
-			Image:       "alpine:latest",
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
 		},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: make(map[string]string),
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"centos"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
-			}},
+			},
+		},
 
 		// Tests for secrets with event ACLs
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				If: pipeline.Rules{
-					Event: []string{"push"},
-				},
+		{ // push event checks
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
-		},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}, Images: &[]string{}}},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: make(map[string]string),
-			}},
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				If: pipeline.Rules{
-					Event: []string{"push"},
-				},
+				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "push"},
 			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{}}},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo"},
-			}},
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				Unless: pipeline.Rules{
-					Event: []string{"push"},
-				},
+				Environment: map[string]string{"BUILD_EVENT": "push"},
 			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}, Images: &[]string{}}},
+		{ // pull_request event checks
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"pull_request"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: make(map[string]string),
-			}},
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				Unless: pipeline.Rules{
-					Event: []string{"push"},
-				},
+				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "pull_request"},
 			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{}}},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo"},
-			}},
+				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
+			},
+		},
+		{ // tag event checks
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "tag"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}}},
+			want: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "tag"},
+			},
+		},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "tag"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
+			want: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "tag"},
+			},
+		},
+		{ // deployment event checks
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "deployment"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
+			want: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "deployment"},
+			},
+		},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "deployment"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}}},
+			want: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "deployment"},
+			},
+		},
 
 		// Tests for secrets with event and image ACLs
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				If: pipeline.Rules{
-					Event: []string{"push"},
-				},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
-		},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: make(map[string]string),
-			}},
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				If: pipeline.Rules{
-					Event: []string{"push"},
-				},
+				Environment: map[string]string{"BUILD_EVENT": "push"},
 			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
+		{
+			step: &pipeline.Container{
+				Image:       "centos:latest",
+				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
+			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"pull_request"}, Images: &[]string{"centos"}}},
+			want: &pipeline.Container{
+				Image:       "centos:latest",
+				Environment: map[string]string{"BUILD_EVENT": "push"},
+			},
+		},
+		{
+			step: &pipeline.Container{
+				Image:       "alpine:latest",
+				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
+			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo"},
-			}},
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				Unless: pipeline.Rules{
-					Event: []string{"push"},
-				},
+				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "push"},
 			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 		},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
-			want: &pipeline.Container{
-				Image:       "alpine:latest",
-				Environment: make(map[string]string),
-			}},
-		{step: &pipeline.Container{
-			Image: "alpine:latest",
-			Ruleset: pipeline.Ruleset{
-				Unless: pipeline.Rules{
-					Event: []string{"push"},
-				},
-			},
-			Environment: make(map[string]string),
-			Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
-		},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
-			want: &pipeline.Container{
-				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo"},
-			}},
 	}
 
 	// run test
