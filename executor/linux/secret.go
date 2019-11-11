@@ -12,6 +12,8 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+
+	"github.com/sirupsen/logrus"
 )
 
 // PullSecret defines a function that pulls the secrets for a given pipeline.
@@ -199,54 +201,21 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 
 // helper function to check secret whitelist before setting value
 // TODO: Evaluate pulling this into a "bool" types function for injecting
-func injectSecrets(s *pipeline.Container, m map[string]*library.Secret) error {
+func injectSecrets(ctn *pipeline.Container, m map[string]*library.Secret) error {
 
 	// inject secrets for step
-	for _, secret := range s.Secrets {
-		eACL, iACL := false, false
-		events, images := []string{}, []string{}
-
-		if value, ok := m[secret.Source]; ok {
-			events = value.GetEvents()
-			images = value.GetImages()
+	for _, secret := range ctn.Secrets {
+		logrus.Tracef("looking up secret %s from pipeline secrets", secret.Source)
+		// lookup container secret in map
+		s, ok := m[secret.Source]
+		if !ok {
+			continue
 		}
 
-		// check event whitelist for if statements
-		if !s.Ruleset.If.Empty() {
-			for _, e := range events {
-				if s.Ruleset.If.Match(&pipeline.RuleData{Event: e}, "and") {
-					eACL = true
-					break
-				}
-			}
-		}
-
-		// check event whitelist for unless statements
-		if !s.Ruleset.Unless.Empty() {
-			for _, e := range events {
-				if s.Ruleset.Unless.Match(&pipeline.RuleData{Event: e}, "and") {
-					eACL = true
-					break
-				}
-			}
-		}
-
-		// check images whitelist
-		for _, i := range images {
-			if strings.HasPrefix(s.Image, i) && (len(i) != 0) {
-				iACL = true
-				break
-			}
-		}
-
-		// inject secrets into environment
-		switch {
-		case iACL && (len(events) == 0):
-			s.Environment[strings.ToUpper(secret.Target)] = *m[secret.Source].Value
-		case eACL && (len(images) == 0):
-			s.Environment[strings.ToUpper(secret.Target)] = *m[secret.Source].Value
-		case eACL && iACL:
-			s.Environment[strings.ToUpper(secret.Target)] = *m[secret.Source].Value
+		logrus.Tracef("matching secret %s to container %s", secret.Source, ctn.Name)
+		// ensure the secret matches with the container
+		if s.Match(ctn) {
+			ctn.Environment[strings.ToUpper(secret.Target)] = *m[secret.Source].Value
 		}
 	}
 
