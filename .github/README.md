@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/go-vela/worker?status.svg)](https://godoc.org/github.com/go-vela/worker)
 [![Go Report Card](https://goreportcard.com/badge/go-vela/worker)](https://goreportcard.com/report/go-vela/worker)
-[![Coverage Status](https://coveralls.io/repos/go-vela/worker/badge.svg?branch=master)](https://coveralls.io/r/go-vela/worker?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/go-vela/worker/badge.svg?branch=master)](https://coveralls.io/github/go-vela/worker?branch=master)
 
 Vela is a Pipeline Automation (CI/CD) framework built on [Linux container](https://linuxcontainers.org/) technology written in [Golang](https://golang.org/).
 
