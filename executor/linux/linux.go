@@ -33,6 +33,11 @@ type client struct {
 	step       *library.Step
 	stepLog    *library.Log
 	user       *library.User
+
+	services    map[string]*library.Service
+	serviceLogs map[string]*library.Log
+	steps       map[string]*library.Step
+	stepLogs    map[string]*library.Log
 }
 
 // New returns an Executor implementation that integrates with a Linux instance.
@@ -56,10 +61,14 @@ func New(c *vela.Client, r runtime.Engine) (*client, error) {
 	})
 
 	return &client{
-		Vela:     c,
-		Runtime:  r,
-		Hostname: h,
-		logger:   l,
+		Vela:        c,
+		Runtime:     r,
+		Hostname:    h,
+		logger:      l,
+		services:    make(map[string]*library.Service),
+		serviceLogs: make(map[string]*library.Log),
+		steps:       make(map[string]*library.Step),
+		stepLogs:    make(map[string]*library.Log),
 	}, nil
 }
 
