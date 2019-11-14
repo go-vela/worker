@@ -199,14 +199,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 
 			// update the step fields
-			c.step.ExitCode = vela.Int(s.ExitCode)
-			c.step.Status = vela.String(constants.StatusFailure)
+			c.steps[s.ID].ExitCode = vela.Int(s.ExitCode)
+			c.steps[s.ID].Status = vela.String(constants.StatusFailure)
 		}
 
-		c.step.Finished = vela.Int64(time.Now().UTC().Unix())
+		c.steps[s.ID].Finished = vela.Int64(time.Now().UTC().Unix())
 		c.logger.Infof("uploading %s step state", s.Name)
 		// send API call to update the build
-		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.step)
+		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.steps[s.ID])
 		if err != nil {
 			return err
 		}
@@ -312,9 +312,9 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 		c.logger.Infof("uploading %s service state", s.Name)
 		// send API call to update the build
-		c.service.ExitCode = vela.Int(s.ExitCode)
-		c.service.Finished = vela.Int64(time.Now().UTC().Unix())
-		_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.service)
+		c.services[s.ID].ExitCode = vela.Int(s.ExitCode)
+		c.services[s.ID].Finished = vela.Int64(time.Now().UTC().Unix())
+		_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.services[s.ID])
 		if err != nil {
 			c.logger.Errorf("unable to upload service status: %w", err)
 		}
