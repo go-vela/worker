@@ -13,7 +13,7 @@ require (
 	github.com/drone/envsubst v1.0.2
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-redis/redis v6.15.6+incompatible
-	github.com/go-vela/mock v0.1.3
+	github.com/go-vela/mock v0.1.4-0.20191114184817-0f96f3867712
 	github.com/go-vela/sdk-go v0.1.3
 	github.com/go-vela/types v0.1.3
 	github.com/google/go-cmp v0.3.1
