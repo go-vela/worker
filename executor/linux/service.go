@@ -47,7 +47,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	})
 
 	// update the engine service object
-	c.service = &library.Service{
+	s := &library.Service{
 		Name:    vela.String(ctn.Name),
 		Number:  vela.Int(ctn.Number),
 		Status:  vela.String(constants.StatusRunning),
@@ -56,19 +56,25 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 
 	logger.Debug("uploading service state")
 	// send API call to update the service
-	_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.service)
+	s, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
 	if err != nil {
 		return err
 	}
-	c.service.Status = vela.String(constants.StatusSuccess)
+	s.Status = vela.String(constants.StatusSuccess)
+
+	// add a service to a map
+	c.services[ctn.ID] = s
 
 	// get the service log here
 	logger.Debug("retrieve service log")
 	// send API call to capture the service log
-	c.serviceLog, _, err = c.Vela.Log.GetService(r.GetOrg(), r.GetName(), b.GetNumber(), c.service.GetNumber())
+	l, _, err := c.Vela.Log.GetService(r.GetOrg(), r.GetName(), b.GetNumber(), s.GetNumber())
 	if err != nil {
 		return err
 	}
+
+	// add a step log to a map
+	c.serviceLogs[ctn.ID] = l
 
 	return nil
 }
@@ -77,6 +83,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error {
 	b := c.build
 	r := c.repo
+	l := c.serviceLogs[ctn.ID]
 
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
@@ -126,10 +133,10 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 				logger.Trace(logs.String())
 
 				// update the existing log with the new bytes
-				c.serviceLog.Data = vela.Bytes(append(c.serviceLog.GetData(), logs.Bytes()...))
+				l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
 
 				logger.Debug("appending logs")
-				c.serviceLog, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, c.serviceLog)
+				l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 				if err != nil {
 					return err
 				}
@@ -141,11 +148,11 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 		logger.Trace(logs.String())
 
 		// update the existing log with the last bytes
-		c.serviceLog.Data = vela.Bytes(append(c.serviceLog.GetData(), logs.Bytes()...))
+		l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the service
-		c.serviceLog, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, c.serviceLog)
+		l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 		if err != nil {
 			return err
 		}

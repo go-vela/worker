@@ -103,14 +103,14 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 			}
 
 			// update the step fields
-			c.step.ExitCode = vela.Int(step.ExitCode)
-			c.step.Status = vela.String(constants.StatusFailure)
+			c.steps[step.ID].ExitCode = vela.Int(step.ExitCode)
+			c.steps[step.ID].Status = vela.String(constants.StatusFailure)
 		}
 
-		c.step.Finished = vela.Int64(time.Now().UTC().Unix())
+		c.steps[step.ID].Finished = vela.Int64(time.Now().UTC().Unix())
 		c.logger.Infof("uploading %s step state", step.Name)
 		// send API call to update the build
-		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.step)
+		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.steps[step.ID])
 		if err != nil {
 			return err
 		}

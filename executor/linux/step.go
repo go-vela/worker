@@ -103,7 +103,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	})
 
 	// update the engine step object
-	c.step = &library.Step{
+	s := &library.Step{
 		Name:         vela.String(ctn.Name),
 		Number:       vela.Int(ctn.Number),
 		Status:       vela.String(constants.StatusRunning),
@@ -115,19 +115,25 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	logger.Debug("uploading step state")
 	// send API call to update the step
-	c.step, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.step)
+	s, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
 	if err != nil {
 		return err
 	}
-	c.step.Status = vela.String(constants.StatusSuccess)
+	s.Status = vela.String(constants.StatusSuccess)
+
+	// add a step to a map
+	c.steps[ctn.ID] = s
 
 	// get the step log here
 	logger.Debug("retrieve step log")
 	// send API call to capture the step log
-	c.stepLog, _, err = c.Vela.Log.GetStep(r.GetOrg(), r.GetName(), b.GetNumber(), c.step.GetNumber())
+	l, _, err := c.Vela.Log.GetStep(r.GetOrg(), r.GetName(), b.GetNumber(), s.GetNumber())
 	if err != nil {
 		return err
 	}
+
+	// add a step log to a map
+	c.stepLogs[ctn.ID] = l
 
 	return nil
 }
@@ -136,6 +142,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	b := c.build
 	r := c.repo
+	l := c.stepLogs[ctn.ID]
 
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
@@ -185,11 +192,11 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 				logger.Trace(logs.String())
 
 				// update the existing log with the new bytes
-				c.stepLog.Data = vela.Bytes(append(c.stepLog.GetData(), logs.Bytes()...))
+				l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
 
 				logger.Debug("appending logs")
 				// send API call to update the logs for the step
-				c.stepLog, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, c.stepLog)
+				l, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 				if err != nil {
 					return err
 				}
@@ -201,11 +208,11 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		logger.Trace(logs.String())
 
 		// update the existing log with the last bytes
-		c.stepLog.Data = vela.Bytes(append(c.stepLog.GetData(), logs.Bytes()...))
+		l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the step
-		c.stepLog, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, c.stepLog)
+		l, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 		if err != nil {
 			return err
 		}
