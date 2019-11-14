@@ -47,6 +47,8 @@ github.com/go-redis/redis v6.15.6+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8w
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/go-vela/mock v0.1.3 h1:YDOPugUeGgrd0CylHzwKhcLqxY50HZayJuwkaIyWuV4=
 github.com/go-vela/mock v0.1.3/go.mod h1:3TgNZmhaNsptHvtnKTPVrsdBpH3DKAacymSaGS6vrSA=
+github.com/go-vela/mock v0.1.4-0.20191114184817-0f96f3867712 h1:GSSCavSIoayW4tTiBg5R6Jp2GvX+pGxLnXvM2SFzqoE=
+github.com/go-vela/mock v0.1.4-0.20191114184817-0f96f3867712/go.mod h1:3TgNZmhaNsptHvtnKTPVrsdBpH3DKAacymSaGS6vrSA=
 github.com/go-vela/sdk-go v0.1.3 h1:PeQ3iDxcmg5P4Ra/xBvu/J5CfqAYR/8kv/FnLdXFUyM=
 github.com/go-vela/sdk-go v0.1.3/go.mod h1:C7/f6RxfJhSlXCY+Eppx6ze/2HTH4WdbToR5/HhetUE=
 github.com/go-vela/types v0.1.3 h1:y7PRarTVNZdu9x8v3vah+0+hB4NuNHYqY5Uq6MVJ04U=
