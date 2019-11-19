@@ -23,7 +23,7 @@ func operate(queue queue.Service, executors map[int]executor.Engine) (err error)
 		threads.Go(func() error {
 			for {
 				ctx := context.Background()
-				item, err := queue.Pull("vela")
+				item, err := queue.Pop()
 				if err != nil {
 					return err
 				}

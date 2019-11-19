@@ -18,6 +18,7 @@ services:
       VELA_LOG_LEVEL: debug
       VELA_QUEUE_DRIVER: redis
       VELA_QUEUE_CONFIG: redis://redis:6379
+      VELA_QUEUE_WORKER_ROUTES: larger,large:docker
       VELA_RUNTIME_DRIVER: docker
       VELA_SECRET: zB7mrKDTZqNeNTD8z47yG4DHywspAh
       VELA_VAULT_ADDR: http://vault:8200
@@ -39,6 +40,7 @@ services:
       VELA_LOG_LEVEL: debug
       VELA_QUEUE_DRIVER: redis
       VELA_QUEUE_CONFIG: redis://redis:6379
+      VELA_QUEUE_WORKER_ROUTES: small,small:docker
       VELA_RUNTIME_DRIVER: docker
       VELA_SECRET: zB7mrKDTZqNeNTD8z47yG4DHywspAh
       VELA_VAULT_ADDR: http://vault:8200
