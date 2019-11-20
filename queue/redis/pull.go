@@ -11,10 +11,10 @@ import (
 	"github.com/go-vela/types"
 )
 
-// Pull pops an item from the specified channel off the queue.
-func (c *client) Pull(channel string) (*types.Item, error) {
+// Pop grabs an item from the specified channel off the queue.
+func (c *client) Pop() (*types.Item, error) {
 	// blocking list pop item from queue
-	result, err := c.Queue.BLPop(0, channel).Result()
+	result, err := c.Queue.BLPop(0, c.Channels...).Result()
 	if err != nil {
 		return nil, fmt.Errorf("unable to pop item from queue: %w", err)
 	}

@@ -19,6 +19,7 @@ import (
 // helper function to setup the runtime from the CLI arguments.
 func setupRuntime(c *cli.Context) (runtime.Engine, error) {
 	logrus.Debug("Creating runtime client from CLI configuration")
+
 	switch c.String("runtime-driver") {
 	case constants.DriverDocker:
 		return setupDocker(c)
