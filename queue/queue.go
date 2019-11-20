@@ -11,6 +11,6 @@ import (
 // Service represents the interface for Vela integrating
 // with the different supported Queue backends.
 type Service interface {
-	// Pull defines a function that pops an item off the queue.
-	Pull(string) (*types.Item, error)
+	// Pop defines a function that grabs an item off the queue.
+	Pop() (*types.Item, error)
 }

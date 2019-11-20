@@ -38,11 +38,15 @@ func setupKafka(c *cli.Context) (queue.Service, error) {
 
 // helper function to setup the Redis queue from the CLI arguments.
 func setupRedis(c *cli.Context) (queue.Service, error) {
+
+	// setup routes
+	routes := append(c.StringSlice("queue-worker-routes"), constants.DefaultRoute)
+
 	if c.Bool("queue-cluster") {
 		logrus.Tracef("Creating %s queue cluster client from CLI configuration", constants.DriverRedis)
 		return redis.NewCluster(c.String("queue-config"), "vela")
 	}
 
 	logrus.Tracef("Creating %s queue client from CLI configuration", constants.DriverRedis)
-	return redis.New(c.String("queue-config"), "vela")
+	return redis.New(c.String("queue-config"), routes...)
 }

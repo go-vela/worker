@@ -57,14 +57,14 @@ func server(c *cli.Context) error {
 		return err
 	}
 
-	// create a queue client
-	queue, err := setupQueue(c)
+	// create a runtime client
+	runtime, err := setupRuntime(c)
 	if err != nil {
 		return err
 	}
 
-	// create a runtime client
-	runtime, err := setupRuntime(c)
+	// create a queue client
+	queue, err := setupQueue(c)
 	if err != nil {
 		return err
 	}
