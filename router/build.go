@@ -20,7 +20,7 @@ func buildHandlers(base *gin.RouterGroup) {
 		build := builds.Group("/:build")
 		{
 			build.GET("", api.GetBuild)
-			build.PUT("/kill", api.KillBuild)
+			build.PATCH("/kill", api.KillBuild)
 		} // end of build endpoints
 
 	} // end of builds endpoints
