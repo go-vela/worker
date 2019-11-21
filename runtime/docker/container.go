@@ -16,6 +16,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
+	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/sirupsen/logrus"
@@ -121,22 +122,53 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		return err
 	}
 
-	logrus.Tracef("Pulling image %s", image)
+	// check if the container should be updated
+	if ctn.Pull {
+		logrus.Tracef("Pulling configured image %s", image)
+		// create options for pulling image
+		opts := types.ImagePullOptions{}
 
-	// create options for pulling image
-	opts := types.ImagePullOptions{}
+		// send API call to pull the image for the container
+		reader, err := c.Runtime.ImagePull(ctx, image, opts)
+		if err != nil {
+			return err
+		}
+		defer reader.Close()
 
-	// send API call to pull the image for the container
-	reader, err := c.Runtime.ImagePull(ctx, image, opts)
-	defer reader.Close()
-	if err != nil {
-		return err
+		// copy output from image pull to standard output
+		io.Copy(os.Stdout, reader)
+
+		return nil
 	}
 
-	// copy output from image pull to standard output
-	io.Copy(os.Stdout, reader)
+	// check if the container image exists on the host
+	_, _, err = c.Runtime.ImageInspectWithRaw(ctx, image)
+	if err == nil {
+		return nil
+	}
 
-	return nil
+	// if the container image does not exist on the host
+	// we attempt to capture it for executing the pipeline
+	if docker.IsErrNotFound(err) {
+		logrus.Tracef("Pulling unfound image %s", image)
+
+		// create options for pulling image
+		opts := types.ImagePullOptions{}
+
+		// send API call to pull the image for the container
+		reader, err := c.Runtime.ImagePull(ctx, image, opts)
+		if err != nil {
+			return err
+		}
+		defer reader.Close()
+
+		// copy output from image pull to standard output
+		io.Copy(os.Stdout, reader)
+
+		return nil
+	}
+
+	return err
 }
 
 // TailContainer captures the logs for the pipeline container.
