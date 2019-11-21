@@ -88,6 +88,10 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	// create the services for the pipeline
 	for _, s := range p.Services {
+		// TODO: remove this; but we need it for tests
+		s.Detach = true
+		s.Pull = true
+
 		c.logger.Infof("creating %s service", s.Name)
 		// create the service
 		err = c.CreateService(ctx, s)
@@ -150,9 +154,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// execute the services for the pipeline
 	for _, s := range p.Services {
-		// TODO: remove this; but we need it for tests
-		s.Detach = true
-
 		c.logger.Infof("planning %s service", s.Name)
 		// plan the service
 		err = c.PlanService(ctx, s)
