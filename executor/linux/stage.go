@@ -84,7 +84,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 		// plan the step
 		err := c.PlanStep(ctx, step)
 		if err != nil {
-			return fmt.Errorf("unable to plan step: %w", err)
+			return fmt.Errorf("unable to plan step %s: %w", step.Name, err)
 		}
 
 		logger.Debugf("executing %s step", step.Name)

@@ -38,6 +38,7 @@ func TestExecutor_CreateService_Success(t *testing.T) {
 				Image:       "postgres:11-alpine",
 				Name:        "postgres",
 				Ports:       []string{"5432:5432"},
+				Pull:        true,
 			},
 		},
 	})
