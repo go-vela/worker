@@ -11,7 +11,7 @@ import (
 )
 
 // Shutdown represents the API handler to shutdown a
-// worker currently running on an executor.
+// executors currently running on an worker.
 //
 // This function performs a soft shut down of a worker.
 // Any build running during this time will safely complete, then
