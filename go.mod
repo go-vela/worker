@@ -3,6 +3,7 @@ module github.com/go-vela/worker
 go 1.13
 
 require (
+	git.target.com/caravel/server v0.5.0
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/coreos/go-semver v0.3.0
