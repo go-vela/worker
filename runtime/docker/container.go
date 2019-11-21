@@ -136,7 +136,10 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		defer reader.Close()
 
 		// copy output from image pull to standard output
-		io.Copy(os.Stdout, reader)
+		_, err = io.Copy(os.Stdout, reader)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	}
@@ -163,7 +166,10 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		defer reader.Close()
 
 		// copy output from image pull to standard output
-		io.Copy(os.Stdout, reader)
+		_, err = io.Copy(os.Stdout, reader)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	}
