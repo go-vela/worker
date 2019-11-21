@@ -8,10 +8,10 @@ import (
 // executorHandlers is a function that extends the provided base router group
 // with the API handlers for build functionality.
 //
-// GET    /api/v1/executors         --> github.com/go-vela/worker/api.GetExecutors (8 handlers)
-// GET    /api/v1/executors/:executor --> github.com/go-vela/worker/api.GetExecutor (8 handlers)
-// GET    /api/v1/executors/:executor/builds/:build --> github.com/go-vela/worker/api.GetBuild (8 handlers)
-// PUT    /api/v1/executors/:executor/builds/:build/kill --> github.com/go-vela/worker/api.KillBuild (8 handlers)
+// GET    /api/v1/executors
+// GET    /api/v1/executors/:executor
+// GET    /api/v1/executors/:executor/builds/:build
+// PUT    /api/v1/executors/:executor/builds/:build/kill
 func executorHandlers(base *gin.RouterGroup) {
 
 	// executors endpoints
