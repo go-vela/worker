@@ -129,11 +129,8 @@ func TestDocker_SetupContainer_Success(t *testing.T) {
 	got := c.SetupContainer(context.Background(), &pipeline.Container{
 		ID:    "container_id",
 		Image: "alpine:latest",
+		Pull:  true,
 	})
-
-	if got != nil {
-		t.Error("SetupContainer should not have returned err: ", got)
-	}
 
 	if got != nil {
 		t.Errorf("SetupContainer is %v, want nil", got)
