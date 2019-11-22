@@ -29,6 +29,15 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 
 	r.GET("/health", api.Health)
 	r.GET("/metrics", gin.WrapH(api.Metrics()))
+	r.POST("/shutdown", api.Shutdown)
+
+	// api endpoints
+	baseAPI := r.Group(base)
+	{
+		// executor endpoints
+		executorHandlers(baseAPI)
+
+	} // end of api
 
 	return r
 }
