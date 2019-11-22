@@ -102,7 +102,7 @@ func server(c *cli.Context) error {
 		go func() {
 			logrus.Info("Starting operator...")
 			// TODO: refactor due to one thread killing entire worker
-			err := operate(queue, executors)
+			err := operate(queue, executors, c.Duration("executor-timeout"))
 			if err != nil {
 				tomb.Kill(err)
 			}
