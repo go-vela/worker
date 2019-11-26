@@ -6,6 +6,7 @@ package main
 
 import (
 	"os"
+	"time"
 
 	"github.com/go-vela/worker/version"
 
@@ -55,6 +56,12 @@ func main() {
 			Name:   "executor-threads",
 			Usage:  "number of executor threads to create",
 			Value:  1,
+		},
+		cli.DurationFlag{
+			EnvVar: "VELA_EXECUTOR_TIMEOUT,EXECUTOR_TIMEOUT",
+			Name:   "executor-timeout",
+			Usage:  "max time an executor will run a build",
+			Value:  60 * time.Minute,
 		},
 
 		// Queue Flags
