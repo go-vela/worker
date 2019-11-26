@@ -13,7 +13,7 @@ import (
 	"github.com/go-vela/worker/router/middleware/user"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupson/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // MustServer ensures the user is the vela server
