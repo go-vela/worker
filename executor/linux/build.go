@@ -78,13 +78,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to create volume: %w", err)
 	}
 
-	c.logger.Info("pulling secrets")
-	// pull secrets for the pipeline
-	err = c.PullSecret(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to pull secrets: %w", err)
-	}
-
 	// create the services for the pipeline
 	for _, s := range p.Services {
 		// TODO: remove this; but we need it for tests
