@@ -13,6 +13,7 @@ import (
 	"github.com/go-vela/worker/router/middleware/user"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupson/logrus"
 )
 
 // MustServer ensures the user is the vela server
@@ -25,7 +26,10 @@ func MustServer() gin.HandlerFunc {
 		}
 
 		msg := fmt.Sprintf("User %s is not a platform admin", u.GetName())
-		c.Error(fmt.Errorf(msg))
+		err := c.Error(fmt.Errorf(msg))
+		if err != nil {
+			logrus.Error(err)
+		}
 		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
 	}
 }
