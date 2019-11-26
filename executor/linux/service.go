@@ -10,7 +10,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -47,12 +46,11 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	})
 
 	// update the engine service object
-	s := &library.Service{
-		Name:    vela.String(ctn.Name),
-		Number:  vela.Int(ctn.Number),
-		Status:  vela.String(constants.StatusRunning),
-		Started: vela.Int64(time.Now().UTC().Unix()),
-	}
+	s := new(library.Service)
+	s.SetName(ctn.Name)
+	s.SetNumber(ctn.Number)
+	s.SetStatus(constants.StatusRunning)
+	s.SetStarted(time.Now().UTC().Unix())
 
 	logger.Debug("uploading service state")
 	// send API call to update the service
@@ -60,7 +58,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	if err != nil {
 		return err
 	}
-	s.Status = vela.String(constants.StatusSuccess)
+	s.SetStatus(constants.StatusSuccess)
 
 	// add a service to a map
 	c.services[ctn.ID] = s
@@ -133,7 +131,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 				logger.Trace(logs.String())
 
 				// update the existing log with the new bytes
-				l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
+				l.SetData(append(l.GetData(), logs.Bytes()...))
 
 				logger.Debug("appending logs")
 				l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
@@ -148,7 +146,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 		logger.Trace(logs.String())
 
 		// update the existing log with the last bytes
-		l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
+		l.SetData(append(l.GetData(), logs.Bytes()...))
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the service

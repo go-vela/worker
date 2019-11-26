@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/sirupsen/logrus"
@@ -99,15 +98,15 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 			// check if we ignore step failures
 			if !step.Ruleset.Continue {
 				// set build status to failure
-				b.Status = vela.String(constants.StatusFailure)
+				b.SetStatus(constants.StatusFailure)
 			}
 
 			// update the step fields
-			c.steps[step.ID].ExitCode = vela.Int(step.ExitCode)
-			c.steps[step.ID].Status = vela.String(constants.StatusFailure)
+			c.steps[step.ID].SetExitCode(step.ExitCode)
+			c.steps[step.ID].SetStatus(constants.StatusFailure)
 		}
 
-		c.steps[step.ID].Finished = vela.Int64(time.Now().UTC().Unix())
+		c.steps[step.ID].SetFinished(time.Now().UTC().Unix())
 		c.logger.Infof("uploading %s step state", step.Name)
 		// send API call to update the build
 		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.steps[step.ID])

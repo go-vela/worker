@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-vela/sdk-go/vela"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
@@ -37,9 +36,9 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		// because it is worker related and not build.
 		if err != nil {
 			// update the build fields
-			b.Finished = vela.Int64(time.Now().UTC().Unix())
-			b.Status = vela.String(constants.StatusError)
-			b.Error = vela.String(err.Error())
+			b.SetFinished(time.Now().UTC().Unix())
+			b.SetStatus(constants.StatusError)
+			b.SetError(err.Error())
 
 			c.logger.Info("uploading errored stated")
 			// send API call to update the build
@@ -51,12 +50,12 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	}()
 
 	// update the build fields
-	b.Status = vela.String(constants.StatusRunning)
-	b.Started = vela.Int64(time.Now().UTC().Unix())
-	b.Host = vela.String(c.Hostname)
+	b.SetStatus(constants.StatusRunning)
+	b.SetStarted(time.Now().UTC().Unix())
+	b.SetHost(c.Hostname)
 	// TODO: This should not be hardcoded
-	b.Distribution = vela.String("linux")
-	b.Runtime = vela.String("docker")
+	b.SetDistribution("linux")
+	b.SetRuntime("docker")
 
 	c.logger.Info("uploading build state")
 	// send API call to update the build
@@ -120,7 +119,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		}
 	}
 
-	b.Status = vela.String(constants.StatusSuccess)
+	b.SetStatus(constants.StatusSuccess)
 	c.build = b
 
 	return nil
@@ -139,9 +138,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// because it is worker related and not build.
 		if err != nil {
 			// update the build fields
-			b.Finished = vela.Int64(time.Now().UTC().Unix())
-			b.Status = vela.String(constants.StatusError)
-			b.Error = vela.String(err.Error())
+			b.SetFinished(time.Now().UTC().Unix())
+			b.SetStatus(constants.StatusError)
+			b.SetError(err.Error())
 
 			c.logger.Info("uploading errored stated")
 			// send API call to update the build
@@ -196,15 +195,15 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			// check if we ignore step failures
 			if !s.Ruleset.Continue {
 				// set build status to failure
-				b.Status = vela.String(constants.StatusFailure)
+				b.SetStatus(constants.StatusFailure)
 			}
 
 			// update the step fields
-			c.steps[s.ID].ExitCode = vela.Int(s.ExitCode)
-			c.steps[s.ID].Status = vela.String(constants.StatusFailure)
+			c.steps[s.ID].SetExitCode(s.ExitCode)
+			c.steps[s.ID].SetStatus(constants.StatusFailure)
 		}
 
-		c.steps[s.ID].Finished = vela.Int64(time.Now().UTC().Unix())
+		c.steps[s.ID].SetFinished(time.Now().UTC().Unix())
 		c.logger.Infof("uploading %s step state", s.Name)
 		// send API call to update the build
 		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.steps[s.ID])
@@ -245,7 +244,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		return err
 	}
 
-	b.Finished = vela.Int64(time.Now().UTC().Unix())
+	b.SetFinished(time.Now().UTC().Unix())
 	c.logger.Info("uploading build state")
 	// send API call to update the build
 	_, _, err = c.Vela.Build.Update(r.GetOrg(), r.GetName(), b)
@@ -269,9 +268,9 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		// because it is worker related and not build.
 		if err != nil {
 			// update the build fields
-			b.Finished = vela.Int64(time.Now().UTC().Unix())
-			b.Status = vela.String(constants.StatusError)
-			b.Error = vela.String(err.Error())
+			b.SetFinished(time.Now().UTC().Unix())
+			b.SetStatus(constants.StatusError)
+			b.SetError(err.Error())
 
 			c.logger.Info("uploading errored stated")
 			// send API call to update the build
@@ -313,8 +312,8 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 		c.logger.Infof("uploading %s service state", s.Name)
 		// send API call to update the build
-		c.services[s.ID].ExitCode = vela.Int(s.ExitCode)
-		c.services[s.ID].Finished = vela.Int64(time.Now().UTC().Unix())
+		c.services[s.ID].SetExitCode(s.ExitCode)
+		c.services[s.ID].SetFinished(time.Now().UTC().Unix())
 		_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.services[s.ID])
 		if err != nil {
 			c.logger.Errorf("unable to upload service status: %w", err)
