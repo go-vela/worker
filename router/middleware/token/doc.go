@@ -2,12 +2,12 @@
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
-// Package user provides the ability for inserting
-// Vela user resources into or extracting Vela user
+// Package token provides the ability for inserting
+// Vela token resources into or extracting Vela token
 // resources from the middleware chain for the API.
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/router/middleware/user"
+// 	import "github.com/go-vela/worker/router/middleware/token"
 
-package user
+package token
