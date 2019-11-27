@@ -56,7 +56,7 @@ func operate(queue queue.Service, executors map[int]executor.Engine, timeout tim
 				// pull secrets for the build on the executor
 				err = e.PullSecret(ctx)
 				if err != nil {
-					logger.Errorf("unable to pull secrets: %w", err)
+					logger.Errorf("unable to pull secrets: %v", err)
 					return err
 				}
 
@@ -64,7 +64,7 @@ func operate(queue queue.Service, executors map[int]executor.Engine, timeout tim
 				logger.Info("creating build")
 				err = e.CreateBuild(ctx)
 				if err != nil {
-					logger.Errorf("unable to create build: %w", err)
+					logger.Errorf("unable to create build: %v", err)
 					return err
 				}
 
@@ -72,7 +72,7 @@ func operate(queue queue.Service, executors map[int]executor.Engine, timeout tim
 				logger.Info("executing build")
 				err = e.ExecBuild(ctx)
 				if err != nil {
-					logger.Errorf("unable to execute build: %w", err)
+					logger.Errorf("unable to execute build: %v", err)
 					return err
 				}
 
@@ -80,7 +80,7 @@ func operate(queue queue.Service, executors map[int]executor.Engine, timeout tim
 				logger.Info("destroying build")
 				err = e.DestroyBuild(ctx)
 				if err != nil {
-					logger.Errorf("unable to destroy build: %w", err)
+					logger.Errorf("unable to destroy build: %v", err)
 					return err
 				}
 
