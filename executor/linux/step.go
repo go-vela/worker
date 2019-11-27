@@ -15,8 +15,6 @@ import (
 
 	"github.com/go-vela/worker/version"
 
-	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -103,15 +101,14 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	})
 
 	// update the engine step object
-	s := &library.Step{
-		Name:         vela.String(ctn.Name),
-		Number:       vela.Int(ctn.Number),
-		Status:       vela.String(constants.StatusRunning),
-		Started:      vela.Int64(time.Now().UTC().Unix()),
-		Host:         vela.String(ctn.Environment["VELA_HOST"]),
-		Runtime:      vela.String(ctn.Environment["VELA_RUNTIME"]),
-		Distribution: vela.String(ctn.Environment["VELA_DISTRIBUTION"]),
-	}
+	s := new(library.Step)
+	s.SetName(ctn.Name)
+	s.SetNumber(ctn.Number)
+	s.SetStatus(constants.StatusRunning)
+	s.SetStarted(time.Now().UTC().Unix())
+	s.SetHost(ctn.Environment["VELA_HOST"])
+	s.SetRuntime(ctn.Environment["VELA_RUNTIME"])
+	s.SetDistribution(ctn.Environment["VELA_DISTRIBUTION"])
 
 	logger.Debug("uploading step state")
 	// send API call to update the step
@@ -119,7 +116,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	if err != nil {
 		return err
 	}
-	s.Status = vela.String(constants.StatusSuccess)
+	s.SetStatus(constants.StatusSuccess)
 
 	// add a step to a map
 	c.steps[ctn.ID] = s
@@ -192,7 +189,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 				logger.Trace(logs.String())
 
 				// update the existing log with the new bytes
-				l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
+				l.SetData(append(l.GetData(), logs.Bytes()...))
 
 				logger.Debug("appending logs")
 				// send API call to update the logs for the step
@@ -208,7 +205,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		logger.Trace(logs.String())
 
 		// update the existing log with the last bytes
-		l.Data = vela.Bytes(append(l.GetData(), logs.Bytes()...))
+		l.SetData(append(l.GetData(), logs.Bytes()...))
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the step
