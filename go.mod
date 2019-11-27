@@ -16,8 +16,10 @@ require (
 	github.com/go-vela/mock v0.1.4
 	github.com/go-vela/sdk-go v0.1.4
 	github.com/go-vela/types v0.1.5-0.20191119211417-27d1fc0f8405
+	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/mux v1.7.3 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.10.3 // indirect
 	github.com/onsi/gomega v1.7.1 // indirect
@@ -26,9 +28,14 @@ require (
 	github.com/prometheus/client_golang v1.2.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/urfave/cli v1.22.1
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	golang.org/x/text v0.3.1-0.20181227161524-e6919f6577db // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
+	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107 // indirect
 	google.golang.org/grpc v1.24.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
+	gopkg.in/yaml.v2 v2.2.5 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 )
