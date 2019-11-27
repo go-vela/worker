@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/worker/api"
 	"github.com/go-vela/worker/router/middleware"
+	"github.com/go-vela/worker/router/middleware/perm"
+	"github.com/go-vela/worker/router/middleware/user"
 )
 
 const (
@@ -29,13 +31,13 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 
 	r.GET("/health", api.Health)
 	r.GET("/metrics", gin.WrapH(api.Metrics()))
-	r.POST("/shutdown", api.Shutdown)
 
 	// api endpoints
-	baseAPI := r.Group(base)
+	baseAPI := r.Group(base, user.Establish(), perm.MustServer())
 	{
 		// executor endpoints
 		executorHandlers(baseAPI)
+		baseAPI.POST("/shutdown", api.Shutdown)
 
 	} // end of api
 
