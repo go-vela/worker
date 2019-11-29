@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-vela/types/constants"
@@ -61,7 +62,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	s.SetStatus(constants.StatusSuccess)
 
 	// add a service to a map
-	c.services[ctn.ID] = s
+	c.services.Store(ctn.ID, s)
 
 	// get the service log here
 	logger.Debug("retrieve service log")
@@ -72,7 +73,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	}
 
 	// add a step log to a map
-	c.serviceLogs[ctn.ID] = l
+	c.serviceLogs.Store(ctn.ID, l)
 
 	return nil
 }
@@ -81,7 +82,12 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error {
 	b := c.build
 	r := c.repo
-	l := c.serviceLogs[ctn.ID]
+
+	result, ok := c.serviceLogs.Load(ctn.ID)
+	if !ok {
+		return fmt.Errorf("unable to get log from client")
+	}
+	l := result.(*library.Log)
 
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{

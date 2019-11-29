@@ -625,9 +625,9 @@ func TestExecutor_DestroyBuild_Success(t *testing.T) {
 		e.WithBuild(test.build)
 		e.WithPipeline(test.pipeline)
 		e.WithRepo(test.repo)
-		e.services = make(map[string]*library.Service)
-		e.services[e.pipeline.Services[0].ID] = new(library.Service)
-		e.services[e.pipeline.Services[0].ID].Number = vela.Int(1)
+		svc := new(library.Service)
+		svc.SetNumber(1)
+		e.services.Store(e.pipeline.Services[0].ID, svc)
 
 		got := e.DestroyBuild(context.Background())
 
