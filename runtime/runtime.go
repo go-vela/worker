@@ -49,7 +49,7 @@ type Engine interface {
 
 	// CreateVolume defines a function that
 	// creates the pipeline volume.
-	CreateVolume(context.Context, *pipeline.Build) error
+	CreateVolume(context.Context, *pipeline.Build) (string, error)
 	// RemoveVolume defines a function that
 	// deletes the pipeline volume.
 	RemoveVolume(context.Context, *pipeline.Build) error

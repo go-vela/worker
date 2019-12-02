@@ -74,7 +74,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	c.logger.Info("creating volume")
 	// create the runtime volume for the pipeline
-	err = c.Runtime.CreateVolume(ctx, p)
+	_, err = c.Runtime.CreateVolume(ctx, p)
 	if err != nil {
 		return fmt.Errorf("unable to create volume: %w", err)
 	}
