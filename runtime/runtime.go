@@ -40,7 +40,7 @@ type Engine interface {
 
 	// CreateNetwork defines a function that
 	// creates the pipeline network.
-	CreateNetwork(context.Context, *pipeline.Build) error
+	CreateNetwork(context.Context, *pipeline.Build) (string, error)
 	// RemoveNetwork defines a function that
 	// deletes the pipeline network.
 	RemoveNetwork(context.Context, *pipeline.Build) error
@@ -49,7 +49,7 @@ type Engine interface {
 
 	// CreateVolume defines a function that
 	// creates the pipeline volume.
-	CreateVolume(context.Context, *pipeline.Build) error
+	CreateVolume(context.Context, *pipeline.Build) (string, error)
 	// RemoveVolume defines a function that
 	// deletes the pipeline volume.
 	RemoveVolume(context.Context, *pipeline.Build) error
