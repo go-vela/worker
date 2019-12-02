@@ -85,7 +85,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 
 	result, ok := c.serviceLogs.Load(ctn.ID)
 	if !ok {
-		return fmt.Errorf("unable to get log from client")
+		return fmt.Errorf("unable to get service log from client")
 	}
 	l := result.(*library.Log)
 

@@ -315,7 +315,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		// send API call to update the build
 		result, ok := c.services.Load(s.ID)
 		if !ok {
-			return fmt.Errorf("unable to get step from client")
+			return fmt.Errorf("unable to get service from client")
 		}
 		cService := result.(*library.Service)
 		cService.SetExitCode(s.ExitCode)

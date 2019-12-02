@@ -142,7 +142,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	result, ok := c.stepLogs.Load(ctn.ID)
 	if !ok {
-		return fmt.Errorf("unable to get log from client")
+		return fmt.Errorf("unable to get step log from client")
 	}
 	l := result.(*library.Log)
 
