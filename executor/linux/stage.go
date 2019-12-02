@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/sirupsen/logrus"
 )
@@ -93,6 +94,12 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 			return err
 		}
 
+		result, ok := c.steps.Load(step.ID)
+		if !ok {
+			return fmt.Errorf("unable to get step from client")
+		}
+		cStep := result.(*library.Step)
+
 		// check the step exit code
 		if step.ExitCode != 0 {
 			// check if we ignore step failures
@@ -102,14 +109,14 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 			}
 
 			// update the step fields
-			c.steps[step.ID].SetExitCode(step.ExitCode)
-			c.steps[step.ID].SetStatus(constants.StatusFailure)
+			cStep.SetExitCode(step.ExitCode)
+			cStep.SetStatus(constants.StatusFailure)
 		}
 
-		c.steps[step.ID].SetFinished(time.Now().UTC().Unix())
+		cStep.SetFinished(time.Now().UTC().Unix())
 		c.logger.Infof("uploading %s step state", step.Name)
 		// send API call to update the build
-		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.steps[step.ID])
+		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), cStep)
 		if err != nil {
 			return err
 		}

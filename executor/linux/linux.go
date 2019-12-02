@@ -7,6 +7,7 @@ package linux
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/go-vela/worker/executor"
 
@@ -28,10 +29,10 @@ type client struct {
 	build       *library.Build
 	pipeline    *pipeline.Build
 	repo        *library.Repo
-	services    map[string]*library.Service
-	serviceLogs map[string]*library.Log
-	steps       map[string]*library.Step
-	stepLogs    map[string]*library.Log
+	services    sync.Map
+	serviceLogs sync.Map
+	steps       sync.Map
+	stepLogs    sync.Map
 	user        *library.User
 }
 
@@ -60,10 +61,10 @@ func New(c *vela.Client, r runtime.Engine) (*client, error) {
 		Runtime:     r,
 		Hostname:    h,
 		logger:      l,
-		services:    make(map[string]*library.Service),
-		serviceLogs: make(map[string]*library.Log),
-		steps:       make(map[string]*library.Step),
-		stepLogs:    make(map[string]*library.Log),
+		services:    sync.Map{},
+		serviceLogs: sync.Map{},
+		steps:       sync.Map{},
+		stepLogs:    sync.Map{},
 	}, nil
 }
 

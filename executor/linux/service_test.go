@@ -193,10 +193,8 @@ func TestExecutor_ExecService_Success(t *testing.T) {
 		AllowDeploy: vela.Bool(false),
 		AllowTag:    vela.Bool(false),
 	})
-	e.serviceLogs = make(map[string]*library.Log)
-	e.serviceLogs[e.pipeline.Services[0].ID] = new(library.Log)
-	e.services = make(map[string]*library.Service)
-	e.services[e.pipeline.Services[0].ID] = new(library.Service)
+	e.serviceLogs.Store(e.pipeline.Services[0].ID, new(library.Log))
+	e.services.Store(e.pipeline.Services[0].ID, new(library.Service))
 
 	// run test
 	got := e.ExecService(context.Background(), e.pipeline.Services[0])

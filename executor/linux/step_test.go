@@ -305,10 +305,8 @@ func TestExecutor_ExecStep_Success(t *testing.T) {
 		AllowDeploy: vela.Bool(false),
 		AllowTag:    vela.Bool(false),
 	})
-	e.stepLogs = make(map[string]*library.Log)
-	e.stepLogs[e.pipeline.Steps[0].ID] = new(library.Log)
-	e.steps = make(map[string]*library.Step)
-	e.steps[e.pipeline.Steps[0].ID] = new(library.Step)
+	e.stepLogs.Store(e.pipeline.Steps[0].ID, new(library.Log))
+	e.steps.Store(e.pipeline.Steps[0].ID, new(library.Step))
 
 	// run test
 	got := e.ExecStep(context.Background(), e.pipeline.Steps[0])
