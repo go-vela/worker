@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
 )
@@ -183,6 +184,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to execute step: %w", err)
 		}
 
+		result, ok := c.steps.Load(s.ID)
+		if !ok {
+			return fmt.Errorf("unable to get step from client")
+		}
+		cStep := result.(*library.Step)
+
 		// check the step exit code
 		if s.ExitCode != 0 {
 			// check if we ignore step failures
@@ -192,14 +199,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 
 			// update the step fields
-			c.steps[s.ID].SetExitCode(s.ExitCode)
-			c.steps[s.ID].SetStatus(constants.StatusFailure)
+			cStep.SetExitCode(s.ExitCode)
+			cStep.SetStatus(constants.StatusFailure)
 		}
 
-		c.steps[s.ID].SetFinished(time.Now().UTC().Unix())
+		cStep.SetFinished(time.Now().UTC().Unix())
 		c.logger.Infof("uploading %s step state", s.Name)
 		// send API call to update the build
-		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.steps[s.ID])
+		_, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), cStep)
 		if err != nil {
 			return err
 		}
@@ -304,10 +311,16 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		}
 
 		c.logger.Infof("uploading %s service state", s.Name)
+
 		// send API call to update the build
-		c.services[s.ID].SetExitCode(s.ExitCode)
-		c.services[s.ID].SetFinished(time.Now().UTC().Unix())
-		_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), c.services[s.ID])
+		result, ok := c.services.Load(s.ID)
+		if !ok {
+			return fmt.Errorf("unable to get service from client")
+		}
+		cService := result.(*library.Service)
+		cService.SetExitCode(s.ExitCode)
+		cService.SetFinished(time.Now().UTC().Unix())
+		_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), cService)
 		if err != nil {
 			c.logger.Errorf("unable to upload service status: %w", err)
 		}
