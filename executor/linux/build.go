@@ -67,7 +67,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	c.logger.Info("creating network")
 	// create the runtime network for the pipeline
-	err = c.Runtime.CreateNetwork(ctx, p)
+	_, err = c.Runtime.CreateNetwork(ctx, p)
 	if err != nil {
 		return fmt.Errorf("unable to create network: %w", err)
 	}
