@@ -17,7 +17,7 @@ func TestDocker_CreateVolume_Success(t *testing.T) {
 	c, _ := NewMock()
 
 	// run test
-	got := c.CreateVolume(context.Background(), &pipeline.Build{
+	_, got := c.CreateVolume(context.Background(), &pipeline.Build{
 		Version: "1",
 		ID:      "__0"})
 
@@ -38,7 +38,7 @@ func TestDocker_CreateVolume_Failure(t *testing.T) {
 	c, _ := NewMock()
 
 	// run test
-	got := c.CreateVolume(context.Background(), &pipeline.Build{
+	_, got := c.CreateVolume(context.Background(), &pipeline.Build{
 		Version: "1",
 		ID:      "__0"})
 
