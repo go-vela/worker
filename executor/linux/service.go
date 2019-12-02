@@ -94,18 +94,6 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 		"service": ctn.Name,
 	})
 
-	// run the container in a detached state
-	if ctn.Detach {
-		logger.Debug("running container in detach mode")
-		// run the runtime container
-		err := c.Runtime.RunContainer(ctx, c.pipeline, ctn)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-
 	logger.Debug("running container")
 	// run the runtime container
 	err := c.Runtime.RunContainer(ctx, c.pipeline, ctn)
@@ -163,6 +151,11 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 
 		return nil
 	}()
+
+	// do not wait for detached containers
+	if ctn.Detach {
+		return nil
+	}
 
 	logger.Debug("waiting for container")
 	// wait for the runtime container
