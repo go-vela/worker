@@ -119,7 +119,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	s.SetStatus(constants.StatusSuccess)
 
 	// add a step to a map
-	c.steps[ctn.ID] = s
+	c.steps.Store(ctn.ID, s)
 
 	// get the step log here
 	logger.Debug("retrieve step log")
@@ -130,7 +130,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	}
 
 	// add a step log to a map
-	c.stepLogs[ctn.ID] = l
+	c.stepLogs.Store(ctn.ID, l)
 
 	return nil
 }
@@ -139,7 +139,12 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	b := c.build
 	r := c.repo
-	l := c.stepLogs[ctn.ID]
+
+	result, ok := c.stepLogs.Load(ctn.ID)
+	if !ok {
+		return fmt.Errorf("unable to get step log from client")
+	}
+	l := result.(*library.Log)
 
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
