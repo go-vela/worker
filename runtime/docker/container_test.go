@@ -11,13 +11,13 @@ import (
 	"github.com/go-vela/types/pipeline"
 )
 
-func TestDocker_InfoContainer_Success(t *testing.T) {
+func TestDocker_InspectContainer_Success(t *testing.T) {
 
 	// setup Docker
 	c, _ := NewMock()
 
 	// run test
-	got := c.InfoContainer(context.Background(), &pipeline.Container{
+	_, got := c.InspectContainer(context.Background(), &pipeline.Container{
 		ID:    "container_id",
 		Image: "alpine:latest",
 	})
@@ -31,13 +31,13 @@ func TestDocker_InfoContainer_Success(t *testing.T) {
 	}
 }
 
-func TestDocker_InfoContainer_Failure(t *testing.T) {
+func TestDocker_InspectContainer_Failure(t *testing.T) {
 
 	// setup Docker
 	c, _ := NewMock()
 
 	// run test
-	got := c.InfoContainer(context.Background(), &pipeline.Container{})
+	_, got := c.InspectContainer(context.Background(), &pipeline.Container{})
 
 	if got == nil {
 		t.Errorf("InfoContainer should have returned err: %+v", got)

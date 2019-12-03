@@ -17,9 +17,9 @@ type Engine interface {
 
 	// Container Engine interface functions
 
-	// InfoContainer defines a function that gets
-	// information on the pipeline container.
-	InfoContainer(context.Context, *pipeline.Container) error
+	// InspectContainer defines a function that inspects
+	// the pipeline container.
+	InspectContainer(context.Context, *pipeline.Container) ([]byte, error)
 	// RemoveContainer defines a function that deletes
 	// (kill, remove) the pipeline container.
 	RemoveContainer(context.Context, *pipeline.Container) error

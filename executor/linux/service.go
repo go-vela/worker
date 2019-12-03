@@ -166,7 +166,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 
 	logger.Debug("inspecting container")
 	// inspect the runtime container
-	err = c.Runtime.InfoContainer(ctx, ctn)
+	_, err = c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,7 @@ func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) er
 
 	logger.Debug("inspecting container")
 	// inspect the runtime container
-	err := c.Runtime.InfoContainer(ctx, ctn)
+	_, err := c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
