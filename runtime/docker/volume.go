@@ -31,6 +31,19 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) (string, e
 	return v.Name, nil
 }
 
+// InspectVolume inspects the pipeline volume.
+func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, error) {
+	logrus.Tracef("Inspecting volume for pipeline %s", b.ID)
+
+	// send API call to inspect the volume
+	v, err := c.Runtime.VolumeInspect(ctx, b.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(v.Name + "\n"), nil
+}
+
 // RemoveVolume deletes the pipeline volume.
 func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 	logrus.Tracef("Removing volume for pipeline %s", b.ID)

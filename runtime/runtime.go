@@ -53,6 +53,9 @@ type Engine interface {
 	// CreateVolume defines a function that
 	// creates the pipeline volume.
 	CreateVolume(context.Context, *pipeline.Build) (string, error)
+	// InspectVolume defines a function that
+	// inspects the pipeline volume.
+	InspectVolume(context.Context, *pipeline.Build) ([]byte, error)
 	// RemoveVolume defines a function that
 	// deletes the pipeline volume.
 	RemoveVolume(context.Context, *pipeline.Build) error
