@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CreateNetwork creates the pipeline network
+// CreateNetwork creates the pipeline network.
 func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) (string, error) {
 	logrus.Tracef("Creating network for pipeline %s", b.ID)
 
@@ -31,7 +31,23 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) (string, 
 	return n.ID, nil
 }
 
-// RemoveNetwork deletes the pipeline network
+// InspectNetwork inspects the pipeline network.
+func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte, error) {
+	logrus.Tracef("Inspecting network for pipeline %s", b.ID)
+
+	// create options for inspecting network
+	opts := types.NetworkInspectOptions{}
+
+	// send API call to inspect the network
+	n, err := c.Runtime.NetworkInspect(ctx, b.ID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(n.ID + "\n"), nil
+}
+
+// RemoveNetwork deletes the pipeline network.
 func (c *client) RemoveNetwork(ctx context.Context, b *pipeline.Build) error {
 	logrus.Tracef("Removing volume for pipeline %s", b.ID)
 

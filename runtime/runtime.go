@@ -41,6 +41,9 @@ type Engine interface {
 	// CreateNetwork defines a function that
 	// creates the pipeline network.
 	CreateNetwork(context.Context, *pipeline.Build) (string, error)
+	// InspectNetwork defines a function that
+	// inspects the pipeline network.
+	InspectNetwork(context.Context, *pipeline.Build) ([]byte, error)
 	// RemoveNetwork defines a function that
 	// deletes the pipeline network.
 	RemoveNetwork(context.Context, *pipeline.Build) error
