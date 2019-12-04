@@ -14,7 +14,7 @@ import (
 )
 
 // CreateNetwork creates the pipeline network.
-func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) (string, error) {
+func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 	logrus.Tracef("Creating network for pipeline %s", b.ID)
 
 	// create options for creating network
@@ -23,12 +23,12 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) (string, 
 	}
 
 	// send API call to create the network
-	n, err := c.Runtime.NetworkCreate(ctx, b.ID, opts)
+	_, err := c.Runtime.NetworkCreate(ctx, b.ID, opts)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return n.ID, nil
+	return nil
 }
 
 // InspectNetwork inspects the pipeline network.

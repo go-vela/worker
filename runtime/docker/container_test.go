@@ -17,17 +17,17 @@ func TestDocker_InspectContainer_Success(t *testing.T) {
 	c, _ := NewMock()
 
 	// run test
-	_, got := c.InspectContainer(context.Background(), &pipeline.Container{
+	got := c.InspectContainer(context.Background(), &pipeline.Container{
 		ID:    "container_id",
 		Image: "alpine:latest",
 	})
 
 	if got != nil {
-		t.Error("InfoContainer should not have returned err: ", got)
+		t.Error("InspectContainer should not have returned err: ", got)
 	}
 
 	if got != nil {
-		t.Errorf("InfoContainer is %v, want nil", got)
+		t.Errorf("InspectContainer is %v, want nil", got)
 	}
 }
 
@@ -37,10 +37,10 @@ func TestDocker_InspectContainer_Failure(t *testing.T) {
 	c, _ := NewMock()
 
 	// run test
-	_, got := c.InspectContainer(context.Background(), &pipeline.Container{})
+	got := c.InspectContainer(context.Background(), &pipeline.Container{})
 
 	if got == nil {
-		t.Errorf("InfoContainer should have returned err: %+v", got)
+		t.Errorf("InspectContainer should have returned err: %+v", got)
 	}
 }
 

@@ -13,7 +13,7 @@ import (
 )
 
 // CreateVolume creates the pipeline volume.
-func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) (string, error) {
+func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 	logrus.Tracef("Creating volume for pipeline %s", b.ID)
 
 	// create options for creating volume
@@ -23,12 +23,12 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) (string, e
 	}
 
 	// send API call to create the volume
-	v, err := c.Runtime.VolumeCreate(ctx, opts)
+	_, err := c.Runtime.VolumeCreate(ctx, opts)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return v.Name, nil
+	return nil
 }
 
 // InspectVolume inspects the pipeline volume.
