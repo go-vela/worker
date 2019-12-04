@@ -44,7 +44,7 @@ func setupRedis(c *cli.Context) (queue.Service, error) {
 
 	if c.Bool("queue-cluster") {
 		logrus.Tracef("Creating %s queue cluster client from CLI configuration", constants.DriverRedis)
-		return redis.NewCluster(c.String("queue-config"), "vela")
+		return redis.NewCluster(c.String("queue-config"), routes...)
 	}
 
 	logrus.Tracef("Creating %s queue client from CLI configuration", constants.DriverRedis)
