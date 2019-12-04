@@ -224,7 +224,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	logger.Debug("inspecting container")
 	// inspect the runtime container
-	_, err = c.Runtime.InspectContainer(ctx, ctn)
+	err = c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}

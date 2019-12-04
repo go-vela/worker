@@ -17,7 +17,7 @@ func TestDocker_CreateNetwork_Success(t *testing.T) {
 	c, _ := NewMock()
 
 	// run test
-	_, got := c.CreateNetwork(context.Background(), &pipeline.Build{
+	got := c.CreateNetwork(context.Background(), &pipeline.Build{
 		Version: "1",
 		ID:      "__0"})
 
@@ -38,7 +38,7 @@ func TestDocker_CreateNetwork_Failure(t *testing.T) {
 	c, _ := NewMock()
 
 	// run test
-	_, got := c.CreateNetwork(context.Background(), &pipeline.Build{
+	got := c.CreateNetwork(context.Background(), &pipeline.Build{
 		Version: "1",
 		ID:      "__0"})
 

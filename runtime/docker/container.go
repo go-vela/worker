@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-vela/types/pipeline"
 
-	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -23,19 +22,19 @@ import (
 )
 
 // InspectContainer inspects the pipeline container.
-func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) ([]byte, error) {
+func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) error {
 	logrus.Tracef("Inspecting container for step %s", ctn.ID)
 
 	// send API call to inspect the container
 	container, err := c.Runtime.ContainerInspect(ctx, ctn.ID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// set the exit code
 	ctn.ExitCode = container.State.ExitCode
 
-	return []byte(container.Image + "\n"), nil
+	return nil
 }
 
 // RemoveContainer deletes (kill, remove) the pipeline container.
@@ -291,17 +290,4 @@ func hostConfig(id string) *container.HostConfig {
 			},
 		},
 	}
-}
-
-// parseImage is a helper function to parse
-// the image for the provided container.
-func parseImage(s string) (string, error) {
-	// create fully qualified reference
-	image, err := reference.ParseNormalizedNamed(s)
-	if err != nil {
-		return "", err
-	}
-
-	// add latest tag to image if no tag was provided
-	return reference.TagNameOnly(image).String(), nil
 }
