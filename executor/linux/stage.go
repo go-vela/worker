@@ -17,19 +17,60 @@ import (
 
 // CreateStage prepares the stage for execution.
 func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
+	// TODO: remove hardcoded reference
+	if s.Name == "init" {
+		return nil
+	}
+
+	init := c.pipeline.Stages[0].Steps[0]
+	// TODO: make this cleaner
+	result, ok := c.stepLogs.Load(init.ID)
+	if !ok {
+		return fmt.Errorf("unable to get init step log from client")
+	}
+	l := result.(*library.Log)
+
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
 		"stage": s.Name,
 	})
 
+	// update the init log with progress
+	l.SetData(
+		append(
+			l.GetData(),
+			[]byte(fmt.Sprintf("  $ Pulling step images for stage %s...\n", s.Name))...,
+		),
+	)
+
 	// create the steps for the stage
 	for _, step := range s.Steps {
+
+		// TODO: make this not hardcoded
+		// update the init log with progress
+		l.SetData(
+			append(
+				l.GetData(),
+				[]byte(fmt.Sprintf("    $ docker image inspect %s\n", step.Image))...,
+			),
+		)
+
 		logger.Debugf("creating %s step", step.Name)
 		// create the step
 		err := c.CreateStep(ctx, step)
 		if err != nil {
 			return err
 		}
+
+		c.logger.Infof("inspecting %s step", step.Name)
+		// inspect the step image
+		image, err := c.Runtime.InspectImage(ctx, step)
+		if err != nil {
+			return err
+		}
+
+		// update the init log with step image info
+		l.SetData(append(l.GetData(), image...))
 	}
 
 	return nil
