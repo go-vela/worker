@@ -67,8 +67,9 @@ func NewCluster(config string, channels ...string) (*client, error) {
 
 	// create the client object
 	client := &client{
-		Queue:   queue,
-		Options: options,
+		Queue:    queue,
+		Options:  options,
+		Channels: channels,
 	}
 
 	return client, nil
