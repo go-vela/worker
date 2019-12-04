@@ -67,14 +67,14 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	c.logger.Info("creating network")
 	// create the runtime network for the pipeline
-	_, err = c.Runtime.CreateNetwork(ctx, p)
+	err = c.Runtime.CreateNetwork(ctx, p)
 	if err != nil {
 		return fmt.Errorf("unable to create network: %w", err)
 	}
 
 	c.logger.Info("creating volume")
 	// create the runtime volume for the pipeline
-	_, err = c.Runtime.CreateVolume(ctx, p)
+	err = c.Runtime.CreateVolume(ctx, p)
 	if err != nil {
 		return fmt.Errorf("unable to create volume: %w", err)
 	}
