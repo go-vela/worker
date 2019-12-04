@@ -36,6 +36,12 @@ type Engine interface {
 	// until the pipeline container completes.
 	WaitContainer(context.Context, *pipeline.Container) error
 
+	// Image Engine Interface Functions
+
+	// InspectImage defines a function that
+	// inspects the pipeline container image.
+	InspectImage(context.Context, *pipeline.Container) ([]byte, error)
+
 	// Network Engine Interface Functions
 
 	// CreateNetwork defines a function that
