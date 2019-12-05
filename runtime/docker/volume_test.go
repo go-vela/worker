@@ -48,6 +48,48 @@ func TestDocker_CreateVolume_Failure(t *testing.T) {
 	}
 }
 
+func TestDocker_InspectVolume_Success(t *testing.T) {
+	// setup types
+	p := &pipeline.Build{
+		Version: "1",
+		ID:      "__0",
+	}
+
+	// setup Docker
+	c, _ := NewMock()
+
+	// run test
+	got, err := c.InspectVolume(context.Background(), p)
+	if err != nil {
+		t.Errorf("InspectVolume returned err: %v", got)
+	}
+
+	if got == nil {
+		t.Errorf("InspectVolume is nil, want %v", got)
+	}
+}
+
+func TestDocker_InspectVolume_Failure(t *testing.T) {
+	// setup types
+	p := &pipeline.Build{
+		Version: "1",
+		ID:      "notfound",
+	}
+
+	// setup Docker
+	c, _ := NewMock()
+
+	// run test
+	got, err := c.InspectVolume(context.Background(), p)
+	if err == nil {
+		t.Errorf("InspectVolume should have returned err")
+	}
+
+	if got != nil {
+		t.Errorf("InspectVolume is %v, want nil", got)
+	}
+}
+
 func TestDocker_RemoveVolume_Success(t *testing.T) {
 
 	// setup Docker
