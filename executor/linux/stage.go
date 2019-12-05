@@ -17,11 +17,6 @@ import (
 
 // CreateStage prepares the stage for execution.
 func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
-	// TODO: remove hardcoded reference
-	if s.Name == "init" {
-		return nil
-	}
-
 	init := c.pipeline.Stages[0].Steps[0]
 	// TODO: make this cleaner
 	result, ok := c.stepLogs.Load(init.ID)

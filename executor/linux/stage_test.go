@@ -42,6 +42,18 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 		},
 		Stages: pipeline.StageSlice{
 			&pipeline.Stage{
+				Name: "init",
+				Steps: pipeline.ContainerSlice{
+					&pipeline.Container{
+						ID:     "__0_init_init",
+						Image:  "#init",
+						Name:   "init",
+						Number: 1,
+						Pull:   true,
+					},
+				},
+			},
+			&pipeline.Stage{
 				Name: "clone",
 				Steps: pipeline.ContainerSlice{
 					&pipeline.Container{
@@ -49,7 +61,7 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 						Environment: map[string]string{},
 						Image:       "target/vela-plugins/git:1",
 						Name:        "clone",
-						Number:      1,
+						Number:      2,
 						Pull:        true,
 					},
 				},
@@ -63,7 +75,7 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 						Environment: map[string]string{},
 						Image:       "alpine:latest",
 						Name:        "exit",
-						Number:      2,
+						Number:      3,
 						Pull:        true,
 						Ruleset: pipeline.Ruleset{
 							Continue: true,
@@ -81,7 +93,7 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 						Environment: map[string]string{},
 						Image:       "alpine:latest",
 						Name:        "echo",
-						Number:      1,
+						Number:      4,
 						Pull:        true,
 						Secrets: pipeline.StepSecretSlice{
 							&pipeline.StepSecret{
@@ -96,7 +108,12 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 	})
 
 	// run test
-	got := e.CreateStage(context.Background(), e.pipeline.Stages[0])
+	err := e.PlanStep(context.Background(), &pipeline.Container{ID: "__0_init_init"})
+	if err != nil {
+		t.Errorf("Unable to plan init step: %v", err)
+	}
+
+	got := e.CreateStage(context.Background(), e.pipeline.Stages[1])
 
 	if got != nil {
 		t.Errorf("CreateStage is %v, want nil", got)
