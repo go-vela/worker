@@ -48,22 +48,11 @@ func Router(r *http.Request) (*http.Response, error) {
 		}
 	}
 
-	// get image id
-	image := ""
-	if strings.HasPrefix(path, "/images/") && r.Method == http.MethodDelete {
-		id := strings.TrimPrefix(path, "/images/")
-		image = strings.Split(id, "/")[0]
-	}
-
 	switch {
 
-	// Container endpoints
-	case path == "/images/create":
-		return createImage(r)
-	case path == "/images/json":
-		return listImages(r)
-	case path == fmt.Sprintf("/images/%s", image):
-		return deleteImage(r, image)
+	// Image endpoints
+	case strings.HasPrefix(path, "/images/"):
+		return imageRoutes(r, path)
 
 	// Container endpoints
 	case path == "/containers/create":
