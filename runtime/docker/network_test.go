@@ -48,6 +48,48 @@ func TestDocker_CreateNetwork_Failure(t *testing.T) {
 	}
 }
 
+func TestDocker_InspectNetwork_Success(t *testing.T) {
+	// setup types
+	p := &pipeline.Build{
+		Version: "1",
+		ID:      "__0",
+	}
+
+	// setup Docker
+	c, _ := NewMock()
+
+	// run test
+	got, err := c.InspectNetwork(context.Background(), p)
+	if err != nil {
+		t.Errorf("InspectNetwork returned err: %v", err)
+	}
+
+	if got == nil {
+		t.Errorf("InspectNetwork is nil, want %v", got)
+	}
+}
+
+func TestDocker_InspectNetwork_Failure(t *testing.T) {
+	// setup types
+	p := &pipeline.Build{
+		Version: "1",
+		ID:      "notfound",
+	}
+
+	// setup Docker
+	c, _ := NewMock()
+
+	// run test
+	got, err := c.InspectNetwork(context.Background(), p)
+	if err == nil {
+		t.Errorf("InspectNetwork should have returned err")
+	}
+
+	if got != nil {
+		t.Errorf("InspectNetwork is %v, want nil", got)
+	}
+}
+
 func TestDocker_RemoveNetwork_Success(t *testing.T) {
 
 	// setup Docker
