@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
+	"github.com/go-vela/types/pipeline"
 
 	"github.com/sirupsen/logrus"
 )
@@ -65,12 +66,93 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to upload start state: %w", err)
 	}
 
+	// TODO: make this better
+	init := new(pipeline.Container)
+	if len(p.Steps) > 0 {
+		init = p.Steps[0]
+
+		c.logger.Infof("creating %s step", init.Name)
+		// create the step
+		err = c.CreateStep(ctx, init)
+		if err != nil {
+			return fmt.Errorf("unable to create %s step: %w", init.Name, err)
+		}
+
+		c.logger.Infof("planning %s step", init.Name)
+		// plan the step
+		err = c.PlanStep(ctx, init)
+		if err != nil {
+			return fmt.Errorf("unable to plan %s step: %w", init.Name, err)
+		}
+	}
+
+	// TODO: make this better
+	if len(p.Stages) > 0 {
+		init = p.Stages[0].Steps[0]
+
+		c.logger.Infof("creating %s step", init.Name)
+		// create the step
+		err = c.CreateStep(ctx, init)
+		if err != nil {
+			return fmt.Errorf("unable to create %s step: %w", init.Name, err)
+		}
+
+		c.logger.Infof("planning %s step", init.Name)
+		// plan the step
+		err = c.PlanStep(ctx, init)
+		if err != nil {
+			return fmt.Errorf("unable to plan %s step: %w", init.Name, err)
+		}
+	}
+
+	// TODO: make this cleaner
+	result, ok := c.steps.Load(init.ID)
+	if !ok {
+		return fmt.Errorf("unable to get %s step from client", init.Name)
+	}
+	s := result.(*library.Step)
+
+	result, ok = c.stepLogs.Load(init.ID)
+	if !ok {
+		return fmt.Errorf("unable to get %s step log from client", init.Name)
+	}
+	l := result.(*library.Log)
+
+	defer func() {
+		s.SetFinished(time.Now().UTC().Unix())
+		c.logger.Infof("uploading %s step state", init.Name)
+		// send API call to update the step
+		s, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
+		if err != nil {
+			c.logger.Errorf("unable to upload %s state: %w", init.Name, err)
+		}
+
+		c.logger.Infof("uploading %s step logs", init.Name)
+		// send API call to update the logs for the step
+		l, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), init.Number, l)
+		if err != nil {
+			c.logger.Errorf("unable to upload %s logs: %w", init.Name, err)
+		}
+	}()
+
 	c.logger.Info("creating network")
 	// create the runtime network for the pipeline
 	err = c.Runtime.CreateNetwork(ctx, p)
 	if err != nil {
 		return fmt.Errorf("unable to create network: %w", err)
 	}
+
+	// update the init log with progress
+	l.SetData(append(l.GetData(), []byte("$ Inspecting runtime network...\n")...))
+
+	// inspect the runtime network for the pipeline
+	network, err := c.Runtime.InspectNetwork(ctx, p)
+	if err != nil {
+		return fmt.Errorf("unable to inspect network: %w", err)
+	}
+
+	// update the init log with network info
+	l.SetData(append(l.GetData(), network...))
 
 	c.logger.Info("creating volume")
 	// create the runtime volume for the pipeline
@@ -79,38 +161,111 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to create volume: %w", err)
 	}
 
+	// update the init log with progress
+	l.SetData(append(l.GetData(), []byte("$ Inspecting runtime volume...\n")...))
+
+	// inspect the runtime volume for the pipeline
+	volume, err := c.Runtime.InspectVolume(ctx, p)
+	if err != nil {
+		return fmt.Errorf("unable to inspect volume: %w", err)
+	}
+
+	// update the init log with volume info
+	l.SetData(append(l.GetData(), volume...))
+
+	// update the init log with progress
+	l.SetData(append(l.GetData(), []byte("$ Pulling service images...\n")...))
+
 	// create the services for the pipeline
 	for _, s := range p.Services {
 		// TODO: remove this; but we need it for tests
 		s.Detach = true
 		s.Pull = true
 
+		// TODO: remove hardcoded reference
+		// update the init log with progress
+		l.SetData(
+			append(
+				l.GetData(),
+				[]byte(fmt.Sprintf("  $ docker image inspect %s\n", s.Image))...,
+			),
+		)
+
 		c.logger.Infof("creating %s service", s.Name)
 		// create the service
 		err = c.CreateService(ctx, s)
 		if err != nil {
-			return fmt.Errorf("unable to create service: %w", err)
+			return fmt.Errorf("unable to create %s service: %w", s.Name, err)
 		}
+
+		c.logger.Infof("inspecting %s service", s.Name)
+		// inspect the service image
+		image, err := c.Runtime.InspectImage(ctx, s)
+		if err != nil {
+			return fmt.Errorf("unable to inspect %s service: %w", s.Name, err)
+		}
+
+		// update the init log with service image info
+		l.SetData(append(l.GetData(), image...))
 	}
+
+	// update the init log with progress
+	l.SetData(
+		append(l.GetData(), []byte("$ Pulling stage images...\n")...),
+	)
 
 	// create the stages for the pipeline
 	for _, s := range p.Stages {
+		// TODO: remove hardcoded reference
+		if s.Name == "init" {
+			continue
+		}
+
 		c.logger.Infof("creating %s stage", s.Name)
 		// create the stage
 		err = c.CreateStage(ctx, s)
 		if err != nil {
-			return fmt.Errorf("unable to create stage: %w", err)
+			return fmt.Errorf("unable to create %s stage: %w", s.Name, err)
 		}
 	}
 
+	// update the init log with progress
+	l.SetData(
+		append(l.GetData(), []byte("$ Pulling step images...\n")...),
+	)
+
 	// create the steps for the pipeline
 	for _, s := range p.Steps {
+		// TODO: remove hardcoded reference
+		if s.Name == "init" {
+			continue
+		}
+
+		// TODO: make this not hardcoded
+		// update the init log with progress
+		l.SetData(
+			append(
+				l.GetData(),
+				[]byte(fmt.Sprintf("  $ docker image inspect %s\n", s.Image))...,
+			),
+		)
+
 		c.logger.Infof("creating %s step", s.Name)
 		// create the step
 		err = c.CreateStep(ctx, s)
 		if err != nil {
-			return fmt.Errorf("unable to create step: %w", err)
+			return fmt.Errorf("unable to create %s step: %w", s.Name, err)
 		}
+
+		c.logger.Infof("inspecting %s step", s.Name)
+		// inspect the step image
+		image, err := c.Runtime.InspectImage(ctx, s)
+		if err != nil {
+			return fmt.Errorf("unable to inspect %s step: %w", s.Name, err)
+		}
+
+		// update the init log with step image info
+		l.SetData(append(l.GetData(), image...))
 	}
 
 	b.SetStatus(constants.StatusSuccess)
@@ -164,6 +319,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// execute the steps for the pipeline
 	for _, s := range p.Steps {
+		// TODO: remove hardcoded reference
+		if s.Name == "init" {
+			continue
+		}
+
 		// check if the build status is successful
 		if !strings.EqualFold(b.GetStatus(), constants.StatusSuccess) {
 			// break out of loop to stop running steps
@@ -219,6 +379,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// iterate through each stage in the pipeline
 	for _, s := range p.Stages {
+		// TODO: remove hardcoded reference
+		if s.Name == "init" {
+			continue
+		}
+
 		// https://golang.org/doc/faq#closures_and_goroutines
 		stage := s
 
@@ -283,6 +448,11 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 	// destroy the steps for the pipeline
 	for _, s := range p.Steps {
+		// TODO: remove hardcoded reference
+		if s.Name == "init" {
+			continue
+		}
+
 		c.logger.Infof("destroying %s step", s.Name)
 		// destroy the step
 		err = c.DestroyStep(ctx, s)
@@ -293,6 +463,11 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 	// destroy the stages for the pipeline
 	for _, s := range p.Stages {
+		// TODO: remove hardcoded reference
+		if s.Name == "init" {
+			continue
+		}
+
 		c.logger.Infof("destroying %s stage", s.Name)
 		// destroy the stage
 		err = c.DestroyStage(ctx, s)

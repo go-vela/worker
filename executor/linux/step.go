@@ -30,13 +30,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		"step": ctn.Name,
 	})
 
-	logger.Debug("setting up container")
-	// setup the runtime container
-	err := c.Runtime.SetupContainer(ctx, ctn)
-	if err != nil {
-		return err
-	}
-
 	// inject default workspace
 	if len(ctn.Directory) == 0 {
 		ctn.Directory = fmt.Sprintf("/home/%s", c.pipeline.ID)
@@ -45,9 +38,21 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	ctn.Environment["BUILD_HOST"] = c.Hostname
 	ctn.Environment["VELA_HOST"] = c.Hostname
 	ctn.Environment["VELA_VERSION"] = version.Version.String()
-	// TODO: This should not be hardcoded
+	// TODO: remove hardcoded reference
 	ctn.Environment["VELA_RUNTIME"] = "docker"
 	ctn.Environment["VELA_DISTRIBUTION"] = "linux"
+
+	// TODO: remove hardcoded reference
+	if ctn.Name == "init" {
+		return nil
+	}
+
+	logger.Debug("setting up container")
+	// setup the runtime container
+	err := c.Runtime.SetupContainer(ctx, ctn)
+	if err != nil {
+		return err
+	}
 
 	logger.Debug("injecting secrets")
 	// inject secrets for step
@@ -137,6 +142,11 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 
 // ExecStep runs a step.
 func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
+	// TODO: remove hardcoded reference
+	if ctn.Name == "init" {
+		return nil
+	}
+
 	b := c.build
 	r := c.repo
 
@@ -234,6 +244,11 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 
 // DestroyStep cleans up steps after execution.
 func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error {
+	// TODO: remove hardcoded reference
+	if ctn.Name == "init" {
+		return nil
+	}
+
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
 		"step": ctn.Name,
