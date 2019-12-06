@@ -21,7 +21,7 @@ type Engine interface {
 	// the secrets for a given pipeline.
 	PullSecret(context.Context) error
 
-	// Step Engine interface functions
+	// Service Engine interface functions
 
 	// CreateService defines a function that
 	// configures the service for execution.
@@ -81,7 +81,7 @@ type Engine interface {
 	// With Engine interface functions
 
 	// WithBuild defines a function that sets
-	// the library build type in the Engine.
+	// the library Build type in the Engine.
 	WithBuild(*library.Build) Engine
 	// WithPipeline defines a function that sets
 	// the pipeline Build type in the Engine.
