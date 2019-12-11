@@ -112,9 +112,9 @@ func (c *client) WithUser(u *library.User) executor.Engine {
 func (c *client) GetBuild() (*library.Build, error) {
 	b := c.build
 
-	// check if there is a build running
+	// check if the build resource is available
 	if b == nil {
-		return nil, fmt.Errorf("executor not running build")
+		return nil, fmt.Errorf("build resource not found")
 	}
 
 	return b, nil
@@ -124,9 +124,9 @@ func (c *client) GetBuild() (*library.Build, error) {
 func (c *client) GetPipeline() (*pipeline.Build, error) {
 	p := c.pipeline
 
-	// check if there is a build running
+	// check if the pipeline resource is available
 	if p == nil {
-		return nil, fmt.Errorf("executor not running build")
+		return nil, fmt.Errorf("pipeline resource not found")
 	}
 
 	return p, nil
@@ -136,9 +136,9 @@ func (c *client) GetPipeline() (*pipeline.Build, error) {
 func (c *client) GetRepo() (*library.Repo, error) {
 	r := c.repo
 
-	// check if there is a build running
+	// check if the repo resource is available
 	if r == nil {
-		return nil, fmt.Errorf("executor not running build")
+		return nil, fmt.Errorf("repo resource not found")
 	}
 
 	return r, nil

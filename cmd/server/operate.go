@@ -70,11 +70,11 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 					return err
 				}
 
-				// executor the build on the executor
+				// execute the build on the executor
 				logger.Info("executing build")
 				err = executor.ExecBuild(ctx)
 				if err != nil {
-					logger.Errorf("unable to executor build: %v", err)
+					logger.Errorf("unable to execute build: %v", err)
 					return err
 				}
 

@@ -21,7 +21,7 @@ func GetRepo(c *gin.Context) {
 
 	repo, err := e.GetRepo()
 	if err != nil {
-		msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
+		msg := fmt.Errorf("unable to read repo: %w", err).Error()
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 		return
 	}

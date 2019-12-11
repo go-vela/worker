@@ -21,7 +21,7 @@ func GetPipeline(c *gin.Context) {
 
 	pipeline, err := e.GetPipeline()
 	if err != nil {
-		msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
+		msg := fmt.Errorf("unable to read pipeline: %w", err).Error()
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 		return
 	}

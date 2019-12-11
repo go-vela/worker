@@ -21,7 +21,7 @@ func GetBuild(c *gin.Context) {
 
 	build, err := e.GetBuild()
 	if err != nil {
-		msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
+		msg := fmt.Errorf("unable to read build: %w", err).Error()
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 		return
 	}
