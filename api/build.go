@@ -5,15 +5,28 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/go-vela/types"
+
 	"github.com/gin-gonic/gin"
+	"github.com/go-vela/worker/router/middleware/executor"
 )
 
 // GetBuild represents the API handler to capture the
 // build currently running on an executor.
 func GetBuild(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, "This endpoint is not yet implemented")
+	e := executor.Retrieve(c)
+
+	build, err := e.GetBuild()
+	if err != nil {
+		msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, build)
 }
 
 // KillBuild represents the API handler to kill a

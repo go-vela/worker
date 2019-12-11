@@ -517,3 +517,9 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 	return err
 }
+
+// KillBuild kills the current build in execution.
+// TODO: implement function with sending sigcalls to Docker
+func (c *client) KillBuild() (*library.Build, error) {
+	return nil, nil
+}

@@ -107,3 +107,39 @@ func (c *client) WithUser(u *library.User) executor.Engine {
 
 	return c
 }
+
+// GetBuild gets the current build in execution.
+func (c *client) GetBuild() (*library.Build, error) {
+	b := c.build
+
+	// check if there is a build running
+	if b == nil {
+		return nil, fmt.Errorf("executor not running build")
+	}
+
+	return b, nil
+}
+
+// GetPipeline gets the current pipeline in execution.
+func (c *client) GetPipeline() (*pipeline.Build, error) {
+	p := c.pipeline
+
+	// check if there is a build running
+	if p == nil {
+		return nil, fmt.Errorf("executor not running build")
+	}
+
+	return p, nil
+}
+
+// GetRepo gets the current repo in execution.
+func (c *client) GetRepo() (*library.Repo, error) {
+	r := c.repo
+
+	// check if there is a build running
+	if r == nil {
+		return nil, fmt.Errorf("executor not running build")
+	}
+
+	return r, nil
+}
