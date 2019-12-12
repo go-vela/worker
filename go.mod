@@ -15,7 +15,7 @@ require (
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/go-vela/mock v0.2.0-rc2
 	github.com/go-vela/sdk-go v0.2.0-rc2
-	github.com/go-vela/types v0.2.0-rc2
+	github.com/go-vela/types v0.2.0-rc2.0.20191211184240-0b756602e9d7
 	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/mux v1.7.3 // indirect

@@ -15,6 +15,21 @@ import (
 // with the different supported operating systems.
 type Engine interface {
 
+	// API interface functions
+
+	// GetBuild defines a function for the API
+	// that gets the current build in execution.
+	GetBuild() (*library.Build, error)
+	// GetRepo defines a function for the API
+	// that gets the current repo in execution.
+	GetRepo() (*library.Repo, error)
+	// GetPipeline defines a function for the API
+	// that gets the current pipeline in execution.
+	GetPipeline() (*pipeline.Build, error)
+	// KillBuild defines a function for the API
+	// that kills the current build in execution.
+	KillBuild() (*library.Build, error)
+
 	// Secrets Engine interface functions
 
 	// PullSecret defines a function that pulls

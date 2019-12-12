@@ -19,7 +19,7 @@ type Setter interface {
 
 // FromContext returns the executor Engine
 // associated with this context.
-func FromContext(c context.Context) Engine {
+func FromContext(c context.Context) map[int]Engine {
 	// get executor value from context
 	v := c.Value(key)
 	if v == nil {
@@ -27,7 +27,7 @@ func FromContext(c context.Context) Engine {
 	}
 
 	// cast executor value to expected Engine type
-	e, ok := v.(Engine)
+	e, ok := v.(map[int]Engine)
 	if !ok {
 		return nil
 	}
@@ -37,6 +37,6 @@ func FromContext(c context.Context) Engine {
 
 // ToContext adds the executor Engine to this
 // context if it supports the Setter interface.
-func ToContext(c Setter, e Engine) {
+func ToContext(c Setter, e map[int]Engine) {
 	c.Set(key, e)
 }

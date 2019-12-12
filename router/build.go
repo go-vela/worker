@@ -12,20 +12,14 @@ import (
 // buildHandlers is a function that extends the provided base router group
 // with the API handlers for build functionality.
 //
-// GET    	/api/v1/executors/:executor/builds/:build
-// PATCH    /api/v1/executors/:executor/builds/:build/kill
+// GET    	/api/v1/executors/:executor/build
+// DELETE    /api/v1/executors/:executor/build/kill
 func buildHandlers(base *gin.RouterGroup) {
 
 	// builds endpoints
-	builds := base.Group("/builds")
+	build := base.Group("/build")
 	{
-
-		// build endpoints
-		build := builds.Group("/:build")
-		{
-			build.GET("", api.GetBuild)
-			build.PATCH("/kill", api.KillBuild)
-		} // end of build endpoints
-
+		build.GET("", api.GetBuild)
+		build.DELETE("/kill", api.KillBuild)
 	} // end of builds endpoints
 }

@@ -76,13 +76,12 @@ func server(c *cli.Context) error {
 		if err != nil {
 			return err
 		}
-
 		executors[i] = executor
 	}
 
 	router := router.Load(
 		middleware.RequestVersion,
-		// TODO: middleware.Executor(executors),
+		middleware.Executor(executors),
 		middleware.Secret(c.String("vela-secret")),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
 	)

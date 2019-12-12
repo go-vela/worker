@@ -52,6 +52,8 @@ github.com/go-vela/sdk-go v0.2.0-rc2 h1:Zc4G/y0RHf3m7bK2CXZRkX3qEZV55LWfzOakdxvX
 github.com/go-vela/sdk-go v0.2.0-rc2/go.mod h1:ow3YFlsNj/I4kHlNE75tGDHBDh8k/qmameS5ADtLLpU=
 github.com/go-vela/types v0.2.0-rc2 h1:oAMCz9iRFXAOtHNALed2zpTRzU5+N8bl+YhEJIedPzo=
 github.com/go-vela/types v0.2.0-rc2/go.mod h1:LNDrn7/nV38H0HmRfYv6YfPNb881R5NRE1YKXeVqpF4=
+github.com/go-vela/types v0.2.0-rc2.0.20191211184240-0b756602e9d7 h1:5rma5aIapqg9hVN+ZUwjK1+OuigozsX1uL6zUnZgL+8=
+github.com/go-vela/types v0.2.0-rc2.0.20191211184240-0b756602e9d7/go.mod h1:LNDrn7/nV38H0HmRfYv6YfPNb881R5NRE1YKXeVqpF4=
 github.com/gogo/protobuf v1.1.1 h1:72R+M5VuhED/KujmZVcIquuo8mBgX4oVda//DQb3PXo=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.2.0 h1:xU6/SpYbvkNYiptHJYEDRseDLvYE7wSqhYYNy0QSUzI=

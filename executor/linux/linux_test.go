@@ -101,3 +101,72 @@ func TestLinux_WithUser(t *testing.T) {
 		t.Errorf("WithBuild is %v, want %v", got, want)
 	}
 }
+
+func TestLinux_GetBuild(t *testing.T) {
+	// setup types
+	vela, _ := vela.NewClient("http://localhost:8080", nil)
+	r, _ := docker.NewMock()
+
+	id := int64(1)
+	b := &library.Build{ID: &id}
+	want := b
+
+	executor, _ := New(vela, r)
+	executor.WithBuild(b)
+
+	// run test
+	got, err := executor.GetBuild()
+	if err != nil {
+		t.Errorf("Unable to get build from compiler: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("GetBuild is %v, want %v", got, want)
+	}
+}
+
+func TestLinux_GetPipeline(t *testing.T) {
+	// setup types
+	vela, _ := vela.NewClient("http://localhost:8080", nil)
+	r, _ := docker.NewMock()
+
+	id := "1"
+	p := &pipeline.Build{ID: id}
+	want := p
+
+	executor, _ := New(vela, r)
+	executor.WithPipeline(p)
+
+	// run test
+	got, err := executor.GetPipeline()
+	if err != nil {
+		t.Errorf("Unable to get pipeline from compiler: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("GetPipeline is %v, want %v", got, want)
+	}
+}
+
+func TestLinux_GetRepo(t *testing.T) {
+	// setup types
+	vela, _ := vela.NewClient("http://localhost:8080", nil)
+	r, _ := docker.NewMock()
+
+	id := int64(1)
+	repo := &library.Repo{ID: &id}
+	want := repo
+
+	executor, _ := New(vela, r)
+	executor.WithRepo(repo)
+
+	// run test
+	got, err := executor.GetRepo()
+	if err != nil {
+		t.Errorf("Unable to get repo from compiler: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("GetPipeline is %v, want %v", got, want)
+	}
+}
