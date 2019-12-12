@@ -5,19 +5,97 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-vela/types"
+	"github.com/go-vela/types/library"
+	"github.com/go-vela/worker/executor"
+	exec "github.com/go-vela/worker/router/middleware/executor"
 )
 
 // GetExecutor represents the API handler to capture the
 // executor currently running on a worker.
 func GetExecutor(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, "This endpoint is not yet implemented")
+	e := exec.Retrieve(c)
+	executor := &library.Executor{}
+	var err error
+
+	// TODO: Add this information from the context or helpers on executor
+	// tmp.SetHost(executor.GetHost())
+	executor.SetRuntime("docker")
+	executor.SetDistribution("linux")
+
+	// get build on executor
+	executor.Build, err = e.GetBuild()
+	if err != nil {
+		msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
+	// get pipeline on executor
+	executor.Pipeline, err = e.GetPipeline()
+	if err != nil {
+		msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
+	// get repo on executor
+	executor.Repo, err = e.GetRepo()
+	if err != nil {
+		msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, executor)
 }
 
 // GetExecutors represents the API handler to capture the
 // executors currently running on a worker.
 func GetExecutors(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, "This endpoint is not yet implemented")
+	e := executor.FromContext(c)
+	executors := []*library.Executor{}
+	var err error
+
+	for _, executor := range e {
+		// create a temporary executor to append results to response
+		tmp := &library.Executor{}
+
+		// TODO: Add this information from the context or helpers on executor
+		// tmp.SetHost(executor.GetHost())
+		tmp.SetRuntime("docker")
+		tmp.SetDistribution("linux")
+
+		// get build on executor
+		tmp.Build, err = executor.GetBuild()
+		if err != nil {
+			msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			return
+		}
+
+		// get pipeline on executor
+		tmp.Pipeline, err = executor.GetPipeline()
+		if err != nil {
+			msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			return
+		}
+
+		// get repo on executor
+		tmp.Repo, err = executor.GetRepo()
+		if err != nil {
+			msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			return
+		}
+
+		executors = append(executors, tmp)
+	}
+
+	c.JSON(http.StatusOK, executors)
 }
