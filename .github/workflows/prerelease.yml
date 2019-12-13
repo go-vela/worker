@@ -1,0 +1,37 @@
+# name of the action
+name: prerelease
+
+# trigger on push events with `v*` in tag
+on:
+  push:
+    tags:
+      - 'v*'
+
+# pipeline to execute
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    container:
+      image: golang:latest
+    steps:
+    - name: clone
+      uses: actions/checkout@v1
+
+    - name: build
+      env:
+        GOOS: linux
+        CGO_ENABLED: '0'
+      run: |
+        go build -a \
+          -ldflags '-s -w -extldflags "-static"' \
+          -o release/vela-worker \
+          github.com/go-vela/worker/cmd/server
+
+    - name: publish
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: target/vela-worker
+        cache: true
+        tag_names: true
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
