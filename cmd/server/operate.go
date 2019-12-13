@@ -6,6 +6,9 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-vela/worker/executor"
@@ -54,6 +57,23 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 				ctx, timeout := context.WithTimeout(ctx, t)
 				defer timeout()
 
+				// add signals to the parent context so
+				// users can cancel builds
+				sigchan := make(chan os.Signal, 1)
+				ctx, sig := context.WithCancel(ctx)
+				signal.Notify(sigchan, syscall.SIGTERM)
+				defer func() {
+					signal.Stop(sigchan)
+					sig()
+				}()
+				go func() {
+					select {
+					case <-sigchan:
+						sig()
+					case <-ctx.Done():
+					}
+				}()
+
 				logger.Info("pulling secrets")
 				// pull secrets for the build on the executor
 				err = executor.PullSecret(ctx)
@@ -70,19 +90,20 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 					return err
 				}
 
+				defer func() {
+					// destroying the build on the executor
+					logger.Info("destroying build")
+					err = executor.DestroyBuild(context.Background())
+					if err != nil {
+						logger.Errorf("unable to destroy build: %v", err)
+					}
+				}()
+
 				// execute the build on the executor
 				logger.Info("executing build")
 				err = executor.ExecBuild(ctx)
 				if err != nil {
 					logger.Errorf("unable to execute build: %v", err)
-					return err
-				}
-
-				// destroy the build on the executor
-				logger.Info("destroying build")
-				err = executor.DestroyBuild(ctx)
-				if err != nil {
-					logger.Errorf("unable to destroy build: %v", err)
 					return err
 				}
 

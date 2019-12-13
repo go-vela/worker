@@ -35,5 +35,21 @@ func GetBuild(c *gin.Context) {
 // This function performs a hard cancellation of a build on worker.
 // Any build running during this time will immediately be stopped.
 func KillBuild(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, "This endpoint is not yet implemented")
+	e := executor.Retrieve(c)
+
+	repo, err := e.GetRepo()
+	if err != nil {
+		msg := fmt.Errorf("unable to repo build: %w", err).Error()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
+	build, err := e.KillBuild()
+	if err != nil {
+		msg := fmt.Errorf("unable to kill build: %w", err).Error()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, fmt.Sprintf("killing build %s/%d", repo.GetFullName(), build.GetNumber()))
 }
