@@ -82,14 +82,6 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 					return err
 				}
 
-				// create the build on the executor
-				logger.Info("creating build")
-				err = executor.CreateBuild(ctx)
-				if err != nil {
-					logger.Errorf("unable to create build: %v", err)
-					return err
-				}
-
 				defer func() {
 					// destroying the build on the executor
 					logger.Info("destroying build")
@@ -98,6 +90,14 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 						logger.Errorf("unable to destroy build: %v", err)
 					}
 				}()
+
+				// create the build on the executor
+				logger.Info("creating build")
+				err = executor.CreateBuild(ctx)
+				if err != nil {
+					logger.Errorf("unable to create build: %v", err)
+					return err
+				}
 
 				// execute the build on the executor
 				logger.Info("executing build")
