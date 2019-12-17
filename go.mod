@@ -14,18 +14,15 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/drone/envsubst v1.0.2
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-redis/redis v6.15.6+incompatible
-	github.com/go-vela/mock v0.2.0-rc2
-	github.com/go-vela/sdk-go v0.2.0-rc2
-	github.com/go-vela/types v0.2.0-rc2.0.20191211184240-0b756602e9d7
+	github.com/go-vela/mock v0.2.0-rc3
+	github.com/go-vela/sdk-go v0.2.0-rc3
+	github.com/go-vela/types v0.2.0-rc3
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/mux v1.7.3 // indirect
-	github.com/json-iterator/go v1.1.8 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.10.3 // indirect
@@ -44,8 +41,6 @@ require (
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f // indirect
 	google.golang.org/grpc v1.25.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/go-playground/validator.v9 v9.30.2 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
-	gopkg.in/yaml.v2 v2.2.7 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 )
