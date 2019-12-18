@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/go-vela/worker?status.svg)](https://godoc.org/github.com/go-vela/worker)
 [![Go Report Card](https://goreportcard.com/badge/go-vela/worker)](https://goreportcard.com/report/go-vela/worker)
-[![Coverage Status](https://coveralls.io/repos/github/go-vela/worker/badge.svg?branch=master)](https://coveralls.io/github/go-vela/worker?branch=master)
+[![codecov](https://codecov.io/gh/go-vela/worker/branch/master/graph/badge.svg)](https://codecov.io/gh/go-vela/worker)
 
 > Vela is in active development and is a pre-release product. Please use at your own risk in production.
 >
