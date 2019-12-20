@@ -21,6 +21,7 @@ func TestExecutor_Retrieve(t *testing.T) {
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	context, _ := gin.CreateTestContext(nil)
 	ToContext(context, want)
 
@@ -39,8 +40,9 @@ func TestExecutor_Establish(t *testing.T) {
 	got := want[0]
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
 
@@ -67,15 +69,15 @@ func TestExecutor_Establish(t *testing.T) {
 
 func TestExecutor_Establish_NoExecutor(t *testing.T) {
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
 
 	// setup mock server
 	engine.Use(Establish())
 	engine.GET("/executors/:executor", func(c *gin.Context) {
-
 		c.Status(http.StatusOK)
 	})
 

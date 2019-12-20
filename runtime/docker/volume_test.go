@@ -12,7 +12,6 @@ import (
 )
 
 func TestDocker_CreateVolume_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -33,7 +32,6 @@ func TestDocker_CreateVolume_Success(t *testing.T) {
 // TODO: rethink how the mock is being done in the
 // router switch. This current gives false positives
 func TestDocker_CreateVolume_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -91,7 +89,6 @@ func TestDocker_InspectVolume_Failure(t *testing.T) {
 }
 
 func TestDocker_RemoveVolume_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -110,7 +107,6 @@ func TestDocker_RemoveVolume_Success(t *testing.T) {
 }
 
 func TestDocker_RemoveVolume_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 

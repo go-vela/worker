@@ -15,7 +15,6 @@ import (
 // GET    	/api/v1/executors/:executor/build
 // DELETE    /api/v1/executors/:executor/build/kill
 func buildHandlers(base *gin.RouterGroup) {
-
 	// builds endpoints
 	build := base.Group("/build")
 	{

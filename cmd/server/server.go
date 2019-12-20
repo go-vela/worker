@@ -71,11 +71,13 @@ func server(c *cli.Context) error {
 
 	// create the executor clients
 	executors := make(map[int]executor.Engine)
+
 	for i := 0; i < c.Int("executor-threads"); i++ {
 		executor, err := setupExecutor(c, vela, runtime)
 		if err != nil {
 			return err
 		}
+
 		executors[i] = executor
 	}
 
@@ -119,5 +121,6 @@ func server(c *cli.Context) error {
 
 	// Wait for stuff and watch for errors
 	tomb.Wait()
+
 	return tomb.Err()
 }

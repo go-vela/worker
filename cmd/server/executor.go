@@ -22,6 +22,7 @@ import (
 // helper function to setup the queue from the CLI arguments.
 func setupExecutor(c *cli.Context, client *vela.Client, runtime runtime.Engine) (executor.Engine, error) {
 	logrus.Debug("Creating executor clients from CLI configuration")
+
 	switch c.String("executor-driver") {
 	case constants.DriverDarwin:
 		return setupDarwin(c, client, runtime)

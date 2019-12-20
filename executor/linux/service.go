@@ -19,7 +19,6 @@ import (
 
 // CreateService prepares the service for execution.
 func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) error {
-
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
 		"service": ctn.Name,
@@ -38,6 +37,7 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 // PlanService defines a function that prepares the service for execution.
 func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error {
 	var err error
+
 	b := c.build
 	r := c.repo
 
@@ -59,6 +59,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	if err != nil {
 		return err
 	}
+
 	s.SetStatus(constants.StatusSuccess)
 
 	// add a service to a map
@@ -87,6 +88,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	if !ok {
 		return fmt.Errorf("unable to get service log from client")
 	}
+
 	l := result.(*library.Log)
 
 	// update engine logger with extra metadata
