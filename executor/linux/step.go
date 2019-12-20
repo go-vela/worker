@@ -74,6 +74,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		if strings.Contains(env, "\n") {
 			env = fmt.Sprintf("%q", env)
 		}
+
 		return env
 	}
 
@@ -97,6 +98,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 // PlanStep defines a function that prepares the step for execution.
 func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	var err error
+
 	b := c.build
 	r := c.repo
 
@@ -121,6 +123,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	if err != nil {
 		return err
 	}
+
 	s.SetStatus(constants.StatusSuccess)
 
 	// add a step to a map
@@ -154,6 +157,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	if !ok {
 		return fmt.Errorf("unable to get step log from client")
 	}
+
 	l := result.(*library.Log)
 
 	// update engine logger with extra metadata

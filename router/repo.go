@@ -14,7 +14,6 @@ import (
 //
 // GET    	/api/v1/executors/:executor/repo
 func repoHandlers(base *gin.RouterGroup) {
-
 	// repos endpoints
 	repo := base.Group("/repo")
 	{

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -71,11 +72,13 @@ func server(c *cli.Context) error {
 
 	// create the executor clients
 	executors := make(map[int]executor.Engine)
+
 	for i := 0; i < c.Int("executor-threads"); i++ {
 		executor, err := setupExecutor(c, vela, runtime)
 		if err != nil {
 			return err
 		}
+
 		executors[i] = executor
 	}
 
@@ -112,12 +115,13 @@ func server(c *cli.Context) error {
 			select {
 			case <-tomb.Dying():
 				logrus.Info("Stopping HTTP server...")
-				return srv.Shutdown(nil)
+				return srv.Shutdown(context.Background())
 			}
 		}
 	})
 
 	// Wait for stuff and watch for errors
 	tomb.Wait()
+
 	return tomb.Err()
 }

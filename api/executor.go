@@ -18,9 +18,10 @@ import (
 // GetExecutor represents the API handler to capture the
 // executor currently running on a worker.
 func GetExecutor(c *gin.Context) {
+	var err error
+
 	e := exec.Retrieve(c)
 	executor := &library.Executor{}
-	var err error
 
 	// TODO: Add this information from the context or helpers on executor
 	// tmp.SetHost(executor.GetHost())
@@ -31,7 +32,9 @@ func GetExecutor(c *gin.Context) {
 	executor.Build, err = e.GetBuild()
 	if err != nil {
 		msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
+
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 		return
 	}
 
@@ -39,7 +42,9 @@ func GetExecutor(c *gin.Context) {
 	executor.Pipeline, err = e.GetPipeline()
 	if err != nil {
 		msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
+
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 		return
 	}
 
@@ -47,7 +52,9 @@ func GetExecutor(c *gin.Context) {
 	executor.Repo, err = e.GetRepo()
 	if err != nil {
 		msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
+
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 		return
 	}
 
@@ -57,9 +64,10 @@ func GetExecutor(c *gin.Context) {
 // GetExecutors represents the API handler to capture the
 // executors currently running on a worker.
 func GetExecutors(c *gin.Context) {
+	var err error
+
 	e := executor.FromContext(c)
 	executors := []*library.Executor{}
-	var err error
 
 	for _, executor := range e {
 		// create a temporary executor to append results to response
@@ -74,7 +82,9 @@ func GetExecutors(c *gin.Context) {
 		tmp.Build, err = executor.GetBuild()
 		if err != nil {
 			msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
+
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 			return
 		}
 
@@ -82,7 +92,9 @@ func GetExecutors(c *gin.Context) {
 		tmp.Pipeline, err = executor.GetPipeline()
 		if err != nil {
 			msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
+
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 			return
 		}
 
@@ -90,7 +102,9 @@ func GetExecutors(c *gin.Context) {
 		tmp.Repo, err = executor.GetRepo()
 		if err != nil {
 			msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
+
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 			return
 		}
 

@@ -29,8 +29,9 @@ func TestPerm_MustServer_success(t *testing.T) {
 	u.SetAdmin(true)
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/server/users", nil)
 	context.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
@@ -42,6 +43,7 @@ func TestPerm_MustServer_success(t *testing.T) {
 	engine.GET("/server/users", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})
+
 	s1 := httptest.NewServer(engine)
 	defer s1.Close()
 
@@ -65,8 +67,9 @@ func TestPerm_MustServer_failure(t *testing.T) {
 	u.SetAdmin(true)
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/server/users", nil)
 	context.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
@@ -78,6 +81,7 @@ func TestPerm_MustServer_failure(t *testing.T) {
 	engine.GET("/server/users", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})
+
 	s1 := httptest.NewServer(engine)
 	defer s1.Close()
 

@@ -20,7 +20,7 @@ type client struct {
 // integrates with a Docker runtime.
 func New() (*client, error) {
 	// create Docker client from environment
-	r, err := docker.NewEnvClient()
+	r, err := docker.NewClientWithOpts(docker.FromEnv)
 	if err != nil {
 		return nil, err
 	}

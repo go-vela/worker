@@ -14,7 +14,6 @@ import (
 //
 // GET    	/api/v1/executors/:executor/pipeline
 func pipelineHandlers(base *gin.RouterGroup) {
-
 	// pipelines endpoints
 	pipeline := base.Group("/pipeline")
 	{
