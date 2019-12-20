@@ -176,7 +176,7 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 
 		// secret is invalid
 		if len(parts) != 3 {
-			return nil, fmt.Errorf("Path %s for %s secret %s is invalid", s.Key, s.Type, s.Name)
+			return nil, fmt.Errorf("path %s for %s secret %s is invalid", s.Key, s.Type, s.Name)
 		}
 
 		// check if the org provided matches what we expect
