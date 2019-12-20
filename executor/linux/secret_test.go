@@ -19,12 +19,12 @@ import (
 )
 
 func TestExecutor_PullSecret_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	vela, _ := vela.NewClient(s.URL, nil)
 
@@ -100,7 +100,6 @@ func TestExecutor_PullSecret_Success(t *testing.T) {
 }
 
 func TestLinux_Secret_injectSecret(t *testing.T) {
-
 	// name and value of secret
 	v := "foo"
 

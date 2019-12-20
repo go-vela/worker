@@ -23,6 +23,7 @@ import (
 // CreateBuild prepares the build for execution.
 func (c *client) CreateBuild(ctx context.Context) error {
 	var err error
+
 	b := c.build
 	p := c.pipeline
 	r := c.repo
@@ -47,7 +48,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			// send API call to update the build
 			_, _, err = c.Vela.Build.Update(r.GetOrg(), r.GetName(), b)
 			if err != nil {
-				c.logger.Errorf("unable to upload errored state: %w", err)
+				c.logger.Errorf("unable to upload errored state: %v", err)
 			}
 		}
 	}()
@@ -111,12 +112,14 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	if !ok {
 		return fmt.Errorf("unable to get %s step from client", init.Name)
 	}
+
 	s := result.(*library.Step)
 
 	result, ok = c.stepLogs.Load(init.ID)
 	if !ok {
 		return fmt.Errorf("unable to get %s step log from client", init.Name)
 	}
+
 	l := result.(*library.Log)
 
 	defer func() {
@@ -125,14 +128,14 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		// send API call to update the step
 		s, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
 		if err != nil {
-			c.logger.Errorf("unable to upload %s state: %w", init.Name, err)
+			c.logger.Errorf("unable to upload %s state: %v", init.Name, err)
 		}
 
 		c.logger.Infof("uploading %s step logs", init.Name)
 		// send API call to update the logs for the step
 		l, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), init.Number, l)
 		if err != nil {
-			c.logger.Errorf("unable to upload %s logs: %w", init.Name, err)
+			c.logger.Errorf("unable to upload %s logs: %v", init.Name, err)
 		}
 	}()
 
@@ -278,6 +281,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 // ExecBuild runs a pipeline for a build.
 func (c *client) ExecBuild(ctx context.Context) error {
 	var err error
+
 	b := c.build
 	p := c.pipeline
 	r := c.repo
@@ -349,6 +353,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		if !ok {
 			return fmt.Errorf("unable to get step from client")
 		}
+
 		cStep := result.(*library.Step)
 
 		// check the step exit code
@@ -424,6 +429,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 // DestroyBuild cleans up the build after execution.
 func (c *client) DestroyBuild(ctx context.Context) error {
 	var err error
+
 	b := c.build
 	p := c.pipeline
 	r := c.repo
@@ -493,9 +499,11 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		if !ok {
 			return fmt.Errorf("unable to get service from client")
 		}
+
 		cService := result.(*library.Service)
 		cService.SetExitCode(s.ExitCode)
 		cService.SetFinished(time.Now().UTC().Unix())
+
 		_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), cService)
 		if err != nil {
 			c.logger.Errorf("unable to upload service status: %w", err)

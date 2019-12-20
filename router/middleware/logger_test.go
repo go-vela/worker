@@ -25,12 +25,14 @@ func TestMiddleware_Logger(t *testing.T) {
 	payload, _ := json.Marshal(`{"foo": "bar"}`)
 	wantLevel := logrus.InfoLevel
 	wantMessage := ""
+
 	logger, hook := test.NewNullLogger()
 	defer hook.Reset()
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodPost, "/foobar", bytes.NewBuffer(payload))
 
@@ -64,12 +66,14 @@ func TestMiddleware_Logger_Error(t *testing.T) {
 	// setup types
 	wantLevel := logrus.ErrorLevel
 	wantMessage := "Error #01: test error\n"
+
 	logger, hook := test.NewNullLogger()
 	defer hook.Reset()
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/foobar", nil)
 

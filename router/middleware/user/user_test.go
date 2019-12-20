@@ -23,6 +23,7 @@ func TestUser_Retrieve(t *testing.T) {
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	context, _ := gin.CreateTestContext(nil)
 	ToContext(context, want)
 
@@ -44,8 +45,9 @@ func TestUser_Establish(t *testing.T) {
 	want.SetAdmin(true)
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/users/vela-server", nil)
 	context.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
@@ -58,6 +60,7 @@ func TestUser_Establish(t *testing.T) {
 
 		c.Status(http.StatusOK)
 	})
+
 	s1 := httptest.NewServer(engine)
 	defer s1.Close()
 
@@ -75,8 +78,9 @@ func TestUser_Establish(t *testing.T) {
 
 func TestUser_Establish_NoToken(t *testing.T) {
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/users/foo", nil)
 
@@ -103,8 +107,9 @@ func TestUser_Establish_SecretValid(t *testing.T) {
 	got := new(library.User)
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/users/vela-server", nil)
 	context.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
@@ -117,6 +122,7 @@ func TestUser_Establish_SecretValid(t *testing.T) {
 
 		c.Status(http.StatusOK)
 	})
+
 	s := httptest.NewServer(engine)
 	defer s.Close()
 
@@ -133,13 +139,13 @@ func TestUser_Establish_SecretValid(t *testing.T) {
 }
 
 func TestUser_Establish_NoAuthorizeUser(t *testing.T) {
-
 	// setup types
 	secret := "superSecret"
 
 	// setup context
-	resp := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
+
+	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
 	context.Request, _ = http.NewRequest(http.MethodGet, "/users/foo?access_token=bar", nil)
 

@@ -18,12 +18,12 @@ import (
 )
 
 func TestExecutor_CreateService_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 
@@ -52,12 +52,12 @@ func TestExecutor_CreateService_Success(t *testing.T) {
 }
 
 func TestExecutor_PlanService_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 
@@ -128,12 +128,12 @@ func TestExecutor_PlanService_Success(t *testing.T) {
 }
 
 func TestExecutor_ExecService_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 
@@ -205,12 +205,12 @@ func TestExecutor_ExecService_Success(t *testing.T) {
 }
 
 func TestExecutor_DestroyService_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 

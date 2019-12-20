@@ -23,6 +23,7 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	if !ok {
 		return fmt.Errorf("unable to get init step log from client")
 	}
+
 	l := result.(*library.Log)
 
 	// update engine logger with extra metadata
@@ -40,7 +41,6 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 
 	// create the steps for the stage
 	for _, step := range s.Steps {
-
 		// TODO: make this not hardcoded
 		// update the init log with progress
 		l.SetData(
@@ -106,6 +106,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 				logger.WithError(err).Errorf("%s stage produced error", needs)
 				return err
 			}
+
 			continue
 		}
 	}
@@ -134,6 +135,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 		if !ok {
 			return fmt.Errorf("unable to get step from client")
 		}
+
 		cStep := result.(*library.Step)
 
 		// check the step exit code

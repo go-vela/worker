@@ -20,11 +20,9 @@ import (
 // GET    /api/v1/executors/:executor/pipeline
 // GET    /api/v1/executors/:executor/repo
 func executorHandlers(base *gin.RouterGroup) {
-
 	// executors endpoints
 	executors := base.Group("/executors")
 	{
-
 		executors.GET("", api.GetExecutors)
 
 		// exector endpoints
@@ -40,8 +38,6 @@ func executorHandlers(base *gin.RouterGroup) {
 
 			// build endpoints
 			repoHandlers(executor)
-
 		} // end of executor endpoints
-
 	} // end of executors endpoints
 }

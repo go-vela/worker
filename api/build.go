@@ -22,7 +22,9 @@ func GetBuild(c *gin.Context) {
 	build, err := e.GetBuild()
 	if err != nil {
 		msg := fmt.Errorf("unable to read build: %w", err).Error()
+
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 		return
 	}
 
@@ -40,14 +42,18 @@ func KillBuild(c *gin.Context) {
 	repo, err := e.GetRepo()
 	if err != nil {
 		msg := fmt.Errorf("unable to repo build: %w", err).Error()
+
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 		return
 	}
 
 	build, err := e.KillBuild()
 	if err != nil {
 		msg := fmt.Errorf("unable to kill build: %w", err).Error()
+
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 		return
 	}
 

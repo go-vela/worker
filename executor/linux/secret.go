@@ -19,6 +19,7 @@ import (
 // PullSecret defines a function that pulls the secrets for a given pipeline.
 func (c *client) PullSecret(ctx context.Context) error {
 	var err error
+
 	p := c.pipeline
 
 	secrets := make(map[string]*library.Secret)
@@ -67,6 +68,7 @@ func (c *client) PullSecret(ctx context.Context) error {
 
 	// overwrite the engine secret map
 	c.Secrets = secrets
+
 	return nil
 }
 
@@ -106,6 +108,7 @@ func (c *client) getOrg(s *pipeline.Secret) (*library.Secret, error) {
 
 	// overwrite the secret value
 	s.Value = secret.GetValue()
+
 	return secret, nil
 }
 
@@ -151,6 +154,7 @@ func (c *client) getRepo(s *pipeline.Secret) (*library.Secret, error) {
 
 	// overwrite the secret value
 	s.Value = secret.GetValue()
+
 	return secret, nil
 }
 
@@ -160,8 +164,9 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 	c.logger.Tracef("pulling %s %s secret %s", s.Engine, s.Type, s.Name)
 
 	// variables necessary for secret
-	org := c.repo.GetOrg()
 	var team string
+
+	org := c.repo.GetOrg()
 	path := s.Key
 
 	// check if the full path was provided
@@ -171,7 +176,7 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 
 		// secret is invalid
 		if len(parts) != 3 {
-			return nil, fmt.Errorf("Path %s for %s secret %s is invalid", s.Key, s.Type, s.Name)
+			return nil, fmt.Errorf("path %s for %s secret %s is invalid", s.Key, s.Type, s.Name)
 		}
 
 		// check if the org provided matches what we expect
@@ -196,13 +201,13 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 
 	// overwrite the secret value
 	s.Value = secret.GetValue()
+
 	return secret, nil
 }
 
 // helper function to check secret whitelist before setting value
 // TODO: Evaluate pulling this into a "bool" types function for injecting
 func injectSecrets(ctn *pipeline.Container, m map[string]*library.Secret) error {
-
 	// inject secrets for step
 	for _, secret := range ctn.Secrets {
 		logrus.Tracef("looking up secret %s from pipeline secrets", secret.Source)

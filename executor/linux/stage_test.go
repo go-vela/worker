@@ -18,12 +18,12 @@ import (
 )
 
 func TestExecutor_CreateStage_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 
@@ -121,7 +121,6 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 }
 
 func TestExecutor_ExecStage_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 	stageMap := make(map[string]chan error)
@@ -131,6 +130,7 @@ func TestExecutor_ExecStage_Success(t *testing.T) {
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 
@@ -253,12 +253,12 @@ func TestExecutor_ExecStage_Success(t *testing.T) {
 }
 
 func TestExecutor_DestroyStage_Success(t *testing.T) {
-
 	// setup
 	r, _ := docker.NewMock()
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 

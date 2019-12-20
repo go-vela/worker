@@ -26,7 +26,7 @@ func setupRuntime(c *cli.Context) (runtime.Engine, error) {
 	case constants.DriverKubernetes:
 		return setupKubernetes(c)
 	default:
-		return nil, fmt.Errorf("Unrecognized runtime driver: %s", c.String("runtime-driver"))
+		return nil, fmt.Errorf("invalid runtime driver: %s", c.String("runtime-driver"))
 	}
 }
 
@@ -40,5 +40,5 @@ func setupDocker(c *cli.Context) (runtime.Engine, error) {
 func setupKubernetes(c *cli.Context) (runtime.Engine, error) {
 	logrus.Tracef("Creating %s runtime client from CLI configuration", constants.DriverKubernetes)
 	// return kubernetes.New()
-	return nil, fmt.Errorf("Unsupported runtime driver: %s", constants.DriverKubernetes)
+	return nil, fmt.Errorf("unsupported runtime driver: %s", constants.DriverKubernetes)
 }

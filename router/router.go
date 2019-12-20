@@ -38,7 +38,6 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 		// executor endpoints
 		executorHandlers(baseAPI)
 		baseAPI.POST("/shutdown", api.Shutdown)
-
 	} // end of api
 
 	return r

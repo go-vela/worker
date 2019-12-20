@@ -12,7 +12,6 @@ import (
 )
 
 func TestDocker_InspectContainer_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -32,7 +31,6 @@ func TestDocker_InspectContainer_Success(t *testing.T) {
 }
 
 func TestDocker_InspectContainer_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -45,7 +43,6 @@ func TestDocker_InspectContainer_Failure(t *testing.T) {
 }
 
 func TestDocker_RemoveContainer_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -65,7 +62,6 @@ func TestDocker_RemoveContainer_Success(t *testing.T) {
 }
 
 func TestDocker_RemoveContainer_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -78,7 +74,6 @@ func TestDocker_RemoveContainer_Failure(t *testing.T) {
 }
 
 func TestDocker_RunContainer_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -105,7 +100,6 @@ func TestDocker_RunContainer_Success(t *testing.T) {
 // TODO: rethink how the mock is being done in the
 // router switch. This current gives false positives
 func TestDocker_RunContainer_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -121,7 +115,6 @@ func TestDocker_RunContainer_Failure(t *testing.T) {
 }
 
 func TestDocker_SetupContainer_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -138,7 +131,6 @@ func TestDocker_SetupContainer_Success(t *testing.T) {
 }
 
 func TestDocker_SetupContainer_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -151,7 +143,6 @@ func TestDocker_SetupContainer_Failure(t *testing.T) {
 }
 
 func TestDocker_TailContainer_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -173,7 +164,6 @@ func TestDocker_TailContainer_Success(t *testing.T) {
 // TODO: rethink how the mock is being done in the
 // router switch. This current gives false positives
 func TestDocker_TailContainer_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -187,7 +177,6 @@ func TestDocker_TailContainer_Failure(t *testing.T) {
 }
 
 func TestDocker_WaitContainer_Success(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 
@@ -207,7 +196,6 @@ func TestDocker_WaitContainer_Success(t *testing.T) {
 }
 
 func TestDocker_WaitContainer_Failure(t *testing.T) {
-
 	// setup Docker
 	c, _ := NewMock()
 

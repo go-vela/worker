@@ -22,6 +22,7 @@ import (
 // helper function to setup the queue from the CLI arguments.
 func setupExecutor(c *cli.Context, client *vela.Client, runtime runtime.Engine) (executor.Engine, error) {
 	logrus.Debug("Creating executor clients from CLI configuration")
+
 	switch c.String("executor-driver") {
 	case constants.DriverDarwin:
 		return setupDarwin(c, client, runtime)
@@ -30,7 +31,7 @@ func setupExecutor(c *cli.Context, client *vela.Client, runtime runtime.Engine) 
 	case constants.DriverWindows:
 		return setupWindows(c, client, runtime)
 	default:
-		return nil, fmt.Errorf("Unrecognized executor driver: %s", c.String("executor-driver"))
+		return nil, fmt.Errorf("invalid executor driver: %s", c.String("executor-driver"))
 	}
 }
 
@@ -38,7 +39,7 @@ func setupExecutor(c *cli.Context, client *vela.Client, runtime runtime.Engine) 
 func setupDarwin(c *cli.Context, client *vela.Client, runtime runtime.Engine) (executor.Engine, error) {
 	logrus.Tracef("Creating %s executor client from CLI configuration", constants.DriverDarwin)
 	// return darwin.New(client, runtime)
-	return nil, fmt.Errorf("Unsupported executor driver: %s", constants.DriverDarwin)
+	return nil, fmt.Errorf("unsupported executor driver: %s", constants.DriverDarwin)
 }
 
 // helper function to setup the Linux executor from the CLI arguments.
@@ -51,5 +52,5 @@ func setupLinux(c *cli.Context, client *vela.Client, runtime runtime.Engine) (ex
 func setupWindows(c *cli.Context, client *vela.Client, runtime runtime.Engine) (executor.Engine, error) {
 	logrus.Tracef("Creating %s executor client from CLI configuration", constants.DriverWindows)
 	// return windows.New(client, runtime)
-	return nil, fmt.Errorf("Unsupported executor driver: %s", constants.DriverWindows)
+	return nil, fmt.Errorf("unsupported executor driver: %s", constants.DriverWindows)
 }

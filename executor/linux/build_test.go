@@ -21,7 +21,6 @@ import (
 )
 
 func TestExecutor_CreateBuild_Success(t *testing.T) {
-
 	// setup global vars
 	var (
 		_build = &library.Build{
@@ -71,6 +70,7 @@ func TestExecutor_CreateBuild_Success(t *testing.T) {
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	vela, _ := vela.NewClient(s.URL, nil)
 
@@ -274,6 +274,7 @@ func TestExecutor_ExecBuild_Success(t *testing.T) {
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	vela, _ := vela.NewClient(s.URL, nil)
 
@@ -479,6 +480,7 @@ func TestExecutor_DestroyBuild_Success(t *testing.T) {
 
 	// setup context
 	gin.SetMode(gin.TestMode)
+
 	s := httptest.NewServer(server.FakeHandler())
 	c, _ := vela.NewClient(s.URL, nil)
 
@@ -625,6 +627,7 @@ func TestExecutor_DestroyBuild_Success(t *testing.T) {
 		e.WithBuild(test.build)
 		e.WithPipeline(test.pipeline)
 		e.WithRepo(test.repo)
+
 		svc := new(library.Service)
 		svc.SetNumber(1)
 		e.services.Store(e.pipeline.Services[0].ID, svc)

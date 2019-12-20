@@ -40,12 +40,12 @@ type client struct {
 func New(c *vela.Client, r runtime.Engine) (*client, error) {
 	// immediately return if a nil Vela client is provided
 	if c == nil {
-		return nil, fmt.Errorf("Empty Vela client provided to executor")
+		return nil, fmt.Errorf("empty Vela client provided to executor")
 	}
 
 	// immediately return if a nil runtime Engine is provided
 	if r == nil {
-		return nil, fmt.Errorf("Empty runtime provided to executor")
+		return nil, fmt.Errorf("empty runtime provided to executor")
 	}
 
 	// capture the hostname
