@@ -48,7 +48,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			// send API call to update the build
 			_, _, err = c.Vela.Build.Update(r.GetOrg(), r.GetName(), b)
 			if err != nil {
-				c.logger.Errorf("unable to upload errored state: %w", err)
+				c.logger.Errorf("unable to upload errored state: %v", err)
 			}
 		}
 	}()
@@ -128,14 +128,14 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		// send API call to update the step
 		s, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
 		if err != nil {
-			c.logger.Errorf("unable to upload %s state: %w", init.Name, err)
+			c.logger.Errorf("unable to upload %s state: %v", init.Name, err)
 		}
 
 		c.logger.Infof("uploading %s step logs", init.Name)
 		// send API call to update the logs for the step
 		l, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), init.Number, l)
 		if err != nil {
-			c.logger.Errorf("unable to upload %s logs: %w", init.Name, err)
+			c.logger.Errorf("unable to upload %s logs: %v", init.Name, err)
 		}
 	}()
 
