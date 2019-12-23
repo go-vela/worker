@@ -19,7 +19,7 @@ jobs:
     - name: build
       env:
         GOOS: linux
-        CGO_ENABLED: '1'
+        CGO_ENABLED: '0'
       run: |
         go build -a \
           -ldflags '-s -w -extldflags "-static"' \
