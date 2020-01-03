@@ -165,8 +165,7 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 
 	// variables necessary for secret
 	var team string
-
-	org := c.repo.GetOrg()
+	var org string
 	path := s.Key
 
 	// check if the full path was provided
@@ -179,13 +178,13 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 			return nil, fmt.Errorf("path %s for %s secret %s is invalid", s.Key, s.Type, s.Name)
 		}
 
-		// check if the org provided matches what we expect
-		if strings.EqualFold(parts[0], org) {
+		// check if the org provided is not empty
+		if !strings.EqualFold(parts[0], "") {
 			// update the org variable
 			org = parts[0]
 
-			// check if the team provided matches what we expect
-			if strings.EqualFold(parts[1], team) {
+			// check if the team provided is not empty
+			if !strings.EqualFold(parts[1], "") {
 				// update the variables
 				team = parts[1]
 				path = parts[2]
