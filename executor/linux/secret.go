@@ -164,9 +164,11 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 	c.logger.Tracef("pulling %s %s secret %s", s.Engine, s.Type, s.Name)
 
 	// variables necessary for secret
-	var team string
+	var (
+		team string
+		org  string
+	)
 
-	org := c.repo.GetOrg()
 	path := s.Key
 
 	// check if the full path was provided
@@ -179,13 +181,13 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 			return nil, fmt.Errorf("path %s for %s secret %s is invalid", s.Key, s.Type, s.Name)
 		}
 
-		// check if the org provided matches what we expect
-		if strings.EqualFold(parts[0], org) {
+		// check if the org provided is not empty
+		if len(parts[0]) == 0 {
 			// update the org variable
 			org = parts[0]
 
-			// check if the team provided matches what we expect
-			if strings.EqualFold(parts[1], team) {
+			// check if the team provided is not empty
+			if len(parts[1]) == 0 {
 				// update the variables
 				team = parts[1]
 				path = parts[2]
