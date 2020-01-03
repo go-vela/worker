@@ -166,6 +166,7 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 	// variables necessary for secret
 	var team string
 	var org string
+	
 	path := s.Key
 
 	// check if the full path was provided
