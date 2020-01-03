@@ -179,12 +179,12 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 		}
 
 		// check if the org provided is not empty
-		if !strings.EqualFold(parts[0], "") {
+		if len(parts[0]) == 0 {
 			// update the org variable
 			org = parts[0]
 
 			// check if the team provided is not empty
-			if !strings.EqualFold(parts[1], "") {
+			if len(parts[1]) == 0 {
 				// update the variables
 				team = parts[1]
 				path = parts[2]
