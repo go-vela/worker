@@ -164,9 +164,11 @@ func (c *client) getShared(s *pipeline.Secret) (*library.Secret, error) {
 	c.logger.Tracef("pulling %s %s secret %s", s.Engine, s.Type, s.Name)
 
 	// variables necessary for secret
-	var team string
-	var org string
-	
+	var (
+		team string
+		org  string
+	)
+
 	path := s.Key
 
 	// check if the full path was provided
