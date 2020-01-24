@@ -34,6 +34,7 @@ type client struct {
 	steps       sync.Map
 	stepLogs    sync.Map
 	user        *library.User
+	err         error
 }
 
 // New returns an Executor implementation that integrates with a Linux instance.
@@ -65,6 +66,7 @@ func New(c *vela.Client, r runtime.Engine) (*client, error) {
 		serviceLogs: sync.Map{},
 		steps:       sync.Map{},
 		stepLogs:    sync.Map{},
+		err:         nil,
 	}, nil
 }
 
