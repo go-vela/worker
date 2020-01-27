@@ -45,7 +45,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		// update the build fields
 		b.SetFinished(time.Now().UTC().Unix())
 
-		c.logger.Info("uploading errorred stated")
+		c.logger.Info("uploading errorred state")
 		// send API call to update the build
 		_, _, err := c.Vela.Build.Update(r.GetOrg(), r.GetName(), b)
 		if err != nil {
@@ -313,7 +313,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// update the build fields
 		b.SetFinished(time.Now().UTC().Unix())
 
-		c.logger.Info("uploading errorred stated")
+		c.logger.Info("uploading errorred state")
 		// send API call to update the build
 		_, _, err := c.Vela.Build.Update(r.GetOrg(), r.GetName(), b)
 		if err != nil {
