@@ -30,11 +30,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		"step": ctn.Name,
 	})
 
-	// inject default workspace
-	if len(ctn.Directory) == 0 {
-		ctn.Directory = fmt.Sprintf("/home/%s", c.pipeline.ID)
-	}
-
 	ctn.Environment["BUILD_HOST"] = c.Hostname
 	ctn.Environment["VELA_HOST"] = c.Hostname
 	ctn.Environment["VELA_VERSION"] = version.Version.String()
