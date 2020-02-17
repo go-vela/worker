@@ -68,6 +68,15 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	c.build = b
 
+	// TODO: Pull this out into a the plan function for steps.
+	c.logger.Info("pulling secrets")
+	// pull secrets for the build
+	err = c.PullSecret(ctx)
+	if err != nil {
+		e = err
+		return fmt.Errorf("unable to pull secrets: %v", err)
+	}
+
 	// TODO: make this better
 	init := new(pipeline.Container)
 	if len(p.Steps) > 0 {
