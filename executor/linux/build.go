@@ -42,9 +42,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			b.SetStatus(constants.StatusError)
 		}
 
-		// update the build fields
-		b.SetFinished(time.Now().UTC().Unix())
-
 		c.logger.Info("uploading build state")
 		// send API call to update the build
 		_, _, err := c.Vela.Build.Update(r.GetOrg(), r.GetName(), b)
@@ -68,6 +65,8 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		e = err
 		return fmt.Errorf("unable to upload start state: %w", err)
 	}
+
+	c.build = b
 
 	// TODO: make this better
 	init := new(pipeline.Container)
@@ -288,9 +287,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		l.SetData(append(l.GetData(), image...))
 	}
 
-	b.SetStatus(constants.StatusSuccess)
-	c.build = b
-
 	return nil
 }
 
@@ -300,6 +296,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	p := c.pipeline
 	r := c.repo
 	e := c.err
+
+	b.SetStatus(constants.StatusSuccess)
+	c.build = b
 
 	defer func() {
 		// NOTE: When an error occurs during a build that does not have to do
