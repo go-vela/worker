@@ -74,14 +74,6 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 					}
 				}()
 
-				logger.Info("pulling secrets")
-				// pull secrets for the build on the executor
-				err = executor.PullSecret(ctx)
-				if err != nil {
-					logger.Errorf("unable to pull secrets: %v", err)
-					return err
-				}
-
 				defer func() {
 					// destroying the build on the executor
 					logger.Info("destroying build")
