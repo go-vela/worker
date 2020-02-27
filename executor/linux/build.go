@@ -468,7 +468,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		// destroy the step
 		err = c.DestroyStep(ctx, s)
 		if err != nil {
-			c.logger.Errorf("unable to destroy step: %w", err)
+			c.logger.Errorf("unable to destroy step: %v", err)
 		}
 	}
 
@@ -483,7 +483,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		// destroy the stage
 		err = c.DestroyStage(ctx, s)
 		if err != nil {
-			c.logger.Errorf("unable to destroy stage: %w", err)
+			c.logger.Errorf("unable to destroy stage: %v", err)
 		}
 	}
 
@@ -493,7 +493,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		// destroy the service
 		err = c.DestroyService(ctx, s)
 		if err != nil {
-			c.logger.Errorf("unable to destroy service: %w", err)
+			c.logger.Errorf("unable to destroy service: %v", err)
 		}
 
 		c.logger.Infof("uploading %s service state", s.Name)
@@ -510,7 +510,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 		_, _, err = c.Vela.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), cService)
 		if err != nil {
-			c.logger.Errorf("unable to upload service status: %w", err)
+			c.logger.Errorf("unable to upload service status: %v", err)
 		}
 	}
 
@@ -518,14 +518,14 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 	// remove the runtime volume for the pipeline
 	err = c.Runtime.RemoveVolume(ctx, p)
 	if err != nil {
-		c.logger.Errorf("unable to remove volume: %w", err)
+		c.logger.Errorf("unable to remove volume: %v", err)
 	}
 
 	c.logger.Info("deleting network")
 	// remove the runtime network for the pipeline
 	err = c.Runtime.RemoveNetwork(ctx, p)
 	if err != nil {
-		c.logger.Errorf("unable to remove network: %w", err)
+		c.logger.Errorf("unable to remove network: %v", err)
 	}
 
 	return err

@@ -236,7 +236,7 @@ func ctnConfig(ctn *pipeline.Container) *container.Config {
 	// parse image from container
 	image, err := parseImage(ctn.Image)
 	if err != nil {
-		logrus.Errorf("unable to parse image: %w", err)
+		logrus.Errorf("unable to parse image: %v", err)
 	}
 
 	// create container config object
