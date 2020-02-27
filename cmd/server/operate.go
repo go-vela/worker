@@ -75,7 +75,7 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 				}()
 
 				defer func() {
-					// destroying the build on the executor
+					// destroy the build on the executor
 					logger.Info("destroying build")
 					err = executor.DestroyBuild(context.Background())
 					if err != nil {
@@ -97,6 +97,13 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 				if err != nil {
 					logger.Errorf("unable to execute build: %v", err)
 					return err
+				}
+
+				// destroy the build on the executor
+				logger.Info("destroying build")
+				err = executor.DestroyBuild(context.Background())
+				if err != nil {
+					logger.Errorf("unable to destroy build: %v", err)
 				}
 
 				logger.Info("completed build")
