@@ -16,8 +16,9 @@ require (
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/go-vela/mock v0.3.0
+	github.com/go-vela/pkg-runtime v0.0.0-20200310201623-9a57cb34364f
 	github.com/go-vela/sdk-go v0.3.0
-	github.com/go-vela/types v0.3.0
+	github.com/go-vela/types v0.3.1-0.20200228213236-820f8df3a782
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/mux v1.7.3 // indirect
