@@ -71,16 +71,8 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	return nil
 }
 
-// TODO: Make this do stuff
-func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage) error {
-	return fmt.Errorf("this function is currently not supported")
-}
-
-// ExecStage runs a stage.
-func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]chan error) error {
-	b := c.build
-	r := c.repo
-
+// PlanStage prepares the stage for execution.
+func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m map[string]chan error) error {
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
 		"stage": s.Name,
@@ -111,6 +103,19 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 		}
 	}
 
+	return nil
+}
+
+// ExecStage runs a stage.
+func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]chan error) error {
+	b := c.build
+	r := c.repo
+
+	// update engine logger with extra metadata
+	logger := c.logger.WithFields(logrus.Fields{
+		"stage": s.Name,
+	})
+
 	// close the stage channel at the end
 	defer close(m[s.Name])
 
@@ -133,7 +138,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m map[string]
 
 		result, ok := c.steps.Load(step.ID)
 		if !ok {
-			return fmt.Errorf("unable to get step from client")
+			return fmt.Errorf("unable to get step %s from client", step.Name)
 		}
 
 		cStep := result.(*library.Step)
