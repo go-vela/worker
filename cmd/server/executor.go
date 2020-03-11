@@ -27,31 +27,31 @@ func setupExecutor(c *cli.Context, client *vela.Client, r runtime.Engine) (execu
 
 	switch c.String("executor-driver") {
 	case constants.DriverDarwin:
-		return setupDarwin(c, client, r)
+		return setupDarwin(client, r)
 	case constants.DriverLinux:
-		return setupLinux(c, client, r)
+		return setupLinux(client, r)
 	case constants.DriverWindows:
-		return setupWindows(c, client, r)
+		return setupWindows(client, r)
 	default:
 		return nil, fmt.Errorf("invalid executor driver: %s", c.String("executor-driver"))
 	}
 }
 
 // helper function to setup the Darwin executor from the CLI arguments.
-func setupDarwin(c *cli.Context, client *vela.Client, r runtime.Engine) (executor.Engine, error) {
+func setupDarwin(client *vela.Client, r runtime.Engine) (executor.Engine, error) {
 	logrus.Tracef("Creating %s executor client from CLI configuration", constants.DriverDarwin)
 	// return darwin.New(client, r)
 	return nil, fmt.Errorf("unsupported executor driver: %s", constants.DriverDarwin)
 }
 
 // helper function to setup the Linux executor from the CLI arguments.
-func setupLinux(c *cli.Context, client *vela.Client, r runtime.Engine) (executor.Engine, error) {
+func setupLinux(client *vela.Client, r runtime.Engine) (executor.Engine, error) {
 	logrus.Tracef("Creating %s executor client from CLI configuration", constants.DriverLinux)
 	return linux.New(client, r)
 }
 
 // helper function to setup the Windows executor from the CLI arguments.
-func setupWindows(c *cli.Context, client *vela.Client, r runtime.Engine) (executor.Engine, error) {
+func setupWindows(client *vela.Client, r runtime.Engine) (executor.Engine, error) {
 	logrus.Tracef("Creating %s executor client from CLI configuration", constants.DriverWindows)
 	// return windows.New(client, r)
 	return nil, fmt.Errorf("unsupported executor driver: %s", constants.DriverWindows)
