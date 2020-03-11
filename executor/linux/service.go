@@ -105,7 +105,8 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 
 	go func() {
 		logger.Debug("stream logs for container")
-		err := c.StreamStep(ctx, ctn)
+		// stream logs from container
+		err := c.StreamService(ctx, ctn)
 		if err != nil {
 			logrus.Error(err)
 		}
@@ -182,6 +183,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 			l.SetData(append(l.GetData(), logs.Bytes()...))
 
 			logger.Debug("appending logs")
+			// send API call to append the logs for the service
 			l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 			if err != nil {
 				return err
@@ -198,7 +200,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 
 	logger.Debug("uploading logs")
 	// send API call to update the logs for the service
-	l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
+	_, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 	if err != nil {
 		return err
 	}

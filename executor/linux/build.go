@@ -158,6 +158,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	if !ok {
 		err := fmt.Errorf("unable to get %s step from client", init.Name)
 		e = err
+
 		return err
 	}
 
@@ -167,6 +168,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	if !ok {
 		err := fmt.Errorf("unable to get %s step from client", init.Name)
 		e = err
+
 		return err
 	}
 

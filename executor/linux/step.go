@@ -159,6 +159,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	go func() {
 		logger.Debug("stream logs for container")
+		// stream logs from container
 		err := c.StreamStep(ctx, ctn)
 		if err != nil {
 			logrus.Error(err)
@@ -236,7 +237,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 			l.SetData(append(l.GetData(), logs.Bytes()...))
 
 			logger.Debug("appending logs")
-			// send API call to update the logs for the step
+			// send API call to append the logs for the step
 			l, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 			if err != nil {
 				return err
@@ -253,7 +254,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	logger.Debug("uploading logs")
 	// send API call to update the logs for the step
-	l, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
+	_, _, err = c.Vela.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 	if err != nil {
 		return err
 	}
