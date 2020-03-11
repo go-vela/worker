@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-vela/pkg-runtime/runtime"
+
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/router"
 	"github.com/go-vela/worker/router/middleware"
@@ -58,8 +60,12 @@ func server(c *cli.Context) error {
 		return err
 	}
 
-	// create a runtime client
-	runtime, err := setupRuntime(c)
+	// create the runtime client
+	r, err := runtime.New(&runtime.Setup{
+		Driver:    c.String("runtime.driver"),
+		Config:    c.String("runtime.config"),
+		Namespace: c.String("runtime.namespace"),
+	})
 	if err != nil {
 		return err
 	}
@@ -74,7 +80,7 @@ func server(c *cli.Context) error {
 	executors := make(map[int]executor.Engine)
 
 	for i := 0; i < c.Int("executor-threads"); i++ {
-		executor, err := setupExecutor(c, vela, runtime)
+		executor, err := setupExecutor(c, vela, r)
 		if err != nil {
 			return err
 		}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-vela/worker/version"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -88,17 +88,29 @@ func main() {
 		},
 
 		// Runtime Flags
+
 		cli.StringFlag{
 			EnvVar: "VELA_RUNTIME_DRIVER,RUNTIME_DRIVER",
-			Name:   "runtime-driver",
-			Usage:  "runtime driver",
+			Name:   "runtime.driver",
+			Usage:  "name of runtime driver to use",
+		},
+		cli.StringFlag{
+			EnvVar: "VELA_RUNTIME_CONFIG,RUNTIME_CONFIG",
+			Name:   "runtime.config",
+			Usage:  "path to runtime configuration file",
+		},
+		cli.StringFlag{
+			EnvVar: "VELA_RUNTIME_NAMESPACE,RUNTIME_NAMESPACE",
+			Name:   "runtime.namespace",
+			Usage:  "name of namespace for runtime configuration (kubernetes runtime only)",
 		},
 	}
 
 	// set logrus to log in JSON format
-	log.SetFormatter(&log.JSONFormatter{})
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+	err := app.Run(os.Args)
+	if err != nil {
+		logrus.Fatal(err)
 	}
 }

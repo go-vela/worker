@@ -8,10 +8,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/go-vela/pkg-runtime/runtime/docker"
+
 	"github.com/go-vela/sdk-go/vela"
+
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestLinux_WithBuild(t *testing.T) {

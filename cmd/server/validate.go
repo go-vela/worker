@@ -34,12 +34,6 @@ func validate(c *cli.Context) error {
 		return err
 	}
 
-	// validate runtime configuration
-	err = validateRuntime(c)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -91,17 +85,6 @@ func validateQueue(c *cli.Context) error {
 
 	if len(c.String("queue-config")) == 0 {
 		return fmt.Errorf("queue-config (VELA_QUEUE_CONFIG or QUEUE_CONFIG) flag not specified")
-	}
-
-	return nil
-}
-
-// helper function to validate the runtime CLI configuration.
-func validateRuntime(c *cli.Context) error {
-	logrus.Trace("Validating runtime CLI configuration")
-
-	if len(c.String("runtime-driver")) == 0 {
-		return fmt.Errorf("runtime-driver (VELA_RUNTIME_DRIVER or RUNTIME_DRIVER) flag not specified")
 	}
 
 	return nil
