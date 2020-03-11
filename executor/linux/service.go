@@ -11,31 +11,17 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-vela/worker/version"
+
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+
 	"github.com/sirupsen/logrus"
 )
 
-// CreateService prepares the service for execution.
+// CreateService configures the service for execution.
 func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) error {
-	// update engine logger with extra metadata
-	logger := c.logger.WithFields(logrus.Fields{
-		"service": ctn.Name,
-	})
-
-	logger.Debug("setting up container")
-	// setup the runtime container
-	err := c.Runtime.SetupContainer(ctx, ctn)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// PlanService defines a function that prepares the service for execution.
-func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error {
 	var err error
 
 	b := c.build
@@ -79,18 +65,32 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	return nil
 }
 
-// ExecService runs a service.
-func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error {
-	b := c.build
-	r := c.repo
+// PlanService prepares the service for execution.
+func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error {
+	// update engine logger with extra metadata
+	logger := c.logger.WithFields(logrus.Fields{
+		"service": ctn.Name,
+	})
 
-	result, ok := c.serviceLogs.Load(ctn.ID)
-	if !ok {
-		return fmt.Errorf("unable to get service log from client")
+	ctn.Environment["BUILD_HOST"] = c.Hostname
+	ctn.Environment["VELA_HOST"] = c.Hostname
+	ctn.Environment["VELA_VERSION"] = version.Version.String()
+	// TODO: remove hardcoded reference
+	ctn.Environment["VELA_RUNTIME"] = "docker"
+	ctn.Environment["VELA_DISTRIBUTION"] = "linux"
+
+	logger.Debug("setting up container")
+	// setup the runtime container
+	err := c.Runtime.SetupContainer(ctx, ctn)
+	if err != nil {
+		return err
 	}
 
-	l := result.(*library.Log)
+	return nil
+}
 
+// ExecService runs a service.
+func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with extra metadata
 	logger := c.logger.WithFields(logrus.Fields{
 		"service": ctn.Name,
@@ -103,55 +103,12 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 		return err
 	}
 
-	// create new buffer for uploading logs
-	logs := new(bytes.Buffer)
-	go func() error {
-		logger.Debug("tailing container")
-		// tail the runtime container
-		rc, err := c.Runtime.TailContainer(ctx, ctn)
+	go func() {
+		logger.Debug("stream logs for container")
+		err := c.StreamStep(ctx, ctn)
 		if err != nil {
-			return err
+			logrus.Error(err)
 		}
-		defer rc.Close()
-
-		// create new scanner from the container output
-		scanner := bufio.NewScanner(rc)
-
-		// scan entire container output
-		for scanner.Scan() {
-			// write all the logs from the scanner
-			logs.Write(append(scanner.Bytes(), []byte("\n")...))
-
-			// if we have at least 1000 bytes in our buffer
-			if logs.Len() > 1000 {
-				logger.Trace(logs.String())
-
-				// update the existing log with the new bytes
-				l.SetData(append(l.GetData(), logs.Bytes()...))
-
-				logger.Debug("appending logs")
-				l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
-				if err != nil {
-					return err
-				}
-
-				// flush the buffer of logs
-				logs.Reset()
-			}
-		}
-		logger.Trace(logs.String())
-
-		// update the existing log with the last bytes
-		l.SetData(append(l.GetData(), logs.Bytes()...))
-
-		logger.Debug("uploading logs")
-		// send API call to update the logs for the service
-		l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
-		if err != nil {
-			return err
-		}
-
-		return nil
 	}()
 
 	// do not wait for detached containers
@@ -169,6 +126,79 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	logger.Debug("inspecting container")
 	// inspect the runtime container
 	err = c.Runtime.InspectContainer(ctx, ctn)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// StreamService tails the output for a service.
+func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
+	// TODO: remove hardcoded reference
+	if ctn.Name == "init" {
+		return nil
+	}
+
+	b := c.build
+	r := c.repo
+
+	result, ok := c.stepLogs.Load(ctn.ID)
+	if !ok {
+		return fmt.Errorf("unable to get step log from client")
+	}
+
+	l := result.(*library.Log)
+
+	// update engine logger with extra metadata
+	logger := c.logger.WithFields(logrus.Fields{
+		"step": ctn.Name,
+	})
+
+	// create new buffer for uploading logs
+	logs := new(bytes.Buffer)
+
+	logger.Debug("tailing container")
+	// tail the runtime container
+	rc, err := c.Runtime.TailContainer(ctx, ctn)
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+
+	// create new scanner from the container output
+	scanner := bufio.NewScanner(rc)
+
+	// scan entire container output
+	for scanner.Scan() {
+		// write all the logs from the scanner
+		logs.Write(append(scanner.Bytes(), []byte("\n")...))
+
+		// if we have at least 1000 bytes in our buffer
+		if logs.Len() > 1000 {
+			logger.Trace(logs.String())
+
+			// update the existing log with the new bytes
+			l.SetData(append(l.GetData(), logs.Bytes()...))
+
+			logger.Debug("appending logs")
+			l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
+			if err != nil {
+				return err
+			}
+
+			// flush the buffer of logs
+			logs.Reset()
+		}
+	}
+	logger.Trace(logs.String())
+
+	// update the existing log with the last bytes
+	l.SetData(append(l.GetData(), logs.Bytes()...))
+
+	logger.Debug("uploading logs")
+	// send API call to update the logs for the service
+	l, _, err = c.Vela.Log.UpdateService(r.GetOrg(), r.GetName(), b.GetNumber(), ctn.Number, l)
 	if err != nil {
 		return err
 	}

@@ -30,13 +30,13 @@ type Engine interface {
 	// that kills the current build in execution.
 	KillBuild() (*library.Build, error)
 
-	// Secrets Engine interface functions
+	// Secrets Engine Interface Functions
 
 	// PullSecret defines a function that pulls
 	// the secrets for a given pipeline.
 	PullSecret(context.Context) error
 
-	// Service Engine interface functions
+	// Service Engine Interface Functions
 
 	// CreateService defines a function that
 	// configures the service for execution.
@@ -47,11 +47,14 @@ type Engine interface {
 	// ExecService defines a function that
 	// runs a service.
 	ExecService(context.Context, *pipeline.Container) error
+	// StreamService defines a function that
+	// tails the output for a service.
+	StreamService(context.Context, *pipeline.Container) error
 	// DestroyService defines a function that
 	// cleans up the service after execution.
 	DestroyService(context.Context, *pipeline.Container) error
 
-	// Step Engine interface functions
+	// Step Engine Interface Functions
 
 	// CreateStep defines a function that
 	// configures the step for execution.
@@ -62,18 +65,21 @@ type Engine interface {
 	// ExecStep defines a function that
 	// runs a step.
 	ExecStep(context.Context, *pipeline.Container) error
+	// StreamStep defines a function that
+	// tails the output for a step.
+	StreamStep(context.Context, *pipeline.Container) error
 	// DestroyStep defines a function that
 	// cleans up the step after execution.
 	DestroyStep(context.Context, *pipeline.Container) error
 
-	// Stage Engine interface functions
+	// Stage Engine Interface Functions
 
 	// CreateStage defines a function that
 	// configures the stage for execution.
 	CreateStage(context.Context, *pipeline.Stage) error
 	// PlanStage defines a function that
 	// prepares the stage for execution.
-	PlanStage(context.Context, *pipeline.Stage) error
+	PlanStage(context.Context, *pipeline.Stage, map[string]chan error) error
 	// ExecStage defines a function that
 	// runs a stage.
 	ExecStage(context.Context, *pipeline.Stage, map[string]chan error) error
@@ -86,6 +92,9 @@ type Engine interface {
 	// CreateBuild defines a function that
 	// configures the build for execution.
 	CreateBuild(context.Context) error
+	// PlanBuild defines a function that
+	// prepares the build for execution.
+	PlanBuild(context.Context) error
 	// ExecBuild defines a function that
 	// runs a pipeline for a build.
 	ExecBuild(context.Context) error
