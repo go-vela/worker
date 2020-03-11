@@ -10,11 +10,16 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/go-vela/mock/server"
+
+	"github.com/go-vela/pkg-runtime/runtime/docker"
+
 	"github.com/go-vela/sdk-go/vela"
+
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-	"github.com/go-vela/worker/runtime/docker"
+
 	"github.com/google/go-cmp/cmp"
 )
 
