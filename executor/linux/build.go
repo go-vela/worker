@@ -20,10 +20,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CreateBuild prepares the build for execution.
+// CreateBuild configures the build for execution.
 func (c *client) CreateBuild(ctx context.Context) error {
 	b := c.build
-	p := c.pipeline
 	r := c.repo
 	e := c.err
 
@@ -77,6 +76,40 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to pull secrets: %v", err)
 	}
 
+	return nil
+}
+
+// PlanBuild defines a function that
+// prepares the build for execution.
+func (c *client) PlanBuild(ctx context.Context) error {
+	b := c.build
+	p := c.pipeline
+	r := c.repo
+	e := c.err
+
+	// update engine logger with extra metadata
+	c.logger = c.logger.WithFields(logrus.Fields{
+		"build": b.GetNumber(),
+		"repo":  r.GetFullName(),
+	})
+
+	defer func() {
+		// NOTE: When an error occurs during a build that does not have to do
+		// with a pipeline we should set build status to "error" not "failed"
+		// because it is worker related and not build.
+		if e != nil {
+			b.SetError(e.Error())
+			b.SetStatus(constants.StatusError)
+		}
+
+		c.logger.Info("uploading build state")
+		// send API call to update the build
+		_, _, err := c.Vela.Build.Update(r.GetOrg(), r.GetName(), b)
+		if err != nil {
+			c.logger.Errorf("unable to upload errorred state: %v", err)
+		}
+	}()
+
 	// TODO: make this better
 	init := new(pipeline.Container)
 	if len(p.Steps) > 0 {
@@ -84,7 +117,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 		c.logger.Infof("creating %s step", init.Name)
 		// create the step
-		err = c.CreateStep(ctx, init)
+		err := c.CreateStep(ctx, init)
 		if err != nil {
 			e = err
 			return fmt.Errorf("unable to create %s step: %w", init.Name, err)
@@ -105,7 +138,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 		c.logger.Infof("creating %s step", init.Name)
 		// create the step
-		err = c.CreateStep(ctx, init)
+		err := c.CreateStep(ctx, init)
 		if err != nil {
 			e = err
 			return fmt.Errorf("unable to create %s step: %w", init.Name, err)
@@ -123,16 +156,20 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// TODO: make this cleaner
 	result, ok := c.steps.Load(init.ID)
 	if !ok {
+		err := fmt.Errorf("unable to get %s step from client", init.Name)
 		e = err
-		return fmt.Errorf("unable to get %s step from client", init.Name)
+
+		return err
 	}
 
 	s := result.(*library.Step)
 
 	result, ok = c.stepLogs.Load(init.ID)
 	if !ok {
+		err := fmt.Errorf("unable to get %s step from client", init.Name)
 		e = err
-		return fmt.Errorf("unable to get %s step log from client", init.Name)
+
+		return err
 	}
 
 	l := result.(*library.Log)
@@ -141,7 +178,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		s.SetFinished(time.Now().UTC().Unix())
 		c.logger.Infof("uploading %s step state", init.Name)
 		// send API call to update the step
-		s, _, err = c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
+		_, _, err := c.Vela.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
 		if err != nil {
 			c.logger.Errorf("unable to upload %s state: %v", init.Name, err)
 		}
@@ -156,7 +193,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	c.logger.Info("creating network")
 	// create the runtime network for the pipeline
-	err = c.Runtime.CreateNetwork(ctx, p)
+	err := c.Runtime.CreateNetwork(ctx, p)
 	if err != nil {
 		e = err
 		return fmt.Errorf("unable to create network: %w", err)
@@ -380,7 +417,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		result, ok := c.steps.Load(s.ID)
 		if !ok {
 			e = err
-			return fmt.Errorf("unable to get step from client")
+			return fmt.Errorf("unable to get step %s from client", s.Name)
 		}
 
 		cStep := result.(*library.Step)
@@ -426,9 +463,17 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		stageMap[stage.Name] = make(chan error)
 
 		stages.Go(func() error {
+			c.logger.Infof("planning %s stage", stage.Name)
+			// plan the stage
+			err := c.PlanStage(stageCtx, stage, stageMap)
+			if err != nil {
+				e = err
+				return fmt.Errorf("unable to plan stage: %w", err)
+			}
+
 			c.logger.Infof("executing %s stage", stage.Name)
 			// execute the stage
-			err := c.ExecStage(stageCtx, stage, stageMap)
+			err = c.ExecStage(stageCtx, stage, stageMap)
 			if err != nil {
 				e = err
 				return fmt.Errorf("unable to execute stage: %w", err)
