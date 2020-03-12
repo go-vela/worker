@@ -423,10 +423,14 @@ func TestExecutor_ExecBuild_Success(t *testing.T) {
 		e.WithPipeline(test.pipeline)
 		e.WithRepo(test.repo)
 
-		got := e.ExecBuild(context.Background())
+		err := e.PlanBuild(context.Background())
+		if err != nil {
+			t.Errorf("PlanBuild returned err: %v", err)
+		}
 
-		if got != nil {
-			t.Errorf("ExecBuild is %v, want nil", got)
+		err = e.ExecBuild(context.Background())
+		if err != nil {
+			t.Errorf("ExecBuild returned err: %v", err)
 		}
 	}
 }

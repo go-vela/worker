@@ -49,11 +49,12 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 				Name: "init",
 				Steps: pipeline.ContainerSlice{
 					&pipeline.Container{
-						ID:     "__0_init_init",
-						Image:  "#init",
-						Name:   "init",
-						Number: 1,
-						Pull:   true,
+						ID:          "__0_init_init",
+						Environment: map[string]string{},
+						Image:       "#init",
+						Name:        "init",
+						Number:      1,
+						Pull:        true,
 					},
 				},
 			},
@@ -112,9 +113,9 @@ func TestExecutor_CreateStage_Success(t *testing.T) {
 	})
 
 	// run test
-	err := e.PlanStep(context.Background(), &pipeline.Container{ID: "__0_init_init"})
+	err := e.CreateStep(context.Background(), e.pipeline.Stages[0].Steps[0])
 	if err != nil {
-		t.Errorf("Unable to plan init step: %v", err)
+		t.Errorf("Unable to create init step: %v", err)
 	}
 
 	got := e.CreateStage(context.Background(), e.pipeline.Stages[1])
@@ -249,10 +250,19 @@ func TestExecutor_ExecStage_Success(t *testing.T) {
 	})
 
 	// run test
-	got := e.ExecStage(context.Background(), e.pipeline.Stages[0], stageMap)
+	err := e.CreateStep(context.Background(), e.pipeline.Stages[0].Steps[0])
+	if err != nil {
+		t.Errorf("Unable to create init step: %v", err)
+	}
 
-	if got != nil {
-		t.Errorf("ExecStage is %v, want nil", got)
+	err = e.CreateStage(context.Background(), e.pipeline.Stages[0])
+	if err != nil {
+		t.Errorf("CreateStage returned err: %v", err)
+	}
+
+	err = e.ExecStage(context.Background(), e.pipeline.Stages[0], stageMap)
+	if err != nil {
+		t.Errorf("ExecStage returned err: %v", err)
 	}
 }
 

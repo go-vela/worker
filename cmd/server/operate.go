@@ -91,6 +91,14 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 					return err
 				}
 
+				// plan the build on the executor
+				logger.Info("creating build")
+				err = executor.PlanBuild(ctx)
+				if err != nil {
+					logger.Errorf("unable to plan build: %v", err)
+					return err
+				}
+
 				// execute the build on the executor
 				logger.Info("executing build")
 				err = executor.ExecBuild(ctx)
