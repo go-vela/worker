@@ -1,6 +1,6 @@
 # worker
 
-[![license](https://img.shields.io/crates/l/gl.svg)](LICENSE)
+[![license](https://img.shields.io/crates/l/gl.svg)](../LICENSE)
 [![GoDoc](https://godoc.org/github.com/go-vela/worker?status.svg)](https://godoc.org/github.com/go-vela/worker)
 [![Go Report Card](https://goreportcard.com/badge/go-vela/worker)](https://goreportcard.com/report/go-vela/worker)
 [![codecov](https://codecov.io/gh/go-vela/worker/branch/master/graph/badge.svg)](https://codecov.io/gh/go-vela/worker)
