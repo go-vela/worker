@@ -25,7 +25,7 @@ build:
 	###### Build Golang Binary ######
 	#################################
 
-	GOOS=linux CGO_ENABLED=0 go build -o release/vela-worker github.com/go-vela/worker/cmd/server
+	GOOS=linux CGO_ENABLED=0 go build -o release/vela-worker github.com/go-vela/worker/cmd/vela-worker
 
 compose-up:
 	#################################
