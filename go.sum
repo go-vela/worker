@@ -62,6 +62,7 @@ github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e/go.mod h1:/Zj4wYkg
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
+github.com/evanphx/json-patch v4.2.0+incompatible h1:fUDGZCv/7iAN7u0puUVhvKCcsR6vRfwrJatElLBEf0I=
 github.com/evanphx/json-patch v4.2.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
@@ -94,14 +95,21 @@ github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/me
 github.com/go-vela/compiler v0.3.1-0.20200302143952-6a5a26ba1fbc/go.mod h1:rO03l8MoeyQkhd450SnphZquB7l7Qs+cT/3BIVq8MfE=
 github.com/go-vela/mock v0.3.0 h1:R+0NWK+JgW4dy85TUi6qt1CgbDvGMeGCG/Vcqxt4754=
 github.com/go-vela/mock v0.3.0/go.mod h1:pVJNaFvhqN174VZctH09HAdwvsWexA1Y9jT4xgyBRLM=
-github.com/go-vela/pkg-runtime v0.0.0-20200310201623-9a57cb34364f h1:YjvfuA6UXz4Yqiy0QtRgCq0Wepznk4YsC52niCsWzeQ=
-github.com/go-vela/pkg-runtime v0.0.0-20200310201623-9a57cb34364f/go.mod h1:J2xYqm8CgZpqQUojPWuLnYgJWS6hknr5rgZst9qKP84=
+github.com/go-vela/pkg-executor v0.0.0-20200320141426-919f31b8efce h1:NOB5XcuWvaXvyQ29PERNwL2G4qFQnEer0fQZqyhuGcU=
+github.com/go-vela/pkg-executor v0.0.0-20200320141426-919f31b8efce/go.mod h1:XoCJlIPkjC0s4/vn/L2Gu05FrfH6ceO+K4oAPPquiKc=
+github.com/go-vela/pkg-runtime v0.0.0-20200313134933-49f853669b40 h1:HVgm8JDG+nziVBa2yA1nXzg3GUVUa8Kvrlg6f9n8yQc=
+github.com/go-vela/pkg-runtime v0.0.0-20200313134933-49f853669b40/go.mod h1:J2xYqm8CgZpqQUojPWuLnYgJWS6hknr5rgZst9qKP84=
+github.com/go-vela/pkg-runtime v0.0.0-20200320140020-301529af29f6 h1:itH+bt9u9UjnUignpZjeC4IO2QTyEV+JZpUjvMaseVc=
+github.com/go-vela/pkg-runtime v0.0.0-20200320140020-301529af29f6/go.mod h1:kXPhZCxsVJjDK9enk3x80WHwB9q65l269qivJwQTjG8=
 github.com/go-vela/sdk-go v0.3.0 h1:7QOISiwlKIwQ+gBo35d7v9kVMJ5AHRITgFlmKOaATco=
 github.com/go-vela/sdk-go v0.3.0/go.mod h1:HweT1gVTnbEKX95IJmqoe22i0k326whrzY4ytjB06JY=
+github.com/go-vela/sdk-go v0.3.1-0.20200316181126-22974be2a711 h1:UluZMmYC/AHpmhOqB2n9YPCj2vAYi2aeYNwOdKAA+o4=
+github.com/go-vela/sdk-go v0.3.1-0.20200316181126-22974be2a711/go.mod h1:HweT1gVTnbEKX95IJmqoe22i0k326whrzY4ytjB06JY=
 github.com/go-vela/types v0.3.0 h1:wteEelsBvfWeXpnMbWK1NcQ2dZHmLOlPvBaZX7YabAE=
 github.com/go-vela/types v0.3.0/go.mod h1:LNDrn7/nV38H0HmRfYv6YfPNb881R5NRE1YKXeVqpF4=
 github.com/go-vela/types v0.3.1-0.20200228213236-820f8df3a782 h1:5+2BLMClLg+o6mky5G0xRTfw/15zOyyZhJKWp726vu4=
 github.com/go-vela/types v0.3.1-0.20200228213236-820f8df3a782/go.mod h1:LNDrn7/nV38H0HmRfYv6YfPNb881R5NRE1YKXeVqpF4=
+github.com/go-vela/worker v0.3.1/go.mod h1:V6G7l2gehP3zG6SCN+76H+5edoC13YWGU7tDYWpP7B4=
 github.com/gogo/protobuf v1.1.1 h1:72R+M5VuhED/KujmZVcIquuo8mBgX4oVda//DQb3PXo=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d/go.mod h1:SlYgWuQ5SjCEi6WLHjHCa1yvBfUnHcTbrrZtXPKa29o=
@@ -149,6 +157,7 @@ github.com/huandu/xstrings v1.2.1/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq
 github.com/imdario/mergo v0.3.5/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
 github.com/imdario/mergo v0.3.8 h1:CGgOkSJeqMRmt0D9XLWExdT4m4F1vd3FV3VPt+0VxkQ=
 github.com/imdario/mergo v0.3.8/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
+github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/json-iterator/go v0.0.0-20180612202835-f2b4162afba3/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
@@ -263,6 +272,8 @@ github.com/ugorji/go/codec v1.1.7 h1:2SvQaVZ1ouYrrKKwoSk2pzd4A9evlKJb9oTL+OaLUSs
 github.com/ugorji/go/codec v1.1.7/go.mod h1:Ax+UKWsSmolVDwsd+7N3ZtXu+yMGCf907BLYF3GoBXY=
 github.com/urfave/cli v1.22.2 h1:gsqYFH8bb9ekPA12kRo0hfjngWQjkJPlN9R0N78BoUo=
 github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
+github.com/urfave/cli v1.22.3 h1:FpNT6zq26xNpHZy08emi755QwzLPs6Pukqjlc7RfOMU=
+github.com/urfave/cli v1.22.3/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 golang.org/x/crypto v0.0.0-20180820150726-614d502a4dac/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
@@ -402,6 +413,7 @@ k8s.io/klog v0.0.0-20181102134211-b9b56d5dfc92/go.mod h1:Gq+BEi5rUBO/HRz0bTSXDUc
 k8s.io/klog v0.3.0/go.mod h1:Gq+BEi5rUBO/HRz0bTSXDUcqjScdoY3a9IHpCEIOOfk=
 k8s.io/klog v1.0.0 h1:Pt+yjF5aB1xDSVbau4VsWe+dQNzA0qv1LlXdC2dF6Q8=
 k8s.io/klog v1.0.0/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
+k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a h1:UcxjrRMyNx/i/y8G7kPvLyy7rfbeuf1PYyBf973pgyU=
 k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a/go.mod h1:1TqjTSzOxsLGIKfj0lK8EeCP7K1iUG65v09OM0/WG5E=
 k8s.io/utils v0.0.0-20191114184206-e782cd3c129f/go.mod h1:sZAwmy6armz5eXlNoLmJcl4F1QuKu7sr+mFQ0byX7Ew=
 k8s.io/utils v0.0.0-20200124190032-861946025e34 h1:HjlUD6M0K3P8nRXmr2B9o4F9dUy9TCj/aEpReeyi6+k=
