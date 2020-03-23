@@ -5,8 +5,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"log"
+
+	"github.com/sirupsen/logrus"
 
 	tomb "gopkg.in/tomb.v2"
 )
@@ -18,7 +19,7 @@ func (w *Worker) Start() error {
 
 	// spawn a tomb goroutine to manage the worker processes
 	tomb.Go(func() error {
-
+		// spawn goroutine for starting the worker
 		go func() {
 			logrus.Info("starting worker server")
 			// start the server for the worker
@@ -28,6 +29,7 @@ func (w *Worker) Start() error {
 			}
 		}()
 
+		// spawn goroutine for starting the operator
 		go func() {
 			logrus.Info("starting worker operator")
 			// start the operator for the worker
