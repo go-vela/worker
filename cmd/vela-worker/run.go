@@ -57,6 +57,11 @@ func run(c *cli.Context) error {
 		API: &API{
 			Port: c.String("api.port"),
 		},
+		// build configuration
+		Build: &Build{
+			Limit:   c.Int("build.limit"),
+			Timeout: c.Duration("build.timeout"),
+		},
 		// executor configuration
 		Executor: &executor.Setup{
 			Driver: c.String("executor.driver"),
