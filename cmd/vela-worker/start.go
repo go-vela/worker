@@ -5,8 +5,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/sirupsen/logrus"
 
 	tomb "gopkg.in/tomb.v2"
@@ -42,7 +40,7 @@ func (w *Worker) Start() error {
 		for {
 			select {
 			case <-tomb.Dying():
-				log.Fatal("shutting down worker")
+				logrus.Fatal("shutting down worker")
 				return tomb.Err()
 			}
 		}
