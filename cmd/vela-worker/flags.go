@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-vela/pkg-executor/executor"
+	"github.com/go-vela/pkg-queue/queue"
 	"github.com/go-vela/pkg-runtime/runtime"
 
 	"github.com/urfave/cli"
@@ -47,30 +48,6 @@ func flags() []cli.Flag {
 			Value:  30 * time.Minute,
 		},
 
-		// Queue Flags
-
-		cli.StringFlag{
-			EnvVar: "VELA_QUEUE_DRIVER,QUEUE_DRIVER",
-			Name:   "queue.driver",
-			Usage:  "queue driver",
-		},
-		cli.StringFlag{
-			EnvVar: "VELA_QUEUE_CONFIG,QUEUE_CONFIG",
-			Name:   "queue.config",
-			Usage:  "queue driver configuration string",
-		},
-		cli.BoolFlag{
-			EnvVar: "VELA_QUEUE_CLUSTER,QUEUE_CLUSTER",
-			Name:   "queue.cluster",
-			Usage:  "queue client is setup for clusters",
-		},
-		// By default all builds are pushed to the "vela" route
-		cli.StringSliceFlag{
-			EnvVar: "VELA_QUEUE_ROUTES,QUEUE_ROUTES",
-			Name:   "queue.routes",
-			Usage:  "queue routes (channels) the worker is listening on for builds",
-		},
-
 		// Server Flags
 
 		cli.StringFlag{
@@ -88,6 +65,10 @@ func flags() []cli.Flag {
 	// Executor Flags
 
 	f = append(f, executor.Flags...)
+
+	// Queue Flags
+
+	f = append(f, queue.Flags...)
 
 	// Runtime Flags
 
