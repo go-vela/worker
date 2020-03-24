@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/pkg-executor/executor"
-
+	"github.com/go-vela/pkg-queue/queue"
 	"github.com/go-vela/pkg-runtime/runtime"
 
 	"github.com/sirupsen/logrus"
@@ -68,7 +68,7 @@ func run(c *cli.Context) error {
 			Namespace: c.String("runtime.namespace"),
 		},
 		// queue configuration
-		Queue: &queueSetup{
+		Queue: &queue.Setup{
 			Driver:  c.String("queue.driver"),
 			Config:  c.String("queue.config"),
 			Cluster: c.Bool("queue.cluster"),

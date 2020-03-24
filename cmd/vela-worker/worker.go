@@ -8,18 +8,11 @@ import (
 	"time"
 
 	"github.com/go-vela/pkg-executor/executor"
+	"github.com/go-vela/pkg-queue/queue"
 	"github.com/go-vela/pkg-runtime/runtime"
 )
 
 type (
-	// TODO: implement github.com/go-vela/pkg-queue/queue.Setup
-	queueSetup struct {
-		Driver  string
-		Config  string
-		Cluster bool
-		Routes  []string
-	}
-
 	// API represents the worker configuration for API information.
 	API struct {
 		Port string
@@ -42,10 +35,8 @@ type (
 		API      *API
 		Build    *Build
 		Executor *executor.Setup
-		// TODO: implement github.com/go-vela/pkg-queue/queue.Setup
-		// Queue *queue.Setup
-		Queue   *queueSetup
-		Runtime *runtime.Setup
-		Server  *Server
+		Queue    *queue.Setup
+		Runtime  *runtime.Setup
+		Server   *Server
 	}
 )
