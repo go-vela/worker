@@ -6,7 +6,6 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/drone/envsubst v1.0.2
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/go-vela/mock v0.3.0
 	github.com/go-vela/pkg-executor v0.0.0-20200320141426-919f31b8efce
 	github.com/go-vela/pkg-queue v0.0.0-20200324143217-040845faaf50
