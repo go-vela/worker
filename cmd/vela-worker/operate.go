@@ -57,7 +57,7 @@ func (w *Worker) operate() error {
 					Client:   _client,
 					Runtime:  _runtime,
 					Build:    item.Build,
-					Pipeline: item.Pipeline,
+					Pipeline: item.Pipeline.Sanitize(w.Runtime.Driver),
 					Repo:     item.Repo,
 					User:     item.User,
 				})
@@ -100,32 +100,40 @@ func (w *Worker) operate() error {
 				}()
 
 				defer func() {
-					// destroy the build on the executor
 					logger.Info("destroying build")
+					// destroy the build with the executor
 					err = _executor.DestroyBuild(context.Background())
 					if err != nil {
 						logger.Errorf("unable to destroy build: %v", err)
 					}
 				}()
 
-				// create the build on the executor
 				logger.Info("creating build")
+				// create the build with the executor
 				err = _executor.CreateBuild(ctx)
 				if err != nil {
 					logger.Errorf("unable to create build: %v", err)
 					return err
 				}
 
-				// execute the build on the executor
+				logger.Info("planning build")
+				// plan the build with the executor
+				err = _executor.PlanBuild(ctx)
+				if err != nil {
+					logger.Errorf("unable to plan build: %v", err)
+					return err
+				}
+
 				logger.Info("executing build")
+				// execute the build with the executor
 				err = _executor.ExecBuild(ctx)
 				if err != nil {
 					logger.Errorf("unable to execute build: %v", err)
 					return err
 				}
 
-				// destroy the build on the executor
 				logger.Info("destroying build")
+				// destroy the build with the executor
 				err = _executor.DestroyBuild(context.Background())
 				if err != nil {
 					logger.Errorf("unable to destroy build: %v", err)
