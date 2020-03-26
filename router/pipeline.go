@@ -9,14 +9,20 @@ import (
 	"github.com/go-vela/worker/api"
 )
 
-// pipelineHandlers is a function that extends the provided base router group
-// with the API handlers for pipeline functionality.
+// PipelineHandlers extends the provided base router group
+// by adding a collection of endpoints for handling
+// pipeline related requests.
 //
-// GET    	/api/v1/executors/:executor/pipeline
-func pipelineHandlers(base *gin.RouterGroup) {
-	// pipelines endpoints
+// GET  /api/v1/executors/:executor/pipeline
+func PipelineHandlers(base *gin.RouterGroup) {
+	// add a collection of endpoints for handling pipeline related requests
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
 	pipeline := base.Group("/pipeline")
 	{
+		// add an endpoint for capturing the pipeline
+		//
+		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
 		pipeline.GET("", api.GetPipeline)
-	} // end of pipelines endpoints
+	}
 }
