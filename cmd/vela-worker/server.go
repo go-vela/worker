@@ -18,12 +18,11 @@ func (w *Worker) server() error {
 	// create the worker router to listen and serve traffic
 	router := router.Load(
 		middleware.RequestVersion,
-		// TODO: make this do stuff
-		// middleware.Executor(w.Executors),
-		middleware.Secret(w.Server.Secret),
+		middleware.Executors(w.Executors),
+		middleware.Secret(w.Config.Server.Secret),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
 	)
 
 	// start serving traffic on the provided worker port
-	return router.Run(w.API.Port)
+	return router.Run(w.Config.API.Port)
 }

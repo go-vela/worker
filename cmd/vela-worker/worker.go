@@ -30,13 +30,22 @@ type (
 		Secret  string
 	}
 
-	// Worker represents the worker configuration.
-	Worker struct {
+	// Config represents the worker configuration.
+	Config struct {
 		API      *API
 		Build    *Build
 		Executor *executor.Setup
 		Queue    *queue.Setup
 		Runtime  *runtime.Setup
 		Server   *Server
+	}
+
+	// Worker represents all configuration and
+	// system processes for the worker.
+	Worker struct {
+		Config    *Config
+		Executors map[int]executor.Engine
+		Queue     queue.Service
+		Runtime   runtime.Engine
 	}
 )

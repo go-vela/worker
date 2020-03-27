@@ -15,38 +15,38 @@ func (w *Worker) Validate() error {
 	logrus.Info("validating worker configuration")
 
 	// verify a build limit was provided
-	if w.Build.Limit <= 0 {
+	if w.Config.Build.Limit <= 0 {
 		return fmt.Errorf("no worker build limit provided")
 	}
 
 	// verify a build timeout was provided
-	if w.Build.Timeout <= 0 {
+	if w.Config.Build.Timeout <= 0 {
 		return fmt.Errorf("no worker build timeout provided")
 	}
 
 	// verify a server address was provided
-	if len(w.Server.Address) == 0 {
+	if len(w.Config.Server.Address) == 0 {
 		return fmt.Errorf("no worker server address provided")
 	}
 
 	// verify a server secret was provided
-	if len(w.Server.Secret) == 0 {
+	if len(w.Config.Server.Secret) == 0 {
 		return fmt.Errorf("no worker server secret provided")
 	}
 
 	// verify an executor driver was provided
-	if len(w.Executor.Driver) == 0 {
+	if len(w.Config.Executor.Driver) == 0 {
 		return fmt.Errorf("no worker executor driver provided")
 	}
 
 	// verify the queue configuration
-	err := w.Queue.Validate()
+	err := w.Config.Queue.Validate()
 	if err != nil {
 		return err
 	}
 
 	// verify the runtime configuration
-	err = w.Runtime.Validate()
+	err = w.Config.Runtime.Validate()
 	if err != nil {
 		return err
 	}

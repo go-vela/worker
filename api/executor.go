@@ -9,9 +9,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/go-vela/pkg-executor/executor"
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/worker/executor"
 	exec "github.com/go-vela/worker/router/middleware/executor"
 )
 
@@ -66,7 +67,22 @@ func GetExecutor(c *gin.Context) {
 func GetExecutors(c *gin.Context) {
 	var err error
 
-	e := executor.FromContext(c)
+	// capture executors value from context
+	value := c.Value("executors")
+	if value == nil {
+		msg := fmt.Sprintf("no running executors found")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
+	// cast executors value to expected type
+	e, ok := value.(map[int]executor.Engine)
+	if !ok {
+		msg := fmt.Sprintf("unable to get executors")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		return
+	}
+
 	executors := []*library.Executor{}
 
 	for _, executor := range e {

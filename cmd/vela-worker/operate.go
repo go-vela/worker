@@ -23,44 +23,46 @@ import (
 // operate is a helper function to ...
 func (w *Worker) operate() error {
 	// setup the client
-	_client, err := setupClient(w.Server)
+	_client, err := setupClient(w.Config.Server)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	// setup the queue
-	_queue, err := queue.New(w.Queue)
+	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	executors := new(errgroup.Group)
 
-	for i := 0; i < w.Build.Limit; i++ {
+	for i := 0; i < w.Config.Build.Limit; i++ {
 		logrus.Infof("Thread ID %d listening to queue...", i)
 		executors.Go(func() error {
 			for {
 				// setup the runtime
-				_runtime, err := runtime.New(w.Runtime)
+				w.Runtime, err = runtime.New(w.Config.Runtime)
 				if err != nil {
 					logrus.Fatal(err)
 				}
 
 				// capture an item from the queue
-				item, err := _queue.Pop()
+				item, err := w.Queue.Pop()
 				if err != nil {
 					return err
 				}
 
 				_executor, err := executor.New(&executor.Setup{
-					Driver:   w.Executor.Driver,
+					Driver:   w.Config.Executor.Driver,
 					Client:   _client,
-					Runtime:  _runtime,
+					Runtime:  w.Runtime,
 					Build:    item.Build,
-					Pipeline: item.Pipeline.Sanitize(w.Runtime.Driver),
+					Pipeline: item.Pipeline.Sanitize(w.Config.Runtime.Driver),
 					Repo:     item.Repo,
 					User:     item.User,
 				})
+
+				w.Executors[i] = _executor
 
 				// create logger with extra metadata
 				logger := logrus.WithFields(logrus.Fields{
@@ -68,7 +70,7 @@ func (w *Worker) operate() error {
 					"repo":  item.Repo.GetFullName(),
 				})
 
-				t := w.Build.Timeout
+				t := w.Config.Build.Timeout
 				// check if the repository has a custom timeout
 				if item.Repo.GetTimeout() > 0 {
 					// update timeout variable to repository custom timeout
