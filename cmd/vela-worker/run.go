@@ -53,36 +53,39 @@ func run(c *cli.Context) error {
 
 	// create the worker
 	w := &Worker{
-		// api configuration
-		API: &API{
-			Port: c.String("api.port"),
-		},
-		// build configuration
-		Build: &Build{
-			Limit:   c.Int("build.limit"),
-			Timeout: c.Duration("build.timeout"),
-		},
-		// executor configuration
-		Executor: &executor.Setup{
-			Driver: c.String("executor.driver"),
-		},
-		// runtime configuration
-		Runtime: &runtime.Setup{
-			Driver:    c.String("runtime.driver"),
-			Config:    c.String("runtime.config"),
-			Namespace: c.String("runtime.namespace"),
-		},
-		// queue configuration
-		Queue: &queue.Setup{
-			Driver:  c.String("queue.driver"),
-			Config:  c.String("queue.config"),
-			Cluster: c.Bool("queue.cluster"),
-			Routes:  c.StringSlice("queue.routes"),
-		},
-		// server configuration
-		Server: &Server{
-			Address: c.String("server.addr"),
-			Secret:  c.String("server.secret"),
+		// worker configuration
+		Config: &Config{
+			// api configuration
+			API: &API{
+				Port: c.String("api.port"),
+			},
+			// build configuration
+			Build: &Build{
+				Limit:   c.Int("build.limit"),
+				Timeout: c.Duration("build.timeout"),
+			},
+			// executor configuration
+			Executor: &executor.Setup{
+				Driver: c.String("executor.driver"),
+			},
+			// runtime configuration
+			Runtime: &runtime.Setup{
+				Driver:    c.String("runtime.driver"),
+				Config:    c.String("runtime.config"),
+				Namespace: c.String("runtime.namespace"),
+			},
+			// queue configuration
+			Queue: &queue.Setup{
+				Driver:  c.String("queue.driver"),
+				Config:  c.String("queue.config"),
+				Cluster: c.Bool("queue.cluster"),
+				Routes:  c.StringSlice("queue.routes"),
+			},
+			// server configuration
+			Server: &Server{
+				Address: c.String("server.addr"),
+				Secret:  c.String("server.secret"),
+			},
 		},
 	}
 
