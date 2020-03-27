@@ -28,14 +28,18 @@ func Establish() gin.HandlerFunc {
 		param := c.Param("executor")
 		if len(param) == 0 {
 			msg := "No executor parameter provided"
+
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+
 			return
 		}
 
 		number, err := strconv.Atoi(param)
 		if err != nil {
 			msg := fmt.Sprintf("invalid executor parameter provided: %s", param)
+
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+
 			return
 		}
 
@@ -43,7 +47,9 @@ func Establish() gin.HandlerFunc {
 		value := c.Value("executors")
 		if value == nil {
 			msg := fmt.Sprintf("no running executors found")
+
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 			return
 		}
 
@@ -51,7 +57,9 @@ func Establish() gin.HandlerFunc {
 		executors, ok := value.(map[int]executor.Engine)
 		if !ok {
 			msg := fmt.Sprintf("unable to get executors")
+
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
 			return
 		}
 
@@ -59,7 +67,9 @@ func Establish() gin.HandlerFunc {
 		e, ok := executors[number]
 		if !ok {
 			msg := fmt.Sprintf("unable to get executor %s", param)
+
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+
 			return
 		}
 
