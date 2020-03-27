@@ -1,0 +1,68 @@
+// Copyright (c) 2020 Target Brands, Inc. All rights reserved.
+//
+// Use of this source code is governed by the LICENSE file in this repository.
+
+package router
+
+import (
+	"testing"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/go-vela/worker/api"
+)
+
+func TestRouter_ExecutorHandlers(t *testing.T) {
+	// setup types
+	gin.SetMode(gin.TestMode)
+
+	_engine := gin.New()
+
+	want := gin.RoutesInfo{
+		{
+			Method:      "GET",
+			Path:        "/executors",
+			Handler:     "github.com/go-vela/worker/api.GetExecutors",
+			HandlerFunc: api.GetExecutors,
+		},
+		{
+			Method:      "GET",
+			Path:        "/executors/:executor",
+			Handler:     "github.com/go-vela/worker/api.GetExecutor",
+			HandlerFunc: api.GetExecutor,
+		},
+		{
+			Method:      "GET",
+			Path:        "/executors/:executor/build",
+			Handler:     "github.com/go-vela/worker/api.GetBuild",
+			HandlerFunc: api.GetBuild,
+		},
+		{
+			Method:      "DELETE",
+			Path:        "/executors/:executor/build/kill",
+			Handler:     "github.com/go-vela/worker/api.KillBuild",
+			HandlerFunc: api.KillBuild,
+		},
+		{
+			Method:      "GET",
+			Path:        "/executors/:executor/pipeline",
+			Handler:     "github.com/go-vela/worker/api.GetPipeline",
+			HandlerFunc: api.GetPipeline,
+		},
+		{
+			Method:      "GET",
+			Path:        "/executors/:executor/repo",
+			Handler:     "github.com/go-vela/worker/api.GetRepo",
+			HandlerFunc: api.GetRepo,
+		},
+	}
+
+	// run test
+	ExecutorHandlers(&_engine.RouterGroup)
+
+	got := _engine.Routes()
+
+	if len(got) != len(want) {
+		t.Errorf("ExecutorHandlers is %v, want %v", got, want)
+	}
+}

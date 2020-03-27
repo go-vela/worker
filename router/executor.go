@@ -10,16 +10,6 @@ import (
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 
-// executorHandlers is a function that extends the provided base router group
-// with the API handlers for build functionality.
-//
-// GET    /api/v1/executors
-// GET    /api/v1/executors/:executor
-// GET    /api/v1/executors/:executor/build
-// DELETE /api/v1/executors/:executor/build/kill
-// GET    /api/v1/executors/:executor/pipeline
-// GET    /api/v1/executors/:executor/repo
-
 // ExecutorHandlers extends the provided base router group
 // by adding a collection of endpoints for handling
 // executor related requests.
