@@ -6,14 +6,15 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/go-vela/worker/executor"
+
+	"github.com/go-vela/pkg-executor/executor"
 )
 
-// Executor is a middleware function that initializes the executor and
-// attaches to the context of every http.Request.
-func Executor(e map[int]executor.Engine) gin.HandlerFunc {
+// Executors is a middleware function that attaches the
+// executors to the context of every http.Request.
+func Executors(e map[int]executor.Engine) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		executor.ToContext(c, e)
+		c.Set("executors", e)
 		c.Next()
 	}
 }
