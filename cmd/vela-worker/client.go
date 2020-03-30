@@ -7,20 +7,19 @@ package main
 import (
 	"github.com/go-vela/sdk-go/vela"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/sirupsen/logrus"
 )
 
 // helper function to setup the queue from the CLI arguments.
-func setupClient(c *cli.Context) (*vela.Client, error) {
-	log.Debug("Creating vela client from CLI configuration")
+func setupClient(s *Server) (*vela.Client, error) {
+	logrus.Debug("creating vela client from worker configuration")
 
-	vela, err := vela.NewClient(c.String("server-addr"), nil)
+	vela, err := vela.NewClient(s.Address, nil)
 	if err != nil {
 		return nil, err
 	}
 	// set token for auth
-	vela.Authentication.SetTokenAuth(c.String("vela-secret"))
+	vela.Authentication.SetTokenAuth(s.Secret)
 
 	return vela, nil
 }

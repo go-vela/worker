@@ -11,26 +11,58 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-vela/worker/executor"
-
-	"github.com/go-vela/worker/queue"
+	"github.com/go-vela/pkg-executor/executor"
+	"github.com/go-vela/pkg-queue/queue"
+	"github.com/go-vela/pkg-runtime/runtime"
 
 	"github.com/sirupsen/logrus"
+
 	"golang.org/x/sync/errgroup"
 )
 
-func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err error) {
-	threads := new(errgroup.Group)
+// operate is a helper function to ...
+func (w *Worker) operate() error {
+	// setup the client
+	_client, err := setupClient(w.Config.Server)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
-	for id, executor := range e {
-		logrus.Infof("Thread ID %d listening to queue...", id)
-		threads.Go(func() error {
+	// setup the queue
+	w.Queue, err = queue.New(w.Config.Queue)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	executors := new(errgroup.Group)
+
+	for i := 0; i < w.Config.Build.Limit; i++ {
+		logrus.Infof("Thread ID %d listening to queue...", i)
+		executors.Go(func() error {
 			for {
-				// pop an item from the queue
-				item, err := q.Pop()
+				// setup the runtime
+				w.Runtime, err = runtime.New(w.Config.Runtime)
+				if err != nil {
+					logrus.Fatal(err)
+				}
+
+				// capture an item from the queue
+				item, err := w.Queue.Pop()
 				if err != nil {
 					return err
 				}
+
+				_executor, err := executor.New(&executor.Setup{
+					Driver:   w.Config.Executor.Driver,
+					Client:   _client,
+					Runtime:  w.Runtime,
+					Build:    item.Build,
+					Pipeline: item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+					Repo:     item.Repo,
+					User:     item.User,
+				})
+
+				w.Executors[i] = _executor
 
 				// create logger with extra metadata
 				logger := logrus.WithFields(logrus.Fields{
@@ -38,12 +70,7 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 					"repo":  item.Repo.GetFullName(),
 				})
 
-				// add build metadata to the executor
-				executor.WithBuild(item.Build)
-				executor.WithPipeline(item.Pipeline)
-				executor.WithRepo(item.Repo)
-				executor.WithUser(item.User)
-
+				t := w.Config.Build.Timeout
 				// check if the repository has a custom timeout
 				if item.Repo.GetTimeout() > 0 {
 					// update timeout variable to repository custom timeout
@@ -75,33 +102,41 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 				}()
 
 				defer func() {
-					// destroy the build on the executor
 					logger.Info("destroying build")
-					err = executor.DestroyBuild(context.Background())
+					// destroy the build with the executor
+					err = _executor.DestroyBuild(context.Background())
 					if err != nil {
 						logger.Errorf("unable to destroy build: %v", err)
 					}
 				}()
 
-				// create the build on the executor
 				logger.Info("creating build")
-				err = executor.CreateBuild(ctx)
+				// create the build with the executor
+				err = _executor.CreateBuild(ctx)
 				if err != nil {
 					logger.Errorf("unable to create build: %v", err)
 					return err
 				}
 
-				// execute the build on the executor
+				logger.Info("planning build")
+				// plan the build with the executor
+				err = _executor.PlanBuild(ctx)
+				if err != nil {
+					logger.Errorf("unable to plan build: %v", err)
+					return err
+				}
+
 				logger.Info("executing build")
-				err = executor.ExecBuild(ctx)
+				// execute the build with the executor
+				err = _executor.ExecBuild(ctx)
 				if err != nil {
 					logger.Errorf("unable to execute build: %v", err)
 					return err
 				}
 
-				// destroy the build on the executor
 				logger.Info("destroying build")
-				err = executor.DestroyBuild(context.Background())
+				// destroy the build with the executor
+				err = _executor.DestroyBuild(context.Background())
 				if err != nil {
 					logger.Errorf("unable to destroy build: %v", err)
 				}
@@ -111,10 +146,5 @@ func operate(q queue.Service, e map[int]executor.Engine, t time.Duration) (err e
 		})
 	}
 
-	err = threads.Wait()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return executors.Wait()
 }

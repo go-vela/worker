@@ -16,29 +16,70 @@ const (
 	base = "/api/v1"
 )
 
-// Load is a server function that returns the engine for processing web requests
-// on the host it's running on
+// Load creates the gin.Engine with the provided
+// options (middleware functions) for processing
+// web and API requests for the worker.
 func Load(options ...gin.HandlerFunc) *gin.Engine {
+	// create an empty gin engine with no middleware
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#New
 	r := gin.New()
+
+	// attach a middleware that recovers from any panics
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Recovery
 	r.Use(gin.Recovery())
 
+	// attach a middleware that injects the Vela version into the request
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#RequestVersion
 	r.Use(middleware.RequestVersion)
+
+	// attach a middleware that prevents the client from caching
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#NoCache
 	r.Use(middleware.NoCache)
+
+	// attach a middleware capable of handling options requests
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#Options
 	r.Use(middleware.Options)
+
+	// attach a middleware for adding extra security measures
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#Secure
 	r.Use(middleware.Secure)
 
+	// attach all other provided middleware
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Use
 	r.Use(options...)
 
+	// add an endpoint for reporting the health of the worker
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
 	r.GET("/health", api.Health)
+
+	// add an endpoint for reporting metrics for the worker
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
 	r.GET("/metrics", gin.WrapH(api.Metrics()))
 
-	// api endpoints
+	// add a collection of endpoints for handling API related requests
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
 	baseAPI := r.Group(base, user.Establish(), perm.MustServer())
 	{
-		// executor endpoints
-		executorHandlers(baseAPI)
+		// add an endpoint for shutting down the worker
+		//
+		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.POST
 		baseAPI.POST("/shutdown", api.Shutdown)
-	} // end of api
+
+		// add a collection of endpoints for handling executor related requests
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#ExecutorHandlers
+		ExecutorHandlers(baseAPI)
+	}
 
 	return r
 }
