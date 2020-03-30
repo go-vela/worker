@@ -87,6 +87,7 @@ func run(c *cli.Context) error {
 				Secret:  c.String("server.secret"),
 			},
 		},
+		Executors: make(map[int]executor.Engine),
 	}
 
 	// validate the worker
