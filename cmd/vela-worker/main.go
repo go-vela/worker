@@ -59,9 +59,6 @@ func main() {
 
 	app.Flags = flags()
 
-	// set logrus to log in JSON format
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-
 	// Worker Start
 
 	err := app.Run(os.Args)

@@ -20,6 +20,16 @@ import (
 
 // run executes the worker based off the configuration provided.
 func run(c *cli.Context) error {
+	// set log format for the worker
+	switch c.String("log.format") {
+	case "t", "text", "Text", "TEXT":
+		logrus.SetFormatter(&logrus.TextFormatter{})
+	case "j", "json", "Json", "JSON":
+		fallthrough
+	default:
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	}
+
 	// set log level for the worker
 	switch c.String("log.level") {
 	case "t", "trace", "Trace", "TRACE":
@@ -28,9 +38,6 @@ func run(c *cli.Context) error {
 	case "d", "debug", "Debug", "DEBUG":
 		gin.SetMode(gin.DebugMode)
 		logrus.SetLevel(logrus.DebugLevel)
-	case "i", "info", "Info", "INFO":
-		gin.SetMode(gin.ReleaseMode)
-		logrus.SetLevel(logrus.InfoLevel)
 	case "w", "warn", "Warn", "WARN":
 		gin.SetMode(gin.ReleaseMode)
 		logrus.SetLevel(logrus.WarnLevel)
@@ -43,6 +50,11 @@ func run(c *cli.Context) error {
 	case "p", "panic", "Panic", "PANIC":
 		gin.SetMode(gin.ReleaseMode)
 		logrus.SetLevel(logrus.PanicLevel)
+	case "i", "info", "Info", "INFO":
+		fallthrough
+	default:
+		gin.SetMode(gin.ReleaseMode)
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -64,11 +76,16 @@ func run(c *cli.Context) error {
 				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
-			// hostname configuration
-			Hostname: c.String("hostname"),
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver: c.String("executor.driver"),
+			},
+			// hostname configuration
+			Hostname: c.String("hostname"),
+			// logger configuration
+			Logger: &Logger{
+				Format: c.String("log.format"),
+				Level:  c.String("log.level"),
 			},
 			// runtime configuration
 			Runtime: &runtime.Setup{
