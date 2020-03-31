@@ -47,12 +47,18 @@ func flags() []cli.Flag {
 			Value:  30 * time.Minute,
 		},
 
-		// Logging Flags
+		// Logger Flags
 
+		cli.StringFlag{
+			EnvVar: "WORKER_LOG_FORMAT,VELA_LOG_FORMAT,LOG_FORMAT",
+			Name:   "log.format",
+			Usage:  "set log format for the worker",
+			Value:  "json",
+		},
 		cli.StringFlag{
 			EnvVar: "WORKER_LOG_LEVEL,VELA_LOG_LEVEL,LOG_LEVEL",
 			Name:   "log.level",
-			Usage:  "set log level - options: (trace|debug|info|warn|error|fatal|panic)",
+			Usage:  "set log level for the worker",
 			Value:  "info",
 		},
 

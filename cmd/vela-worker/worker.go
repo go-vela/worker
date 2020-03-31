@@ -24,6 +24,12 @@ type (
 		Timeout time.Duration
 	}
 
+	// Logger represents the worker configuration for logger information.
+	Logger struct {
+		Format string
+		Level  string
+	}
+
 	// Server represents the worker configuration for server information.
 	Server struct {
 		Address string
@@ -36,6 +42,7 @@ type (
 		Build    *Build
 		Executor *executor.Setup
 		Hostname string
+		Logger   *Logger
 		Queue    *queue.Setup
 		Runtime  *runtime.Setup
 		Server   *Server
