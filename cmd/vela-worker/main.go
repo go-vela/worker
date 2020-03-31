@@ -17,7 +17,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// hostname stories the worker host name reported by the kernel.
+// hostname stores the worker host name reported by the kernel.
 var hostname string
 
 // create an init function to set the hostname for the worker.
