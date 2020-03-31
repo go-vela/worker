@@ -18,10 +18,9 @@ func flags() []cli.Flag {
 	f := []cli.Flag{
 
 		cli.StringFlag{
-			EnvVar: "WORKER_LOG_LEVEL,VELA_LOG_LEVEL,LOG_LEVEL",
-			Name:   "log.level",
-			Usage:  "set log level - options: (trace|debug|info|warn|error|fatal|panic)",
-			Value:  "info",
+			EnvVar: "WORKER_HOSTNAME,VELA_HOSTNAME,HOSTNAME",
+			Name:   "hostname",
+			Usage:  "set hostname for the worker",
 		},
 
 		// API Flags
@@ -46,6 +45,15 @@ func flags() []cli.Flag {
 			Name:   "build.timeout",
 			Usage:  "maximum amount of time a build can run for",
 			Value:  30 * time.Minute,
+		},
+
+		// Logging Flags
+
+		cli.StringFlag{
+			EnvVar: "WORKER_LOG_LEVEL,VELA_LOG_LEVEL,LOG_LEVEL",
+			Name:   "log.level",
+			Usage:  "set log level - options: (trace|debug|info|warn|error|fatal|panic)",
+			Value:  "info",
 		},
 
 		// Server Flags

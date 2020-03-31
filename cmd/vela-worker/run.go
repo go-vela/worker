@@ -64,6 +64,8 @@ func run(c *cli.Context) error {
 				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
+			// hostname configuration
+			Hostname: c.String("hostname"),
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver: c.String("executor.driver"),
@@ -88,6 +90,11 @@ func run(c *cli.Context) error {
 			},
 		},
 		Executors: make(map[int]executor.Engine),
+	}
+
+	// set the worker hostname if no flag was provided
+	if len(w.Config.Hostname) == 0 {
+		w.Config.Hostname = hostname
 	}
 
 	// validate the worker
