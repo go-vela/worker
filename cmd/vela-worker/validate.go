@@ -24,6 +24,11 @@ func (w *Worker) Validate() error {
 		return fmt.Errorf("no worker build timeout provided")
 	}
 
+	// verify a hostname was provided
+	if len(w.Config.Hostname) == 0 {
+		return fmt.Errorf("no worker hostname provided")
+	}
+
 	// verify a server address was provided
 	if len(w.Config.Server.Address) == 0 {
 		return fmt.Errorf("no worker server address provided")
