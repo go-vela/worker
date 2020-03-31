@@ -35,6 +35,7 @@ type (
 		API      *API
 		Build    *Build
 		Executor *executor.Setup
+		Hostname string
 		Queue    *queue.Setup
 		Runtime  *runtime.Setup
 		Server   *Server

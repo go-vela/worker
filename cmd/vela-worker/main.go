@@ -17,6 +17,22 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+// hostname stories the worker host name reported by the kernel.
+var hostname string
+
+// create an init function to set the hostname for the worker.
+//
+// https://golang.org/doc/effective_go.html#init
+func init() {
+	// attempt to capture the hostname for the worker
+	hostname, _ = os.Hostname()
+	// check if a hostname is set
+	if len(hostname) == 0 {
+		// default the hostname to localhost
+		hostname = "localhost"
+	}
+}
+
 func main() {
 	app := cli.NewApp()
 
