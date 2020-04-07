@@ -78,15 +78,22 @@ func (w *Worker) exec(index int) error {
 	ctx, timeout := context.WithTimeout(ctx, t)
 	defer timeout()
 
-	// add signals to the parent context so
-	// users can cancel builds
+	// create channel for catching OS signals
 	sigchan := make(chan os.Signal, 1)
+
+	// add a cancelation signal to our current context
 	ctx, sig := context.WithCancel(ctx)
+
+	// set the OS signals the Worker will respond to
 	signal.Notify(sigchan, syscall.SIGTERM)
+
+	// defer canceling the context
 	defer func() {
 		signal.Stop(sigchan)
 		sig()
 	}()
+
+	// spawn a goroutine to listen for the signals
 	go func() {
 		select {
 		case <-sigchan:
