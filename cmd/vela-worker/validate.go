@@ -45,12 +45,16 @@ func (w *Worker) Validate() error {
 	}
 
 	// verify the queue configuration
+	//
+	// https://godoc.org/github.com/go-vela/pkg-queue/queue#Setup.Validate
 	err := w.Config.Queue.Validate()
 	if err != nil {
 		return err
 	}
 
 	// verify the runtime configuration
+	//
+	// https://godoc.org/github.com/go-vela/pkg-runtime/runtime#Setup.Validate
 	err = w.Config.Runtime.Validate()
 	if err != nil {
 		return err
