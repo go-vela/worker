@@ -18,7 +18,8 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// run executes the worker based off the configuration provided.
+// run executes the worker based
+// off the configuration provided.
 func run(c *cli.Context) error {
 	// set log format for the worker
 	switch c.String("log.format") {
@@ -57,6 +58,9 @@ func run(c *cli.Context) error {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
 
+	// create a log entry with extra metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
 	logrus.WithFields(logrus.Fields{
 		"code":     "https://github.com/go-vela/worker/",
 		"docs":     "https://go-vela.github.io/docs/concepts/infrastructure/worker/",

@@ -13,10 +13,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// server is a helper function to ...
+// server is a helper function to listen and serve
+// traffic for web and API requests for the Worker.
 func (w *Worker) server() error {
 	// create the worker router to listen and serve traffic
-	router := router.Load(
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#Load
+	_server := router.Load(
 		middleware.RequestVersion,
 		middleware.Executors(w.Executors),
 		middleware.Secret(w.Config.Server.Secret),
@@ -24,5 +27,7 @@ func (w *Worker) server() error {
 	)
 
 	// start serving traffic on the provided worker port
-	return router.Run(w.Config.API.Port)
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
+	return _server.Run(w.Config.API.Port)
 }

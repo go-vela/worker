@@ -14,11 +14,17 @@ import (
 func setupClient(s *Server) (*vela.Client, error) {
 	logrus.Debug("creating vela client from worker configuration")
 
+	// create a new Vela client from the server configuration
+	//
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#NewClient
 	vela, err := vela.NewClient(s.Address, nil)
 	if err != nil {
 		return nil, err
 	}
-	// set token for auth
+
+	// set token for authentication with the server
+	//
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#AuthenticationService.SetTokenAuth
 	vela.Authentication.SetTokenAuth(s.Secret)
 
 	return vela, nil
