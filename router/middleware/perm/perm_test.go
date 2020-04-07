@@ -76,7 +76,7 @@ func TestPerm_MustServer_failure(t *testing.T) {
 
 	// setup vela mock server
 	engine.Use(func(c *gin.Context) { c.Set("secret", secret) })
-	engine.Use(user.Establish())
+	engine.Use(func(c *gin.Context) { c.Set("user", u) })
 	engine.Use(MustServer())
 	engine.GET("/server/users", func(c *gin.Context) {
 		c.Status(http.StatusOK)
@@ -88,7 +88,7 @@ func TestPerm_MustServer_failure(t *testing.T) {
 	// run test
 	engine.ServeHTTP(context.Writer, context.Request)
 
-	if resp.Code != http.StatusOK {
+	if resp.Code != http.StatusUnauthorized {
 		t.Errorf("MustServer returned %v, want %v", resp.Code, http.StatusUnauthorized)
 	}
 }
