@@ -10,19 +10,31 @@ import (
 	tomb "gopkg.in/tomb.v2"
 )
 
-// Start does stuff...
+// Start initiates all subprocesses for the Worker
+// from the provided configuration. The server
+// subprocess enables the Worker to listen and
+// serve traffic for web and API requests. The
+// operator subprocess enables the Worker to
+// poll the queue and execute Vela pipelines.
 func (w *Worker) Start() error {
-	// create the tomb for managing worker processes
+	// create the tomb for managing worker subprocesses
+	//
+	// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb
 	tomb := new(tomb.Tomb)
 
-	// spawn a tomb goroutine to manage the worker processes
+	// spawn a tomb goroutine to manage the worker subprocesses
+	//
+	// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Go
 	tomb.Go(func() error {
-		// spawn goroutine for starting the worker
+		// spawn goroutine for starting the server
 		go func() {
 			logrus.Info("starting worker server")
 			// start the server for the worker
 			err := w.server()
 			if err != nil {
+				// kill the worker subprocesses
+				//
+				// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Kill
 				tomb.Kill(err)
 			}
 		}()
@@ -33,19 +45,29 @@ func (w *Worker) Start() error {
 			// start the operator for the worker
 			err := w.operate()
 			if err != nil {
+				// kill the worker subprocesses
+				//
+				// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Kill
 				tomb.Kill(err)
 			}
 		}()
 
+		// create an infinite loop to poll for errors
 		for {
+			// create a select statement to check for errors
 			select {
+			// check if one of the worker subprocesses died
 			case <-tomb.Dying():
+				// fatally log that we're shutting down the worker
 				logrus.Fatal("shutting down worker")
+
 				return tomb.Err()
 			}
 		}
 	})
 
-	// watch for errors from worker processes
+	// wait for errors from worker subprocesses
+	//
+	// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Wait
 	return tomb.Wait()
 }

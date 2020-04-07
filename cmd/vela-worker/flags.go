@@ -14,6 +14,9 @@ import (
 	"github.com/urfave/cli"
 )
 
+// flags is a helper function to return the all
+// supported command line interface (CLI) flags
+// for the Worker.
 func flags() []cli.Flag {
 	f := []cli.Flag{
 
