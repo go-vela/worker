@@ -23,3 +23,7 @@ replace github.com/go-vela/pkg-executor => github.com/GregoryDosh/pkg-executor v
 replace github.com/go-vela/pkg-queue => github.com/GregoryDosh/pkg-queue v0.0.0-20200409234805-1d6182a8eba4
 
 replace github.com/go-vela/pkg-runtime => github.com/GregoryDosh/pkg-runtime v0.0.0-20200410000527-9a1b10bc1f14
+
+replace github.com/go-vela/worker => github.com/GregoryDosh/worker v0.3.2-0.20200410002335-f24601f8a167
+
+replace github.com/go-vela/compiler => github.com/GregoryDosh/compiler v0.3.1
