@@ -163,7 +163,6 @@ func TestMiddleware_Options_InvalidMethod(t *testing.T) {
 
 func TestMiddleware_Secure(t *testing.T) {
 	// setup types
-	wantOrigin := "*"
 	wantFrameOptions := "DENY"
 	wantContentTypeOptions := "nosniff"
 	wantProtection := "1; mode=block"
@@ -184,17 +183,12 @@ func TestMiddleware_Secure(t *testing.T) {
 	// run test
 	engine.ServeHTTP(context.Writer, context.Request)
 
-	gotOrigin := context.Writer.Header().Get("Access-Control-Allow-Origin")
 	gotFrameOptions := context.Writer.Header().Get("X-Frame-Options")
 	gotContentTypeOptions := context.Writer.Header().Get("X-Content-Type-Options")
 	gotProtection := context.Writer.Header().Get("X-XSS-Protection")
 
 	if resp.Code != http.StatusOK {
 		t.Errorf("Secure returned %v, want %v", resp.Code, http.StatusOK)
-	}
-
-	if !reflect.DeepEqual(gotOrigin, wantOrigin) {
-		t.Errorf("Secure Access-Control-Allow-Origin is %v, want %v", gotOrigin, wantOrigin)
 	}
 
 	if !reflect.DeepEqual(gotFrameOptions, wantFrameOptions) {
@@ -212,7 +206,6 @@ func TestMiddleware_Secure(t *testing.T) {
 
 func TestMiddleware_Secure_TLS(t *testing.T) {
 	// setup types
-	wantOrigin := "*"
 	wantFrameOptions := "DENY"
 	wantContentTypeOptions := "nosniff"
 	wantProtection := "1; mode=block"
@@ -235,7 +228,6 @@ func TestMiddleware_Secure_TLS(t *testing.T) {
 	// run test
 	engine.ServeHTTP(context.Writer, context.Request)
 
-	gotOrigin := context.Writer.Header().Get("Access-Control-Allow-Origin")
 	gotFrameOptions := context.Writer.Header().Get("X-Frame-Options")
 	gotContentTypeOptions := context.Writer.Header().Get("X-Content-Type-Options")
 	gotProtection := context.Writer.Header().Get("X-XSS-Protection")
@@ -243,10 +235,6 @@ func TestMiddleware_Secure_TLS(t *testing.T) {
 
 	if resp.Code != http.StatusOK {
 		t.Errorf("Secure returned %v, want %v", resp.Code, http.StatusOK)
-	}
-
-	if !reflect.DeepEqual(gotOrigin, wantOrigin) {
-		t.Errorf("Secure Access-Control-Allow-Origin is %v, want %v", gotOrigin, wantOrigin)
 	}
 
 	if !reflect.DeepEqual(gotFrameOptions, wantFrameOptions) {
@@ -268,10 +256,10 @@ func TestMiddleware_Secure_TLS(t *testing.T) {
 
 func TestMiddleware_RequestVersion(t *testing.T) {
 	// setup types
-	wantVersion := "0.3.0"
+	wantVersion := "0.4.0"
 
 	// setup context
-	gin.SetMode(gin.TestMode)
+	gin.SetMode(gin.DebugMode)
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
@@ -299,7 +287,7 @@ func TestMiddleware_RequestVersion(t *testing.T) {
 
 func TestMiddleware_RequestVersion_Prod(t *testing.T) {
 	// setup types
-	wantVersion := "0.3.0"
+	wantVersion := "0.4.0"
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -330,10 +318,10 @@ func TestMiddleware_RequestVersion_Prod(t *testing.T) {
 
 func TestMiddleware_ResponseVersion(t *testing.T) {
 	// setup types
-	wantVersion := "0.3.0"
+	wantVersion := "0.4.0"
 
 	// setup context
-	gin.SetMode(gin.TestMode)
+	gin.SetMode(gin.DebugMode)
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
@@ -361,7 +349,7 @@ func TestMiddleware_ResponseVersion(t *testing.T) {
 
 func TestMiddleware_ResponseVersion_Prod(t *testing.T) {
 	// setup types
-	wantVersion := "0.3.0"
+	wantVersion := "0.4.0"
 
 	// setup context
 	gin.SetMode(gin.TestMode)

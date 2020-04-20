@@ -13,13 +13,24 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// run executes the worker based off the configuration provided.
+// run executes the worker based
+// off the configuration provided.
 func run(c *cli.Context) error {
+	// set log format for the worker
+	switch c.String("log.format") {
+	case "t", "text", "Text", "TEXT":
+		logrus.SetFormatter(&logrus.TextFormatter{})
+	case "j", "json", "Json", "JSON":
+		fallthrough
+	default:
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	}
+
 	// set log level for the worker
 	switch c.String("log.level") {
 	case "t", "trace", "Trace", "TRACE":
@@ -28,9 +39,6 @@ func run(c *cli.Context) error {
 	case "d", "debug", "Debug", "DEBUG":
 		gin.SetMode(gin.DebugMode)
 		logrus.SetLevel(logrus.DebugLevel)
-	case "i", "info", "Info", "INFO":
-		gin.SetMode(gin.ReleaseMode)
-		logrus.SetLevel(logrus.InfoLevel)
 	case "w", "warn", "Warn", "WARN":
 		gin.SetMode(gin.ReleaseMode)
 		logrus.SetLevel(logrus.WarnLevel)
@@ -43,8 +51,16 @@ func run(c *cli.Context) error {
 	case "p", "panic", "Panic", "PANIC":
 		gin.SetMode(gin.ReleaseMode)
 		logrus.SetLevel(logrus.PanicLevel)
+	case "i", "info", "Info", "INFO":
+		fallthrough
+	default:
+		gin.SetMode(gin.ReleaseMode)
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 
+	// create a log entry with extra metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
 	logrus.WithFields(logrus.Fields{
 		"code":     "https://github.com/go-vela/worker/",
 		"docs":     "https://go-vela.github.io/docs/concepts/infrastructure/worker/",
@@ -68,6 +84,13 @@ func run(c *cli.Context) error {
 			Executor: &executor.Setup{
 				Driver: c.String("executor.driver"),
 			},
+			// hostname configuration
+			Hostname: c.String("hostname"),
+			// logger configuration
+			Logger: &Logger{
+				Format: c.String("log.format"),
+				Level:  c.String("log.level"),
+			},
 			// runtime configuration
 			Runtime: &runtime.Setup{
 				Driver:    c.String("runtime.driver"),
@@ -88,6 +111,11 @@ func run(c *cli.Context) error {
 			},
 		},
 		Executors: make(map[int]executor.Engine),
+	}
+
+	// set the worker hostname if no flag was provided
+	if len(w.Config.Hostname) == 0 {
+		w.Config.Hostname = hostname
 	}
 
 	// validate the worker

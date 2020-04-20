@@ -107,7 +107,53 @@ func TestExecutor_Establish(t *testing.T) {
 	}
 }
 
-func TestExecutor_Establish_NoExecutor(t *testing.T) {
+func TestExecutor_Establish_NoParam(t *testing.T) {
+	// setup types
+	gin.SetMode(gin.TestMode)
+
+	// setup context
+	resp := httptest.NewRecorder()
+	context, engine := gin.CreateTestContext(resp)
+	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/", nil)
+
+	// setup mock server
+	engine.Use(Establish())
+	engine.GET("/executors/:executor", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	// run test
+	engine.ServeHTTP(context.Writer, context.Request)
+
+	if resp.Code != http.StatusBadRequest {
+		t.Errorf("Establish returned %v, want %v", resp.Code, http.StatusBadRequest)
+	}
+}
+
+func TestExecutor_Establish_InvalidParam(t *testing.T) {
+	// setup types
+	gin.SetMode(gin.TestMode)
+
+	// setup context
+	resp := httptest.NewRecorder()
+	context, engine := gin.CreateTestContext(resp)
+	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/foo", nil)
+
+	// setup mock server
+	engine.Use(Establish())
+	engine.GET("/executors/:executor", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	// run test
+	engine.ServeHTTP(context.Writer, context.Request)
+
+	if resp.Code != http.StatusBadRequest {
+		t.Errorf("Establish returned %v, want %v", resp.Code, http.StatusBadRequest)
+	}
+}
+
+func TestExecutor_Establish_NoExecutors(t *testing.T) {
 	// setup types
 	gin.SetMode(gin.TestMode)
 
@@ -126,6 +172,54 @@ func TestExecutor_Establish_NoExecutor(t *testing.T) {
 	engine.ServeHTTP(context.Writer, context.Request)
 
 	if resp.Code != http.StatusInternalServerError {
-		t.Errorf("Establish returned %v, want %v", resp.Code, http.StatusOK)
+		t.Errorf("Establish returned %v, want %v", resp.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestExecutor_Establish_InvalidExecutors(t *testing.T) {
+	// setup types
+	gin.SetMode(gin.TestMode)
+
+	// setup context
+	resp := httptest.NewRecorder()
+	context, engine := gin.CreateTestContext(resp)
+	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
+
+	// setup mock server
+	engine.Use(func(c *gin.Context) { c.Set("executors", "invalid") })
+	engine.Use(Establish())
+	engine.GET("/executors/:executor", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	// run test
+	engine.ServeHTTP(context.Writer, context.Request)
+
+	if resp.Code != http.StatusInternalServerError {
+		t.Errorf("Establish returned %v, want %v", resp.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestExecutor_Establish_ExecutorNotFound(t *testing.T) {
+	// setup types
+	gin.SetMode(gin.TestMode)
+
+	// setup context
+	resp := httptest.NewRecorder()
+	context, engine := gin.CreateTestContext(resp)
+	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
+
+	// setup mock server
+	engine.Use(func(c *gin.Context) { c.Set("executors", make(map[int]executor.Engine)) })
+	engine.Use(Establish())
+	engine.GET("/executors/:executor", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	// run test
+	engine.ServeHTTP(context.Writer, context.Request)
+
+	if resp.Code != http.StatusBadRequest {
+		t.Errorf("Establish returned %v, want %v", resp.Code, http.StatusBadRequest)
 	}
 }
