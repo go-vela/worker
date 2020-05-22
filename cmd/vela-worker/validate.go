@@ -12,6 +12,9 @@ import (
 
 // Validate verifies the Worker is properly configured.
 func (w *Worker) Validate() error {
+	// log a message indicating the configuration verification
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 	logrus.Info("validating worker configuration")
 
 	// verify a build limit was provided
