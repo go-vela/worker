@@ -16,6 +16,11 @@ import (
 // server is a helper function to listen and serve
 // traffic for web and API requests for the Worker.
 func (w *Worker) server() error {
+	// log a message indicating the setup of the server handlers
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Trace
+	logrus.Trace("loading router with server handlers")
+
 	// create the worker router to listen and serve traffic
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#Load
@@ -25,6 +30,11 @@ func (w *Worker) server() error {
 		middleware.Secret(w.Config.Server.Secret),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
 	)
+
+	// log a message indicating the start of serving traffic
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Tracef
+	logrus.Tracef("serving traffic on %s", w.Config.API.Port)
 
 	// start serving traffic on the provided worker port
 	//
