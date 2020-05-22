@@ -6,11 +6,11 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-vela/pkg-executor v0.4.1
-	github.com/go-vela/pkg-queue v0.4.1
-	github.com/go-vela/pkg-runtime v0.4.1
-	github.com/go-vela/sdk-go v0.4.1
-	github.com/go-vela/types v0.4.1
+	github.com/go-vela/pkg-executor v0.4.3
+	github.com/go-vela/pkg-queue v0.4.3
+	github.com/go-vela/pkg-runtime v0.4.3
+	github.com/go-vela/sdk-go v0.4.3
+	github.com/go-vela/types v0.4.3
 	github.com/joho/godotenv v1.3.0
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/client_model v0.0.0-20191202183732-d1d2010b5bee // indirect
