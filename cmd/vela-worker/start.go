@@ -28,10 +28,19 @@ func (w *Worker) Start() error {
 	tomb.Go(func() error {
 		// spawn goroutine for starting the server
 		go func() {
+			// log a message indicating the start of the server
+			//
+			// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 			logrus.Info("starting worker server")
+
 			// start the server for the worker
 			err := w.server()
 			if err != nil {
+				// log the error received from the server
+				//
+				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+				logrus.Errorf("failing worker server: %v", err)
+
 				// kill the worker subprocesses
 				//
 				// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Kill
@@ -41,10 +50,19 @@ func (w *Worker) Start() error {
 
 		// spawn goroutine for starting the operator
 		go func() {
+			// log a message indicating the start of the operator
+			//
+			// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 			logrus.Info("starting worker operator")
+
 			// start the operator for the worker
 			err := w.operate()
 			if err != nil {
+				// log the error received from the operator
+				//
+				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+				logrus.Errorf("failing worker operator: %v", err)
+
 				// kill the worker subprocesses
 				//
 				// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Kill
@@ -59,6 +77,8 @@ func (w *Worker) Start() error {
 			// check if one of the worker subprocesses died
 			case <-tomb.Dying():
 				// fatally log that we're shutting down the worker
+				//
+				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Fatal
 				logrus.Fatal("shutting down worker")
 
 				return tomb.Err()
