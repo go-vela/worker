@@ -14,6 +14,30 @@ import (
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 
+// swagger:operation GET /api/v1/executors/:executor/repo repo GetRepo
+//
+// Get a currently running repo
+//
+// ---
+// x-success_http_code: '200'
+// produces:
+// - application/json
+// parameters:
+// - in: header
+//   name: Authorization
+//   description: Vela server token
+//   required: true
+//   type: string
+// responses:
+//   '200':
+//     description: Successfully retrieved the repo
+//     type: json
+//     schema:
+//       "$ref": "#/definitions/Executor"
+//   '500':
+//     description: Unable to retrieve the repo
+//     type: json
+
 // GetRepo represents the API handler to capture the
 // repo currently running on an executor.
 func GetRepo(c *gin.Context) {

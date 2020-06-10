@@ -10,6 +10,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// swagger:operation POST /api/v1/shutdown router Shutdown
+//
+// Check if the worker API is available
+//
+// ---
+// x-success_http_code: '501'
+// produces:
+// - application/json
+// parameters:
+// - in: header
+//   name: Authorization
+//   description: Vela server token
+//   required: true
+//   type: string
+// responses:
+//   '501':
+//     description: Endpoint is not yet implemented
+//     schema:
+//       type: string
+
 // Shutdown represents the API handler to shutdown a
 // executors currently running on an worker.
 //

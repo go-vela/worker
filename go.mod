@@ -10,7 +10,7 @@ require (
 	github.com/go-vela/pkg-queue v0.4.3
 	github.com/go-vela/pkg-runtime v0.4.3
 	github.com/go-vela/sdk-go v0.4.3
-	github.com/go-vela/types v0.4.3
+	github.com/go-vela/types v0.4.4-0.20200609201044-2f88e90185e3
 	github.com/joho/godotenv v1.3.0
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/client_model v0.0.0-20191202183732-d1d2010b5bee // indirect

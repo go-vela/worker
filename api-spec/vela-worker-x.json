@@ -1,0 +1,2161 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API for a Vela worker",
+    "title": "Vela worker",
+    "version": "0.4.3"
+  },
+  "basePath": "/api/v1",
+  "paths": {
+    "/api/v1/executors": {
+      "get": {
+        "description": "Get all currently running executors",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "executor"
+        ],
+        "operationId": "GetExecutors",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved all running executors",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve all running executors"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/:executor": {
+      "get": {
+        "description": "Get a currently running executor",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "executor"
+        ],
+        "operationId": "GetExecutor",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved all running executors",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve all running executors"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/:executor/build": {
+      "get": {
+        "description": "Get the currently running build",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "build"
+        ],
+        "operationId": "GetBuild",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the build",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve the build",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/:executor/build/kill": {
+      "delete": {
+        "description": "Kill the currently running build",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "build"
+        ],
+        "operationId": "KillBuild",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully killed the build",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to kill the build"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/:executor/pipeline": {
+      "get": {
+        "description": "Get a currently running pipeline",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "pipeline"
+        ],
+        "operationId": "GetPipeline",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the pipeline",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve the pipeline"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/:executor/repo": {
+      "get": {
+        "description": "Get a currently running repo",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repo"
+        ],
+        "operationId": "GetRepo",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the repo",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve the repo"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "description": "Check if the worker API is available",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "router"
+        ],
+        "operationId": "Health",
+        "responses": {
+          "200": {
+            "description": "Successful 'ping' of Vela API",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "description": "Retrieve metrics from the worker",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "router"
+        ],
+        "operationId": "Metrics",
+        "responses": {
+          "200": {
+            "description": "Successful 'ping' of Vela API",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/shutdown": {
+      "post": {
+        "description": "Check if the worker API is available",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "router"
+        ],
+        "operationId": "Shutdown",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "501": {
+            "description": "Endpoint is not yet implemented",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "501"
+      }
+    }
+  },
+  "definitions": {
+    "AuthenticateOKBody": {
+      "description": "AuthenticateOKBody authenticate o k body",
+      "type": "object",
+      "required": [
+        "IdentityToken",
+        "Status"
+      ],
+      "properties": {
+        "IdentityToken": {
+          "description": "An opaque token used to authenticate a user after a successful login",
+          "type": "string"
+        },
+        "Status": {
+          "description": "The status of the authentication",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/registry"
+    },
+    "Build": {
+      "type": "object",
+      "title": "Build is the library representation of a build for a pipeline.",
+      "properties": {
+        "author": {
+          "type": "string",
+          "x-go-name": "Author"
+        },
+        "base_ref": {
+          "type": "string",
+          "x-go-name": "BaseRef"
+        },
+        "branch": {
+          "type": "string",
+          "x-go-name": "Branch"
+        },
+        "clone": {
+          "type": "string",
+          "x-go-name": "Clone"
+        },
+        "commit": {
+          "type": "string",
+          "x-go-name": "Commit"
+        },
+        "created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Created"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "distribution": {
+          "type": "string",
+          "x-go-name": "Distribution"
+        },
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "enqueued": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Enqueued"
+        },
+        "error": {
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "event": {
+          "type": "string",
+          "x-go-name": "Event"
+        },
+        "finished": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Finished"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Number"
+        },
+        "parent": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Parent"
+        },
+        "ref": {
+          "type": "string",
+          "x-go-name": "Ref"
+        },
+        "repo_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RepoID"
+        },
+        "runtime": {
+          "type": "string",
+          "x-go-name": "Runtime"
+        },
+        "sender": {
+          "type": "string",
+          "x-go-name": "Sender"
+        },
+        "source": {
+          "type": "string",
+          "x-go-name": "Source"
+        },
+        "started": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Started"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "Container": {
+      "type": "object",
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Commands"
+        },
+        "detach": {
+          "type": "boolean",
+          "x-go-name": "Detach"
+        },
+        "directory": {
+          "type": "string",
+          "x-go-name": "Directory"
+        },
+        "entrypoint": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Entrypoint"
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Environment"
+        },
+        "exit_code": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ExitCode"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "needs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Needs"
+        },
+        "networks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Networks"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Number"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Ports"
+        },
+        "privileged": {
+          "type": "boolean",
+          "x-go-name": "Privileged"
+        },
+        "pull": {
+          "type": "boolean",
+          "x-go-name": "Pull"
+        },
+        "ruleset": {
+          "$ref": "#/definitions/Ruleset"
+        },
+        "secrets": {
+          "$ref": "#/definitions/StepSecretSlice"
+        },
+        "ulimits": {
+          "$ref": "#/definitions/UlimitSlice"
+        },
+        "volumes": {
+          "$ref": "#/definitions/VolumeSlice"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "ContainerChangeResponseItem": {
+      "description": "ContainerChangeResponseItem change item in response to ContainerChanges operation",
+      "type": "object",
+      "required": [
+        "Kind",
+        "Path"
+      ],
+      "properties": {
+        "Kind": {
+          "description": "Kind of change",
+          "type": "integer",
+          "format": "uint8"
+        },
+        "Path": {
+          "description": "Path to file that has changed",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerCreateCreatedBody": {
+      "description": "ContainerCreateCreatedBody OK response to ContainerCreate operation",
+      "type": "object",
+      "required": [
+        "Id",
+        "Warnings"
+      ],
+      "properties": {
+        "Id": {
+          "description": "The ID of the created container",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "Warnings": {
+          "description": "Warnings encountered when creating the container",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Container"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "ContainerTopOKBody": {
+      "description": "ContainerTopOKBody OK response to ContainerTop operation",
+      "type": "object",
+      "required": [
+        "Processes",
+        "Titles"
+      ],
+      "properties": {
+        "Processes": {
+          "description": "Each process running in the container, where each is process is an array of values corresponding to the titles",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "Titles": {
+          "description": "The ps column titles",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerUpdateOKBody": {
+      "description": "ContainerUpdateOKBody OK response to ContainerUpdate operation",
+      "type": "object",
+      "required": [
+        "Warnings"
+      ],
+      "properties": {
+        "Warnings": {
+          "description": "warnings",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerWaitOKBody": {
+      "description": "ContainerWaitOKBody OK response to ContainerWait operation",
+      "type": "object",
+      "required": [
+        "Error",
+        "StatusCode"
+      ],
+      "properties": {
+        "Error": {
+          "$ref": "#/definitions/ContainerWaitOKBodyError"
+        },
+        "StatusCode": {
+          "description": "Exit code of the container",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerWaitOKBodyError": {
+      "description": "ContainerWaitOKBodyError container waiting error, if any",
+      "type": "object",
+      "properties": {
+        "Message": {
+          "description": "Details of an error",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "Deployment": {
+      "type": "object",
+      "title": "Deployment is the library representation of a deployment.",
+      "properties": {
+        "commit": {
+          "type": "string",
+          "x-go-name": "Commit"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "ref": {
+          "type": "string",
+          "x-go-name": "Ref"
+        },
+        "repo_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RepoID"
+        },
+        "target": {
+          "type": "string",
+          "x-go-name": "Target"
+        },
+        "task": {
+          "type": "string",
+          "x-go-name": "Task"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
+        },
+        "user": {
+          "type": "string",
+          "x-go-name": "User"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "title": "ErrorResponse Represents an error.",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "description": "The error message.",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "Executor": {
+      "type": "object",
+      "title": "Executor is the library representation of an executor for a worker.",
+      "properties": {
+        "build": {
+          "$ref": "#/definitions/Build"
+        },
+        "distribution": {
+          "type": "string",
+          "x-go-name": "Distribution"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "pipeline": {
+          "$ref": "#/definitions/PipelineBuild"
+        },
+        "repo": {
+          "$ref": "#/definitions/Repo"
+        },
+        "runtime": {
+          "type": "string",
+          "x-go-name": "Runtime"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "GraphDriverData": {
+      "type": "object",
+      "title": "GraphDriverData Information about a container's graph driver.",
+      "required": [
+        "Data",
+        "Name"
+      ],
+      "properties": {
+        "Data": {
+          "description": "data",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "Name": {
+          "description": "name",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "HistoryResponseItem": {
+      "description": "HistoryResponseItem individual image layer information in response to ImageHistory operation",
+      "type": "object",
+      "required": [
+        "Comment",
+        "Created",
+        "CreatedBy",
+        "Id",
+        "Size",
+        "Tags"
+      ],
+      "properties": {
+        "Comment": {
+          "description": "comment",
+          "type": "string"
+        },
+        "Created": {
+          "description": "created",
+          "type": "integer",
+          "format": "int64"
+        },
+        "CreatedBy": {
+          "description": "created by",
+          "type": "string"
+        },
+        "Id": {
+          "description": "Id",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "Size": {
+          "description": "size",
+          "type": "integer",
+          "format": "int64"
+        },
+        "Tags": {
+          "description": "tags",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/image"
+    },
+    "IdResponse": {
+      "description": "IDResponse Response to an API call that returns just an Id",
+      "type": "object",
+      "required": [
+        "Id"
+      ],
+      "properties": {
+        "Id": {
+          "description": "The id of the newly created object.",
+          "type": "string",
+          "x-go-name": "ID"
+        }
+      },
+      "x-go-name": "IDResponse",
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "ImageDeleteResponseItem": {
+      "description": "ImageDeleteResponseItem image delete response item",
+      "type": "object",
+      "properties": {
+        "Deleted": {
+          "description": "The image ID of an image that was deleted",
+          "type": "string"
+        },
+        "Untagged": {
+          "description": "The image ID of an image that was untagged",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "ImageSummary": {
+      "description": "ImageSummary image summary",
+      "type": "object",
+      "required": [
+        "Containers",
+        "Created",
+        "Id",
+        "Labels",
+        "ParentId",
+        "RepoDigests",
+        "RepoTags",
+        "SharedSize",
+        "Size",
+        "VirtualSize"
+      ],
+      "properties": {
+        "Containers": {
+          "description": "containers",
+          "type": "integer",
+          "format": "int64"
+        },
+        "Created": {
+          "description": "created",
+          "type": "integer",
+          "format": "int64"
+        },
+        "Id": {
+          "description": "Id",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "Labels": {
+          "description": "labels",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "ParentId": {
+          "description": "parent Id",
+          "type": "string",
+          "x-go-name": "ParentID"
+        },
+        "RepoDigests": {
+          "description": "repo digests",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "RepoTags": {
+          "description": "repo tags",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "SharedSize": {
+          "description": "shared size",
+          "type": "integer",
+          "format": "int64"
+        },
+        "Size": {
+          "description": "size",
+          "type": "integer",
+          "format": "int64"
+        },
+        "VirtualSize": {
+          "description": "virtual size",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "Log": {
+      "type": "object",
+      "title": "Log is the library representation of a log for a step in a build.",
+      "properties": {
+        "build_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "BuildID"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8"
+          },
+          "x-go-name": "Data"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "repo_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RepoID"
+        },
+        "service_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ServiceID"
+        },
+        "step_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StepID"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "Login": {
+      "type": "object",
+      "title": "Login is the library representation of a user login.",
+      "properties": {
+        "otp": {
+          "type": "string",
+          "x-go-name": "OTP"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "token": {
+          "type": "string",
+          "x-go-name": "Token"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "PipelineBuild": {
+      "type": "object",
+      "title": "Build is the pipeline representation of a build for a pipeline.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "metadata": {
+          "$ref": "#/definitions/PipelineMetadata"
+        },
+        "secrets": {
+          "$ref": "#/definitions/SecretSlice"
+        },
+        "services": {
+          "$ref": "#/definitions/ContainerSlice"
+        },
+        "stages": {
+          "$ref": "#/definitions/StageSlice"
+        },
+        "steps": {
+          "$ref": "#/definitions/ContainerSlice"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        },
+        "worker": {
+          "$ref": "#/definitions/PipelineWorker"
+        }
+      },
+      "x-go-name": "Build",
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "PipelineMetadata": {
+      "type": "object",
+      "title": "Metadata is the yaml representation of the metadata block for a pipeline.",
+      "properties": {
+        "template": {
+          "type": "boolean",
+          "x-go-name": "Template"
+        }
+      },
+      "x-go-name": "Metadata",
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "PipelineWorker": {
+      "type": "object",
+      "title": "Worker is the yaml representation of the worker block for a pipeline.",
+      "properties": {
+        "flavor": {
+          "type": "string",
+          "x-go-name": "Flavor"
+        },
+        "platform": {
+          "type": "string",
+          "x-go-name": "Platform"
+        }
+      },
+      "x-go-name": "Worker",
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Plugin": {
+      "description": "Plugin A plugin for the Engine API",
+      "type": "object",
+      "required": [
+        "Config",
+        "Enabled",
+        "Name",
+        "Settings"
+      ],
+      "properties": {
+        "Config": {
+          "$ref": "#/definitions/PluginConfig"
+        },
+        "Enabled": {
+          "description": "True if the plugin is running. False if the plugin is not running, only installed.",
+          "type": "boolean"
+        },
+        "Id": {
+          "description": "Id",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "Name": {
+          "description": "name",
+          "type": "string"
+        },
+        "PluginReference": {
+          "description": "plugin remote reference used to push/pull the plugin",
+          "type": "string"
+        },
+        "Settings": {
+          "$ref": "#/definitions/PluginSettings"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginConfig": {
+      "type": "object",
+      "title": "PluginConfig The config of a plugin.",
+      "required": [
+        "Args",
+        "Description",
+        "Documentation",
+        "Entrypoint",
+        "Env",
+        "Interface",
+        "IpcHost",
+        "Linux",
+        "Mounts",
+        "Network",
+        "PidHost",
+        "PropagatedMount",
+        "WorkDir"
+      ],
+      "properties": {
+        "Args": {
+          "$ref": "#/definitions/PluginConfigArgs"
+        },
+        "Description": {
+          "description": "description",
+          "type": "string"
+        },
+        "DockerVersion": {
+          "description": "Docker Version used to create the plugin",
+          "type": "string"
+        },
+        "Documentation": {
+          "description": "documentation",
+          "type": "string"
+        },
+        "Entrypoint": {
+          "description": "entrypoint",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Env": {
+          "description": "env",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PluginEnv"
+          }
+        },
+        "Interface": {
+          "$ref": "#/definitions/PluginConfigInterface"
+        },
+        "IpcHost": {
+          "description": "ipc host",
+          "type": "boolean"
+        },
+        "Linux": {
+          "$ref": "#/definitions/PluginConfigLinux"
+        },
+        "Mounts": {
+          "description": "mounts",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PluginMount"
+          }
+        },
+        "Network": {
+          "$ref": "#/definitions/PluginConfigNetwork"
+        },
+        "PidHost": {
+          "description": "pid host",
+          "type": "boolean"
+        },
+        "PropagatedMount": {
+          "description": "propagated mount",
+          "type": "string"
+        },
+        "User": {
+          "$ref": "#/definitions/PluginConfigUser"
+        },
+        "WorkDir": {
+          "description": "work dir",
+          "type": "string"
+        },
+        "rootfs": {
+          "$ref": "#/definitions/PluginConfigRootfs"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginConfigArgs": {
+      "description": "PluginConfigArgs plugin config args",
+      "type": "object",
+      "required": [
+        "Description",
+        "Name",
+        "Settable",
+        "Value"
+      ],
+      "properties": {
+        "Description": {
+          "description": "description",
+          "type": "string"
+        },
+        "Name": {
+          "description": "name",
+          "type": "string"
+        },
+        "Settable": {
+          "description": "settable",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Value": {
+          "description": "value",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginConfigInterface": {
+      "description": "PluginConfigInterface The interface between Docker and the plugin",
+      "type": "object",
+      "required": [
+        "Socket",
+        "Types"
+      ],
+      "properties": {
+        "ProtocolScheme": {
+          "description": "Protocol to use for clients connecting to the plugin.",
+          "type": "string"
+        },
+        "Socket": {
+          "description": "socket",
+          "type": "string"
+        },
+        "Types": {
+          "description": "types",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PluginInterfaceType"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginConfigLinux": {
+      "description": "PluginConfigLinux plugin config linux",
+      "type": "object",
+      "required": [
+        "AllowAllDevices",
+        "Capabilities",
+        "Devices"
+      ],
+      "properties": {
+        "AllowAllDevices": {
+          "description": "allow all devices",
+          "type": "boolean"
+        },
+        "Capabilities": {
+          "description": "capabilities",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Devices": {
+          "description": "devices",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PluginDevice"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginConfigNetwork": {
+      "description": "PluginConfigNetwork plugin config network",
+      "type": "object",
+      "required": [
+        "Type"
+      ],
+      "properties": {
+        "Type": {
+          "description": "type",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginConfigRootfs": {
+      "description": "PluginConfigRootfs plugin config rootfs",
+      "type": "object",
+      "properties": {
+        "diff_ids": {
+          "description": "diff ids",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "DiffIds"
+        },
+        "type": {
+          "description": "type",
+          "type": "string",
+          "x-go-name": "Type"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginConfigUser": {
+      "description": "PluginConfigUser plugin config user",
+      "type": "object",
+      "properties": {
+        "GID": {
+          "description": "g ID",
+          "type": "integer",
+          "format": "uint32"
+        },
+        "UID": {
+          "description": "UID",
+          "type": "integer",
+          "format": "uint32"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginDevice": {
+      "description": "PluginDevice plugin device",
+      "type": "object",
+      "required": [
+        "Description",
+        "Name",
+        "Path",
+        "Settable"
+      ],
+      "properties": {
+        "Description": {
+          "description": "description",
+          "type": "string"
+        },
+        "Name": {
+          "description": "name",
+          "type": "string"
+        },
+        "Path": {
+          "description": "path",
+          "type": "string"
+        },
+        "Settable": {
+          "description": "settable",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginEnv": {
+      "description": "PluginEnv plugin env",
+      "type": "object",
+      "required": [
+        "Description",
+        "Name",
+        "Settable",
+        "Value"
+      ],
+      "properties": {
+        "Description": {
+          "description": "description",
+          "type": "string"
+        },
+        "Name": {
+          "description": "name",
+          "type": "string"
+        },
+        "Settable": {
+          "description": "settable",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Value": {
+          "description": "value",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginInterfaceType": {
+      "description": "PluginInterfaceType plugin interface type",
+      "type": "object",
+      "required": [
+        "Capability",
+        "Prefix",
+        "Version"
+      ],
+      "properties": {
+        "Capability": {
+          "description": "capability",
+          "type": "string"
+        },
+        "Prefix": {
+          "description": "prefix",
+          "type": "string"
+        },
+        "Version": {
+          "description": "version",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginMount": {
+      "description": "PluginMount plugin mount",
+      "type": "object",
+      "required": [
+        "Description",
+        "Destination",
+        "Name",
+        "Options",
+        "Settable",
+        "Source",
+        "Type"
+      ],
+      "properties": {
+        "Description": {
+          "description": "description",
+          "type": "string"
+        },
+        "Destination": {
+          "description": "destination",
+          "type": "string"
+        },
+        "Name": {
+          "description": "name",
+          "type": "string"
+        },
+        "Options": {
+          "description": "options",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Settable": {
+          "description": "settable",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Source": {
+          "description": "source",
+          "type": "string"
+        },
+        "Type": {
+          "description": "type",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "PluginSettings": {
+      "type": "object",
+      "title": "PluginSettings Settings that can be modified by users.",
+      "required": [
+        "Args",
+        "Devices",
+        "Env",
+        "Mounts"
+      ],
+      "properties": {
+        "Args": {
+          "description": "args",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Devices": {
+          "description": "devices",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PluginDevice"
+          }
+        },
+        "Env": {
+          "description": "env",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Mounts": {
+          "description": "mounts",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PluginMount"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "Port": {
+      "description": "Port An open port on a container",
+      "type": "object",
+      "required": [
+        "PrivatePort",
+        "Type"
+      ],
+      "properties": {
+        "IP": {
+          "description": "Host IP address that the container's port is mapped to",
+          "type": "string"
+        },
+        "PrivatePort": {
+          "description": "Port on the container",
+          "type": "integer",
+          "format": "uint16"
+        },
+        "PublicPort": {
+          "description": "Port exposed on the host",
+          "type": "integer",
+          "format": "uint16"
+        },
+        "Type": {
+          "description": "type",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "Repo": {
+      "type": "object",
+      "title": "Repo is the library representation of a repo.",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
+        "allow_comment": {
+          "type": "boolean",
+          "x-go-name": "AllowComment"
+        },
+        "allow_deploy": {
+          "type": "boolean",
+          "x-go-name": "AllowDeploy"
+        },
+        "allow_pull": {
+          "type": "boolean",
+          "x-go-name": "AllowPull"
+        },
+        "allow_push": {
+          "type": "boolean",
+          "x-go-name": "AllowPush"
+        },
+        "allow_tag": {
+          "type": "boolean",
+          "x-go-name": "AllowTag"
+        },
+        "branch": {
+          "type": "string",
+          "x-go-name": "Branch"
+        },
+        "clone": {
+          "type": "string",
+          "x-go-name": "Clone"
+        },
+        "full_name": {
+          "type": "string",
+          "x-go-name": "FullName"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "org": {
+          "type": "string",
+          "x-go-name": "Org"
+        },
+        "private": {
+          "type": "boolean",
+          "x-go-name": "Private"
+        },
+        "timeout": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Timeout"
+        },
+        "trusted": {
+          "type": "boolean",
+          "x-go-name": "Trusted"
+        },
+        "user_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UserID"
+        },
+        "visibility": {
+          "type": "string",
+          "x-go-name": "Visibility"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "Rules": {
+      "type": "object",
+      "properties": {
+        "branch": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "comment": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "event": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "path": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "repo": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "status": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "tag": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "target": {
+          "$ref": "#/definitions/Ruletype"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Ruleset": {
+      "type": "object",
+      "properties": {
+        "continue": {
+          "type": "boolean",
+          "x-go-name": "Continue"
+        },
+        "if": {
+          "$ref": "#/definitions/Rules"
+        },
+        "operator": {
+          "type": "string",
+          "x-go-name": "Operator"
+        },
+        "unless": {
+          "$ref": "#/definitions/Rules"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Ruletype": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Secret": {
+      "type": "object",
+      "title": "Secret is the library representation of a secret.",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "x-go-name": "Engine"
+        },
+        "key": {
+          "type": "string",
+          "x-go-name": "Key"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "SecretSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Secret"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Service": {
+      "type": "object",
+      "title": "Service is the library representation of a service in a build.",
+      "properties": {
+        "build_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "BuildID"
+        },
+        "created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Created"
+        },
+        "distribution": {
+          "type": "string",
+          "x-go-name": "Distribution"
+        },
+        "error": {
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "exit_code": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ExitCode"
+        },
+        "finished": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Finished"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Number"
+        },
+        "repo_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RepoID"
+        },
+        "runtime": {
+          "type": "string",
+          "x-go-name": "Runtime"
+        },
+        "started": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Started"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "ServiceUpdateResponse": {
+      "description": "ServiceUpdateResponse service update response",
+      "type": "object",
+      "properties": {
+        "Warnings": {
+          "description": "Optional warning messages",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "Stage": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "needs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Needs"
+        },
+        "steps": {
+          "$ref": "#/definitions/ContainerSlice"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "StageSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Stage"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Step": {
+      "type": "object",
+      "title": "Step is the library representation of a step in a build.",
+      "properties": {
+        "build_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "BuildID"
+        },
+        "created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Created"
+        },
+        "distribution": {
+          "type": "string",
+          "x-go-name": "Distribution"
+        },
+        "error": {
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "exit_code": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ExitCode"
+        },
+        "finished": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Finished"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Number"
+        },
+        "repo_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RepoID"
+        },
+        "runtime": {
+          "type": "string",
+          "x-go-name": "Runtime"
+        },
+        "stage": {
+          "type": "string",
+          "x-go-name": "Stage"
+        },
+        "started": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Started"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "StepSecret": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "x-go-name": "Source"
+        },
+        "target": {
+          "type": "string",
+          "x-go-name": "Target"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "StepSecretSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/StepSecret"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Ulimit": {
+      "type": "object",
+      "properties": {
+        "hard": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Hard"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "soft": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Soft"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "UlimitSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Ulimit"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "User": {
+      "type": "object",
+      "title": "User is the library representation of a user.",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
+        "admin": {
+          "type": "boolean",
+          "x-go-name": "Admin"
+        },
+        "favorites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Favorites"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "token": {
+          "type": "string",
+          "x-go-name": "Token"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "Volume": {
+      "description": "Volume volume",
+      "type": "object",
+      "required": [
+        "Driver",
+        "Labels",
+        "Mountpoint",
+        "Name",
+        "Options",
+        "Scope"
+      ],
+      "properties": {
+        "access_mode": {
+          "type": "string",
+          "x-go-name": "AccessMode"
+        },
+        "destination": {
+          "type": "string",
+          "x-go-name": "Destination"
+        },
+        "source": {
+          "type": "string",
+          "x-go-name": "Source"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "VolumeCreateBody": {
+      "description": "VolumeCreateBody Volume configuration",
+      "type": "object",
+      "required": [
+        "Driver",
+        "DriverOpts",
+        "Labels",
+        "Name"
+      ],
+      "properties": {
+        "Driver": {
+          "description": "Name of the volume driver to use.",
+          "type": "string"
+        },
+        "DriverOpts": {
+          "description": "A mapping of driver options and values. These options are passed directly to the driver and are driver specific.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "Labels": {
+          "description": "User-defined key/value metadata.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "Name": {
+          "description": "The new volume's name. If not specified, Docker generates a name.",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/volume"
+    },
+    "VolumeListOKBody": {
+      "description": "VolumeListOKBody Volume list response",
+      "type": "object",
+      "required": [
+        "Volumes",
+        "Warnings"
+      ],
+      "properties": {
+        "Volumes": {
+          "description": "List of volumes",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Volume"
+          }
+        },
+        "Warnings": {
+          "description": "Warnings that occurred when fetching the list of volumes",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/volume"
+    },
+    "VolumeSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Volume"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "VolumeUsageData": {
+      "description": "VolumeUsageData Usage details about the volume. This information is used by the\n`GET /system/df` endpoint, and omitted in other endpoints.",
+      "type": "object",
+      "required": [
+        "RefCount",
+        "Size"
+      ],
+      "properties": {
+        "RefCount": {
+          "description": "The number of containers referencing this volume. This field\nis set to `-1` if the reference-count is not available.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "Size": {
+          "description": "Amount of disk space used by the volume (in bytes). This information\nis only available for volumes created with the `\"local\"` volume\ndriver. For volumes created with other volume drivers, this field\nis set to `-1` (\"not available\")",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types"
+    },
+    "Webhook": {
+      "type": "object",
+      "title": "Hook is the library representation of a webhook for a repo.",
+      "properties": {
+        "branch": {
+          "type": "string",
+          "x-go-name": "Branch"
+        },
+        "build_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "BuildID"
+        },
+        "created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Created"
+        },
+        "error": {
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "event": {
+          "type": "string",
+          "x-go-name": "Event"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Number"
+        },
+        "repo_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RepoID"
+        },
+        "source_id": {
+          "type": "string",
+          "x-go-name": "SourceID"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-name": "Hook",
+      "x-go-package": "github.com/go-vela/types/library"
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}
