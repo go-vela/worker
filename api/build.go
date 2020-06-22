@@ -14,7 +14,7 @@ import (
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 
-// swagger:operation GET /api/v1/executors/:executor/build build GetBuild
+// swagger:operation GET /api/v1/executors/{executor}/build build GetBuild
 //
 // Get the currently running build
 //
@@ -26,6 +26,11 @@ import (
 // - in: header
 //   name: Authorization
 //   description: Vela server token
+//   required: true
+//   type: string
+// - in: path
+//   name: executor
+//   description: The executor running the build
 //   required: true
 //   type: string
 // responses:
@@ -56,7 +61,7 @@ func GetBuild(c *gin.Context) {
 	c.JSON(http.StatusOK, build)
 }
 
-// swagger:operation DELETE /api/v1/executors/:executor/build/kill build KillBuild
+// swagger:operation DELETE /api/v1/executors/{executor}/build/kill build KillBuild
 //
 // Kill the currently running build
 //
@@ -68,6 +73,11 @@ func GetBuild(c *gin.Context) {
 // - in: header
 //   name: Authorization
 //   description: Vela server token
+//   required: true
+//   type: string
+// - in: path
+//   name: executor
+//   description: The executor running the build
 //   required: true
 //   type: string
 // responses:

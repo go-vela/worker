@@ -16,7 +16,7 @@ import (
 	exec "github.com/go-vela/worker/router/middleware/executor"
 )
 
-// swagger:operation GET /api/v1/executors/:executor executor GetExecutor
+// swagger:operation GET /api/v1/executors/{executor} executor GetExecutor
 //
 // Get a currently running executor
 //
@@ -30,14 +30,19 @@ import (
 //   description: Vela server token
 //   required: true
 //   type: string
+// - in: path
+//   name: executor
+//   description: The executor you want to get
+//   required: true
+//   type: string
 // responses:
 //   '200':
-//     description: Successfully retrieved all running executors
+//     description: Successfully retrieved the executor
 //     type: json
 //     schema:
 //       "$ref": "#/definitions/Executor"
 //   '500':
-//     description: Unable to retrieve all running executors
+//     description: Unable to retrieve the executor
 //     type: json
 
 // GetExecutor represents the API handler to capture the

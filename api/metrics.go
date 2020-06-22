@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// swagger:operation GET /api/v1/metrics router Metrics
+// swagger:operation GET /metrics router Metrics
 //
 // Retrieve metrics from the worker
 //

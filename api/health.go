@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// swagger:operation GET /api/v1/health router Health
+// swagger:operation GET /health router Health
 //
 // Check if the worker API is available
 //

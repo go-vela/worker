@@ -8,7 +8,7 @@
 //
 //     Version: 0.4.3
 //     Schemes: http, https
-//     BasePath: /api/v1
+//     BasePath: ""
 //
 //     Consumes:
 //     - application/json

@@ -12,7 +12,7 @@ import (
 
 // swagger:operation POST /api/v1/shutdown router Shutdown
 //
-// Check if the worker API is available
+// Perform a soft shutdown of the worker
 //
 // ---
 // x-success_http_code: '501'

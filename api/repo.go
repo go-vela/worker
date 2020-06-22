@@ -14,7 +14,7 @@ import (
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 
-// swagger:operation GET /api/v1/executors/:executor/repo repo GetRepo
+// swagger:operation GET /api/v1/executors/{executor}/repo repo GetRepo
 //
 // Get a currently running repo
 //
@@ -26,6 +26,11 @@ import (
 // - in: header
 //   name: Authorization
 //   description: Vela server token
+//   required: true
+//   type: string
+// - in: path
+//   name: executor
+//   description: The executor running the build
 //   required: true
 //   type: string
 // responses:
