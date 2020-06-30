@@ -38,7 +38,7 @@ import (
 //     description: Successfully retrieved the pipeline
 //     type: json
 //     schema:
-//       "$ref": "#/definitions/Executor"
+//       "$ref": "#/definitions/PipelineBuild"
 //   '500':
 //     description: Unable to retrieve the pipeline
 //     type: json

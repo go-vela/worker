@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// swagger:operation GET /metrics router Metrics
+// swagger:operation GET /metrics system Metrics
 //
 // Retrieve metrics from the worker
 //
@@ -21,7 +21,7 @@ import (
 // parameters:
 // responses:
 //   '200':
-//     description: Successful 'ping' of Vela API
+//     description: Successful retrieval of worker metrics
 //     schema:
 //       type: string
 

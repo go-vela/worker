@@ -69,7 +69,7 @@
           },
           {
             "type": "string",
-            "description": "The executor you want to get",
+            "description": "The executor to retrieve",
             "name": "executor",
             "in": "path",
             "required": true
@@ -119,7 +119,7 @@
           "200": {
             "description": "Successfully retrieved the build",
             "schema": {
-              "$ref": "#/definitions/Executor"
+              "$ref": "#/definitions/Build"
             }
           },
           "500": {
@@ -160,10 +160,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Successfully killed the build",
-            "schema": {
-              "$ref": "#/definitions/Executor"
-            }
+            "description": "Successfully killed the build"
           },
           "500": {
             "description": "Unable to kill the build"
@@ -202,7 +199,7 @@
           "200": {
             "description": "Successfully retrieved the pipeline",
             "schema": {
-              "$ref": "#/definitions/Executor"
+              "$ref": "#/definitions/PipelineBuild"
             }
           },
           "500": {
@@ -242,7 +239,7 @@
           "200": {
             "description": "Successfully retrieved the repo",
             "schema": {
-              "$ref": "#/definitions/Executor"
+              "$ref": "#/definitions/Repo"
             }
           },
           "500": {
@@ -259,7 +256,7 @@
           "application/json"
         ],
         "tags": [
-          "router"
+          "system"
         ],
         "operationId": "Shutdown",
         "parameters": [
@@ -289,12 +286,12 @@
           "application/json"
         ],
         "tags": [
-          "router"
+          "system"
         ],
         "operationId": "Health",
         "responses": {
           "200": {
-            "description": "Successful 'ping' of Vela API",
+            "description": "Successful 'ping' of Vela worker API",
             "schema": {
               "type": "string"
             }
@@ -310,12 +307,12 @@
           "application/json"
         ],
         "tags": [
-          "router"
+          "system"
         ],
         "operationId": "Metrics",
         "responses": {
           "200": {
-            "description": "Successful 'ping' of Vela API",
+            "description": "Successful retrieval of worker metrics",
             "schema": {
               "type": "string"
             }

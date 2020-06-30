@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// swagger:operation GET /health router Health
+// swagger:operation GET /health system Health
 //
 // Check if the worker API is available
 //
@@ -21,7 +21,7 @@ import (
 // parameters:
 // responses:
 //   '200':
-//     description: Successful 'ping' of Vela API
+//     description: Successful 'ping' of Vela worker API
 //     schema:
 //       type: string
 

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// swagger:operation POST /api/v1/shutdown router Shutdown
+// swagger:operation POST /api/v1/shutdown system Shutdown
 //
 // Perform a soft shutdown of the worker
 //

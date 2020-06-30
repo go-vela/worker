@@ -38,7 +38,7 @@ import (
 //     description: Successfully retrieved the build
 //     type: json
 //     schema:
-//       "$ref": "#/definitions/Executor"
+//       "$ref": "#/definitions/Build"
 //   '500':
 //     description: Unable to retrieve the build
 //     schema:
@@ -84,8 +84,6 @@ func GetBuild(c *gin.Context) {
 //   '200':
 //     description: Successfully killed the build
 //     type: json
-//     schema:
-//       "$ref": "#/definitions/Executor"
 //   '500':
 //     description: Unable to kill the build
 //     type: json

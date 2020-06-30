@@ -38,7 +38,7 @@ import (
 //     description: Successfully retrieved the repo
 //     type: json
 //     schema:
-//       "$ref": "#/definitions/Executor"
+//       "$ref": "#/definitions/Repo"
 //   '500':
 //     description: Unable to retrieve the repo
 //     type: json

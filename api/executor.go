@@ -32,7 +32,7 @@ import (
 //   type: string
 // - in: path
 //   name: executor
-//   description: The executor you want to get
+//   description: The executor to retrieve
 //   required: true
 //   type: string
 // responses:
