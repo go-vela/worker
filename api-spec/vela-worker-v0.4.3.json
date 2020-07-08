@@ -1,0 +1,930 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API for a Vela worker",
+    "title": "Vela worker",
+    "version": "0.4.3"
+  },
+  "paths": {
+    "/api/v1/executors": {
+      "get": {
+        "description": "Get all currently running executors",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "executor"
+        ],
+        "operationId": "GetExecutors",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved all running executors",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve all running executors"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/{executor}": {
+      "get": {
+        "description": "Get a currently running executor",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "executor"
+        ],
+        "operationId": "GetExecutor",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The executor to retrieve",
+            "name": "executor",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the executor",
+            "schema": {
+              "$ref": "#/definitions/Executor"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve the executor"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/{executor}/build": {
+      "get": {
+        "description": "Get the currently running build",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "build"
+        ],
+        "operationId": "GetBuild",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The executor running the build",
+            "name": "executor",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the build",
+            "schema": {
+              "$ref": "#/definitions/Build"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve the build",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/{executor}/build/kill": {
+      "delete": {
+        "description": "Kill the currently running build",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "build"
+        ],
+        "operationId": "KillBuild",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The executor running the build",
+            "name": "executor",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully killed the build"
+          },
+          "500": {
+            "description": "Unable to kill the build"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/{executor}/pipeline": {
+      "get": {
+        "description": "Get a currently running pipeline",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "pipeline"
+        ],
+        "operationId": "GetPipeline",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The executor running the pipeline",
+            "name": "executor",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the pipeline",
+            "schema": {
+              "$ref": "#/definitions/PipelineBuild"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve the pipeline"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/executors/{executor}/repo": {
+      "get": {
+        "description": "Get a currently running repo",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repo"
+        ],
+        "operationId": "GetRepo",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The executor running the build",
+            "name": "executor",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the repo",
+            "schema": {
+              "$ref": "#/definitions/Repo"
+            }
+          },
+          "500": {
+            "description": "Unable to retrieve the repo"
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/api/v1/shutdown": {
+      "post": {
+        "description": "Perform a soft shutdown of the worker",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "system"
+        ],
+        "operationId": "Shutdown",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Vela server token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "501": {
+            "description": "Endpoint is not yet implemented",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "501"
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Check if the worker API is available",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "system"
+        ],
+        "operationId": "Health",
+        "responses": {
+          "200": {
+            "description": "Successful 'ping' of Vela worker API",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    },
+    "/metrics": {
+      "get": {
+        "description": "Retrieve metrics from the worker",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "system"
+        ],
+        "operationId": "Metrics",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of worker metrics",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-success_http_code": "200"
+      }
+    }
+  },
+  "definitions": {
+    "Build": {
+      "type": "object",
+      "title": "Build is the library representation of a build for a pipeline.",
+      "properties": {
+        "author": {
+          "type": "string",
+          "x-go-name": "Author"
+        },
+        "base_ref": {
+          "type": "string",
+          "x-go-name": "BaseRef"
+        },
+        "branch": {
+          "type": "string",
+          "x-go-name": "Branch"
+        },
+        "clone": {
+          "type": "string",
+          "x-go-name": "Clone"
+        },
+        "commit": {
+          "type": "string",
+          "x-go-name": "Commit"
+        },
+        "created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Created"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "distribution": {
+          "type": "string",
+          "x-go-name": "Distribution"
+        },
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "enqueued": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Enqueued"
+        },
+        "error": {
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "event": {
+          "type": "string",
+          "x-go-name": "Event"
+        },
+        "finished": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Finished"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Number"
+        },
+        "parent": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Parent"
+        },
+        "ref": {
+          "type": "string",
+          "x-go-name": "Ref"
+        },
+        "repo_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RepoID"
+        },
+        "runtime": {
+          "type": "string",
+          "x-go-name": "Runtime"
+        },
+        "sender": {
+          "type": "string",
+          "x-go-name": "Sender"
+        },
+        "source": {
+          "type": "string",
+          "x-go-name": "Source"
+        },
+        "started": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Started"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "Container": {
+      "type": "object",
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Commands"
+        },
+        "detach": {
+          "type": "boolean",
+          "x-go-name": "Detach"
+        },
+        "directory": {
+          "type": "string",
+          "x-go-name": "Directory"
+        },
+        "entrypoint": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Entrypoint"
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Environment"
+        },
+        "exit_code": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ExitCode"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "needs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Needs"
+        },
+        "networks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Networks"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Number"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Ports"
+        },
+        "privileged": {
+          "type": "boolean",
+          "x-go-name": "Privileged"
+        },
+        "pull": {
+          "type": "boolean",
+          "x-go-name": "Pull"
+        },
+        "ruleset": {
+          "$ref": "#/definitions/Ruleset"
+        },
+        "secrets": {
+          "$ref": "#/definitions/StepSecretSlice"
+        },
+        "ulimits": {
+          "$ref": "#/definitions/UlimitSlice"
+        },
+        "volumes": {
+          "$ref": "#/definitions/VolumeSlice"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "ContainerSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Container"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Executor": {
+      "type": "object",
+      "title": "Executor is the library representation of an executor for a worker.",
+      "properties": {
+        "build": {
+          "$ref": "#/definitions/Build"
+        },
+        "distribution": {
+          "type": "string",
+          "x-go-name": "Distribution"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "pipeline": {
+          "$ref": "#/definitions/PipelineBuild"
+        },
+        "repo": {
+          "$ref": "#/definitions/Repo"
+        },
+        "runtime": {
+          "type": "string",
+          "x-go-name": "Runtime"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "PipelineBuild": {
+      "type": "object",
+      "title": "Build is the pipeline representation of a build for a pipeline.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "metadata": {
+          "$ref": "#/definitions/PipelineMetadata"
+        },
+        "secrets": {
+          "$ref": "#/definitions/SecretSlice"
+        },
+        "services": {
+          "$ref": "#/definitions/ContainerSlice"
+        },
+        "stages": {
+          "$ref": "#/definitions/StageSlice"
+        },
+        "steps": {
+          "$ref": "#/definitions/ContainerSlice"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        },
+        "worker": {
+          "$ref": "#/definitions/PipelineWorker"
+        }
+      },
+      "x-go-name": "Build",
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "PipelineMetadata": {
+      "type": "object",
+      "title": "Metadata is the yaml representation of the metadata block for a pipeline.",
+      "properties": {
+        "template": {
+          "type": "boolean",
+          "x-go-name": "Template"
+        }
+      },
+      "x-go-name": "Metadata",
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "PipelineWorker": {
+      "type": "object",
+      "title": "Worker is the yaml representation of the worker block for a pipeline.",
+      "properties": {
+        "flavor": {
+          "type": "string",
+          "x-go-name": "Flavor"
+        },
+        "platform": {
+          "type": "string",
+          "x-go-name": "Platform"
+        }
+      },
+      "x-go-name": "Worker",
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Repo": {
+      "type": "object",
+      "title": "Repo is the library representation of a repo.",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
+        "allow_comment": {
+          "type": "boolean",
+          "x-go-name": "AllowComment"
+        },
+        "allow_deploy": {
+          "type": "boolean",
+          "x-go-name": "AllowDeploy"
+        },
+        "allow_pull": {
+          "type": "boolean",
+          "x-go-name": "AllowPull"
+        },
+        "allow_push": {
+          "type": "boolean",
+          "x-go-name": "AllowPush"
+        },
+        "allow_tag": {
+          "type": "boolean",
+          "x-go-name": "AllowTag"
+        },
+        "branch": {
+          "type": "string",
+          "x-go-name": "Branch"
+        },
+        "clone": {
+          "type": "string",
+          "x-go-name": "Clone"
+        },
+        "full_name": {
+          "type": "string",
+          "x-go-name": "FullName"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "org": {
+          "type": "string",
+          "x-go-name": "Org"
+        },
+        "private": {
+          "type": "boolean",
+          "x-go-name": "Private"
+        },
+        "timeout": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Timeout"
+        },
+        "trusted": {
+          "type": "boolean",
+          "x-go-name": "Trusted"
+        },
+        "user_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UserID"
+        },
+        "visibility": {
+          "type": "string",
+          "x-go-name": "Visibility"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/library"
+    },
+    "Rules": {
+      "type": "object",
+      "properties": {
+        "branch": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "comment": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "event": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "path": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "repo": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "status": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "tag": {
+          "$ref": "#/definitions/Ruletype"
+        },
+        "target": {
+          "$ref": "#/definitions/Ruletype"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Ruleset": {
+      "type": "object",
+      "properties": {
+        "continue": {
+          "type": "boolean",
+          "x-go-name": "Continue"
+        },
+        "if": {
+          "$ref": "#/definitions/Rules"
+        },
+        "operator": {
+          "type": "string",
+          "x-go-name": "Operator"
+        },
+        "unless": {
+          "$ref": "#/definitions/Rules"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Ruletype": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Secret": {
+      "type": "object",
+      "title": "Secret is the library representation of a secret.",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "x-go-name": "Engine"
+        },
+        "key": {
+          "type": "string",
+          "x-go-name": "Key"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "SecretSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Secret"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Stage": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "needs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Needs"
+        },
+        "steps": {
+          "$ref": "#/definitions/ContainerSlice"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "StageSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Stage"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "StepSecret": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "x-go-name": "Source"
+        },
+        "target": {
+          "type": "string",
+          "x-go-name": "Target"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "StepSecretSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/StepSecret"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Ulimit": {
+      "type": "object",
+      "properties": {
+        "hard": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Hard"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "soft": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Soft"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "UlimitSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Ulimit"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "Volume": {
+      "type": "object",
+      "properties": {
+        "access_mode": {
+          "type": "string",
+          "x-go-name": "AccessMode"
+        },
+        "destination": {
+          "type": "string",
+          "x-go-name": "Destination"
+        },
+        "source": {
+          "type": "string",
+          "x-go-name": "Source"
+        }
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    },
+    "VolumeSlice": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Volume"
+      },
+      "x-go-package": "github.com/go-vela/types/pipeline"
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

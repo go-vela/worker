@@ -13,7 +13,7 @@ require (
 	github.com/go-vela/pkg-queue v0.4.3
 	github.com/go-vela/pkg-runtime v0.4.3
 	github.com/go-vela/sdk-go v0.4.3
-	github.com/go-vela/types v0.4.3
+	github.com/go-vela/types v0.4.4-0.20200701160310-e2e65c6d26d3
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
