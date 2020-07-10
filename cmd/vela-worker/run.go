@@ -102,7 +102,7 @@ func run(c *cli.Context) error {
 				Driver:  c.String("queue.driver"),
 				Config:  c.String("queue.config"),
 				Cluster: c.Bool("queue.cluster"),
-				Routes:  c.StringSlice("queue.routes"),
+				Routes:  c.StringSlice("queue.worker.routes"),
 			},
 			// server configuration
 			Server: &Server{
