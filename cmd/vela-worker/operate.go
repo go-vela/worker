@@ -39,10 +39,15 @@ func (w *Worker) operate() error {
 
 	// iterate till the configured build limit
 	for i := 0; i < w.Config.Build.Limit; i++ {
+		// evaluate and capture i at each iteration
+		//
+		// https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables
+		id := i
+
 		// log a message indicating the start of an operator thread
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
-		logrus.Infof("Thread ID %d listening to queue...", i)
+		logrus.Infof("Thread ID %d listening to queue...", id)
 
 		// spawn errgroup routine for operator subprocess
 		//
@@ -51,7 +56,7 @@ func (w *Worker) operate() error {
 			// create an infinite loop to poll for builds
 			for {
 				// exec operator subprocess to poll and execute builds
-				err = w.exec(i)
+				err = w.exec(id)
 				if err != nil {
 					// log the error received from the executor
 					//
