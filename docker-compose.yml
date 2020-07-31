@@ -29,6 +29,8 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   worker_2:
+    build:
+      context: .    
     container_name: worker_2
     image: worker:local
     networks:
