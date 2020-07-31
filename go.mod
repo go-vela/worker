@@ -9,11 +9,11 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
 	github.com/go-redis/redis v6.15.8+incompatible // indirect
-	github.com/go-vela/pkg-executor v0.4.3
+	github.com/go-vela/pkg-executor v0.4.4-0.20200720202642-c6ea13b7dd99
 	github.com/go-vela/pkg-queue v0.4.3
-	github.com/go-vela/pkg-runtime v0.4.3
+	github.com/go-vela/pkg-runtime v0.4.4-0.20200729200936-9c8fde257f3e
 	github.com/go-vela/sdk-go v0.4.3
-	github.com/go-vela/types v0.4.4-0.20200701160310-e2e65c6d26d3
+	github.com/go-vela/types v0.4.4-0.20200722113135-2251403bba7f
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
