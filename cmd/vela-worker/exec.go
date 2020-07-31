@@ -127,6 +127,14 @@ func (w *Worker) exec(index int) error {
 		return err
 	}
 
+	logger.Info("assembling build")
+	// assemble the build with the executor
+	err = _executor.AssembleBuild(ctx)
+	if err != nil {
+		logger.Errorf("unable to assemble build: %v", err)
+		return err
+	}
+
 	logger.Info("executing build")
 	// execute the build with the executor
 	err = _executor.ExecBuild(ctx)
