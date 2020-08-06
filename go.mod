@@ -5,9 +5,9 @@ go 1.13
 require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/gin-gonic/gin v1.6.3
-	github.com/go-vela/pkg-executor v0.5.0-rc2
+	github.com/go-vela/pkg-executor v0.5.0-rc2.0.20200806134745-5f693c71b3ad
 	github.com/go-vela/pkg-queue v0.5.0-rc1
-	github.com/go-vela/pkg-runtime v0.5.0-rc1
+	github.com/go-vela/pkg-runtime v0.5.0-rc1.0.20200805191211-be84584fb396
 	github.com/go-vela/sdk-go v0.5.0-rc1
 	github.com/go-vela/types v0.5.0-rc1.0.20200803141719-70581652958d
 	github.com/joho/godotenv v1.3.0
