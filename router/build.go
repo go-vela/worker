@@ -30,6 +30,6 @@ func BuildHandlers(base *gin.RouterGroup) {
 		// add an endpoint for killing the build
 		//
 		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.DELETE
-		build.DELETE("/kill", api.KillBuild)
+		build.DELETE("/kill", api.CancelBuild)
 	}
 }

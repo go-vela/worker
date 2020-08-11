@@ -57,7 +57,7 @@ func TestRouter_Load(t *testing.T) {
 			Method:      "DELETE",
 			Path:        "/api/v1/executors/:executor/build/kill",
 			Handler:     "github.com/go-vela/worker/api.KillBuild",
-			HandlerFunc: api.KillBuild,
+			HandlerFunc: api.CancelBuild,
 		},
 		{
 			Method:      "GET",
