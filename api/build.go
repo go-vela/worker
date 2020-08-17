@@ -105,7 +105,7 @@ func CancelBuild(c *gin.Context) {
 		return
 	}
 
-	build, err := e.KillBuild()
+	build, err := e.CancelBuild()
 	if err != nil {
 		msg := fmt.Errorf("unable to cancel build: %w", err).Error()
 
