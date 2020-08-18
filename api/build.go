@@ -61,9 +61,9 @@ func GetBuild(c *gin.Context) {
 	c.JSON(http.StatusOK, build)
 }
 
-// swagger:operation DELETE /api/v1/executors/{executor}/build/kill build KillBuild
+// swagger:operation DELETE /api/v1/executors/{executor}/build/cancel build CancelBuild
 //
-// Kill the currently running build
+// Cancel the currently running build
 //
 // ---
 // x-success_http_code: '200'
@@ -82,18 +82,18 @@ func GetBuild(c *gin.Context) {
 //   type: string
 // responses:
 //   '200':
-//     description: Successfully killed the build
+//     description: Successfully canceled the build
 //     type: json
 //   '500':
-//     description: Unable to kill the build
+//     description: Unable to cancel the build
 //     type: json
 
-// KillBuild represents the API handler to kill a
+// CancelBuild represents the API handler to cancel a
 // build currently running on an executor.
 //
 // This function performs a hard cancellation of a build on worker.
 // Any build running during this time will immediately be stopped.
-func KillBuild(c *gin.Context) {
+func CancelBuild(c *gin.Context) {
 	e := executor.Retrieve(c)
 
 	repo, err := e.GetRepo()
@@ -105,14 +105,14 @@ func KillBuild(c *gin.Context) {
 		return
 	}
 
-	build, err := e.KillBuild()
+	build, err := e.CancelBuild()
 	if err != nil {
-		msg := fmt.Errorf("unable to kill build: %w", err).Error()
+		msg := fmt.Errorf("unable to cancel build: %w", err).Error()
 
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
 		return
 	}
 
-	c.JSON(http.StatusOK, fmt.Sprintf("killing build %s/%d", repo.GetFullName(), build.GetNumber()))
+	c.JSON(http.StatusOK, fmt.Sprintf("canceled build %s/%d", repo.GetFullName(), build.GetNumber()))
 }
