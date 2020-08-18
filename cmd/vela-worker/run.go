@@ -96,6 +96,7 @@ func run(c *cli.Context) error {
 				Driver:    c.String("runtime.driver"),
 				Config:    c.String("runtime.config"),
 				Namespace: c.String("runtime.namespace"),
+				Volumes:   c.StringSlice("runtime.volumes"),
 			},
 			// queue configuration
 			Queue: &queue.Setup{
