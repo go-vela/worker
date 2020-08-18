@@ -15,7 +15,7 @@ import (
 // build related requests.
 //
 // GET     /api/v1/executors/:executor/build
-// DELETE  /api/v1/executors/:executor/build/kill
+// DELETE  /api/v1/executors/:executor/build/cancel
 func BuildHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling build related requests
 	//
@@ -27,9 +27,9 @@ func BuildHandlers(base *gin.RouterGroup) {
 		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
 		build.GET("", api.GetBuild)
 
-		// add an endpoint for killing the build
+		// add an endpoint for cancelling the build
 		//
 		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.DELETE
-		build.DELETE("/kill", api.CancelBuild)
+		build.DELETE("/cancel", api.CancelBuild)
 	}
 }
