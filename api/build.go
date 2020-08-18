@@ -82,7 +82,7 @@ func GetBuild(c *gin.Context) {
 //   type: string
 // responses:
 //   '200':
-//     description: Successfully cancelled the build
+//     description: Successfully canceled the build
 //     type: json
 //   '500':
 //     description: Unable to cancel the build
@@ -114,5 +114,5 @@ func CancelBuild(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, fmt.Sprintf("cancelled build %s/%d", repo.GetFullName(), build.GetNumber()))
+	c.JSON(http.StatusOK, fmt.Sprintf("canceled build %s/%d", repo.GetFullName(), build.GetNumber()))
 }
