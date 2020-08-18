@@ -17,7 +17,7 @@ import (
 // GET     /api/v1/executors
 // GET     /api/v1/executors/:executor
 // GET     /api/v1/executors/:executor/build
-// DELETE  /api/v1/executors/:executor/build/kill
+// DELETE  /api/v1/executors/:executor/build/cancel
 // GET     /api/v1/executors/:executor/pipeline
 // GET     /api/v1/executors/:executor/repo
 func ExecutorHandlers(base *gin.RouterGroup) {
