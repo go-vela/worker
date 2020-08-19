@@ -10,6 +10,7 @@ services:
       context: .
     container_name: worker_1
     image: worker:local
+    hostname: http://worker_1
     networks:
       - vela
     environment:
@@ -33,6 +34,7 @@ services:
       context: .    
     container_name: worker_2
     image: worker:local
+    hostname: http://worker_2
     networks:
       - vela
     environment:
