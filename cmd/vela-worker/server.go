@@ -5,7 +5,6 @@
 package main
 
 import (
-	"os"
 	"time"
 
 	"github.com/go-vela/worker/router"
@@ -40,8 +39,8 @@ func (w *Worker) server() error {
 	// start serving traffic with TLS on the provided worker port
 	//
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.RunTLS
-	if os.Getenv("server-cert") != "" {
-		return _server.RunTLS(w.Config.API.Port, os.Getenv("server-cert"), os.Getenv("server-key"))
+	if len(w.Config.Certificate.Cert) > 0 {
+		return _server.RunTLS(w.Config.API.Port, w.Config.Certificate.Cert, w.Config.Certificate.Key)
 	}
 
 	// if no certs are provided, run without TLS
