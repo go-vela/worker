@@ -110,6 +110,11 @@ func run(c *cli.Context) error {
 				Address: c.String("server.addr"),
 				Secret:  c.String("server.secret"),
 			},
+			// Certificate configuration
+			Certificate: &Certificate{
+				Cert: c.String("server.cert"),
+				Key:  c.String("server.cert-key"),
+			},
 		},
 		Executors: make(map[int]executor.Engine),
 	}
