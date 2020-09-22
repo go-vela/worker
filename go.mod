@@ -5,11 +5,11 @@ go 1.13
 require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/gin-gonic/gin v1.6.3
-	github.com/go-vela/pkg-executor v0.5.3-0.20200922165509-f21d78b7ba03
-	github.com/go-vela/pkg-queue v0.5.2
-	github.com/go-vela/pkg-runtime v0.5.3-0.20200922163421-d7a35f9cc533
-	github.com/go-vela/sdk-go v0.5.3-0.20200917170216-ccf8288be03a
-	github.com/go-vela/types v0.5.3-0.20200915182859-26f35b0bc7f1
+	github.com/go-vela/pkg-executor v0.6.0-rc1
+	github.com/go-vela/pkg-queue v0.6.0-rc1
+	github.com/go-vela/pkg-runtime v0.6.0-rc1
+	github.com/go-vela/sdk-go v0.6.0-rc1
+	github.com/go-vela/types v0.6.0-rc1
 	github.com/joho/godotenv v1.3.0
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.6.0
