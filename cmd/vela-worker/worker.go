@@ -37,23 +37,16 @@ type (
 		Secret  string
 	}
 
-	// Certificate represents the optional cert and key to enable TLS
-	Certificate struct {
-		Cert string
-		Key  string
-	}
-
 	// Config represents the worker configuration.
 	Config struct {
-		API         *API
-		Build       *Build
-		Executor    *executor.Setup
-		Hostname    string
-		Logger      *Logger
-		Queue       *queue.Setup
-		Runtime     *runtime.Setup
-		Server      *Server
-		Certificate *Certificate
+		API      *API
+		Build    *Build
+		Executor *executor.Setup
+		Hostname string
+		Logger   *Logger
+		Queue    *queue.Setup
+		Runtime  *runtime.Setup
+		Server   *Server
 	}
 
 	// Worker represents all configuration and
