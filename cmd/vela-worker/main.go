@@ -53,7 +53,7 @@ func main() {
 
 	app.Compiled = time.Now()
 	app.Action = run
-	app.Version = version.Version.String()
+	app.Version = version.New().Semantic()
 
 	// Worker Flags
 
