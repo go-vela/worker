@@ -158,7 +158,7 @@ build-static-ci:
 	@go build -a \
 		-ldflags '-s -w -extldflags "-static" ${LD_FLAGS}' \
 		-o release/vela-worker \
-		github.com/go-vela/worker/cmd/vela-sworkererver
+		github.com/go-vela/worker/cmd/vela-worker
 
 # The `check` target is intended to output all
 # dependencies from the Go module that need updates.
