@@ -30,6 +30,12 @@ func TestRouter_Load(t *testing.T) {
 			HandlerFunc: gin.WrapH(api.Metrics()),
 		},
 		{
+			Method:      "GET",
+			Path:        "/version",
+			Handler:     "github.com/go-vela/worker/api.Version",
+			HandlerFunc: api.Version,
+		},
+		{
 			Method:      "POST",
 			Path:        "/api/v1/shutdown",
 			Handler:     "github.com/go-vela/worker/api.Shutdown",

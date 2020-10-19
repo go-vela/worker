@@ -57,13 +57,12 @@ func Secure(c *gin.Context) {
 // information into the request so it will be logged. This is
 // intended for debugging and troubleshooting.
 func RequestVersion(c *gin.Context) {
-	apiVersion := version.Version
+	v := version.New()
 
 	if gin.Mode() == "debug" {
-		c.Request.Header.Set("X-Vela-Version", apiVersion.String())
+		c.Request.Header.Set("X-Vela-Version", v.Semantic())
 	} else { // in prod we don't want the build number metadata
-		apiVersion.Metadata = ""
-		c.Request.Header.Set("X-Vela-Version", apiVersion.String())
+		c.Request.Header.Set("X-Vela-Version", v.Semantic())
 	}
 }
 
@@ -71,12 +70,11 @@ func RequestVersion(c *gin.Context) {
 // information into the response so it will be logged. This is
 // intended for debugging and troubleshooting.
 func ResponseVersion(c *gin.Context) {
-	apiVersion := version.Version
+	v := version.New()
 
 	if gin.Mode() == "debug" {
-		c.Header("X-Vela-Version", apiVersion.String())
+		c.Header("X-Vela-Version", v.Semantic())
 	} else { // in prod we don't want the build number metadata
-		apiVersion.Metadata = ""
-		c.Header("X-Vela-Version", apiVersion.String())
+		c.Header("X-Vela-Version", v.Semantic())
 	}
 }

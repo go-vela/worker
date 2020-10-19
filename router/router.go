@@ -86,6 +86,11 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
 	r.GET("/metrics", gin.WrapH(api.Metrics()))
 
+	// add an endpoint for reporting version information for the worker
+	//
+	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+	r.GET("/version", api.Version)
+
 	// add a collection of endpoints for handling API related requests
 	//
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
