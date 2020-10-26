@@ -39,8 +39,8 @@ func main() {
 	// Worker Information
 
 	app.Name = "vela-worker"
-	app.HelpName = "vela-executor"
-	app.Usage = "Vela executor package for integrating with different executors"
+	app.HelpName = "vela-worker"
+	app.Usage = "Vela build daemon designed for executing pipelines"
 	app.Copyright = "Copyright (c) 2020 Target Brands, Inc. All rights reserved."
 	app.Authors = []*cli.Author{
 		{
@@ -51,8 +51,8 @@ func main() {
 
 	// Worker Metadata
 
-	app.Compiled = time.Now()
 	app.Action = run
+	app.Compiled = time.Now()
 	app.Version = version.New().Semantic()
 
 	// Worker Flags
