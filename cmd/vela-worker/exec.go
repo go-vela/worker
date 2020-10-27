@@ -116,7 +116,7 @@ func (w *Worker) exec(index int) error {
 	err = _executor.CreateBuild(ctx)
 	if err != nil {
 		logger.Errorf("unable to create build: %v", err)
-		return err
+		return nil
 	}
 
 	logger.Info("planning build")
@@ -124,7 +124,7 @@ func (w *Worker) exec(index int) error {
 	err = _executor.PlanBuild(ctx)
 	if err != nil {
 		logger.Errorf("unable to plan build: %v", err)
-		return err
+		return nil
 	}
 
 	logger.Info("assembling build")
@@ -132,7 +132,7 @@ func (w *Worker) exec(index int) error {
 	err = _executor.AssembleBuild(ctx)
 	if err != nil {
 		logger.Errorf("unable to assemble build: %v", err)
-		return err
+		return nil
 	}
 
 	logger.Info("executing build")
@@ -140,7 +140,7 @@ func (w *Worker) exec(index int) error {
 	err = _executor.ExecBuild(ctx)
 	if err != nil {
 		logger.Errorf("unable to execute build: %v", err)
-		return err
+		return nil
 	}
 
 	logger.Info("destroying build")

@@ -63,7 +63,7 @@ func (w *Worker) operate() error {
 					// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
 					logrus.Errorf("failing worker executor: %v", err)
 
-					return nil
+					return err
 				}
 			}
 		})
