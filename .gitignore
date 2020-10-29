@@ -32,3 +32,9 @@ release/
 *.ipr
 *.iws
 *.xml
+
+# Secrets environment file
+secrets.env
+
+# Files to be excluded.
+.DS_Store
