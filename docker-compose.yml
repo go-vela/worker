@@ -48,7 +48,7 @@ services:
   # https://go-vela.github.io/docs/concepts/infrastructure/server/
   server:
     container_name: server
-    build: ../server/.
+    image: target/vela-server:latest
     networks:
       - vela
     environment:
