@@ -38,6 +38,9 @@ func (w *Worker) operate() error {
 		LastCheckedIn: &workerLastCheckedIn,
 	}
 	w.register(&registryWorker)
+	if err != nil {
+		logrus.Error("unable to register worker with the server")
+	}
 
 	// spawn goroutine for phoning home
 	go func() {
