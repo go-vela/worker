@@ -26,6 +26,13 @@ func flags() []cli.Flag {
 			Usage:   "set hostname for the worker",
 		},
 
+		&cli.Int64Flag{
+			EnvVars: []string{"VELA_WORKER_CHECK_IN", "VELA_CHECK_IN", "CHECK_IN"},
+			Name:    "checkIn",
+			Usage:   "time to wait in between checking in with the server",
+			Value:   15,
+		},
+
 		// API Flags
 
 		&cli.StringFlag{

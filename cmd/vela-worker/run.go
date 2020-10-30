@@ -67,6 +67,9 @@ func run(c *cli.Context) error {
 		"registry": "https://hub.docker.com/r/target/vela-worker/",
 	}).Info("Vela Worker")
 
+	// Store check-in to make a pointer
+	checkIn := c.Int64("checkIn")
+
 	// create the worker
 	w := &Worker{
 		// worker configuration
@@ -80,6 +83,8 @@ func run(c *cli.Context) error {
 				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
+			// build configuration
+			CheckIn: &checkIn,
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver: c.String("executor.driver"),

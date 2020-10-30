@@ -29,6 +29,8 @@ services:
       VELA_RUNTIME_DRIVER: docker
       VELA_SERVER_ADDR: 'http://server:8080'
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
+      WORKER_HOSTNAME: worker
+      VELA_WORKER_CHECK_IN: 1
     restart: always
     ports:
       - "8081:8080"
@@ -46,7 +48,7 @@ services:
   # https://go-vela.github.io/docs/concepts/infrastructure/server/
   server:
     container_name: server
-    image: target/vela-server:latest
+    build: ../server/.
     networks:
       - vela
     environment:
