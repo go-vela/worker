@@ -41,6 +41,4 @@ func (w *Worker) register(config *library.Worker) {
 		// log the error instead of returning so the operation doesn't block worker deployment
 		logrus.Error("unable to update worker on the server: %w", err)
 	}
-
-	return
 }
