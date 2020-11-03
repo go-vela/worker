@@ -68,7 +68,7 @@ func run(c *cli.Context) error {
 	}).Info("Vela Worker")
 
 	// Store check-in to make a pointer
-	checkIn := c.Int64("checkIn")
+	checkIn := c.Duration("checkIn")
 
 	// create the worker
 	w := &Worker{
