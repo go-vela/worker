@@ -27,7 +27,7 @@ func flags() []cli.Flag {
 		},
 
 		&cli.DurationFlag{
-			EnvVars: []string{"VELA_WORKER_CHECK_IN", "VELA_CHECK_IN", "CHECK_IN"},
+			EnvVars: []string{"WORKER_CHECK_IN", "VELA_CHECK_IN", "CHECK_IN"},
 			Name:    "checkIn",
 			Usage:   "time to wait in between checking in with the server",
 			Value:   15,
