@@ -28,16 +28,13 @@ func (w *Worker) operate() error {
 	}
 	// Define the database representation of the worker
 	// and register itself in the database
-	workerActive := true
-	workerLastCheckedIn := time.Now().Unix()
-	registryWorker := library.Worker{
-		Hostname:      &w.Config.Hostname,
-		Address:       &w.Config.Server.Address,
-		Routes:        &w.Config.Queue.Routes,
-		Active:        &workerActive,
-		LastCheckedIn: &workerLastCheckedIn,
-	}
-	w.register(&registryWorker)
+	registryWorker := new(library.Worker)
+	registryWorker.SetHostname(w.Config.Hostname)
+	registryWorker.SetAddress(w.Config.Server.Address)
+	registryWorker.SetRoutes(w.Config.Queue.Routes)
+	registryWorker.SetActive(true)
+	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+	w.register(registryWorker)
 	if err != nil {
 		logrus.Error("unable to register worker with the server")
 	}
@@ -49,8 +46,8 @@ func (w *Worker) operate() error {
 			time.Sleep(*w.Config.CheckIn)
 
 			// set checking time to now and call the server
-			registryWorker.SetLastCheckedIn(time.Now().Unix())
-			_, _, err := w.VelaClient.Worker.Update(registryWorker.GetHostname(), &registryWorker)
+			registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+			_, _, err := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
 
 			// if unable to update the worker, log the error but allow the worker to continue running
 			if err != nil {
