@@ -43,7 +43,7 @@ func (w *Worker) operate() error {
 	go func() {
 		for {
 			// sleep for the configured time
-			time.Sleep(*w.Config.CheckIn)
+			time.Sleep(w.Config.CheckIn)
 
 			// set checking time to now and call the server
 			registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
