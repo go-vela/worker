@@ -19,11 +19,11 @@ func (w *Worker) register(config *library.Worker) {
 	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
 	if resp.StatusCode == http.StatusNotFound {
 		// worker does not exist, create it
-		logrus.Info("registering worker with the server")
+		logrus.Infof("registering worker %s with the server", config.GetHostname())
 		_, _, err := w.VelaClient.Worker.Add(config)
 		if err != nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Error("unable to register worker %s with the server: %w", config.GetHostname(), err)
+			logrus.Errorf("unable to register worker %s with the server: %v", config.GetHostname(), err)
 		}
 		return
 	}
@@ -31,7 +31,7 @@ func (w *Worker) register(config *library.Worker) {
 	// if there was an error other than a 404, log the error.
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
-		logrus.Error("unable to get worker %s from server: %w", config.GetHostname(), err)
+		logrus.Errorf("unable to get worker %s from server: %v", config.GetHostname(), err)
 	}
 
 	// the worker exists in the db, update it with the new config
@@ -39,6 +39,6 @@ func (w *Worker) register(config *library.Worker) {
 	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
-		logrus.Error("unable to update worker %s on the server: %w", config.GetHostname(), err)
+		logrus.Errorf("unable to update worker %s on the server: %v", config.GetHostname(), err)
 	}
 }
