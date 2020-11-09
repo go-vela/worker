@@ -35,7 +35,7 @@ func (w *Worker) register(config *library.Worker) error {
 	}
 
 	// the worker exists in the db, update it with the new config
-	logrus.Info("worker previously registered with server, updating information")
+	logrus.Infof("worker %s previously registered with server, updating information", config.GetHostname())
 	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
