@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-vela/types/library"
@@ -14,7 +15,7 @@ import (
 // register is a helper function to register
 // the worker in the database, updating the item
 // if the worker already exists
-func (w *Worker) register(config *library.Worker) {
+func (w *Worker) register(config *library.Worker) error {
 	// check to see if the worker already exists in the database
 	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
 	if resp.StatusCode == http.StatusNotFound {
@@ -23,15 +24,14 @@ func (w *Worker) register(config *library.Worker) {
 		_, _, err := w.VelaClient.Worker.Add(config)
 		if err != nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Errorf("unable to register worker %s with the server: %v", config.GetHostname(), err)
+			return fmt.Errorf("unable to register worker %s with the server: %v", config.GetHostname(), err)
 		}
-		return
 	}
 
 	// if there was an error other than a 404, log the error.
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
-		logrus.Errorf("unable to get worker %s from server: %v", config.GetHostname(), err)
+		return fmt.Errorf("unable to get worker %s from server: %v", config.GetHostname(), err)
 	}
 
 	// the worker exists in the db, update it with the new config
@@ -39,6 +39,8 @@ func (w *Worker) register(config *library.Worker) {
 	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
-		logrus.Errorf("unable to update worker %s on the server: %v", config.GetHostname(), err)
+		return fmt.Errorf("unable to update worker %s on the server: %v", config.GetHostname(), err)
 	}
+
+	return nil
 }

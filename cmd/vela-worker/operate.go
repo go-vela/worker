@@ -34,9 +34,9 @@ func (w *Worker) operate() error {
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-	w.register(registryWorker)
+	err = w.register(registryWorker)
 	if err != nil {
-		logrus.Error("unable to register worker with the server")
+		logrus.Error(err)
 	}
 
 	// spawn goroutine for phoning home
@@ -51,7 +51,7 @@ func (w *Worker) operate() error {
 
 			// if unable to update the worker, log the error but allow the worker to continue running
 			if err != nil {
-				logrus.Error("unable to update worker in database: %w", err)
+				logrus.Errorf("unable to update worker %s in database: %v", registryWorker.GetHostname(), err)
 			}
 		}
 	}()
