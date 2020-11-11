@@ -51,7 +51,7 @@ func (w *Worker) operate() error {
 
 			// if unable to update the worker, log the error but allow the worker to continue running
 			if err != nil {
-				logrus.Errorf("unable to update worker %s in database: %v", registryWorker.GetHostname(), err)
+				logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
 			}
 		}
 	}()
