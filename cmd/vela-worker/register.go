@@ -19,7 +19,7 @@ func (w *Worker) register(config *library.Worker) error {
 	// check to see if the worker already exists in the database
 	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
 	if err != nil {
-		// check to see if the response was nill
+		// check to see if the response was nil
 		if resp == nil {
 			return fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
 		}
@@ -31,11 +31,11 @@ func (w *Worker) register(config *library.Worker) error {
 				// log the error instead of returning so the operation doesn't block worker deployment
 				return fmt.Errorf("unable to register worker %s with the server: %v", config.GetHostname(), err)
 			}
-			
+
 			// successfully added the worker so return nil
 			return nil
 		}
-		
+
 		return fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
 	}
 
