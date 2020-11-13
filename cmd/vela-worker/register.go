@@ -31,9 +31,12 @@ func (w *Worker) register(config *library.Worker) error {
 				// log the error instead of returning so the operation doesn't block worker deployment
 				return fmt.Errorf("unable to register worker %s with the server: %v", config.GetHostname(), err)
 			}
-		} else {
-			return fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
+			
+			// successfully added the worker so return nil
+			return nil
 		}
+		
+		return fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
 	}
 
 	// the worker exists in the db, update it with the new config
