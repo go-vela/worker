@@ -80,6 +80,8 @@ func run(c *cli.Context) error {
 				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
+			// build configuration
+			CheckIn: c.Duration("checkIn"),
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver: c.String("executor.driver"),
