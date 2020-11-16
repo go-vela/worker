@@ -165,6 +165,7 @@ github.com/go-vela/compiler v0.6.0 h1:Z0kaz3nfCxAFBnbzuT2qoj5JjlbGckCmpjVr16PtDJ
 github.com/go-vela/compiler v0.6.0/go.mod h1:chxdAtFcUfJFaewZ5kupqIEjuH+zbK0MDNVc5+Yx4Bg=
 github.com/go-vela/mock v0.6.0 h1:1ZS/UsCcCoOY/Y2Zmf6MxkNNQyeis4vbakoxzKNJxCE=
 github.com/go-vela/mock v0.6.0/go.mod h1:ql7Db2MSvHhlzp8D6Kx1oi1KwHgm8VK2zrv55QPP4S4=
+github.com/go-vela/mock v0.6.1-0.20201016123844-ce8b022539be/go.mod h1:8+LjyuYsei05/9LpFa2Praj2+92FWMyeOu4GAukB7Xg=
 github.com/go-vela/mock v0.6.1-0.20201110215452-4708b0548219 h1:0DEVkg6c78JsfGt+JtTttKA+udzvEOrZOwPlaHW3ZnY=
 github.com/go-vela/mock v0.6.1-0.20201110215452-4708b0548219/go.mod h1:8+LjyuYsei05/9LpFa2Praj2+92FWMyeOu4GAukB7Xg=
 github.com/go-vela/pkg-executor v0.6.1-0.20201113131900-4f44bbe0ef33 h1:vZimq/5EWUBWXQd4fWh60cfM6OvTnT2FGwAu3uRDMUo=
@@ -175,6 +176,8 @@ github.com/go-vela/pkg-runtime v0.6.1-0.20201111181755-32e183648cb0 h1:2/+ArGyca
 github.com/go-vela/pkg-runtime v0.6.1-0.20201111181755-32e183648cb0/go.mod h1:fk1yFX7YTyO/8nhZ9jGG2t9d8R9GbTuz1C8OAUlzBqg=
 github.com/go-vela/sdk-go v0.6.0 h1:UMO/wvW2nkh+yqFcE4q2T1db7wPY1uN7+WaAV2DJyMY=
 github.com/go-vela/sdk-go v0.6.0/go.mod h1:USILVcPdhS2hWbLNjnEXfb+gzQUkrAp51GUbEtIsdTE=
+github.com/go-vela/sdk-go v0.6.1-0.20201023131354-0be3cce3f55d h1:TcI7AMKRCRe/jeKS9gtMkQDtLztBeR3ix/9+VR3Kvuo=
+github.com/go-vela/sdk-go v0.6.1-0.20201023131354-0be3cce3f55d/go.mod h1:fCz6PRrYDIqQptei8I9v2epRfnUhYVX8vAdnT/3v3Vk=
 github.com/go-vela/types v0.6.0 h1:82/+Y3EGnnr37HeaJ5qhz/PGMvLkJfYvblEw1kFwxb4=
 github.com/go-vela/types v0.6.0/go.mod h1:G1Qp0JFtXV+QRNTEWXht+WdllOhjAGapg9vBZKdj6N0=
 github.com/go-vela/types v0.6.1-0.20201019123446-226d0cc72538 h1:ck0Ylos/ExUCluEqQgVxKrTZ21nsup0VZT31sWqTU4Y=

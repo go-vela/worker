@@ -8,7 +8,7 @@ require (
 	github.com/go-vela/pkg-executor v0.6.1-0.20201113131900-4f44bbe0ef33
 	github.com/go-vela/pkg-queue v0.6.0
 	github.com/go-vela/pkg-runtime v0.6.1-0.20201111181755-32e183648cb0
-	github.com/go-vela/sdk-go v0.6.0
+	github.com/go-vela/sdk-go v0.6.1-0.20201023131354-0be3cce3f55d
 	github.com/go-vela/types v0.6.1-0.20201019123446-226d0cc72538
 	github.com/joho/godotenv v1.3.0
 	github.com/prometheus/client_golang v1.7.1
