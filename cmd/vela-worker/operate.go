@@ -5,7 +5,10 @@
 package main
 
 import (
+	"time"
+
 	"github.com/go-vela/pkg-queue/queue"
+	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
 
@@ -23,6 +26,35 @@ func (w *Worker) operate() error {
 	if err != nil {
 		return err
 	}
+	// Define the database representation of the worker
+	// and register itself in the database
+	registryWorker := new(library.Worker)
+	registryWorker.SetHostname(w.Config.Hostname)
+	registryWorker.SetAddress(w.Config.Server.Address)
+	registryWorker.SetRoutes(w.Config.Queue.Routes)
+	registryWorker.SetActive(true)
+	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+	err = w.register(registryWorker)
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	// spawn goroutine for phoning home
+	go func() {
+		for {
+			// sleep for the configured time
+			time.Sleep(w.Config.CheckIn)
+
+			// set checking time to now and call the server
+			registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+			_, _, err := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+
+			// if unable to update the worker, log the error but allow the worker to continue running
+			if err != nil {
+				logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
+			}
+		}
+	}()
 
 	// setup the queue
 	//

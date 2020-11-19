@@ -41,6 +41,7 @@ type (
 	Config struct {
 		API      *API
 		Build    *Build
+		CheckIn  time.Duration
 		Executor *executor.Setup
 		Hostname string
 		Logger   *Logger
