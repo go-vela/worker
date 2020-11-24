@@ -84,6 +84,16 @@ func flags() []cli.Flag {
 			Name:    "server.secret",
 			Usage:   "secret used for server <-> worker communication",
 		},
+		&cli.StringFlag{
+			EnvVars: []string{"WORKER_SERVER_CERT", "VELA_SERVER_CERT", "SERVER_CERT"},
+			Name:    "server.cert",
+			Usage:   "optional TLS certificate for https",
+		},
+		&cli.StringFlag{
+			EnvVars: []string{"WORKER_SERVER_CERT_KEY", "VELA_SERVER_CERT_KEY", "SERVER_CERT_KEY"},
+			Name:    "server.cert-key",
+			Usage:   "optional TLS certificate key",
+		},
 	}
 
 	// Executor Flags
