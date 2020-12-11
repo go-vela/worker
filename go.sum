@@ -174,6 +174,8 @@ github.com/go-vela/pkg-queue v0.6.0 h1:8lOntes/6iSzKnXvO2zyvZI2iPwEnA4/7YD0UIIOJ
 github.com/go-vela/pkg-queue v0.6.0/go.mod h1:hhTidV8kpbL88TDE7UTv1j2ZqnUYD2Q8jhrGE/RFNfg=
 github.com/go-vela/pkg-runtime v0.6.1-0.20201111181755-32e183648cb0 h1:2/+ArGyca6INrEMQuKQZMe3KxvNNjzyF/fMxrSvAIrM=
 github.com/go-vela/pkg-runtime v0.6.1-0.20201111181755-32e183648cb0/go.mod h1:fk1yFX7YTyO/8nhZ9jGG2t9d8R9GbTuz1C8OAUlzBqg=
+github.com/go-vela/pkg-runtime v0.6.1-0.20201117152311-83cd0f9fc2b1 h1:RgYGFtBaUKV8bRXEll2ORQjhMTqEQMxsmXm0i9R2V1E=
+github.com/go-vela/pkg-runtime v0.6.1-0.20201117152311-83cd0f9fc2b1/go.mod h1:fk1yFX7YTyO/8nhZ9jGG2t9d8R9GbTuz1C8OAUlzBqg=
 github.com/go-vela/sdk-go v0.6.0 h1:UMO/wvW2nkh+yqFcE4q2T1db7wPY1uN7+WaAV2DJyMY=
 github.com/go-vela/sdk-go v0.6.0/go.mod h1:USILVcPdhS2hWbLNjnEXfb+gzQUkrAp51GUbEtIsdTE=
 github.com/go-vela/sdk-go v0.6.1-0.20201023131354-0be3cce3f55d h1:TcI7AMKRCRe/jeKS9gtMkQDtLztBeR3ix/9+VR3Kvuo=

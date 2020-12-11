@@ -95,10 +95,11 @@ func run(c *cli.Context) error {
 			},
 			// runtime configuration
 			Runtime: &runtime.Setup{
-				Driver:    c.String("runtime.driver"),
-				Config:    c.String("runtime.config"),
-				Namespace: c.String("runtime.namespace"),
-				Volumes:   c.StringSlice("runtime.volumes"),
+				Driver:           c.String("runtime.driver"),
+				Config:           c.String("runtime.config"),
+				Namespace:        c.String("runtime.namespace"),
+				Volumes:          c.StringSlice("runtime.volumes"),
+				PrivilegedImages: c.StringSlice("runtime.allowed-privileged-images"),
 			},
 			// queue configuration
 			Queue: &queue.Setup{
