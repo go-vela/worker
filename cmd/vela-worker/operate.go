@@ -34,6 +34,7 @@ func (w *Worker) operate() error {
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
 	err = w.register(registryWorker)
 	if err != nil {
 		logrus.Error(err)
