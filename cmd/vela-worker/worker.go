@@ -16,7 +16,8 @@ import (
 type (
 	// API represents the worker configuration for API information.
 	API struct {
-		Port string
+		Port     string
+		Protocol string
 	}
 
 	// Build represents the worker configuration for build information.

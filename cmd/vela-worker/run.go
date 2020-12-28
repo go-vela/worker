@@ -73,7 +73,8 @@ func run(c *cli.Context) error {
 		Config: &Config{
 			// api configuration
 			API: &API{
-				Port: c.String("api.port"),
+				Port:     c.String("api.port"),
+				Protocol: c.String("api.protocol"),
 			},
 			// build configuration
 			Build: &Build{

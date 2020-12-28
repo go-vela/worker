@@ -31,6 +31,7 @@ services:
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_HOSTNAME: worker
       WORKER_CHECK_IN: 1m
+      WORKER_API_PROTOCOL: http
     restart: always
     ports:
       - "8081:8080"

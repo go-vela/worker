@@ -6,6 +6,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-vela/worker/router"
@@ -37,23 +38,25 @@ func (w *Worker) server() error {
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Tracef
 	logrus.Tracef("serving traffic on %s", w.Config.API.Port)
 
-	// if provided, start serving traffic with TLS on the provided worker port
-	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.RunTLS
-	if len(w.Config.Certificate.Cert) > 0 {
-		// validate cert files exists at the provided paths
-		_, err := os.Stat(w.Config.Certificate.Cert)
-		if err != nil {
-			logrus.Fatalf("Expecting certificate file at %s, got %v", w.Config.Certificate.Cert, err)
-		}
-		_, err = os.Stat(w.Config.Certificate.Key)
-		if err != nil {
-			logrus.Fatalf("Expecting certificate key at %s, got %v", w.Config.Certificate.Key, err)
+	// if running with HTTPS, check certs are provided and run with TLS.
+	if strings.EqualFold(w.Config.API.Protocol, "https") {
+		if len(w.Config.Certificate.Cert) < 0 && len(w.Config.Certificate.Cert) < 0 {
+			// check that the certificate and key are both populated
+			_, err := os.Stat(w.Config.Certificate.Cert)
+			if err != nil {
+				logrus.Fatalf("Expecting certificate file at %s, got %v", w.Config.Certificate.Cert, err)
+			}
+			_, err = os.Stat(w.Config.Certificate.Key)
+			if err != nil {
+				logrus.Fatalf("Expecting certificate key at %s, got %v", w.Config.Certificate.Key, err)
+			}
+		} else {
+			logrus.Fatal("Unable to run with TLS: No certificate provided")
 		}
 		return _server.RunTLS(w.Config.API.Port, w.Config.Certificate.Cert, w.Config.Certificate.Key)
 	}
 
-	// if no certs are provided, run without TLS
+	// else serve over http
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
 	return _server.Run(w.Config.API.Port)
 }

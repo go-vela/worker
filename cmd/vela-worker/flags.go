@@ -34,6 +34,12 @@ func flags() []cli.Flag {
 		},
 
 		// API Flags
+		&cli.StringFlag{
+			EnvVars: []string{"WORKER_API_PROTOCOL", "VELA_API_PROTOCOL", "API_PROTOCOL"},
+			Name:    "api.protocol",
+			Usage:   "API protocol for the worker to serve over",
+			Value:   "https",
+		},
 
 		&cli.StringFlag{
 			EnvVars: []string{"WORKER_API_PORT", "VELA_API_PORT", "API_PORT"},
