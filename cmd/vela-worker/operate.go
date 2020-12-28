@@ -28,7 +28,7 @@ func (w *Worker) operate() error {
 	if err != nil {
 		return err
 	}
-	addr := fmt.Sprintf("%s://%s", strings.Trim(w.Config.API.Protocol, "://"), w.Config.Hostname)
+	addr := fmt.Sprintf("%s://%s", strings.TrimSuffix(w.Config.API.Protocol, "://"), w.Config.Hostname)
 
 	// Define the database representation of the worker
 	// and register itself in the database
