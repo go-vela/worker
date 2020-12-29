@@ -28,13 +28,13 @@ func (w *Worker) operate() error {
 	if err != nil {
 		return err
 	}
+	// ensure the address has one and only instance of "://"
 	addr := fmt.Sprintf("%s://%s", strings.TrimSuffix(w.Config.API.Protocol, "://"), w.Config.Hostname)
 
 	// Define the database representation of the worker
 	// and register itself in the database
 	registryWorker := new(library.Worker)
 	registryWorker.SetHostname(w.Config.Hostname)
-	// ensure the address has one and only instance of "://"
 	registryWorker.SetAddress(addr)
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
