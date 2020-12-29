@@ -40,7 +40,7 @@ func (w *Worker) server() error {
 
 	// if running with HTTPS, check certs are provided and run with TLS.
 	if strings.EqualFold(w.Config.API.Protocol, "https") {
-		if len(w.Config.Certificate.Cert) < 0 && len(w.Config.Certificate.Key) < 0 {
+		if len(w.Config.Certificate.Cert) > 0 && len(w.Config.Certificate.Key) > 0 {
 			// check that the certificate and key are both populated
 			_, err := os.Stat(w.Config.Certificate.Cert)
 			if err != nil {
