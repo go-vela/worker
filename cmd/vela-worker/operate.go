@@ -5,8 +5,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-vela/pkg-queue/queue"
@@ -28,14 +26,12 @@ func (w *Worker) operate() error {
 	if err != nil {
 		return err
 	}
-	// ensure the address has one and only instance of "://"
-	addr := fmt.Sprintf("%s://%s", strings.TrimSuffix(w.Config.API.Protocol, "://"), w.Config.Hostname)
 
 	// Define the database representation of the worker
 	// and register itself in the database
 	registryWorker := new(library.Worker)
-	registryWorker.SetHostname(w.Config.Hostname)
-	registryWorker.SetAddress(addr)
+	registryWorker.SetHostname(w.Config.API.Address.Hostname())
+	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())

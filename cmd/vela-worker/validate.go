@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/sirupsen/logrus"
 )
@@ -27,9 +28,9 @@ func (w *Worker) Validate() error {
 		return fmt.Errorf("no worker build timeout provided")
 	}
 
-	// verify a hostname was provided
-	if len(w.Config.Hostname) == 0 {
-		return fmt.Errorf("no worker hostname provided")
+	// verify a worker address was provided
+	if *w.Config.API.Address == (url.URL{}) {
+		return fmt.Errorf("no worker address provided")
 	}
 
 	// verify a server address was provided

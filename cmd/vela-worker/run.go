@@ -5,6 +5,10 @@
 package main
 
 import (
+	"fmt"
+	"net/url"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/pkg-executor/executor"
@@ -67,14 +71,19 @@ func run(c *cli.Context) error {
 		"registry": "https://hub.docker.com/r/target/vela-worker/",
 	}).Info("Vela Worker")
 
+	// parse the workers address, returning any errors.
+	addr, err := url.Parse(c.String("worker.addr"))
+	if err != nil {
+		return fmt.Errorf("Unable to parse address: %w", err)
+	}
+
 	// create the worker
 	w := &Worker{
 		// worker configuration
 		Config: &Config{
 			// api configuration
 			API: &API{
-				Port:     c.String("api.port"),
-				Protocol: c.String("api.protocol"),
+				Address: addr,
 			},
 			// build configuration
 			Build: &Build{
@@ -87,8 +96,6 @@ func run(c *cli.Context) error {
 			Executor: &executor.Setup{
 				Driver: c.String("executor.driver"),
 			},
-			// hostname configuration
-			Hostname: c.String("hostname"),
 			// logger configuration
 			Logger: &Logger{
 				Format: c.String("log.format"),
@@ -123,13 +130,26 @@ func run(c *cli.Context) error {
 		Executors: make(map[int]executor.Engine),
 	}
 
-	// set the worker hostname if no flag was provided
-	if len(w.Config.Hostname) == 0 {
-		w.Config.Hostname = hostname
+	// set the worker address if no flag was provided
+	if len(w.Config.API.Address.String()) == 0 {
+		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
+	}
+
+	// check that hostname was properly populated
+	if len(w.Config.API.Address.Hostname()) == 0 {
+		switch strings.ToLower(w.Config.API.Address.Scheme) {
+		case "http", "https":
+			retErr := "Worker server address invalid: %s"
+			return fmt.Errorf(retErr, w.Config.API.Address.String())
+		default:
+			// hostname will be empty if a scheme is not provided
+			retErr := "Worker server address invalid, no scheme: %s"
+			return fmt.Errorf(retErr, w.Config.API.Address.String())
+		}
 	}
 
 	// validate the worker
-	err := w.Validate()
+	err = w.Validate()
 	if err != nil {
 		return err
 	}

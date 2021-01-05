@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -36,10 +37,10 @@ func (w *Worker) server() error {
 	// log a message indicating the start of serving traffic
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Tracef
-	logrus.Tracef("serving traffic on %s", w.Config.API.Port)
+	logrus.Tracef("serving traffic on %s", w.Config.API.Address.Port())
 
 	// if running with HTTPS, check certs are provided and run with TLS.
-	if strings.EqualFold(w.Config.API.Protocol, "https") {
+	if strings.EqualFold(w.Config.API.Address.Scheme, "https") {
 		if len(w.Config.Certificate.Cert) > 0 && len(w.Config.Certificate.Key) > 0 {
 			// check that the certificate and key are both populated
 			_, err := os.Stat(w.Config.Certificate.Cert)
@@ -53,10 +54,14 @@ func (w *Worker) server() error {
 		} else {
 			logrus.Fatal("Unable to run with TLS: No certificate provided")
 		}
-		return _server.RunTLS(w.Config.API.Port, w.Config.Certificate.Cert, w.Config.Certificate.Key)
+		return _server.RunTLS(
+			fmt.Sprintf(":%s", w.Config.API.Address.Port()),
+			w.Config.Certificate.Cert,
+			w.Config.Certificate.Key,
+		)
 	}
 
 	// else serve over http
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
-	return _server.Run(w.Config.API.Port)
+	return _server.Run(fmt.Sprintf(":%s", w.Config.API.Address.Port()))
 }
