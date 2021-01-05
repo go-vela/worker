@@ -74,7 +74,7 @@ func run(c *cli.Context) error {
 	// parse the workers address, returning any errors.
 	addr, err := url.Parse(c.String("worker.addr"))
 	if err != nil {
-		return fmt.Errorf("Unable to parse address: %w", err)
+		return fmt.Errorf("unable to parse address: %w", err)
 	}
 
 	// create the worker
