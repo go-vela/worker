@@ -7,7 +7,6 @@ package main
 import (
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -133,19 +132,6 @@ func run(c *cli.Context) error {
 	// set the worker address if no flag was provided
 	if len(w.Config.API.Address.String()) == 0 {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
-	}
-
-	// check that hostname was properly populated
-	if len(w.Config.API.Address.Hostname()) == 0 {
-		switch strings.ToLower(w.Config.API.Address.Scheme) {
-		case "http", "https":
-			retErr := "Worker server address invalid: %s"
-			return fmt.Errorf(retErr, w.Config.API.Address.String())
-		default:
-			// hostname will be empty if a scheme is not provided
-			retErr := "Worker server address invalid, no scheme: %s"
-			return fmt.Errorf(retErr, w.Config.API.Address.String())
-		}
 	}
 
 	// validate the worker
