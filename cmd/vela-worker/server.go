@@ -45,14 +45,14 @@ func (w *Worker) server() error {
 			// check that the certificate and key are both populated
 			_, err := os.Stat(w.Config.Certificate.Cert)
 			if err != nil {
-				logrus.Fatalf("Expecting certificate file at %s, got %v", w.Config.Certificate.Cert, err)
+				logrus.Fatalf("expecting certificate file at %s, got %v", w.Config.Certificate.Cert, err)
 			}
 			_, err = os.Stat(w.Config.Certificate.Key)
 			if err != nil {
-				logrus.Fatalf("Expecting certificate key at %s, got %v", w.Config.Certificate.Key, err)
+				logrus.Fatalf("expecting certificate key at %s, got %v", w.Config.Certificate.Key, err)
 			}
 		} else {
-			logrus.Fatal("Unable to run with TLS: No certificate provided")
+			logrus.Fatal("unable to run with TLS: No certificate provided")
 		}
 		return _server.RunTLS(
 			fmt.Sprintf(":%s", w.Config.API.Address.Port()),
