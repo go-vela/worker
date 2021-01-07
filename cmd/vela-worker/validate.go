@@ -23,11 +23,11 @@ func (w *Worker) Validate() error {
 	if len(w.Config.API.Address.Hostname()) == 0 {
 		switch strings.ToLower(w.Config.API.Address.Scheme) {
 		case "http", "https":
-			retErr := "Worker server address invalid: %s"
+			retErr := "worker server address invalid: %s"
 			return fmt.Errorf(retErr, w.Config.API.Address.String())
 		default:
 			// hostname will be empty if a scheme is not provided
-			retErr := "Worker server address invalid, no scheme: %s"
+			retErr := "worker server address invalid, no scheme: %s"
 			return fmt.Errorf(retErr, w.Config.API.Address.String())
 		}
 	}
