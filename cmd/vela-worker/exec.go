@@ -19,7 +19,7 @@ import (
 
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
-// nolint:funlen
+// nolint:funlen // ignore function length due to comments and log messages
 func (w *Worker) exec(index int) error {
 	var err error
 
