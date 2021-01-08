@@ -26,11 +26,12 @@ func (w *Worker) operate() error {
 	if err != nil {
 		return err
 	}
+
 	// Define the database representation of the worker
 	// and register itself in the database
 	registryWorker := new(library.Worker)
-	registryWorker.SetHostname(w.Config.Hostname)
-	registryWorker.SetAddress(w.Config.Server.Address)
+	registryWorker.SetHostname(w.Config.API.Address.Hostname())
+	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())

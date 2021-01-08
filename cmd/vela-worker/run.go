@@ -5,6 +5,9 @@
 package main
 
 import (
+	"fmt"
+	"net/url"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/pkg-executor/executor"
@@ -67,13 +70,19 @@ func run(c *cli.Context) error {
 		"registry": "https://hub.docker.com/r/target/vela-worker/",
 	}).Info("Vela Worker")
 
+	// parse the workers address, returning any errors.
+	addr, err := url.Parse(c.String("worker.addr"))
+	if err != nil {
+		return fmt.Errorf("unable to parse address: %w", err)
+	}
+
 	// create the worker
 	w := &Worker{
 		// worker configuration
 		Config: &Config{
 			// api configuration
 			API: &API{
-				Port: c.String("api.port"),
+				Address: addr,
 			},
 			// build configuration
 			Build: &Build{
@@ -86,8 +95,6 @@ func run(c *cli.Context) error {
 			Executor: &executor.Setup{
 				Driver: c.String("executor.driver"),
 			},
-			// hostname configuration
-			Hostname: c.String("hostname"),
 			// logger configuration
 			Logger: &Logger{
 				Format: c.String("log.format"),
@@ -122,13 +129,13 @@ func run(c *cli.Context) error {
 		Executors: make(map[int]executor.Engine),
 	}
 
-	// set the worker hostname if no flag was provided
-	if len(w.Config.Hostname) == 0 {
-		w.Config.Hostname = hostname
+	// set the worker address if no flag was provided
+	if len(w.Config.API.Address.String()) == 0 {
+		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
 	}
 
 	// validate the worker
-	err := w.Validate()
+	err = w.Validate()
 	if err != nil {
 		return err
 	}
