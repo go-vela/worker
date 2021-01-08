@@ -3,7 +3,7 @@ module github.com/go-vela/worker
 go 1.13
 
 require (
-	github.com/Masterminds/semver v1.5.0
+	github.com/Masterminds/semver/v3/v3 v3.1.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-vela/pkg-executor v0.6.1-0.20201113131900-4f44bbe0ef33
 	github.com/go-vela/pkg-queue v0.6.0
