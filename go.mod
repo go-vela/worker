@@ -3,13 +3,13 @@ module github.com/go-vela/worker
 go 1.13
 
 require (
-	github.com/Masterminds/semver/v3/v3 v3.1.1
+	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-vela/pkg-executor v0.6.1-0.20201113131900-4f44bbe0ef33
 	github.com/go-vela/pkg-queue v0.6.0
 	github.com/go-vela/pkg-runtime v0.6.1-0.20201117152311-83cd0f9fc2b1
 	github.com/go-vela/sdk-go v0.6.1-0.20201023131354-0be3cce3f55d
-	github.com/go-vela/types v0.6.1-0.20201211155220-43fe2984bead
+	github.com/go-vela/types v0.6.1-0.20210108224628-20005834775b
 	github.com/joho/godotenv v1.3.0
 	github.com/prometheus/client_golang v1.9.0
 	github.com/sirupsen/logrus v1.7.0
