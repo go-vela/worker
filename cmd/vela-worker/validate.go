@@ -6,6 +6,8 @@ package main
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -17,6 +19,19 @@ func (w *Worker) Validate() error {
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 	logrus.Info("validating worker configuration")
 
+	// check that hostname was properly populated
+	if len(w.Config.API.Address.Hostname()) == 0 {
+		switch strings.ToLower(w.Config.API.Address.Scheme) {
+		case "http", "https":
+			retErr := "worker server address invalid: %s"
+			return fmt.Errorf(retErr, w.Config.API.Address.String())
+		default:
+			// hostname will be empty if a scheme is not provided
+			retErr := "worker server address invalid, no scheme: %s"
+			return fmt.Errorf(retErr, w.Config.API.Address.String())
+		}
+	}
+
 	// verify a build limit was provided
 	if w.Config.Build.Limit <= 0 {
 		return fmt.Errorf("no worker build limit provided")
@@ -27,9 +42,9 @@ func (w *Worker) Validate() error {
 		return fmt.Errorf("no worker build timeout provided")
 	}
 
-	// verify a hostname was provided
-	if len(w.Config.Hostname) == 0 {
-		return fmt.Errorf("no worker hostname provided")
+	// verify a worker address was provided
+	if *w.Config.API.Address == (url.URL{}) {
+		return fmt.Errorf("no worker address provided")
 	}
 
 	// verify a server address was provided

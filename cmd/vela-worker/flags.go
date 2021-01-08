@@ -21,9 +21,9 @@ func flags() []cli.Flag {
 	f := []cli.Flag{
 
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_HOSTNAME", "VELA_HOSTNAME", "HOSTNAME"},
-			Name:    "hostname",
-			Usage:   "set hostname for the worker",
+			EnvVars: []string{"WORKER_ADDR", "VELA_WORKER_ADDR", "VELA_WORKER"},
+			Name:    "worker.addr",
+			Usage:   "Worker server address as a fully qualified url (<scheme>://<host>)",
 		},
 
 		&cli.DurationFlag{
@@ -31,15 +31,6 @@ func flags() []cli.Flag {
 			Name:    "checkIn",
 			Usage:   "time to wait in between checking in with the server",
 			Value:   15 * time.Minute,
-		},
-
-		// API Flags
-
-		&cli.StringFlag{
-			EnvVars: []string{"WORKER_API_PORT", "VELA_API_PORT", "API_PORT"},
-			Name:    "api.port",
-			Usage:   "API port for the worker to listen on",
-			Value:   ":8080",
 		},
 
 		// Build Flags
