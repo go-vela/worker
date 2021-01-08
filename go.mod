@@ -11,7 +11,7 @@ require (
 	github.com/go-vela/sdk-go v0.6.1-0.20201023131354-0be3cce3f55d
 	github.com/go-vela/types v0.6.1-0.20201211155220-43fe2984bead
 	github.com/joho/godotenv v1.3.0
-	github.com/prometheus/client_golang v1.7.1
+	github.com/prometheus/client_golang v1.9.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
