@@ -19,6 +19,7 @@ import (
 
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
+// nolint:funlen // ignore function length due to comments and log messages
 func (w *Worker) exec(index int) error {
 	var err error
 
@@ -42,7 +43,7 @@ func (w *Worker) exec(index int) error {
 	_executor, err := executor.New(&executor.Setup{
 		Driver:   w.Config.Executor.Driver,
 		Client:   w.VelaClient,
-		Hostname: w.Config.Hostname,
+		Hostname: w.Config.API.Address.Hostname(),
 		Runtime:  w.Runtime,
 		Build:    item.Build,
 		Pipeline: item.Pipeline.Sanitize(w.Config.Runtime.Driver),
@@ -58,7 +59,7 @@ func (w *Worker) exec(index int) error {
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
 	logger := logrus.WithFields(logrus.Fields{
 		"build": item.Build.GetNumber(),
-		"host":  w.Config.Hostname,
+		"host":  w.Config.API.Address.Hostname(),
 		"repo":  item.Repo.GetFullName(),
 	})
 

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"net/url"
 	"time"
 
 	"github.com/go-vela/pkg-executor/executor"
@@ -16,7 +17,7 @@ import (
 type (
 	// API represents the worker configuration for API information.
 	API struct {
-		Port string
+		Address *url.URL
 	}
 
 	// Build represents the worker configuration for build information.
@@ -49,7 +50,6 @@ type (
 		Build       *Build
 		CheckIn     time.Duration
 		Executor    *executor.Setup
-		Hostname    string
 		Logger      *Logger
 		Queue       *queue.Setup
 		Runtime     *runtime.Setup
