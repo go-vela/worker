@@ -19,10 +19,6 @@ func (w *Worker) register(config *library.Worker) error {
 	// check to see if the worker already exists in the database
 	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
 	if err != nil {
-		// check to see if the response was nil
-		if resp == nil {
-			return fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
-		}
 		// check to see if the worker was not found and if we need to add it
 		if resp.StatusCode == http.StatusNotFound {
 			logrus.Infof("registering worker %s with the server", config.GetHostname())
