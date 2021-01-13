@@ -17,7 +17,7 @@ func setupClient(s *Server) (*vela.Client, error) {
 	// create a new Vela client from the server configuration
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#NewClient
-	vela, err := vela.NewClient(s.Address, nil)
+	vela, err := vela.NewClient(s.Address, "", nil)
 	if err != nil {
 		return nil, err
 	}
