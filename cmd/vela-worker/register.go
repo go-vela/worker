@@ -20,8 +20,7 @@ func (w *Worker) checkIn(config *library.Worker) error {
 	if err != nil {
 		// if we receive a 404 the worker needs to be registered
 		if resp.StatusCode == http.StatusNotFound {
-			w.register(config)
-			return nil
+			return w.register(config)
 		}
 
 		return fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
@@ -48,5 +47,4 @@ func (w *Worker) register(config *library.Worker) error {
 
 	// successfully added the worker so return nil
 	return nil
-
 }
