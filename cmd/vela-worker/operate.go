@@ -36,25 +36,26 @@ func (w *Worker) operate() error {
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
-	err = w.register(registryWorker)
-	if err != nil {
-		logrus.Error(err)
-	}
 
 	// spawn goroutine for phoning home
 	go func() {
 		for {
-			// sleep for the configured time
-			time.Sleep(w.Config.CheckIn)
-
 			// set checking time to now and call the server
 			registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-			_, _, err := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+
+			// register or update the worker
+			err = w.checkIn(registryWorker)
+			if err != nil {
+				logrus.Error(err)
+			}
 
 			// if unable to update the worker, log the error but allow the worker to continue running
 			if err != nil {
 				logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
 			}
+
+			// sleep for the configured time
+			time.Sleep(w.Config.CheckIn)
 		}
 	}()
 
