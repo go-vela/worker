@@ -203,8 +203,8 @@ github.com/go-vela/compiler v0.7.0-rc2 h1:oqEzF1rbQYTDepgWX5YWVmoPMHwYCPZFByb4WE
 github.com/go-vela/compiler v0.7.0-rc2/go.mod h1:yDLkztd1U/29EPleiBbkNzPWnxxUwvKNGYMTX3pYPQ8=
 github.com/go-vela/mock v0.7.0-rc2 h1:n+ugukio7vQrmOZ5D2td+BuGufqrT2HT3gZHO1UPeRc=
 github.com/go-vela/mock v0.7.0-rc2/go.mod h1:PzRHohJqr9xLxpe8482/kwL9bHy2YuKtOhzMohxYaYk=
-github.com/go-vela/pkg-executor v0.7.0-rc2 h1:Tlv6oMZDKU0CkT1GP3KsI6xmYEGvRGblD9Tz3Y/wdI4=
-github.com/go-vela/pkg-executor v0.7.0-rc2/go.mod h1:fZSgpMre5zppQayDBXvHk+OhTc69IVzxEl0PnniVxPk=
+github.com/go-vela/pkg-executor v0.7.0-rc2.0.20210125155500-a6fec1db703f h1:ONz4EBCrIXhQVsxnPL7g0xZEmdtIf82AhQUh5rpKslw=
+github.com/go-vela/pkg-executor v0.7.0-rc2.0.20210125155500-a6fec1db703f/go.mod h1:fZSgpMre5zppQayDBXvHk+OhTc69IVzxEl0PnniVxPk=
 github.com/go-vela/pkg-queue v0.7.0-rc2 h1:moOWGXmZXGgLnFEappElfkkrF1hj9yXA7D2B+47VDTA=
 github.com/go-vela/pkg-queue v0.7.0-rc2/go.mod h1:UCfvqjVN+88FDApBRPdIQ/lgvpuoBsn8jyvsjwq9CnM=
 github.com/go-vela/pkg-runtime v0.7.0-rc2 h1:/t1F4wXsGsk1vEdKH6asadD3IeK6ocjmaytlp1AwGXM=
