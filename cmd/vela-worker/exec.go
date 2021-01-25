@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-vela/pkg-executor/executor"
 	"github.com/go-vela/pkg-runtime/runtime"
+	"github.com/go-vela/worker/version"
 
 	"github.com/sirupsen/logrus"
 )
@@ -22,6 +23,9 @@ import (
 // nolint:funlen // ignore function length due to comments and log messages
 func (w *Worker) exec(index int) error {
 	var err error
+
+	// setup the version
+	v := version.New()
 
 	// setup the runtime
 	//
@@ -49,6 +53,7 @@ func (w *Worker) exec(index int) error {
 		Pipeline: item.Pipeline.Sanitize(w.Config.Runtime.Driver),
 		Repo:     item.Repo,
 		User:     item.User,
+		Version:  v.Semantic(),
 	})
 
 	// add the executor to the worker
@@ -58,9 +63,10 @@ func (w *Worker) exec(index int) error {
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
 	logger := logrus.WithFields(logrus.Fields{
-		"build": item.Build.GetNumber(),
-		"host":  w.Config.API.Address.Hostname(),
-		"repo":  item.Repo.GetFullName(),
+		"build":   item.Build.GetNumber(),
+		"host":    w.Config.API.Address.Hostname(),
+		"repo":    item.Repo.GetFullName(),
+		"version": v.Semantic(),
 	})
 
 	// capture the configured build timeout
