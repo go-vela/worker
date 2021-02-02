@@ -38,7 +38,7 @@ type (
 		Secret  string
 	}
 
-	// Certificate represents the optional cert and key to enable TLS
+	// Certificate represents the optional cert and key to enable TLS.
 	Certificate struct {
 		Cert string
 		Key  string

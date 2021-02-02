@@ -71,6 +71,8 @@ func (w *Worker) Start() error {
 		}()
 
 		// create an infinite loop to poll for errors
+		//
+		// nolint: gosimple // ignore this for now
 		for {
 			// create a select statement to check for errors
 			select {

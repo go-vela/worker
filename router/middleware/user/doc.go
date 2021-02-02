@@ -9,5 +9,4 @@
 // Usage:
 //
 // 	import "github.com/go-vela/worker/router/middleware/user"
-
 package user
