@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// checkIn is a helper function to to phone home to the server
+// checkIn is a helper function to to phone home to the server.
 func (w *Worker) checkIn(config *library.Worker) error {
 	// check to see if the worker already exists in the database
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())
@@ -36,7 +36,7 @@ func (w *Worker) checkIn(config *library.Worker) error {
 	return nil
 }
 
-// register is a helper function to register the worker with the server
+// register is a helper function to register the worker with the server.
 func (w *Worker) register(config *library.Worker) error {
 	logrus.Infof("worker %s not found, registering it with the server", config.GetHostname())
 	_, _, err := w.VelaClient.Worker.Add(config)

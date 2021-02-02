@@ -16,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// MustServer ensures the user is the vela server
+// MustServer ensures the user is the vela server.
 func MustServer() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := user.Retrieve(c)

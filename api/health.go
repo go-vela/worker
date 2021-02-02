@@ -25,7 +25,7 @@ import (
 //     schema:
 //       type: string
 
-// Health check the status of the application
+// Health check the status of the application.
 func Health(c *gin.Context) {
 	c.JSON(http.StatusOK, "ok")
 }

@@ -25,7 +25,7 @@ import (
 //     schema:
 //       type: string
 
-// Metrics returns a Prometheus handler for serving go metrics
+// Metrics returns a Prometheus handler for serving go metrics.
 func Metrics() http.Handler {
 	return promhttp.Handler()
 }

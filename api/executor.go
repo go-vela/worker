@@ -123,7 +123,7 @@ func GetExecutors(c *gin.Context) {
 	// capture executors value from context
 	value := c.Value("executors")
 	if value == nil {
-		msg := fmt.Sprintf("no running executors found")
+		msg := "no running executors found"
 
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
@@ -133,7 +133,7 @@ func GetExecutors(c *gin.Context) {
 	// cast executors value to expected type
 	e, ok := value.(map[int]executor.Engine)
 	if !ok {
-		msg := fmt.Sprintf("unable to get executors")
+		msg := "unable to get executors"
 
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
