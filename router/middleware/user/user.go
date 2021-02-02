@@ -15,12 +15,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Retrieve gets the user in the given context
+// Retrieve gets the user in the given context.
 func Retrieve(c *gin.Context) *library.User {
 	return FromContext(c)
 }
 
-// Establish sets the user in the given context
+// Establish sets the user in the given context.
 func Establish() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := new(library.User)
