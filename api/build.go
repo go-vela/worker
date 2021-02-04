@@ -96,15 +96,6 @@ func GetBuild(c *gin.Context) {
 func CancelBuild(c *gin.Context) {
 	e := executor.Retrieve(c)
 
-	repo, err := e.GetRepo()
-	if err != nil {
-		msg := fmt.Errorf("unable to repo build: %w", err).Error()
-
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
-
-		return
-	}
-
 	build, err := e.CancelBuild()
 	if err != nil {
 		msg := fmt.Errorf("unable to cancel build: %w", err).Error()
@@ -114,5 +105,5 @@ func CancelBuild(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, fmt.Sprintf("canceled build %s/%d", repo.GetFullName(), build.GetNumber()))
+	c.JSON(http.StatusOK, build)
 }
