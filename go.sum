@@ -46,6 +46,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/FZambia/sentinel v1.0.0 h1:KJ0ryjKTZk5WMp0dXvSdNqp3lFaW1fNFuEYfrkLOYIc=
 github.com/FZambia/sentinel v1.0.0/go.mod h1:ytL1Am/RLlAoAXG6Kj5LNuw/TRRQrv2rt2FT26vP5gI=
+github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208212131-07a11f7fab70 h1:GZ7jXZnAufFDhMoVP/EbxZrynTq9VRZq2dPe7VgEkbM=
+github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208212131-07a11f7fab70/go.mod h1:EME7XavJLsMOXNGgIQvvtjbXWyoLvC9SvuybW+9YtFg=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/Masterminds/goutils v1.1.0 h1:zukEsf/1JZwCMgHiK3GZftabmxiCw4apj3a28RPBiVg=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
@@ -205,8 +207,6 @@ github.com/go-vela/mock v0.7.1-0.20210208195429-9d0ef290107e h1:UH9DJGe3zT3mpp0f
 github.com/go-vela/mock v0.7.1-0.20210208195429-9d0ef290107e/go.mod h1:N6iWKh7OvllL8jNipNlc9UVSpbNtf6rnuuqXFrAcTo0=
 github.com/go-vela/pkg-executor v0.7.1-0.20210208205014-f56811ef669e h1:2ZHUYz3Jy3wiJIzCDHNcVQ7jgpUE1zDgb881YSom730=
 github.com/go-vela/pkg-executor v0.7.1-0.20210208205014-f56811ef669e/go.mod h1:z6pqpc0G3hLGmrgYvO3LdyfftGCjJgPSeO2qa3e38Xw=
-github.com/go-vela/pkg-queue v0.7.1-0.20210208203158-505fa958b42c h1:dPMjOyu0RnKedTPSWQbQHgfLKwJhOVuw6NTKWArWgUg=
-github.com/go-vela/pkg-queue v0.7.1-0.20210208203158-505fa958b42c/go.mod h1:EME7XavJLsMOXNGgIQvvtjbXWyoLvC9SvuybW+9YtFg=
 github.com/go-vela/pkg-runtime v0.7.1-0.20210208201149-a992dd308988 h1:/XI44IofYZ7NM/rpMO8sv1A9CKb8gTtPe4iMemf/IqA=
 github.com/go-vela/pkg-runtime v0.7.1-0.20210208201149-a992dd308988/go.mod h1:lF2tjbkxNqlf7j7rjC7kEApahz9YpW24YXN9PzCjAWg=
 github.com/go-vela/sdk-go v0.7.1-0.20210208200135-738ada5b7003 h1:Rlzxu3wHb6UCCE34W1XSdssGop48Zxr+lFlgQcJbLGo=
@@ -971,8 +971,6 @@ gopkg.in/square/go-jose.v2 v2.5.1 h1:7odma5RETjNHWJnR32wx8t+Io4djHE1PqxCFx3iiZ2w
 gopkg.in/square/go-jose.v2 v2.5.1/go.mod h1:M9dMgbHiYLoDGQrXy7OpJDJWiKiU//h+vD76mk0e1AI=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 h1:uRGJdciOHaEIrze2W8Q3AKkepLTh2hOroT7a+7czfdQ=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7/go.mod h1:dt/ZhP58zS4L8KSrWDmTeBkI65Dw0HsyUHuEVlX15mw=
-gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 h1:yiW+nvdHb9LVqSHQBXfZCieqV4fzYhNBql77zY0ykqs=
-gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637/go.mod h1:BHsqpu/nsuzkT5BpiH1EMZPLyqSMM8JbIavyFACoFNk=
 gopkg.in/warnings.v0 v0.1.2/go.mod h1:jksf8JmL6Qr/oQM2OXTHunEvvTAsrWBLb6OOjuVWRNI=
 gopkg.in/yaml.v2 v2.0.0-20170812160011-eb3733d160e7/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=
 gopkg.in/yaml.v2 v2.2.1/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
