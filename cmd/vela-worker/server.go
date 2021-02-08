@@ -18,7 +18,7 @@ import (
 
 // server is a helper function to listen and serve
 // traffic for web and API requests for the Worker.
-func (w *Worker) server() http.Handler {
+func (w *Worker) server() (http.Handler, bool) {
 	// log a message indicating the setup of the server handlers
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Trace
@@ -54,10 +54,10 @@ func (w *Worker) server() http.Handler {
 		} else {
 			logrus.Fatal("unable to run with TLS: No certificate provided")
 		}
-		return _server
+		return _server, true
 	}
 
 	// else serve over http
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
-	return _server
+	return _server, false
 }
