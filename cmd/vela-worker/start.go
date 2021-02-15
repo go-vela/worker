@@ -67,6 +67,7 @@ func (w *Worker) Start() error {
 		var err error
 		logrus.Info("starting worker server")
 		if tls {
+			// nolint: lll // ignore long line length due to error message
 			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); err != http.ErrServerClosed {
 				// log a message indicating the start of the server
 				//
