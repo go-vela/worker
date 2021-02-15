@@ -1,6 +1,6 @@
 module github.com/go-vela/worker
 
-replace github.com/go-vela/pkg-queue => github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208212131-07a11f7fab70
+replace github.com/go-vela/pkg-queue => github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208225007-9716b896d185
 
 go 1.13
 

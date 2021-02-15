@@ -46,8 +46,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/FZambia/sentinel v1.0.0 h1:KJ0ryjKTZk5WMp0dXvSdNqp3lFaW1fNFuEYfrkLOYIc=
 github.com/FZambia/sentinel v1.0.0/go.mod h1:ytL1Am/RLlAoAXG6Kj5LNuw/TRRQrv2rt2FT26vP5gI=
-github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208212131-07a11f7fab70 h1:GZ7jXZnAufFDhMoVP/EbxZrynTq9VRZq2dPe7VgEkbM=
-github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208212131-07a11f7fab70/go.mod h1:EME7XavJLsMOXNGgIQvvtjbXWyoLvC9SvuybW+9YtFg=
+github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208225007-9716b896d185 h1:DHsAFb+XsiaXrmvk5BlEdd8wO8umFWv5VZf5pfUUpYg=
+github.com/JordanSussman/pkg-queue v0.6.0-rc1.0.20210208225007-9716b896d185/go.mod h1:EME7XavJLsMOXNGgIQvvtjbXWyoLvC9SvuybW+9YtFg=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/Masterminds/goutils v1.1.0 h1:zukEsf/1JZwCMgHiK3GZftabmxiCw4apj3a28RPBiVg=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
