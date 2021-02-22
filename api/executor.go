@@ -142,7 +142,7 @@ func GetExecutors(c *gin.Context) {
 
 	executors := []*library.Executor{}
 
-	for _, executor := range e {
+	for id, executor := range e {
 		// create a temporary executor to append results to response
 		tmp := &library.Executor{}
 
@@ -150,6 +150,7 @@ func GetExecutors(c *gin.Context) {
 		// tmp.SetHost(executor.GetHost())
 		tmp.SetRuntime("docker")
 		tmp.SetDistribution("linux")
+		tmp.SetID(int64(id))
 
 		// get build on executor
 		tmp.Build, err = executor.GetBuild()
