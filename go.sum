@@ -201,6 +201,8 @@ github.com/go-vela/compiler v0.7.3 h1:/3AP1uYk+K0vZVJNttA0Dyp9lYsyLPTB/iAF/OfV/3
 github.com/go-vela/compiler v0.7.3/go.mod h1:xMVdK2vQML4CyZP5pLXEGt8KuLVXSoT2+nz4laHE8EU=
 github.com/go-vela/mock v0.7.3 h1:pvOap2DzUd7De/VTVQkWZgqdei3SQnQdTBmXmOAv6eg=
 github.com/go-vela/mock v0.7.3/go.mod h1:oAaP3+MikD9nYur3Xy+ogG+frMvSyRm4M4W66TNBkd0=
+github.com/go-vela/mock v0.7.4 h1:YthX/HXq9796wUAd+LV++x1tHnUJoWQnKZw7Rupw54w=
+github.com/go-vela/mock v0.7.4/go.mod h1:MZBxR/A9ChWsHI/+b3NQPYF85VJqh6iYU47Wpoujjrk=
 github.com/go-vela/pkg-executor v0.7.3 h1:9bbA0db675rb8XX5r4ooFaFw9h+s8A9cBXOklZMjOcQ=
 github.com/go-vela/pkg-executor v0.7.3/go.mod h1:yQq0KKVMOj3wMive/Y6nvHCSxPi7HY90UCu6OAkMP44=
 github.com/go-vela/pkg-queue v0.7.3 h1:AwW0ur+RWqZJ76hUIeAx98gchXkYkv7pVmEmWl5VHaU=
@@ -209,8 +211,12 @@ github.com/go-vela/pkg-runtime v0.7.3 h1:e7vmzJiDjEY1UxSNCNG9oRafUxpwc6pD+BtKRuB
 github.com/go-vela/pkg-runtime v0.7.3/go.mod h1:M5KA4E3JFhn2SZA9yvKbEncNTspnU7mWUx9xNz5v5vY=
 github.com/go-vela/sdk-go v0.7.3 h1:IsndR8UU/JaNlr9UnYBumf1/zp3pP9amj1QRJJSM7Pw=
 github.com/go-vela/sdk-go v0.7.3/go.mod h1:MSk5dRxEPSD9fVxJrxpzlEsvLgYs6lGVr4dhacRunn4=
+github.com/go-vela/sdk-go v0.7.4 h1:OXUR8LZzO8kBmNY3yRuFojcmjWaMoK1s2q5iIpu5vhg=
+github.com/go-vela/sdk-go v0.7.4/go.mod h1:I1K3LpWOnfsJUhHXJf7DpwR9zVz4h65hRXzQ5IOxPuo=
 github.com/go-vela/types v0.7.3 h1:q0gUtl/IKBCxjfHkRSHbYcKBF7FMGVi6m7RAE4ZGGzk=
 github.com/go-vela/types v0.7.3/go.mod h1:/IsyxCijlz8BArRxBfrfRv7BBe/hmJGtVWegkS3ooJU=
+github.com/go-vela/types v0.7.4 h1:iVz1kDS/uvkOoridyyt0bTZ5tG2j3QYx25rbyFdu35M=
+github.com/go-vela/types v0.7.4/go.mod h1:/IsyxCijlz8BArRxBfrfRv7BBe/hmJGtVWegkS3ooJU=
 github.com/gogo/googleapis v1.1.0/go.mod h1:gf4bu3Q80BeJ6H1S1vYPm8/ELATdvryBaNFGgqEef3s=
 github.com/gogo/protobuf v1.1.1 h1:72R+M5VuhED/KujmZVcIquuo8mBgX4oVda//DQb3PXo=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
