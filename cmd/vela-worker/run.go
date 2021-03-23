@@ -116,6 +116,7 @@ func run(c *cli.Context) error {
 				Config:  c.String("queue.config"),
 				Cluster: c.Bool("queue.cluster"),
 				Routes:  c.StringSlice("queue.worker.routes"),
+				Timeout: c.Duration("queue.worker.blpop.timeout"),
 			},
 			// server configuration
 			Server: &Server{

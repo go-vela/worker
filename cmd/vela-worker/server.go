@@ -5,7 +5,7 @@
 package main
 
 import (
-	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -18,7 +18,7 @@ import (
 
 // server is a helper function to listen and serve
 // traffic for web and API requests for the Worker.
-func (w *Worker) server() error {
+func (w *Worker) server() (http.Handler, bool) {
 	// log a message indicating the setup of the server handlers
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Trace
@@ -54,14 +54,10 @@ func (w *Worker) server() error {
 		} else {
 			logrus.Fatal("unable to run with TLS: No certificate provided")
 		}
-		return _server.RunTLS(
-			fmt.Sprintf(":%s", w.Config.API.Address.Port()),
-			w.Config.Certificate.Cert,
-			w.Config.Certificate.Key,
-		)
+		return _server, true
 	}
 
 	// else serve over http
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
-	return _server.Run(fmt.Sprintf(":%s", w.Config.API.Address.Port()))
+	return _server, false
 }
