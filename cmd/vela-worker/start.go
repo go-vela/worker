@@ -5,9 +5,15 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
-	tomb "gopkg.in/tomb.v2"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 // Start initiates all subprocesses for the Worker
@@ -17,79 +23,87 @@ import (
 // operator subprocess enables the Worker to
 // poll the queue and execute Vela pipelines.
 func (w *Worker) Start() error {
-	// create the tomb for managing worker subprocesses
+	// create the context for controlling the worker subprocesses
+	ctx, done := context.WithCancel(context.Background())
+	// create the errgroup for managing worker subprocesses
 	//
-	// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb
-	tomb := new(tomb.Tomb)
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
+	g, gctx := errgroup.WithContext(ctx)
 
-	// spawn a tomb goroutine to manage the worker subprocesses
-	//
-	// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Go
-	tomb.Go(func() error {
-		// spawn goroutine for starting the server
-		go func() {
-			// log a message indicating the start of the server
-			//
-			// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
-			logrus.Info("starting worker server")
+	httpHandler, tls := w.server()
 
-			// start the server for the worker
-			err := w.server()
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", w.Config.API.Address.Port()),
+		Handler: httpHandler,
+	}
+
+	// goroutine to check for signals to gracefully finish all functions
+	g.Go(func() error {
+		signalChannel := make(chan os.Signal, 1)
+		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+
+		select {
+		case sig := <-signalChannel:
+			logrus.Infof("Received signal: %s", sig)
+			err := server.Shutdown(ctx)
 			if err != nil {
-				// log the error received from the server
+				logrus.Error(err)
+			}
+			done()
+		case <-gctx.Done():
+			logrus.Info("Closing signal goroutine")
+			err := server.Shutdown(ctx)
+			if err != nil {
+				logrus.Error(err)
+			}
+			return gctx.Err()
+		}
+
+		return nil
+	})
+
+	// spawn goroutine for starting the server
+	g.Go(func() error {
+		var err error
+		logrus.Info("starting worker server")
+		if tls {
+			// nolint: lll // ignore long line length due to error message
+			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); err != http.ErrServerClosed {
+				// log a message indicating the start of the server
 				//
-				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 				logrus.Errorf("failing worker server: %v", err)
-
-				// kill the worker subprocesses
-				//
-				// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Kill
-				tomb.Kill(err)
 			}
-		}()
-
-		// spawn goroutine for starting the operator
-		go func() {
-			// log a message indicating the start of the operator
-			//
-			// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
-			logrus.Info("starting worker operator")
-
-			// start the operator for the worker
-			err := w.operate()
-			if err != nil {
-				// log the error received from the operator
+		} else {
+			if err := server.ListenAndServe(); err != http.ErrServerClosed {
+				// log a message indicating the start of the server
 				//
-				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
-				logrus.Errorf("failing worker operator: %v", err)
-
-				// kill the worker subprocesses
-				//
-				// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Kill
-				tomb.Kill(err)
-			}
-		}()
-
-		// create an infinite loop to poll for errors
-		//
-		// nolint: gosimple // ignore this for now
-		for {
-			// create a select statement to check for errors
-			select {
-			// check if one of the worker subprocesses died
-			case <-tomb.Dying():
-				// fatally log that we're shutting down the worker
-				//
-				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Fatal
-				logrus.Fatal("shutting down worker")
-
-				return tomb.Err()
+				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
+				logrus.Errorf("failing worker server: %v", err)
 			}
 		}
+
+		return err
+	})
+
+	// spawn goroutine for starting the operator
+	g.Go(func() error {
+		logrus.Info("starting worker operator")
+		// start the operator for the worker
+		err := w.operate(gctx)
+		if err != nil {
+			// log the error received from the operator
+			//
+			// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+			logrus.Errorf("failing worker operator: %v", err)
+			return err
+		}
+
+		return err
 	})
 
 	// wait for errors from worker subprocesses
 	//
 	// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Wait
-	return tomb.Wait()
+	return g.Wait()
 }
