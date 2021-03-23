@@ -6,9 +6,6 @@ package main
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/go-vela/pkg-executor/executor"
@@ -40,6 +37,10 @@ func (w *Worker) exec(index int) error {
 	item, err := w.Queue.Pop()
 	if err != nil {
 		return err
+	}
+
+	if item == nil {
+		return nil
 	}
 
 	// setup the executor
@@ -85,30 +86,6 @@ func (w *Worker) exec(index int) error {
 	// built in for ensuring a build doesn't run forever
 	ctx, timeout := context.WithTimeout(ctx, t)
 	defer timeout()
-
-	// create channel for catching OS signals
-	sigchan := make(chan os.Signal, 1)
-
-	// add a cancelation signal to our current context
-	ctx, sig := context.WithCancel(ctx)
-
-	// set the OS signals the Worker will respond to
-	signal.Notify(sigchan, syscall.SIGTERM)
-
-	// defer canceling the context
-	defer func() {
-		signal.Stop(sigchan)
-		sig()
-	}()
-
-	// spawn a goroutine to listen for the signals
-	go func() {
-		select {
-		case <-sigchan:
-			sig()
-		case <-ctx.Done():
-		}
-	}()
 
 	defer func() {
 		logger.Info("destroying build")
