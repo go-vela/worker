@@ -113,10 +113,10 @@ func run(c *cli.Context) error {
 			// queue configuration
 			Queue: &queue.Setup{
 				Driver:  c.String("queue.driver"),
-				Config:  c.String("queue.config"),
+				Address: c.String("queue.addr"),
 				Cluster: c.Bool("queue.cluster"),
-				Routes:  c.StringSlice("queue.worker.routes"),
-				Timeout: c.Duration("queue.worker.blpop.timeout"),
+				Routes:  c.StringSlice("queue.routes"),
+				Timeout: c.Duration("queue.pop.timeout"),
 			},
 			// server configuration
 			Server: &Server{

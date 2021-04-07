@@ -34,7 +34,7 @@ func (w *Worker) exec(index int) error {
 	}
 
 	// capture an item from the queue
-	item, err := w.Queue.Pop()
+	item, err := w.Queue.Pop(context.Background())
 	if err != nil {
 		return err
 	}
