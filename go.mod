@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
-	github.com/gin-gonic/gin v1.6.3
+	github.com/gin-gonic/gin v1.7.1
 	github.com/go-vela/pkg-executor v0.7.4
 	github.com/go-vela/pkg-queue v0.7.5-0.20210402170103-bcd9ababfe88
 	github.com/go-vela/pkg-runtime v0.7.4
