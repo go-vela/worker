@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.7.1
 	github.com/go-vela/pkg-executor v0.7.5-0.20210428160348-6ebccf544f01
 	github.com/go-vela/pkg-queue v0.7.5-0.20210402170103-bcd9ababfe88
-	github.com/go-vela/pkg-runtime v0.7.5-0.20210428154035-f007d6e59a10
+	github.com/go-vela/pkg-runtime v0.7.5
 	github.com/go-vela/sdk-go v0.7.4
 	github.com/go-vela/types v0.7.4
 	github.com/joho/godotenv v1.3.0
