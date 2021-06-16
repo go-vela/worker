@@ -5,6 +5,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 
@@ -34,6 +36,18 @@ func init() {
 }
 
 func main() {
+	// capture application version information
+	v := version.New()
+
+	// serialize the version information as pretty JSON
+	bytes, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	// output the version information to stdout
+	fmt.Fprintf(os.Stdout, "%s\n", string(bytes))
+
 	app := cli.NewApp()
 
 	// Worker Information
@@ -53,7 +67,7 @@ func main() {
 
 	app.Action = run
 	app.Compiled = time.Now()
-	app.Version = version.New().Semantic()
+	app.Version = v.Semantic()
 
 	// Worker Flags
 
@@ -61,7 +75,7 @@ func main() {
 
 	// Worker Start
 
-	err := app.Run(os.Args)
+	err = app.Run(os.Args)
 	if err != nil {
 		logrus.Fatal(err)
 	}
