@@ -169,8 +169,6 @@ github.com/go-vela/compiler v0.8.1 h1:RLabMScVE8FGDlm7S9e5hLFeedFldkFkj45HDfHWU6
 github.com/go-vela/compiler v0.8.1/go.mod h1:GjX2zIKqx5zVh9OaCTzzMG99VvphMqWunPRuW0QBNPg=
 github.com/go-vela/mock v0.8.1 h1:NNOukyA6MRAPp59cBZlrKCrl8LSm+Ww9Pa96OpEsYCo=
 github.com/go-vela/mock v0.8.1/go.mod h1:7WebOs2EzrlNzNrwss1r+tRvy0fUoN73YayMvH9+VQg=
-github.com/go-vela/pkg-executor v0.8.1 h1:x2nD+mlBw7IJtNp3UaTaB7d9HRJ99VL6sheEzwChpCQ=
-github.com/go-vela/pkg-executor v0.8.1/go.mod h1:s0T+g7nRUD/cVrgr+aAVQ7yPPmNgACBg2d9sG+h1suQ=
 github.com/go-vela/pkg-queue v0.8.1 h1:b01vBwqUSBHR/eLjRqO8Qw9HqISrrAcPXlFRWnhp3Vo=
 github.com/go-vela/pkg-queue v0.8.1/go.mod h1:HOH7w3toMDEpY20Fy76WzBw5frNczvCStDvGC2slysQ=
 github.com/go-vela/pkg-runtime v0.8.1 h1:2xA4soRtpipF/OOJeK18pQQOInTaqyXLOnwgDkWcLLU=
