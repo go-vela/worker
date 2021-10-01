@@ -5,10 +5,10 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-vela/pkg-executor v0.9.0
+	github.com/go-vela/pkg-executor v0.9.1-0.20211001211248-132383e767ea
 	github.com/go-vela/pkg-queue v0.9.0
 	github.com/go-vela/pkg-runtime v0.9.0
-	github.com/go-vela/sdk-go v0.9.0
+	github.com/go-vela/sdk-go v0.9.1-0.20211001205048-89431964db41
 	github.com/go-vela/types v0.9.0
 	github.com/joho/godotenv v1.4.0
 	github.com/prometheus/client_golang v1.11.0
