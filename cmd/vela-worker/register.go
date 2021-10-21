@@ -18,12 +18,16 @@ func (w *Worker) checkIn(config *library.Worker) error {
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())
 	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
 	if err != nil {
+		respErr := fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
+		if resp == nil {
+			return respErr
+		}
 		// if we receive a 404 the worker needs to be registered
 		if resp.StatusCode == http.StatusNotFound {
 			return w.register(config)
 		}
 
-		return fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
+		return respErr
 	}
 
 	// if we were able to GET the worker, update it
