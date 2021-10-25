@@ -17,6 +17,8 @@ import (
 
 // Snapshot creates a moment in time record of the
 // service and attempts to upload it to the server.
+//
+// nolint: lll // ignore long line length due to parameters
 func Snapshot(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Service) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) {
