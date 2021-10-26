@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
+	github.com/docker/distribution v2.7.1+incompatible
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-vela/compiler v0.10.0
 	github.com/go-vela/mock v0.10.0
