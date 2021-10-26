@@ -1,0 +1,17 @@
+--- 
+version: "1"
+services:
+  - name: postgres
+    environment:
+      FOO: bar
+    image: postgres:notfound
+    pull: true
+
+steps:
+  - name: test
+    commands:
+      - echo ${FOO}
+    environment:
+      FOO: bar
+    image: alpine:latest
+    pull: true    
