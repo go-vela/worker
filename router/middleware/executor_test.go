@@ -12,7 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/pkg-executor/executor"
+	"github.com/go-vela/worker/executor"
 )
 
 func TestMiddleware_Executors(t *testing.T) {

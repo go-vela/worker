@@ -1,0 +1,13 @@
+---
+version: "1"
+stages:
+  test:
+    steps:
+      - name: notfound
+        commands:
+          - echo ${FOO}
+        environment:
+          FOO: bar
+        image: alpine:latest
+        pull: true
+        

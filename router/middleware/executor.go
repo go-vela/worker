@@ -7,7 +7,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/pkg-executor/executor"
+	"github.com/go-vela/worker/executor"
 )
 
 // Executors is a middleware function that attaches the

@@ -7,9 +7,9 @@ package main
 import (
 	"time"
 
-	"github.com/go-vela/pkg-executor/executor"
 	"github.com/go-vela/pkg-queue/queue"
 	"github.com/go-vela/pkg-runtime/runtime"
+	"github.com/go-vela/worker/executor"
 
 	"github.com/urfave/cli/v2"
 )
