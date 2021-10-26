@@ -8,8 +8,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-vela/pkg-executor/executor"
 	"github.com/go-vela/pkg-runtime/runtime"
+	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/version"
 
 	"github.com/sirupsen/logrus"
@@ -45,7 +45,7 @@ func (w *Worker) exec(index int) error {
 
 	// setup the executor
 	//
-	// https://godoc.org/github.com/go-vela/pkg-executor/executor#New
+	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
 		Driver:   w.Config.Executor.Driver,
 		Client:   w.VelaClient,

@@ -10,9 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/pkg-executor/executor"
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/library"
+	"github.com/go-vela/worker/executor"
 	exec "github.com/go-vela/worker/router/middleware/executor"
 )
 

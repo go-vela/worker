@@ -12,12 +12,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/pkg-executor/executor"
 	"github.com/go-vela/pkg-runtime/runtime/docker"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/executor"
 )
 
 func TestExecutor_Retrieve(t *testing.T) {
