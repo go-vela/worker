@@ -170,6 +170,8 @@ github.com/go-vela/pkg-queue v0.10.0 h1:cxpkyVuX+ZJuF9t7XEQuHOFBa776SNgraEsFpnWI
 github.com/go-vela/pkg-queue v0.10.0/go.mod h1:ZtkPoazVfpKK/ePdea/2s2LpNWDrc19nqmn1hPI3jxY=
 github.com/go-vela/pkg-runtime v0.10.0 h1:ycjK0mSrM+sAwOtENKjKMGMTGkx4xkc/zMA0JIr9T0k=
 github.com/go-vela/pkg-runtime v0.10.0/go.mod h1:ffabnvUkIEY/5r1XFep40HdCqrHp4OxmzbbY3W7g6C4=
+github.com/go-vela/pkg-runtime v0.10.1-0.20211025172651-7d29320dd785 h1:VByvQACNppX/P74CfgSr+E0+HuOCMXnDHZYFiF9HdCs=
+github.com/go-vela/pkg-runtime v0.10.1-0.20211025172651-7d29320dd785/go.mod h1:7KV1aAufGNpGbbLLsD7W7z8gc50fXdIK03NPM+SClg8=
 github.com/go-vela/sdk-go v0.10.0 h1:monESdM738WeY2MKlj0COGK0W/f1PIGwp8K4tClfLlo=
 github.com/go-vela/sdk-go v0.10.0/go.mod h1:LGHpZezP0+KBb3OX9Mf5rGXK1dS7Ms8kWCHb8bWzOYc=
 github.com/go-vela/types v0.10.0-rc3/go.mod h1:6taTlivaC0wDwDJVlc8sBaVZToyzkyDMtGUYIAfgA9M=
