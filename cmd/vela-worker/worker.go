@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/go-vela/pkg-queue/queue"
-	"github.com/go-vela/pkg-runtime/runtime"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/runtime"
 )
 
 type (

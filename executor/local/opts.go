@@ -7,7 +7,7 @@ package local
 import (
 	"fmt"
 
-	"github.com/go-vela/pkg-runtime/runtime"
+	"github.com/go-vela/worker/runtime"
 
 	"github.com/go-vela/sdk-go/vela"
 

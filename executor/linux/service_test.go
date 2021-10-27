@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-vela/mock/server"
 
-	"github.com/go-vela/pkg-runtime/runtime/docker"
+	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/sdk-go/vela"
 

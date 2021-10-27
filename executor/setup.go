@@ -13,7 +13,7 @@ import (
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 
-	"github.com/go-vela/pkg-runtime/runtime"
+	"github.com/go-vela/worker/runtime"
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
