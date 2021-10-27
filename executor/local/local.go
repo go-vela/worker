@@ -7,10 +7,10 @@ package local
 import (
 	"sync"
 
-	"github.com/go-vela/pkg-runtime/runtime"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime"
 )
 
 type (

@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-vela/pkg-runtime/runtime/docker"
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestLocal_Driver(t *testing.T) {

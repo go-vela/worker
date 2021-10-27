@@ -16,7 +16,7 @@ import (
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 
-	"github.com/go-vela/pkg-runtime/runtime/docker"
+	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/sdk-go/vela"
 

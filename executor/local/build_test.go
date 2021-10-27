@@ -12,7 +12,7 @@ import (
 	"github.com/go-vela/compiler/compiler/native"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-vela/pkg-runtime/runtime/docker"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestLocal_CreateBuild(t *testing.T) {
