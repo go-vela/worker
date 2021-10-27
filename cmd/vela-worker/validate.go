@@ -64,7 +64,7 @@ func (w *Worker) Validate() error {
 
 	// verify the queue configuration
 	//
-	// https://godoc.org/github.com/go-vela/pkg-queue/queue#Setup.Validate
+	// https://godoc.org/github.com/go-vela/server/queue#Setup.Validate
 	err := w.Config.Queue.Validate()
 	if err != nil {
 		return err

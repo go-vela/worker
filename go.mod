@@ -10,7 +10,6 @@ require (
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-vela/mock v0.10.0
-	github.com/go-vela/pkg-queue v0.10.0
 	github.com/go-vela/sdk-go v0.10.0
 	github.com/go-vela/server v0.10.2-0.20211027183311-18eef236ab3f
 	github.com/go-vela/types v0.10.0

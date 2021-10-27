@@ -72,7 +72,6 @@ github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6/go.mod h1:SGn
 github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a h1:HbKu58rmZpUGpz5+4FfNmIU+FmZg2P3Xaj2v2bfNWmk=
 github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a/go.mod h1:SGnFV6hVsYE877CKEZ6tDNTjaSXYUk6QqoIK6PrAtcc=
 github.com/alicebob/miniredis/v2 v2.11.1/go.mod h1:UA48pmi7aSazcGAvcdKcBB49z521IC9VjTTRz2nIaJE=
-github.com/alicebob/miniredis/v2 v2.15.1/go.mod h1:gquAfGbzn92jvtrSC69+6zZnwSODVXVpYDRaGhWaL6I=
 github.com/alicebob/miniredis/v2 v2.16.0 h1:ALkyFg7bSTEd1Mkrb4ppq4fnwjklA59dVtIehXCUZkU=
 github.com/alicebob/miniredis/v2 v2.16.0/go.mod h1:gquAfGbzn92jvtrSC69+6zZnwSODVXVpYDRaGhWaL6I=
 github.com/armon/go-metrics v0.3.0/go.mod h1:zXjbSimjXTd7vOpY8B0/2LpvNvDoXBuplAD+gJD3GYs=
@@ -207,8 +206,6 @@ github.com/go-test/deep v1.0.2/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3a
 github.com/go-vela/compiler v0.10.1-0.20211025223007-bdcd7b7f8de0/go.mod h1:dJyDHQuwXsyQUkiXpcjbcXxpuQnf3qvA9G+0kPciTQc=
 github.com/go-vela/mock v0.10.0 h1:ZJs40xElnB4DNiQc+nEEeZS4Z0K/uXl6kGRpPlccuMY=
 github.com/go-vela/mock v0.10.0/go.mod h1:TihYvb+NBiKXgcsBIpARU9H00rzrLAhFQvsRkzUqDxc=
-github.com/go-vela/pkg-queue v0.10.0 h1:cxpkyVuX+ZJuF9t7XEQuHOFBa776SNgraEsFpnWI03E=
-github.com/go-vela/pkg-queue v0.10.0/go.mod h1:ZtkPoazVfpKK/ePdea/2s2LpNWDrc19nqmn1hPI3jxY=
 github.com/go-vela/sdk-go v0.10.0 h1:monESdM738WeY2MKlj0COGK0W/f1PIGwp8K4tClfLlo=
 github.com/go-vela/sdk-go v0.10.0/go.mod h1:LGHpZezP0+KBb3OX9Mf5rGXK1dS7Ms8kWCHb8bWzOYc=
 github.com/go-vela/server v0.10.2-0.20211027183311-18eef236ab3f h1:V9BUiWTN5DddiWBZ+m7hg7gF4aLudhznr6T2cWZHqB0=
