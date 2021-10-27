@@ -8,8 +8,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-vela/pkg-runtime/runtime"
 	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
 
 	"github.com/sirupsen/logrus"
@@ -27,7 +27,7 @@ func (w *Worker) exec(index int) error {
 
 	// setup the runtime
 	//
-	// https://pkg.go.dev/github.com/go-vela/pkg-runtime/runtime?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
 	w.Runtime, err = runtime.New(w.Config.Runtime)
 	if err != nil {
 		return err

@@ -8,7 +8,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-vela/pkg-runtime/runtime/docker"
+	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"

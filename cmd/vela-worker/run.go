@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/pkg-queue/queue"
-	"github.com/go-vela/pkg-runtime/runtime"
 	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/runtime"
 
 	"github.com/sirupsen/logrus"
 
