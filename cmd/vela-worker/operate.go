@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-vela/pkg-queue/queue"
+	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
@@ -75,7 +75,7 @@ func (w *Worker) operate(ctx context.Context) error {
 
 	// setup the queue
 	//
-	// https://pkg.go.dev/github.com/go-vela/pkg-queue/queue?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		return err
