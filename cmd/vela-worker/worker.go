@@ -8,9 +8,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-vela/pkg-queue/queue"
 	"github.com/go-vela/pkg-runtime/runtime"
 	"github.com/go-vela/sdk-go/vela"
+	"github.com/go-vela/server/queue"
 	"github.com/go-vela/worker/executor"
 )
 

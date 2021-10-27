@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/pkg-queue/queue"
 	"github.com/go-vela/pkg-runtime/runtime"
+	"github.com/go-vela/server/queue"
 	"github.com/go-vela/worker/executor"
 
 	"github.com/sirupsen/logrus"
