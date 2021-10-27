@@ -1,0 +1,32 @@
+---
+version: "1"
+
+steps:
+  - name: git-test
+    image: target/vela-git:latest
+    pull: true
+    parameters:
+      path: hello-world
+      ref: refs/heads/master
+      remote: https://github.com/octocat/hello-world.git
+      sha: 7fd1a60b01f91b314f59955a4e4d4e80d8edf11d
+
+  # sleep testing waiting step
+  - name: sleep
+    commands: |
+      secs=30
+      while [ $secs -gt 0 ]; do
+         echo "$secs"
+         sleep 1
+         : $((secs--))
+      done
+    image: alpine:latest
+    pull: true
+
+  # exit testing inspect step
+  - name: exit
+    commands:
+      - exit 1
+    image: alpine:latest
+    pull: true
+
