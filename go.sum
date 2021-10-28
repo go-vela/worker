@@ -206,6 +206,7 @@ github.com/go-test/deep v1.0.2/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3a
 github.com/go-vela/compiler v0.10.1-0.20211025223007-bdcd7b7f8de0/go.mod h1:dJyDHQuwXsyQUkiXpcjbcXxpuQnf3qvA9G+0kPciTQc=
 github.com/go-vela/mock v0.10.0 h1:ZJs40xElnB4DNiQc+nEEeZS4Z0K/uXl6kGRpPlccuMY=
 github.com/go-vela/mock v0.10.0/go.mod h1:TihYvb+NBiKXgcsBIpARU9H00rzrLAhFQvsRkzUqDxc=
+github.com/go-vela/sdk-go v0.10.0/go.mod h1:LGHpZezP0+KBb3OX9Mf5rGXK1dS7Ms8kWCHb8bWzOYc=
 github.com/go-vela/sdk-go v0.10.1 h1:p/vKSHafLAJVGX64LMQchswd76NU0+NI6TAXC1ZCfH8=
 github.com/go-vela/sdk-go v0.10.1/go.mod h1:LGHpZezP0+KBb3OX9Mf5rGXK1dS7Ms8kWCHb8bWzOYc=
 github.com/go-vela/server v0.10.2-0.20211027183311-18eef236ab3f h1:V9BUiWTN5DddiWBZ+m7hg7gF4aLudhznr6T2cWZHqB0=
