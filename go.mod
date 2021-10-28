@@ -10,7 +10,7 @@ require (
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-vela/mock v0.10.0
-	github.com/go-vela/sdk-go v0.10.0
+	github.com/go-vela/sdk-go v0.10.1
 	github.com/go-vela/server v0.10.2-0.20211027183311-18eef236ab3f
 	github.com/go-vela/types v0.10.0
 	github.com/google/go-cmp v0.5.6
@@ -20,7 +20,7 @@ require (
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gotest.tools/v3 v3.0.3
-	k8s.io/api v0.22.2
-	k8s.io/apimachinery v0.22.2
-	k8s.io/client-go v0.22.2
+	k8s.io/api v0.22.3
+	k8s.io/apimachinery v0.22.3
+	k8s.io/client-go v0.22.3
 )
