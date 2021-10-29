@@ -15,8 +15,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-vela/compiler/compiler/native"
 	"github.com/go-vela/mock/server"
+	"github.com/go-vela/server/compiler/native"
 
 	"github.com/go-vela/worker/runtime/docker"
 
