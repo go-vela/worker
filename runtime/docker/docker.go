@@ -7,7 +7,7 @@ package docker
 import (
 	docker "github.com/docker/docker/client"
 
-	mock "github.com/go-vela/mock/docker"
+	mock "github.com/go-vela/worker/mock/docker"
 )
 
 // nolint: godot // ignore comment ending in a list
@@ -96,7 +96,7 @@ func NewMock(opts ...ClientOpt) (*client, error) {
 
 	// create Docker client from the mock client
 	//
-	// https://pkg.go.dev/github.com/go-vela/mock/docker#New
+	// https://pkg.go.dev/github.com/go-vela/worker/mock/docker#New
 	_docker, err := mock.New()
 	if err != nil {
 		return nil, err
