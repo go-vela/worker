@@ -5,6 +5,8 @@
 package linux
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -224,6 +226,9 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
+	// create new buffer for uploading logs
+	logs := new(bytes.Buffer)
+
 	// nolint: dupl // ignore similar code
 	defer func() {
 		// tail the runtime container
@@ -266,19 +271,42 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 	}
 	defer rc.Close()
 
-	// set the timeout to the repo timeout
-	// to ensure the stream is not cut off
-	c.Vela.SetTimeout(time.Minute * time.Duration(c.repo.GetTimeout()))
+	// create new scanner from the container output
+	scanner := bufio.NewScanner(rc)
 
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#StepService.Stream
-	_, err = c.Vela.Step.Stream(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, rc)
-	if err != nil {
-		logger.Errorf("unable to stream logs: %v", err)
+	// scan entire container output
+	for scanner.Scan() {
+		// write all the logs from the scanner
+		logs.Write(append(scanner.Bytes(), []byte("\n")...))
+
+		// if we have at least 1000 bytes in our buffer
+		//
+		// nolint: gomnd // ignore magic number
+		if logs.Len() > 1000 {
+			logger.Trace(logs.String())
+
+			// update the existing log with the new bytes
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData(logs.Bytes())
+
+			logger.Debug("appending logs")
+			// send API call to append the logs for the step
+			//
+			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
+			_log, _, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+			if err != nil {
+				return err
+			}
+
+			// flush the buffer of logs
+			logs.Reset()
+		}
 	}
 
 	logger.Info("finished streaming logs")
 
-	return nil
+	return scanner.Err()
 }
 
 // DestroyStep cleans up steps after execution.
