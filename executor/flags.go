@@ -42,4 +42,10 @@ var Flags = []cli.Flag{
 		Usage:    "driver to be used for the executor",
 		Value:    constants.DriverLinux,
 	},
+	&cli.BoolFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_STREAMING", "EXECUTOR_STREAMING"},
+		FilePath: "/vela/executor/streaming",
+		Name:     "executor.streaming",
+		Usage:    "enables streaming logs to the server rather than uploading logs in 1KB chunks",
+	},
 }

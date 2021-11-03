@@ -30,6 +30,8 @@ type Setup struct {
 
 	// specifies the executor driver to use
 	Driver string
+	// specifies the executor to stream logs rather than upload in 1KB chunks
+	Streaming bool
 	// specifies the executor hostname
 	Hostname string
 	// specifies the executor version
@@ -69,6 +71,7 @@ func (s *Setup) Linux() (Engine, error) {
 	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux?tab=doc#New
 	return linux.New(
 		linux.WithBuild(s.Build),
+		linux.WithStreaming(s.Streaming),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
 		linux.WithRepo(s.Repo),

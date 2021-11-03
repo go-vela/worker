@@ -42,6 +42,18 @@ func WithBuild(b *library.Build) Opt {
 	}
 }
 
+// WithStreaming sets the log streaming functionality in the client.
+func WithStreaming(streaming bool) Opt {
+	logrus.Trace("configuring log streaming in linux client")
+
+	return func(c *client) error {
+		// set the streaming functionality in the client
+		c.streaming = streaming
+
+		return nil
+	}
+}
+
 // WithHostname sets the hostname in the client.
 func WithHostname(hostname string) Opt {
 	logrus.Trace("configuring hostname in linux client")

@@ -95,7 +95,8 @@ func run(c *cli.Context) error {
 			CheckIn: c.Duration("checkIn"),
 			// executor configuration
 			Executor: &executor.Setup{
-				Driver: c.String("executor.driver"),
+				Driver:    c.String("executor.driver"),
+				Streaming: c.Bool("executor.streaming"),
 			},
 			// logger configuration
 			Logger: &Logger{
