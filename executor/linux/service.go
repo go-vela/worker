@@ -177,7 +177,6 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		return err
 	}
 
-	// nolint: dupl // ignore similar code
 	defer func() {
 		// tail the runtime container
 		rc, err := c.Runtime.TailContainer(ctx, ctn)
@@ -222,6 +221,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 	// create new buffer for uploading logs
 	logs := new(bytes.Buffer)
 
+	// nolint: dupl // ignore similar code with step
 	switch c.logMethod {
 	case "time-chunks":
 		// create new channel for processing logs
