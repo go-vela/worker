@@ -163,6 +163,8 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 }
 
 // StreamService tails the output for a service.
+//
+// nolint: funlen // ignore function length
 func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with service metadata
 	//

@@ -207,6 +207,8 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 }
 
 // StreamStep tails the output for a step.
+//
+// nolint: funlen // ignore function length
 func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
