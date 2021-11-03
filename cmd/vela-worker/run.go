@@ -96,7 +96,7 @@ func run(c *cli.Context) error {
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver:    c.String("executor.driver"),
-				Streaming: c.Bool("executor.streaming"),
+				LogMethod: c.String("executor.log_method"),
 			},
 			// logger configuration
 			Logger: &Logger{

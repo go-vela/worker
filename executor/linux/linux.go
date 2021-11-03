@@ -30,20 +30,21 @@ type (
 		secret *secretSvc
 
 		// private fields
-		init     *pipeline.Container
-		logger   *logrus.Entry
-		build    *library.Build
-		pipeline *pipeline.Build
-		repo     *library.Repo
+		init      *pipeline.Container
+		logger    *logrus.Entry
+		logMethod string
+		build     *library.Build
+		pipeline  *pipeline.Build
+		repo      *library.Repo
 		// nolint: structcheck,unused // ignore false positives
 		secrets     sync.Map
 		services    sync.Map
 		serviceLogs sync.Map
 		steps       sync.Map
 		stepLogs    sync.Map
-		streaming   bool
-		user        *library.User
-		err         error
+
+		user *library.User
+		err  error
 	}
 
 	// nolint: structcheck // ignore false positive

@@ -42,13 +42,18 @@ func WithBuild(b *library.Build) Opt {
 	}
 }
 
-// WithStreaming sets the log streaming functionality in the client.
-func WithStreaming(streaming bool) Opt {
+// WithLogMethod sets the method used to publish logs in the client.
+func WithLogMethod(method string) Opt {
 	logrus.Trace("configuring log streaming in linux client")
 
 	return func(c *client) error {
-		// set the streaming functionality in the client
-		c.streaming = streaming
+		// check if a method is provided
+		if len(method) == 0 {
+			return fmt.Errorf("empty log method provided")
+		}
+
+		// set the log method in the client
+		c.logMethod = method
 
 		return nil
 	}

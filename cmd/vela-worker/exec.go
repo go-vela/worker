@@ -48,7 +48,7 @@ func (w *Worker) exec(index int) error {
 	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
 		Driver:    w.Config.Executor.Driver,
-		Streaming: w.Config.Executor.Streaming,
+		LogMethod: w.Config.Executor.LogMethod,
 		Client:    w.VelaClient,
 		Hostname:  w.Config.API.Address.Hostname(),
 		Runtime:   w.Runtime,
