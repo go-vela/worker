@@ -42,6 +42,23 @@ func WithBuild(b *library.Build) Opt {
 	}
 }
 
+// WithLogMethod sets the method used to publish logs in the client.
+func WithLogMethod(method string) Opt {
+	logrus.Trace("configuring log streaming in linux client")
+
+	return func(c *client) error {
+		// check if a method is provided
+		if len(method) == 0 {
+			return fmt.Errorf("empty log method provided")
+		}
+
+		// set the log method in the client
+		c.logMethod = method
+
+		return nil
+	}
+}
+
 // WithHostname sets the hostname in the client.
 func WithHostname(hostname string) Opt {
 	logrus.Trace("configuring hostname in linux client")

@@ -42,4 +42,11 @@ var Flags = []cli.Flag{
 		Usage:    "driver to be used for the executor",
 		Value:    constants.DriverLinux,
 	},
+	&cli.StringFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_LOG_METHOD", "EXECUTOR_LOG_METHOD"},
+		FilePath: "/vela/executor/log_method",
+		Name:     "executor.log_method",
+		Usage:    "method used to publish logs to the server - options: (byte-chunks|time-chunks)",
+		Value:    "byte-chunks",
+	},
 }
