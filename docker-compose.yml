@@ -20,6 +20,8 @@ services:
     networks:
       - vela
     environment:
+      EXECUTOR_DRIVER: linux
+      EXECUTOR_LOG_METHOD: 'time-chunks'
       QUEUE_DRIVER: redis
       QUEUE_ADDR: 'redis://redis:6379'
       QUEUE_ROUTES: 'docker,local,docker:local'
