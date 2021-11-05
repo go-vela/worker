@@ -256,11 +256,8 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 					return
 				// channel is not closed
 				default:
-					// get the current size of log data
-					size := len(_log.GetData())
-
 					// update the existing log with the new bytes if there is new data to add
-					if len(logs.Bytes()) > size {
+					if len(logs.Bytes()) > 0 {
 						logger.Trace(logs.String())
 
 						// update the existing log with the new bytes
