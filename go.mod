@@ -12,9 +12,9 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-vela/sdk-go v0.11.0-rc1
-	github.com/go-vela/server v0.11.0-rc1
-	github.com/go-vela/types v0.11.0-rc1
+	github.com/go-vela/sdk-go v0.11.0-rc3
+	github.com/go-vela/server v0.11.0-rc3
+	github.com/go-vela/types v0.11.0-rc3
 	github.com/google/go-cmp v0.5.6
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/joho/godotenv v1.4.0
