@@ -406,8 +406,8 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	if err != nil {
 		// create the step from the container
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#StepFromContainer
-		_step = library.StepFromContainer(ctn)
+		// https://pkg.go.dev/github.com/go-vela/types/library#StepFromContainerEnvironment
+		_step = library.StepFromContainerEnvironment(ctn)
 	}
 
 	// defer an upload of the step
