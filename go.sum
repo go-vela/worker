@@ -190,7 +190,6 @@ github.com/go-vela/sdk-go v0.11.0 h1:TnbmGBppx1Ux7GPUXv1qDk5DuKKlmurjfex1debH0UM
 github.com/go-vela/sdk-go v0.11.0/go.mod h1:48WCgfDktF90VMvzQ7EZjMFxSSBEsr2kEVtDUwErcqI=
 github.com/go-vela/server v0.11.0 h1:+8SONSqzj7jOyiEzbYrtM+/6Xnw4ZfEEPiHkusyL6RY=
 github.com/go-vela/server v0.11.0/go.mod h1:0phuhEP09iKIiNKpO+cfOa6qU+epgr9Oon1MAZ1nIJ0=
-github.com/go-vela/types v0.11.0 h1:b7QMak0SLAfQjgUOPDhrS/XPPEswhI+27VZzn/axuJA=
 github.com/go-vela/types v0.11.0/go.mod h1:8Oml/G1ATFTJsKdsIsstUuHVLsUv7pl6+EiIyOaUqH0=
 github.com/go-vela/types v0.11.1-0.20211117152001-4dc404f4aabc h1:5BJtsCPpi0jlw9XEFafcUo/u+kdEA7N9bp7bBW9/hjA=
 github.com/go-vela/types v0.11.1-0.20211117152001-4dc404f4aabc/go.mod h1:W00S1BayYQhCVqI4GuuhGjg173MOfU9UvK3JEDCr1aw=
