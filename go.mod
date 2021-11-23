@@ -14,7 +14,7 @@ require (
 	github.com/gin-gonic/gin v1.7.6
 	github.com/go-vela/sdk-go v0.11.0
 	github.com/go-vela/server v0.11.0
-	github.com/go-vela/types v0.11.0
+	github.com/go-vela/types v0.11.1-0.20211117152001-4dc404f4aabc
 	github.com/google/go-cmp v0.5.6
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/joho/godotenv v1.4.0

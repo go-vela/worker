@@ -35,8 +35,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	// create a library step object to facilitate injecting environment as early as possible
 	// (PlanStep is too late to inject environment vars for the kubernetes runtime).
-	_step := c.newLibraryStep(ctn)
-	_step.SetStatus(constants.StatusPending)
+	_step := library.StepFromBuildContainer(c.build, ctn)
 
 	// update the step container environment
 	//
@@ -57,23 +56,10 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	return nil
 }
 
-// newLibraryStep creates a library step object.
-func (c *client) newLibraryStep(ctn *pipeline.Container) *library.Step {
-	_step := new(library.Step)
-	_step.SetName(ctn.Name)
-	_step.SetNumber(ctn.Number)
-	_step.SetImage(ctn.Image)
-	_step.SetStage(ctn.Environment["VELA_STEP_STAGE"])
-	_step.SetHost(c.build.GetHost())
-	_step.SetRuntime(c.build.GetRuntime())
-	_step.SetDistribution(c.build.GetDistribution())
-	return _step
-}
-
 // PlanStep prepares the step for execution.
 func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	// create the library step object
-	_step := c.newLibraryStep(ctn)
+	_step := library.StepFromBuildContainer(c.build, ctn)
 	_step.SetStatus(constants.StatusRunning)
 	_step.SetStarted(time.Now().UTC().Unix())
 
@@ -199,8 +185,8 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	if err != nil {
 		// create the step from the container
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#StepFromContainer
-		_step = library.StepFromContainer(ctn)
+		// https://pkg.go.dev/github.com/go-vela/types/library#StepFromContainerEnvironment
+		_step = library.StepFromContainerEnvironment(ctn)
 	}
 
 	// defer an upload of the step
