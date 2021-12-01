@@ -199,7 +199,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 
 		// don't attempt last upload if log size exceeded
 		if c.maxLogSize > 0 && uint(len(data)) >= c.maxLogSize {
-			logger.Trace("maxmimum log size reached")
+			logger.Trace("maximum log size reached")
 
 			return
 		}
