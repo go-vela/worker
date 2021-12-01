@@ -326,7 +326,7 @@ func TestLinux_StreamStep(t *testing.T) {
 	_logs := new(library.Log)
 
 	// fill log with bytes
-	_logs.SetData(make([]byte, 1000, 1000))
+	_logs.SetData(make([]byte, 1000))
 
 	gin.SetMode(gin.TestMode)
 
