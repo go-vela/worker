@@ -109,6 +109,41 @@ func TestLinux_Opt_WithLogMethod(t *testing.T) {
 	}
 }
 
+func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		failure    bool
+		maxLogSize uint
+	}{
+		{
+			failure:    false,
+			maxLogSize: 2097152,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		_engine, err := New(
+			WithMaxLogSize(test.maxLogSize),
+		)
+
+		if test.failure {
+			if err == nil {
+				t.Errorf("WithMaxLogSize should have returned err")
+			}
+
+			continue
+		}
+
+		if err != nil {
+			t.Errorf("WithMaxLogSize returned err: %v", err)
+		}
+
+		if !reflect.DeepEqual(_engine.maxLogSize, test.maxLogSize) {
+			t.Errorf("WithMaxLogSize is %v, want %v", _engine.maxLogSize, test.maxLogSize)
+		}
+	}
+}
 func TestLinux_Opt_WithHostname(t *testing.T) {
 	// setup tests
 	tests := []struct {
