@@ -15,24 +15,6 @@ import (
 //
 // https://pkg.go.dev/github.com/urfave/cli?tab=doc#Flag
 var Flags = []cli.Flag{
-
-	// Logging Flags
-
-	&cli.StringFlag{
-		EnvVars:  []string{"VELA_LOG_FORMAT", "EXECUTOR_LOG_FORMAT"},
-		FilePath: "/vela/executor/log_format",
-		Name:     "executor.log.format",
-		Usage:    "format of logs to output",
-		Value:    "json",
-	},
-	&cli.StringFlag{
-		EnvVars:  []string{"VELA_LOG_LEVEL", "EXECUTOR_LOG_LEVEL"},
-		FilePath: "/vela/executor/log_level",
-		Name:     "executor.log.level",
-		Usage:    "level of logs to output",
-		Value:    "info",
-	},
-
 	// Executor Flags
 
 	&cli.StringFlag{
