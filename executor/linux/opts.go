@@ -6,6 +6,7 @@ package linux
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/worker/runtime"
 
@@ -13,18 +14,16 @@ import (
 
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-
-	"github.com/sirupsen/logrus"
 )
 
-// Opt represents a configuration option to initialize the client.
+// Opt represents a configuration option to initialize the executor client for Linux.
 type Opt func(*client) error
 
-// WithBuild sets the library build in the client.
+// WithBuild sets the library build in the executor client for Linux.
 func WithBuild(b *library.Build) Opt {
-	logrus.Trace("configuring build in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring build in linux executor client")
+
 		// check if the build provided is empty
 		if b == nil {
 			return fmt.Errorf("empty build provided")
@@ -33,7 +32,7 @@ func WithBuild(b *library.Build) Opt {
 		// update engine logger with build metadata
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.logger = c.logger.WithField("build", b.GetNumber())
+		c.Logger = c.Logger.WithField("build", b.GetNumber())
 
 		// set the build in the client
 		c.build = b
@@ -42,11 +41,11 @@ func WithBuild(b *library.Build) Opt {
 	}
 }
 
-// WithLogMethod sets the method used to publish logs in the client.
+// WithLogMethod sets the method used to publish logs in the executor client for Linux.
 func WithLogMethod(method string) Opt {
-	logrus.Trace("configuring log streaming in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring log streaming method in linux executor client")
+
 		// check if a method is provided
 		if len(method) == 0 {
 			return fmt.Errorf("empty log method provided")
@@ -59,11 +58,11 @@ func WithLogMethod(method string) Opt {
 	}
 }
 
-// WithHostname sets the hostname in the client.
+// WithHostname sets the hostname in the executor client for Linux.
 func WithHostname(hostname string) Opt {
-	logrus.Trace("configuring hostname in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring hostname in linux executor client")
+
 		// check if a hostname is provided
 		if len(hostname) == 0 {
 			// default the hostname to localhost
@@ -73,7 +72,7 @@ func WithHostname(hostname string) Opt {
 		// update engine logger with host metadata
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.logger = c.logger.WithField("host", hostname)
+		c.Logger = c.Logger.WithField("host", hostname)
 
 		// set the hostname in the client
 		c.Hostname = hostname
@@ -82,11 +81,28 @@ func WithHostname(hostname string) Opt {
 	}
 }
 
-// WithPipeline sets the pipeline build in the client.
-func WithPipeline(p *pipeline.Build) Opt {
-	logrus.Trace("configuring pipeline in linux client")
-
+// WithLogger sets the logger in the executor client for Linux.
+func WithLogger(logger *logrus.Entry) Opt {
 	return func(c *client) error {
+		c.Logger.Trace("configuring logger in linux executor client")
+
+		// check if the logger provided is empty
+		if logger == nil {
+			return nil
+		}
+
+		// set the runtime logger in the docker client
+		c.Logger = logger
+
+		return nil
+	}
+}
+
+// WithPipeline sets the pipeline build in the executor client for Linux.
+func WithPipeline(p *pipeline.Build) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring pipeline in linux executor client")
+
 		// check if the pipeline provided is empty
 		if p == nil {
 			return fmt.Errorf("empty pipeline provided")
@@ -99,11 +115,11 @@ func WithPipeline(p *pipeline.Build) Opt {
 	}
 }
 
-// WithRepo sets the library repo in the client.
+// WithRepo sets the library repo in the executor client for Linux.
 func WithRepo(r *library.Repo) Opt {
-	logrus.Trace("configuring repo in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring repository in linux executor client")
+
 		// check if the repo provided is empty
 		if r == nil {
 			return fmt.Errorf("empty repo provided")
@@ -112,7 +128,7 @@ func WithRepo(r *library.Repo) Opt {
 		// update engine logger with repo metadata
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.logger = c.logger.WithField("repo", r.GetFullName())
+		c.Logger = c.Logger.WithField("repo", r.GetFullName())
 
 		// set the repo in the client
 		c.repo = r
@@ -121,15 +137,20 @@ func WithRepo(r *library.Repo) Opt {
 	}
 }
 
-// WithRuntime sets the runtime engine in the client.
+// WithRuntime sets the runtime engine in the executor client for Linux.
 func WithRuntime(r runtime.Engine) Opt {
-	logrus.Trace("configuring runtime in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring runtime in linux executor client")
+
 		// check if the runtime provided is empty
 		if r == nil {
 			return fmt.Errorf("empty runtime provided")
 		}
+
+		// update engine logger with repo metadata
+		//
+		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+		c.Logger = c.Logger.WithField("runtime", r.Driver())
 
 		// set the runtime in the client
 		c.Runtime = r
@@ -138,11 +159,11 @@ func WithRuntime(r runtime.Engine) Opt {
 	}
 }
 
-// WithUser sets the library user in the client.
+// WithUser sets the library user in the executor client for Linux.
 func WithUser(u *library.User) Opt {
-	logrus.Trace("configuring user in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring user in linux executor client")
+
 		// check if the user provided is empty
 		if u == nil {
 			return fmt.Errorf("empty user provided")
@@ -151,7 +172,7 @@ func WithUser(u *library.User) Opt {
 		// update engine logger with user metadata
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.logger = c.logger.WithField("user", u.GetName())
+		c.Logger = c.Logger.WithField("user", u.GetName())
 
 		// set the user in the client
 		c.user = u
@@ -160,11 +181,11 @@ func WithUser(u *library.User) Opt {
 	}
 }
 
-// WithVelaClient sets the Vela client in the client.
+// WithVelaClient sets the Vela client in the executor client for Linux.
 func WithVelaClient(cli *vela.Client) Opt {
-	logrus.Trace("configuring Vela client in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring Vela client in linux executor client")
+
 		// check if the Vela client provided is empty
 		if cli == nil {
 			return fmt.Errorf("empty Vela client provided")
@@ -177,11 +198,11 @@ func WithVelaClient(cli *vela.Client) Opt {
 	}
 }
 
-// WithVersion sets the version in the client.
+// WithVersion sets the version in the executor client for Linux.
 func WithVersion(version string) Opt {
-	logrus.Trace("configuring version in linux client")
-
 	return func(c *client) error {
+		c.Logger.Trace("configuring version in linux executor client")
+
 		// check if a version is provided
 		if len(version) == 0 {
 			// default the version to localhost

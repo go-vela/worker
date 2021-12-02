@@ -20,6 +20,8 @@ import (
 type (
 	// client manages communication with the pipeline resources.
 	client struct {
+		// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
+		Logger   *logrus.Entry
 		Vela     *vela.Client
 		Runtime  runtime.Engine
 		Secrets  map[string]*library.Secret
@@ -31,7 +33,6 @@ type (
 
 		// private fields
 		init      *pipeline.Container
-		logger    *logrus.Entry
 		logMethod string
 		build     *library.Build
 		pipeline  *pipeline.Build
@@ -68,7 +69,7 @@ func New(opts ...Opt) (*client, error) {
 	// create new logger for the client
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
-	c.logger = logrus.NewEntry(logger)
+	c.Logger = logrus.NewEntry(logger)
 
 	// apply all provided configuration options
 	for _, opt := range opts {

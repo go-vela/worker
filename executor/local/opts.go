@@ -15,10 +15,10 @@ import (
 	"github.com/go-vela/types/pipeline"
 )
 
-// Opt represents a configuration option to initialize the client.
+// Opt represents a configuration option to initialize the executor client for Local.
 type Opt func(*client) error
 
-// WithBuild sets the library build in the client.
+// WithBuild sets the library build in the executor client for Local.
 func WithBuild(b *library.Build) Opt {
 	return func(c *client) error {
 		// set the build in the client
@@ -28,7 +28,7 @@ func WithBuild(b *library.Build) Opt {
 	}
 }
 
-// WithHostname sets the hostname in the client.
+// WithHostname sets the hostname in the executor client for Local.
 func WithHostname(hostname string) Opt {
 	return func(c *client) error {
 		// check if a hostname is provided
@@ -44,7 +44,7 @@ func WithHostname(hostname string) Opt {
 	}
 }
 
-// WithPipeline sets the pipeline build in the client.
+// WithPipeline sets the pipeline build in the executor client for Local.
 func WithPipeline(p *pipeline.Build) Opt {
 	return func(c *client) error {
 		// check if the pipeline provided is empty
@@ -59,7 +59,7 @@ func WithPipeline(p *pipeline.Build) Opt {
 	}
 }
 
-// WithRepo sets the library repo in the client.
+// WithRepo sets the library repo in the executor client for Local.
 func WithRepo(r *library.Repo) Opt {
 	return func(c *client) error {
 		// set the repo in the client
@@ -69,7 +69,7 @@ func WithRepo(r *library.Repo) Opt {
 	}
 }
 
-// WithRuntime sets the runtime engine in the client.
+// WithRuntime sets the runtime engine in the executor client for Local.
 func WithRuntime(r runtime.Engine) Opt {
 	return func(c *client) error {
 		// check if the runtime provided is empty
@@ -84,7 +84,7 @@ func WithRuntime(r runtime.Engine) Opt {
 	}
 }
 
-// WithUser sets the library user in the client.
+// WithUser sets the library user in the executor client for Local.
 func WithUser(u *library.User) Opt {
 	return func(c *client) error {
 		// set the user in the client
@@ -94,7 +94,7 @@ func WithUser(u *library.User) Opt {
 	}
 }
 
-// WithVelaClient sets the Vela client in the client.
+// WithVelaClient sets the Vela client in the executor client for Local.
 func WithVelaClient(cli *vela.Client) Opt {
 	return func(c *client) error {
 		// set the Vela client in the client
@@ -104,7 +104,7 @@ func WithVelaClient(cli *vela.Client) Opt {
 	}
 }
 
-// WithVersion sets the version in the client.
+// WithVersion sets the version in the executor client for Local.
 func WithVersion(version string) Opt {
 	return func(c *client) error {
 		// check if a version is provided

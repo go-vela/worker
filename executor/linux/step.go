@@ -24,7 +24,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	// update engine logger with step metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := c.logger.WithField("step", ctn.Name)
+	logger := c.Logger.WithField("step", ctn.Name)
 
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
@@ -79,7 +79,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with step metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := c.logger.WithField("step", ctn.Name)
+	logger := c.Logger.WithField("step", ctn.Name)
 
 	// create the library step object
 	_step := library.StepFromBuildContainer(c.build, ctn)
@@ -132,7 +132,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with step metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := c.logger.WithField("step", ctn.Name)
+	logger := c.Logger.WithField("step", ctn.Name)
 
 	// load the step from the client
 	//
@@ -145,7 +145,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// defer taking a snapshot of the step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
-	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.logger, c.repo, _step) }()
+	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, c.repo, _step) }()
 
 	logger.Debug("running container")
 	// run the runtime container
@@ -204,7 +204,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 	// update engine logger with step metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := c.logger.WithField("step", ctn.Name)
+	logger := c.Logger.WithField("step", ctn.Name)
 
 	// load the logs for the step from the client
 	//
@@ -383,7 +383,7 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	// update engine logger with step metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := c.logger.WithField("step", ctn.Name)
+	logger := c.Logger.WithField("step", ctn.Name)
 
 	// load the step from the client
 	//
