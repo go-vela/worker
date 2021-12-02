@@ -8,28 +8,45 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ClientOpt represents a configuration option to initialize the runtime client.
+// ClientOpt represents a configuration option to initialize the runtime client for Docker.
 type ClientOpt func(*client) error
 
-// WithPrivilegedImages sets the Docker privileged images in the runtime client.
-func WithPrivilegedImages(images []string) ClientOpt {
-	logrus.Trace("configuring privileged images in docker runtime client")
-
+// WithHostVolumes sets the host volumes in the runtime client for Docker.
+func WithHostVolumes(volumes []string) ClientOpt {
 	return func(c *client) error {
-		// set the runtime privileged images in the docker client
-		c.config.Images = images
+		c.Logger.Trace("configuring host volumes in docker runtime client")
+
+		// set the runtime host volumes in the docker client
+		c.config.Volumes = volumes
 
 		return nil
 	}
 }
 
-// WithHostVolumes sets the Docker host volumes in the runtime client.
-func WithHostVolumes(volumes []string) ClientOpt {
-	logrus.Trace("configuring host volumes in docker runtime client")
-
+// WithLogger sets the logger in the runtime client for Docker.
+func WithLogger(logger *logrus.Entry) ClientOpt {
 	return func(c *client) error {
-		// set the runtime host volumes in the docker client
-		c.config.Volumes = volumes
+		c.Logger.Trace("configuring logger in docker runtime client")
+
+		// check if the logger provided is empty
+		if logger == nil {
+			return nil
+		}
+
+		// set the runtime logger in the docker client
+		c.Logger = logger
+
+		return nil
+	}
+}
+
+// WithPrivilegedImages sets the privileged images in the runtime client for Docker.
+func WithPrivilegedImages(images []string) ClientOpt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring privileged images in docker runtime client")
+
+		// set the runtime privileged images in the docker client
+		c.config.Images = images
 
 		return nil
 	}
