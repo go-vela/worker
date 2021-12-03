@@ -29,12 +29,10 @@ func WithLogger(logger *logrus.Entry) ClientOpt {
 		c.Logger.Trace("configuring logger in docker runtime client")
 
 		// check if the logger provided is empty
-		if logger == nil {
-			return nil
+		if logger != nil {
+			// set the runtime logger in the docker client
+			c.Logger = logger
 		}
-
-		// set the runtime logger in the docker client
-		c.Logger = logger
 
 		return nil
 	}

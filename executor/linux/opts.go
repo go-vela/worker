@@ -29,11 +29,6 @@ func WithBuild(b *library.Build) Opt {
 			return fmt.Errorf("empty build provided")
 		}
 
-		// update engine logger with build metadata
-		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.Logger = c.Logger.WithField("build", b.GetNumber())
-
 		// set the build in the client
 		c.build = b
 
@@ -69,11 +64,6 @@ func WithHostname(hostname string) Opt {
 			hostname = "localhost"
 		}
 
-		// update engine logger with host metadata
-		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.Logger = c.Logger.WithField("host", hostname)
-
 		// set the hostname in the client
 		c.Hostname = hostname
 
@@ -87,12 +77,10 @@ func WithLogger(logger *logrus.Entry) Opt {
 		c.Logger.Trace("configuring logger in linux executor client")
 
 		// check if the logger provided is empty
-		if logger == nil {
-			return nil
+		if logger != nil {
+			// set the executor logger in the linux client
+			c.Logger = logger
 		}
-
-		// set the runtime logger in the docker client
-		c.Logger = logger
 
 		return nil
 	}
@@ -125,11 +113,6 @@ func WithRepo(r *library.Repo) Opt {
 			return fmt.Errorf("empty repo provided")
 		}
 
-		// update engine logger with repo metadata
-		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.Logger = c.Logger.WithField("repo", r.GetFullName())
-
 		// set the repo in the client
 		c.repo = r
 
@@ -147,11 +130,6 @@ func WithRuntime(r runtime.Engine) Opt {
 			return fmt.Errorf("empty runtime provided")
 		}
 
-		// update engine logger with repo metadata
-		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.Logger = c.Logger.WithField("runtime", r.Driver())
-
 		// set the runtime in the client
 		c.Runtime = r
 
@@ -168,11 +146,6 @@ func WithUser(u *library.User) Opt {
 		if u == nil {
 			return fmt.Errorf("empty user provided")
 		}
-
-		// update engine logger with user metadata
-		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		c.Logger = c.Logger.WithField("user", u.GetName())
 
 		// set the user in the client
 		c.user = u
