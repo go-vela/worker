@@ -39,13 +39,13 @@ func (w *Worker) exec(index int) error {
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
 	logger := logrus.WithFields(logrus.Fields{
-		"build":   item.Build.GetNumber(),
+		"build":    item.Build.GetNumber(),
 		"executor": w.Config.Executor.Driver,
-		"host":    w.Config.API.Address.Hostname(),
-		"repo":    item.Repo.GetFullName(),
-		"runtime": w.Config.Runtime.Driver,
-		"user":    item.User.GetName(),
-		"version": v.Semantic(),
+		"host":     w.Config.API.Address.Hostname(),
+		"repo":     item.Repo.GetFullName(),
+		"runtime":  w.Config.Runtime.Driver,
+		"user":     item.User.GetName(),
+		"version":  v.Semantic(),
 	})
 
 	w.Config.Runtime.Logger = logger
