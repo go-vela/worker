@@ -11,6 +11,8 @@ import (
 	mock "github.com/go-vela/worker/mock/docker"
 )
 
+// nolint: godot // ignore period at end for comment ending in a list
+//
 // Version represents the supported Docker API version for the mock.
 //
 // The Docker API version is pinned to ensure compatibility between the
@@ -24,8 +26,6 @@ import (
 //
 // * the Docker version of v20.10 has a maximum API version of v1.41
 // * to maintain n-1, the API version is pinned to v1.40
-//
-// nolint: godot // ignore period at end for comment ending in a list
 const Version = "v1.40"
 
 type config struct {
