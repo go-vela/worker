@@ -48,12 +48,17 @@ func (w *Worker) exec(index int) error {
 		"version":  v.Semantic(),
 	})
 
-	w.Config.Runtime.Logger = logger
-
 	// setup the runtime
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
-	w.Runtime, err = runtime.New(w.Config.Runtime)
+	w.Runtime, err = runtime.New(&runtime.Setup{
+		Logger:           logger,
+		Driver:           w.Config.Runtime.Driver,
+		ConfigFile:       w.Config.Runtime.ConfigFile,
+		HostVolumes:      w.Config.Runtime.HostVolumes,
+		Namespace:        w.Config.Runtime.Namespace,
+		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
+	})
 	if err != nil {
 		return err
 	}
