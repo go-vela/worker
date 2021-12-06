@@ -323,6 +323,10 @@ func TestLinux_StreamStep(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
+	_logs := new(library.Log)
+
+	// fill log with bytes
+	_logs.SetData(make([]byte, 1000))
 
 	gin.SetMode(gin.TestMode)
 
@@ -346,6 +350,7 @@ func TestLinux_StreamStep(t *testing.T) {
 	}{
 		{ // init step container
 			failure: false,
+			logs:    _logs,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -358,6 +363,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		},
 		{ // basic step container
 			failure: false,
+			logs:    _logs,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -370,6 +376,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		},
 		{ // step container with name not found
 			failure: true,
+			logs:    _logs,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_notfound",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -382,6 +389,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		},
 		{ // empty step container
 			failure:   true,
+			logs:      _logs,
 			container: new(pipeline.Container),
 		},
 	}
@@ -391,6 +399,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		_engine, err := New(
 			WithBuild(_build),
 			WithPipeline(new(pipeline.Build)),
+			WithMaxLogSize(10),
 			WithRepo(_repo),
 			WithRuntime(_runtime),
 			WithUser(_user),

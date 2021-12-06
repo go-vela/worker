@@ -59,6 +59,18 @@ func WithLogMethod(method string) Opt {
 	}
 }
 
+// WithMaxLogSize set the maximum log size (in bytes) in the client.
+func WithMaxLogSize(size uint) Opt {
+	logrus.Trace("configuring maximum log size in linux client")
+
+	return func(c *client) error {
+		// set the maximum log size in the client
+		c.maxLogSize = size
+
+		return nil
+	}
+}
+
 // WithHostname sets the hostname in the client.
 func WithHostname(hostname string) Opt {
 	logrus.Trace("configuring hostname in linux client")
