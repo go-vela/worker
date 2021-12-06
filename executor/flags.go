@@ -49,4 +49,10 @@ var Flags = []cli.Flag{
 		Usage:    "method used to publish logs to the server - options: (byte-chunks|time-chunks)",
 		Value:    "byte-chunks",
 	},
+	&cli.UintFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_MAX_LOG_SIZE", "EXECUTOR_MAX_LOG_SIZE"},
+		FilePath: "/vela/executor/max_log_size",
+		Name:     "executor.max_log_size",
+		Usage:    "maximum log size (in bytes)",
+	},
 }
