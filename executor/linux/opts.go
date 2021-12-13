@@ -53,6 +53,18 @@ func WithLogMethod(method string) Opt {
 	}
 }
 
+// WithMaxLogSize sets the maximum log size (in bytes) in the executor client for Linux.
+func WithMaxLogSize(size uint) Opt {
+	c.Logger.Trace("configuring maximum log size in linux executor client")
+
+	return func(c *client) error {
+		// set the maximum log size in the client
+		c.maxLogSize = size
+
+		return nil
+	}
+}
+
 // WithHostname sets the hostname in the executor client for Linux.
 func WithHostname(hostname string) Opt {
 	return func(c *client) error {

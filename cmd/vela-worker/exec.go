@@ -68,16 +68,17 @@ func (w *Worker) exec(index int) error {
 	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
 		Logger:    logger,
-		Driver:    w.Config.Executor.Driver,
-		LogMethod: w.Config.Executor.LogMethod,
-		Client:    w.VelaClient,
-		Hostname:  w.Config.API.Address.Hostname(),
-		Runtime:   w.Runtime,
-		Build:     item.Build,
-		Pipeline:  item.Pipeline.Sanitize(w.Config.Runtime.Driver),
-		Repo:      item.Repo,
-		User:      item.User,
-		Version:   v.Semantic(),
+		Driver:     w.Config.Executor.Driver,
+		LogMethod:  w.Config.Executor.LogMethod,
+		MaxLogSize: w.Config.Executor.MaxLogSize,
+		Client:     w.VelaClient,
+		Hostname:   w.Config.API.Address.Hostname(),
+		Runtime:    w.Runtime,
+		Build:      item.Build,
+		Pipeline:   item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Repo:       item.Repo,
+		User:       item.User,
+		Version:    v.Semantic(),
 	})
 
 	// add the executor to the worker

@@ -232,6 +232,13 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 			return
 		}
 
+		// don't attempt last upload if log size exceeded
+		if c.maxLogSize > 0 && uint(len(data)) >= c.maxLogSize {
+			logger.Trace("maximum log size reached")
+
+			return
+		}
+
 		// overwrite the existing log with all bytes
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
@@ -312,6 +319,13 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 						// flush the buffer of logs
 						logs.Reset()
 					}
+
+					// check whether we've reached the maximum log size
+					if c.maxLogSize > 0 && uint(len(_log.GetData())) >= c.maxLogSize {
+						logger.Trace("maximum log size reached")
+
+						return
+					}
 				}
 			}
 		}()
@@ -364,6 +378,13 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 				// flush the buffer of logs
 				logs.Reset()
+			}
+
+			// check whether we've reached the maximum log size
+			if c.maxLogSize > 0 && uint(len(_log.GetData())) >= c.maxLogSize {
+				logger.Trace("maximum log size reached")
+
+				break
 			}
 		}
 
