@@ -29,7 +29,7 @@ const imagePatch = `
 
 // CreateImage creates the pipeline container image.
 func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error {
-	c.Logger.Tracef("creating image for container %s", ctn.ID)
+	c.Logger.Tracef("no-op: creating image for container %s", ctn.ID)
 
 	return nil
 }
