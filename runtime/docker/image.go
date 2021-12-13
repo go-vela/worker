@@ -7,6 +7,7 @@ package docker
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"strings"
@@ -41,13 +42,15 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 	if err != nil {
 		return err
 	}
-
 	defer reader.Close()
 
-	// copy output from image pull to standard output
-	_, err = io.Copy(os.Stdout, reader)
-	if err != nil {
-		return err
+	// check if logrus is set up with trace level
+	if logrus.GetLevel() == logrus.TraceLevel {
+		// copy output from image pull to standard output
+		_, err = io.Copy(os.Stdout, reader)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
