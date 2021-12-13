@@ -7,7 +7,6 @@ package docker
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"strings"
@@ -16,6 +15,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
+	"github.com/sirupsen/logrus"
 )
 
 // CreateImage creates the pipeline container image.
