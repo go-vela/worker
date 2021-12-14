@@ -6,9 +6,8 @@ package docker
 
 import (
 	docker "github.com/docker/docker/client"
-	"github.com/sirupsen/logrus"
-
 	mock "github.com/go-vela/worker/mock/docker"
+	"github.com/sirupsen/logrus"
 )
 
 // nolint: godot // ignore period at end for comment ending in a list

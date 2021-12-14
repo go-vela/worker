@@ -6,14 +6,12 @@ package linux
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-
-	"github.com/go-vela/worker/runtime"
 
 	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime"
+	"github.com/sirupsen/logrus"
 )
 
 // Opt represents a configuration option to initialize the executor client for Linux.

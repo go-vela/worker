@@ -7,13 +7,10 @@ package linux
 import (
 	"sync"
 
-	"github.com/go-vela/worker/runtime"
-
 	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-
+	"github.com/go-vela/worker/runtime"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,7 +30,6 @@ type (
 
 		// private fields
 		init       *pipeline.Container
-		logger     *logrus.Entry
 		logMethod  string
 		maxLogSize uint
 		build      *library.Build

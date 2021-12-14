@@ -6,9 +6,9 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/types/constants"
+	"github.com/sirupsen/logrus"
 )
 
 // nolint: godot // ignore period at end for comment ending in a list
