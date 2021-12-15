@@ -19,6 +19,9 @@ import (
 // creating a Vela engine capable of integrating
 // with a configured runtime environment.
 type Setup struct {
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
+	Logger *logrus.Entry
+
 	// Runtime Configuration
 
 	// specifies the driver to use for the runtime client
@@ -44,6 +47,7 @@ func (s *Setup) Docker() (Engine, error) {
 	return docker.New(
 		docker.WithHostVolumes(s.HostVolumes),
 		docker.WithPrivilegedImages(s.PrivilegedImages),
+		docker.WithLogger(s.Logger),
 	)
 }
 
@@ -60,6 +64,7 @@ func (s *Setup) Kubernetes() (Engine, error) {
 		kubernetes.WithHostVolumes(s.HostVolumes),
 		kubernetes.WithNamespace(s.Namespace),
 		kubernetes.WithPrivilegedImages(s.PrivilegedImages),
+		kubernetes.WithLogger(s.Logger),
 	)
 }
 

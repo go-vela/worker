@@ -6,6 +6,7 @@ package kubernetes
 
 import (
 	"github.com/sirupsen/logrus"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
@@ -28,6 +29,8 @@ type client struct {
 	config *config
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes#Interface
 	Kubernetes kubernetes.Interface
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
+	Logger *logrus.Entry
 	// https://pkg.go.dev/k8s.io/api/core/v1#Pod
 	Pod *v1.Pod
 	// commonVolumeMounts includes workspace mount and any global host mounts (VELA_RUNTIME_VOLUMES)
@@ -42,11 +45,21 @@ type client struct {
 // nolint: golint // ignore returning unexported client
 func New(opts ...ClientOpt) (*client, error) {
 	// create new Kubernetes client
-	c := &client{}
+	c := new(client)
 
 	// create new fields
-	c.config = &config{}
-	c.Pod = &v1.Pod{}
+	c.config = new(config)
+	c.Pod = new(v1.Pod)
+
+	// create new logger for the client
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
+	logger := logrus.StandardLogger()
+
+	// create new logger for the client
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+	c.Logger = logrus.NewEntry(logger)
 
 	// apply all provided configuration options
 	for _, opt := range opts {
@@ -68,7 +81,7 @@ func New(opts ...ClientOpt) (*client, error) {
 		// https://pkg.go.dev/k8s.io/client-go/rest?tab=doc#InClusterConfig
 		config, err = rest.InClusterConfig()
 		if err != nil {
-			logrus.Error("VELA_RUNTIME_CONFIG not defined and failed to create kubernetes InClusterConfig!")
+			c.Logger.Error("VELA_RUNTIME_CONFIG not defined and failed to create kubernetes InClusterConfig!")
 			return nil, err
 		}
 	} else {
@@ -101,11 +114,21 @@ func New(opts ...ClientOpt) (*client, error) {
 // nolint: golint // ignore returning unexported client
 func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	// create new Kubernetes client
-	c := &client{}
+	c := new(client)
 
 	// create new fields
-	c.config = &config{}
-	c.Pod = &v1.Pod{}
+	c.config = new(config)
+	c.Pod = new(v1.Pod)
+
+	// create new logger for the client
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
+	logger := logrus.StandardLogger()
+
+	// create new logger for the client
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+	c.Logger = logrus.NewEntry(logger)
 
 	// set the Kubernetes namespace in the runtime client
 	c.config.Namespace = "test"

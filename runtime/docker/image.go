@@ -15,13 +15,12 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
-
 	"github.com/sirupsen/logrus"
 )
 
 // CreateImage creates the pipeline container image.
 func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("creating image for container %s", ctn.ID)
+	c.Logger.Tracef("creating image for container %s", ctn.ID)
 
 	// parse image from container
 	//
@@ -43,13 +42,15 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 	if err != nil {
 		return err
 	}
-
 	defer reader.Close()
 
-	// copy output from image pull to standard output
-	_, err = io.Copy(os.Stdout, reader)
-	if err != nil {
-		return err
+	// check if logrus is set up with trace level
+	if logrus.GetLevel() == logrus.TraceLevel {
+		// copy output from image pull to standard output
+		_, err = io.Copy(os.Stdout, reader)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -57,7 +58,7 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 
 // InspectImage inspects the pipeline container image.
 func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]byte, error) {
-	logrus.Tracef("inspecting image for container %s", ctn.ID)
+	c.Logger.Tracef("inspecting image for container %s", ctn.ID)
 
 	// create output for inspecting image
 	output := []byte(

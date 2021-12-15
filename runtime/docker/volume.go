@@ -23,7 +23,7 @@ import (
 
 // CreateVolume creates the pipeline volume.
 func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("creating volume for pipeline %s", b.ID)
+	c.Logger.Tracef("creating volume for pipeline %s", b.ID)
 
 	// create options for creating volume
 	//
@@ -46,7 +46,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 // InspectVolume inspects the pipeline volume.
 func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, error) {
-	logrus.Tracef("inspecting volume for pipeline %s", b.ID)
+	c.Logger.Tracef("inspecting volume for pipeline %s", b.ID)
 
 	// create output for inspecting volume
 	output := []byte(
@@ -75,7 +75,7 @@ func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, 
 
 // RemoveVolume deletes the pipeline volume.
 func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("removing volume for pipeline %s", b.ID)
+	c.Logger.Tracef("removing volume for pipeline %s", b.ID)
 
 	// send API call to remove the volume
 	//
@@ -90,8 +90,8 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 
 // hostConfig is a helper function to generate the host config
 // with Ulimit and volume specifications for a container.
-func hostConfig(id string, ulimits pipeline.UlimitSlice, volumes []string) *container.HostConfig {
-	logrus.Tracef("creating mount for default volume %s", id)
+func hostConfig(logger *logrus.Entry, id string, ulimits pipeline.UlimitSlice, volumes []string) *container.HostConfig {
+	logger.Tracef("creating mount for default volume %s", id)
 
 	// create default mount for pipeline volume
 	mounts := []mount.Mount{
@@ -117,12 +117,12 @@ func hostConfig(id string, ulimits pipeline.UlimitSlice, volumes []string) *cont
 	if len(volumes) > 0 {
 		// iterate through all volumes provided
 		for _, v := range volumes {
-			logrus.Tracef("creating mount for volume %s", v)
+			logger.Tracef("creating mount for volume %s", v)
 
 			// parse the volume provided
 			_volume, err := vol.ParseWithError(v)
 			if err != nil {
-				logrus.Error(err)
+				logger.Error(err)
 			}
 
 			// add the volume to the set of mounts

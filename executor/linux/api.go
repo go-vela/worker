@@ -192,7 +192,7 @@ func (c *client) CancelBuild() (*library.Build, error) {
 
 	err = c.DestroyBuild(context.Background())
 	if err != nil {
-		c.logger.Errorf("unable to destroy build: %v", err)
+		c.Logger.Errorf("unable to destroy build: %v", err)
 	}
 
 	return b, nil

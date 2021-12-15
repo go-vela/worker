@@ -23,7 +23,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.logger, c.repo) }()
+	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger, c.repo) }()
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -32,7 +32,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	c.build.SetDistribution(c.Driver())
 	c.build.SetRuntime(c.Runtime.Driver())
 
-	c.logger.Info("uploading build state")
+	c.Logger.Info("uploading build state")
 	// send API call to update the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
@@ -55,14 +55,14 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to load init step from pipeline: %w", c.err)
 	}
 
-	c.logger.Infof("creating %s step", c.init.Name)
+	c.Logger.Infof("creating %s step", c.init.Name)
 	// create the step
 	c.err = c.CreateStep(ctx, c.init)
 	if c.err != nil {
 		return fmt.Errorf("unable to create %s step: %w", c.init.Name, c.err)
 	}
 
-	c.logger.Infof("planning %s step", c.init.Name)
+	c.Logger.Infof("planning %s step", c.init.Name)
 	// plan the step
 	c.err = c.PlanStep(ctx, c.init)
 	if c.err != nil {
@@ -79,7 +79,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.logger, c.repo) }()
+	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger, c.repo) }()
 
 	// load the init step from the client
 	//
@@ -100,9 +100,9 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#SnapshotInit
-	defer func() { step.SnapshotInit(c.init, c.build, c.Vela, c.logger, c.repo, _init, _log) }()
+	defer func() { step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, c.repo, _init, _log) }()
 
-	c.logger.Info("creating network")
+	c.Logger.Info("creating network")
 	// create the runtime network for the pipeline
 	c.err = c.Runtime.CreateNetwork(ctx, c.pipeline)
 	if c.err != nil {
@@ -126,7 +126,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 	_log.AppendData(network)
 
-	c.logger.Info("creating volume")
+	c.Logger.Info("creating volume")
 	// create the runtime volume for the pipeline
 	c.err = c.Runtime.CreateVolume(ctx, c.pipeline)
 	if c.err != nil {
@@ -162,7 +162,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
+		c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
 
 		s, err := c.secret.pull(secret)
 		if err != nil {
@@ -196,7 +196,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.logger, c.repo) }()
+	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger, c.repo) }()
 
 	// load the init step from the client
 	//
@@ -217,16 +217,16 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer an upload of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
-	defer func() { step.Upload(c.init, c.build, c.Vela, c.logger, c.repo, _init) }()
+	defer func() { step.Upload(c.init, c.build, c.Vela, c.Logger, c.repo, _init) }()
 
 	defer func() {
-		c.logger.Infof("uploading %s step logs", c.init.Name)
+		c.Logger.Infof("uploading %s step logs", c.init.Name)
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
 		_log, _, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), c.init.Number, _log)
 		if err != nil {
-			c.logger.Errorf("unable to upload %s logs: %v", c.init.Name, err)
+			c.Logger.Errorf("unable to upload %s logs: %v", c.init.Name, err)
 		}
 	}()
 
@@ -240,14 +240,14 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// TODO: remove this; but we need it for tests
 		s.Detach = true
 
-		c.logger.Infof("creating %s service", s.Name)
+		c.Logger.Infof("creating %s service", s.Name)
 		// create the service
 		c.err = c.CreateService(ctx, s)
 		if c.err != nil {
 			return fmt.Errorf("unable to create %s service: %w", s.Name, c.err)
 		}
 
-		c.logger.Infof("inspecting %s service", s.Name)
+		c.Logger.Infof("inspecting %s service", s.Name)
 		// inspect the service image
 		image, err := c.Runtime.InspectImage(ctx, s)
 		if err != nil {
@@ -275,7 +275,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("creating %s stage", s.Name)
+		c.Logger.Infof("creating %s stage", s.Name)
 		// create the stage
 		c.err = c.CreateStage(ctx, s)
 		if c.err != nil {
@@ -295,14 +295,14 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("creating %s step", s.Name)
+		c.Logger.Infof("creating %s step", s.Name)
 		// create the step
 		c.err = c.CreateStep(ctx, s)
 		if c.err != nil {
 			return fmt.Errorf("unable to create %s step: %w", s.Name, c.err)
 		}
 
-		c.logger.Infof("inspecting %s step", s.Name)
+		c.Logger.Infof("inspecting %s step", s.Name)
 		// inspect the step image
 		image, err := c.Runtime.InspectImage(ctx, s)
 		if err != nil {
@@ -328,14 +328,14 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("creating %s secret", s.Origin.Name)
+		c.Logger.Infof("creating %s secret", s.Origin.Name)
 		// create the service
 		c.err = c.secret.create(ctx, s.Origin)
 		if c.err != nil {
 			return fmt.Errorf("unable to create %s secret: %w", s.Origin.Name, c.err)
 		}
 
-		c.logger.Infof("inspecting %s secret", s.Origin.Name)
+		c.Logger.Infof("inspecting %s secret", s.Origin.Name)
 		// inspect the service image
 		image, err := c.Runtime.InspectImage(ctx, s.Origin)
 		if err != nil {
@@ -375,7 +375,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 	_log.AppendData([]byte("> Executing secret images...\n"))
 
-	c.logger.Info("executing secret images")
+	c.Logger.Info("executing secret images")
 	// execute the secret
 	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
 	if c.err != nil {
@@ -392,18 +392,18 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// defer an upload of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
-	defer func() { build.Upload(c.build, c.Vela, c.err, c.logger, c.repo) }()
+	defer func() { build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo) }()
 
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
-		c.logger.Infof("planning %s service", _service.Name)
+		c.Logger.Infof("planning %s service", _service.Name)
 		// plan the service
 		c.err = c.PlanService(ctx, _service)
 		if c.err != nil {
 			return fmt.Errorf("unable to plan service: %w", c.err)
 		}
 
-		c.logger.Infof("executing %s service", _service.Name)
+		c.Logger.Infof("executing %s service", _service.Name)
 		// execute the service
 		c.err = c.ExecService(ctx, _service)
 		if c.err != nil {
@@ -425,14 +425,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("planning %s step", _step.Name)
+		c.Logger.Infof("planning %s step", _step.Name)
 		// plan the step
 		c.err = c.PlanStep(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
-		c.logger.Infof("executing %s step", _step.Name)
+		c.Logger.Infof("executing %s step", _step.Name)
 		// execute the step
 		c.err = c.ExecStep(ctx, _step)
 		if c.err != nil {
@@ -465,14 +465,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
 		stages.Go(func() error {
-			c.logger.Infof("planning %s stage", stage.Name)
+			c.Logger.Infof("planning %s stage", stage.Name)
 			// plan the stage
 			c.err = c.PlanStage(stageCtx, stage, stageMap)
 			if c.err != nil {
 				return fmt.Errorf("unable to plan stage: %w", c.err)
 			}
 
-			c.logger.Infof("executing %s stage", stage.Name)
+			c.Logger.Infof("executing %s stage", stage.Name)
 			// execute the stage
 			c.err = c.ExecStage(stageCtx, stage, stageMap)
 			if c.err != nil {
@@ -483,7 +483,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		})
 	}
 
-	c.logger.Debug("waiting for stages completion")
+	c.Logger.Debug("waiting for stages completion")
 	// wait for the stages to complete or return an error
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
@@ -500,11 +500,11 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 	var err error
 
 	defer func() {
-		c.logger.Info("deleting runtime build")
+		c.Logger.Info("deleting runtime build")
 		// remove the runtime build for the pipeline
 		err = c.Runtime.RemoveBuild(ctx, c.pipeline)
 		if err != nil {
-			c.logger.Errorf("unable to remove runtime build: %v", err)
+			c.Logger.Errorf("unable to remove runtime build: %v", err)
 		}
 	}()
 
@@ -515,11 +515,11 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("destroying %s step", _step.Name)
+		c.Logger.Infof("destroying %s step", _step.Name)
 		// destroy the step
 		err = c.DestroyStep(ctx, _step)
 		if err != nil {
-			c.logger.Errorf("unable to destroy step: %v", err)
+			c.Logger.Errorf("unable to destroy step: %v", err)
 		}
 	}
 
@@ -530,21 +530,21 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("destroying %s stage", _stage.Name)
+		c.Logger.Infof("destroying %s stage", _stage.Name)
 		// destroy the stage
 		err = c.DestroyStage(ctx, _stage)
 		if err != nil {
-			c.logger.Errorf("unable to destroy stage: %v", err)
+			c.Logger.Errorf("unable to destroy stage: %v", err)
 		}
 	}
 
 	// destroy the services for the pipeline
 	for _, _service := range c.pipeline.Services {
-		c.logger.Infof("destroying %s service", _service.Name)
+		c.Logger.Infof("destroying %s service", _service.Name)
 		// destroy the service
 		err = c.DestroyService(ctx, _service)
 		if err != nil {
-			c.logger.Errorf("unable to destroy service: %v", err)
+			c.Logger.Errorf("unable to destroy service: %v", err)
 		}
 	}
 
@@ -555,26 +555,26 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.logger.Infof("destroying %s secret", _secret.Name)
+		c.Logger.Infof("destroying %s secret", _secret.Name)
 		// destroy the secret
 		err = c.secret.destroy(ctx, _secret.Origin)
 		if err != nil {
-			c.logger.Errorf("unable to destroy secret: %v", err)
+			c.Logger.Errorf("unable to destroy secret: %v", err)
 		}
 	}
 
-	c.logger.Info("deleting volume")
+	c.Logger.Info("deleting volume")
 	// remove the runtime volume for the pipeline
 	err = c.Runtime.RemoveVolume(ctx, c.pipeline)
 	if err != nil {
-		c.logger.Errorf("unable to remove volume: %v", err)
+		c.Logger.Errorf("unable to remove volume: %v", err)
 	}
 
-	c.logger.Info("deleting network")
+	c.Logger.Info("deleting network")
 	// remove the runtime network for the pipeline
 	err = c.Runtime.RemoveNetwork(ctx, c.pipeline)
 	if err != nil {
-		c.logger.Errorf("unable to remove network: %v", err)
+		c.Logger.Errorf("unable to remove network: %v", err)
 	}
 
 	return err

@@ -11,15 +11,13 @@ import (
 	"github.com/go-vela/types/pipeline"
 
 	"github.com/buildkite/yaml"
-	"github.com/sirupsen/logrus"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // InspectBuild displays details about the pod for the init step.
 func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, error) {
-	logrus.Tracef("inspecting build pod for pipeline %s", b.ID)
+	c.Logger.Tracef("inspecting build pod for pipeline %s", b.ID)
 
 	output := []byte(fmt.Sprintf("> Inspecting pod for pipeline %s", b.ID))
 
@@ -39,7 +37,7 @@ func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, e
 
 // SetupBuild prepares the pod metadata for the pipeline build.
 func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("setting up for build %s", b.ID)
+	c.Logger.Tracef("setting up for build %s", b.ID)
 
 	// create the object metadata for the pod
 	//
@@ -66,7 +64,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 // So, all environment, volume, and other container metadata must be setup
 // before running AssembleBuild.
 func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("assembling build %s", b.ID)
+	c.Logger.Tracef("assembling build %s", b.ID)
 	var err error
 
 	// last minute Environment setup
@@ -113,7 +111,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	// remnants get deleted.
 	c.createdPod = true
 
-	logrus.Infof("creating pod %s", c.Pod.ObjectMeta.Name)
+	c.Logger.Infof("creating pod %s", c.Pod.ObjectMeta.Name)
 	// send API call to create the pod
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
@@ -130,7 +128,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 // RemoveBuild deletes (kill, remove) the pipeline build metadata.
 // This deletes the kubernetes pod.
 func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("removing build %s", b.ID)
+	c.Logger.Tracef("removing build %s", b.ID)
 
 	if !c.createdPod {
 		// nothing to do
@@ -155,7 +153,7 @@ func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
 		PropagationPolicy: &policy,
 	}
 
-	logrus.Infof("removing pod %s", c.Pod.ObjectMeta.Name)
+	c.Logger.Infof("removing pod %s", c.Pod.ObjectMeta.Name)
 	// send API call to delete the pod
 	err := c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).

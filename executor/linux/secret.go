@@ -39,7 +39,7 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with secret metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := s.client.logger.WithField("secret", ctn.Name)
+	logger := s.client.Logger.WithField("secret", ctn.Name)
 
 	ctn.Environment["VELA_DISTRIBUTION"] = s.client.build.GetDistribution()
 	ctn.Environment["BUILD_HOST"] = s.client.build.GetHost()
@@ -76,7 +76,7 @@ func (s *secretSvc) destroy(ctx context.Context, ctn *pipeline.Container) error 
 	// update engine logger with secret metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := s.client.logger.WithField("secret", ctn.Name)
+	logger := s.client.Logger.WithField("secret", ctn.Name)
 
 	logger.Debug("inspecting container")
 	// inspect the runtime container
@@ -106,13 +106,13 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 	defer func() {
 		_init.SetFinished(time.Now().UTC().Unix())
 
-		s.client.logger.Infof("uploading %s step state", _init.GetName())
+		s.client.Logger.Infof("uploading %s step state", _init.GetName())
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#StepService.Update
 		_, _, err = s.client.Vela.Step.Update(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
-			s.client.logger.Errorf("unable to upload init state: %v", err)
+			s.client.Logger.Errorf("unable to upload init state: %v", err)
 		}
 	}()
 
@@ -126,7 +126,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// update engine logger with secret metadata
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-		logger := s.client.logger.WithField("secret", _secret.Origin.Name)
+		logger := s.client.Logger.WithField("secret", _secret.Origin.Name)
 
 		logger.Debug("running container")
 		// run the runtime container
@@ -178,7 +178,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#StepService.Update
 		_, _, err = s.client.Vela.Step.Update(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
-			s.client.logger.Errorf("unable to upload init state: %v", err)
+			s.client.Logger.Errorf("unable to upload init state: %v", err)
 		}
 	}
 
@@ -260,7 +260,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with secret metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
-	logger := s.client.logger.WithField("secret", ctn.Name)
+	logger := s.client.Logger.WithField("secret", ctn.Name)
 
 	// create new buffer for uploading logs
 	logs := new(bytes.Buffer)

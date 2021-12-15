@@ -12,13 +12,11 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/go-vela/types/pipeline"
-
-	"github.com/sirupsen/logrus"
 )
 
 // CreateNetwork creates the pipeline network.
 func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("creating network for pipeline %s", b.ID)
+	c.Logger.Tracef("creating network for pipeline %s", b.ID)
 
 	// nolint: lll // ignore long line length due to link
 	// create the network for the pod
@@ -89,7 +87,7 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 
 // InspectNetwork inspects the pipeline network.
 func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte, error) {
-	logrus.Tracef("inspecting network for pipeline %s", b.ID)
+	c.Logger.Tracef("inspecting network for pipeline %s", b.ID)
 
 	// TODO: consider updating this command
 	//
@@ -113,7 +111,7 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 // network lives and dies with the pod it's attached to. However, Vela
 // uses it to cleanup the network definition for the pod.
 func (c *client) RemoveNetwork(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("removing network for pipeline %s", b.ID)
+	c.Logger.Tracef("removing network for pipeline %s", b.ID)
 
 	// remove the network definition from the pod spec
 	//
