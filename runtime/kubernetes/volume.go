@@ -15,13 +15,11 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	vol "github.com/go-vela/worker/internal/volume"
-
-	"github.com/sirupsen/logrus"
 )
 
 // CreateVolume creates the pipeline volume.
 func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("creating volume for pipeline %s", b.ID)
+	c.Logger.Tracef("creating volume for pipeline %s", b.ID)
 
 	// create the workspace volume for the pod
 	//
@@ -94,7 +92,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 // InspectVolume inspects the pipeline volume.
 func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, error) {
-	logrus.Tracef("inspecting volume for pipeline %s", b.ID)
+	c.Logger.Tracef("inspecting volume for pipeline %s", b.ID)
 
 	// TODO: consider updating this command
 	//
@@ -118,7 +116,7 @@ func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, 
 // volume lives and dies with the pod it's attached to. However, Vela
 // uses it to cleanup the volume definition for the pod.
 func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("removing volume for pipeline %s", b.ID)
+	c.Logger.Tracef("removing volume for pipeline %s", b.ID)
 
 	// remove the volume definition from the pod spec
 	//
@@ -134,7 +132,7 @@ func (c *client) setupVolumeMounts(ctx context.Context, ctn *pipeline.Container)
 	volumeMounts []v1.VolumeMount,
 	err error,
 ) {
-	logrus.Tracef("setting up VolumeMounts for container %s", ctn.ID)
+	c.Logger.Tracef("setting up VolumeMounts for container %s", ctn.ID)
 
 	// add workspace mount and any global host mounts (VELA_RUNTIME_VOLUMES)
 	volumeMounts = append(volumeMounts, c.commonVolumeMounts...)

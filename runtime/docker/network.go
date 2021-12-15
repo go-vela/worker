@@ -13,13 +13,11 @@ import (
 	"github.com/docker/docker/api/types/network"
 
 	"github.com/go-vela/types/pipeline"
-
-	"github.com/sirupsen/logrus"
 )
 
 // CreateNetwork creates the pipeline network.
 func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("creating network for pipeline %s", b.ID)
+	c.Logger.Tracef("creating network for pipeline %s", b.ID)
 
 	// create options for creating network
 	//
@@ -41,7 +39,7 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 
 // InspectNetwork inspects the pipeline network.
 func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte, error) {
-	logrus.Tracef("inspecting network for pipeline %s", b.ID)
+	c.Logger.Tracef("inspecting network for pipeline %s", b.ID)
 
 	// create options for inspecting network
 	//
@@ -75,7 +73,7 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 
 // RemoveNetwork deletes the pipeline network.
 func (c *client) RemoveNetwork(ctx context.Context, b *pipeline.Build) error {
-	logrus.Tracef("removing network for pipeline %s", b.ID)
+	c.Logger.Tracef("removing network for pipeline %s", b.ID)
 
 	// send API call to remove the network
 	//

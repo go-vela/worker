@@ -25,14 +25,6 @@ func (w *Worker) exec(index int) error {
 	// setup the version
 	v := version.New()
 
-	// setup the runtime
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
-	w.Runtime, err = runtime.New(w.Config.Runtime)
-	if err != nil {
-		return err
-	}
-
 	// capture an item from the queue
 	item, err := w.Queue.Pop(context.Background())
 	if err != nil {
@@ -43,10 +35,39 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
+	// create logger with extra metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
+	logger := logrus.WithFields(logrus.Fields{
+		"build":    item.Build.GetNumber(),
+		"executor": w.Config.Executor.Driver,
+		"host":     w.Config.API.Address.Hostname(),
+		"repo":     item.Repo.GetFullName(),
+		"runtime":  w.Config.Runtime.Driver,
+		"user":     item.User.GetName(),
+		"version":  v.Semantic(),
+	})
+
+	// setup the runtime
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
+	w.Runtime, err = runtime.New(&runtime.Setup{
+		Logger:           logger,
+		Driver:           w.Config.Runtime.Driver,
+		ConfigFile:       w.Config.Runtime.ConfigFile,
+		HostVolumes:      w.Config.Runtime.HostVolumes,
+		Namespace:        w.Config.Runtime.Namespace,
+		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
+	})
+	if err != nil {
+		return err
+	}
+
 	// setup the executor
 	//
 	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
+		Logger:     logger,
 		Driver:     w.Config.Executor.Driver,
 		LogMethod:  w.Config.Executor.LogMethod,
 		MaxLogSize: w.Config.Executor.MaxLogSize,
@@ -62,16 +83,6 @@ func (w *Worker) exec(index int) error {
 
 	// add the executor to the worker
 	w.Executors[index] = _executor
-
-	// create logger with extra metadata
-	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
-	logger := logrus.WithFields(logrus.Fields{
-		"build":   item.Build.GetNumber(),
-		"host":    w.Config.API.Address.Hostname(),
-		"repo":    item.Repo.GetFullName(),
-		"version": v.Semantic(),
-	})
 
 	// capture the configured build timeout
 	t := w.Config.Build.Timeout

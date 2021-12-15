@@ -19,13 +19,11 @@ import (
 
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
-
-	"github.com/sirupsen/logrus"
 )
 
 // InspectContainer inspects the pipeline container.
 func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("inspecting container %s", ctn.ID)
+	c.Logger.Tracef("inspecting container %s", ctn.ID)
 
 	// send API call to inspect the container
 	//
@@ -45,7 +43,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 
 // RemoveContainer deletes (kill, remove) the pipeline container.
 func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("removing container %s", ctn.ID)
+	c.Logger.Tracef("removing container %s", ctn.ID)
 
 	// send API call to inspect the container
 	//
@@ -94,12 +92,12 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 //
 // nolint: lll // ignore long line length due to variable names
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
-	logrus.Tracef("running container %s", ctn.ID)
+	c.Logger.Tracef("running container %s", ctn.ID)
 
 	// allocate new container config from pipeline container
 	containerConf := ctnConfig(ctn)
 	// allocate new host config with volume data
-	hostConf := hostConfig(b.ID, ctn.Ulimits, c.config.Volumes)
+	hostConf := hostConfig(c.Logger, b.ID, ctn.Ulimits, c.config.Volumes)
 	// allocate new network config with container name
 	networkConf := netConfig(b.ID, ctn.Name)
 
@@ -188,7 +186,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 
 // SetupContainer prepares the image for the pipeline container.
 func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("setting up for container %s", ctn.ID)
+	c.Logger.Tracef("setting up for container %s", ctn.ID)
 
 	// handle the container pull policy
 	switch ctn.Pull {
@@ -203,7 +201,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	case constants.PullOnStart:
 		fallthrough
 	default:
-		logrus.Tracef("skipping setup for container %s due to pull policy %s", ctn.ID, ctn.Pull)
+		c.Logger.Tracef("skipping setup for container %s due to pull policy %s", ctn.ID, ctn.Pull)
 
 		return nil
 	}
@@ -240,7 +238,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 //
 // nolint: lll // ignore long line length due to variable names
 func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
-	logrus.Tracef("tailing output for container %s", ctn.ID)
+	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
 	// create options for capturing container logs
 	//
@@ -266,14 +264,14 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 	// capture all stdout and stderr logs
 	go func() {
-		logrus.Tracef("copying logs for container %s", ctn.ID)
+		c.Logger.Tracef("copying logs for container %s", ctn.ID)
 
 		// copy container stdout and stderr logs to our in-memory pipe
 		//
 		// https://godoc.org/github.com/docker/docker/pkg/stdcopy#StdCopy
 		_, err := stdcopy.StdCopy(wc, wc, logs)
 		if err != nil {
-			logrus.Errorf("unable to copy logs for container: %v", err)
+			c.Logger.Errorf("unable to copy logs for container: %v", err)
 		}
 
 		// close logs buffer
@@ -288,7 +286,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 // WaitContainer blocks until the pipeline container completes.
 func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("waiting for container %s", ctn.ID)
+	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
 	// send API call to wait for the container completion
 	//
@@ -307,8 +305,6 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 // ctnConfig is a helper function to
 // generate the container config.
 func ctnConfig(ctn *pipeline.Container) *container.Config {
-	logrus.Tracef("Creating container configuration for step %s", ctn.ID)
-
 	// create container config object
 	//
 	// https://godoc.org/github.com/docker/docker/api/types/container#Config

@@ -26,6 +26,9 @@ import (
 // creating a Vela engine capable of integrating
 // with a configured executor.
 type Setup struct {
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
+	Logger *logrus.Entry
+
 	// Executor Configuration
 
 	// specifies the executor driver to use
@@ -82,6 +85,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithUser(s.User),
 		linux.WithVelaClient(s.Client),
 		linux.WithVersion(s.Version),
+		linux.WithLogger(s.Logger),
 	)
 }
 

@@ -6,11 +6,11 @@ package docker
 
 import (
 	docker "github.com/docker/docker/client"
-
 	mock "github.com/go-vela/worker/mock/docker"
+	"github.com/sirupsen/logrus"
 )
 
-// nolint: godot // ignore comment ending in a list
+// nolint: godot // ignore period at end for comment ending in a list
 //
 // Version represents the supported Docker API version for the mock.
 //
@@ -38,6 +38,8 @@ type client struct {
 	config *config
 	// https://godoc.org/github.com/docker/docker/client#CommonAPIClient
 	Docker docker.CommonAPIClient
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
+	Logger *logrus.Entry
 }
 
 // New returns an Engine implementation that
@@ -50,6 +52,16 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// create new fields
 	c.config = new(config)
+
+	// create new logger for the client
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
+	logger := logrus.StandardLogger()
+
+	// create new logger for the client
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+	c.Logger = logrus.NewEntry(logger)
 
 	// apply all provided configuration options
 	for _, opt := range opts {

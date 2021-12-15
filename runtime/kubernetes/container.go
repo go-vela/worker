@@ -17,8 +17,6 @@ import (
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 
-	"github.com/sirupsen/logrus"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -27,7 +25,7 @@ import (
 
 // InspectContainer inspects the pipeline container.
 func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("inspecting container %s", ctn.ID)
+	c.Logger.Tracef("inspecting container %s", ctn.ID)
 
 	// create options for getting the container
 	opts := metav1.GetOptions{}
@@ -66,7 +64,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 // RemoveContainer deletes (kill, remove) the pipeline container.
 // This is a no-op for kubernetes. RemoveBuild handles deleting the pod.
 func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("no-op: removing container %s", ctn.ID)
+	c.Logger.Tracef("no-op: removing container %s", ctn.ID)
 
 	return nil
 }
@@ -75,7 +73,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 //
 // nolint: lll // ignore long line length
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
-	logrus.Tracef("running container %s", ctn.ID)
+	c.Logger.Tracef("running container %s", ctn.ID)
 	// parse image from step
 	_image, err := image.ParseWithError(ctn.Image)
 	if err != nil {
@@ -105,7 +103,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 
 // SetupContainer prepares the image for the pipeline container.
 func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("setting up for container %s", ctn.ID)
+	c.Logger.Tracef("setting up for container %s", ctn.ID)
 
 	// create the container object for the pod
 	//
@@ -200,7 +198,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 // setupContainerEnvironment adds env vars to the Pod spec for a container.
 // Call this just before pod creation to capture as many env changes as possible.
 func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
-	logrus.Tracef("setting up environment for container %s", ctn.ID)
+	c.Logger.Tracef("setting up environment for container %s", ctn.ID)
 
 	// get the matching container spec
 	// (-1 to convert to 0-based index, -1 for injected init container)
@@ -224,7 +222,7 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 //
 // nolint: lll // ignore long line length due to variable names
 func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
-	logrus.Tracef("tailing output for container %s", ctn.ID)
+	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
 	// create object to store container logs
 	var logs io.ReadCloser
@@ -258,7 +256,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 			GetLogs(c.Pod.ObjectMeta.Name, opts).
 			Stream(context.Background())
 		if err != nil {
-			logrus.Errorf("%v", err)
+			c.Logger.Errorf("%v", err)
 			return false, nil
 		}
 
@@ -297,7 +295,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		Cap:      2 * time.Minute,
 	}
 
-	logrus.Tracef("capturing logs with exponential backoff for container %s", ctn.ID)
+	c.Logger.Tracef("capturing logs with exponential backoff for container %s", ctn.ID)
 	// perform the function to capture logs with periodic backoff
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
@@ -311,7 +309,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 // WaitContainer blocks until the pipeline container completes.
 func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) error {
-	logrus.Tracef("waiting for container %s", ctn.ID)
+	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
 	// create label selector for watching the pod
 	selector := fmt.Sprintf("pipeline=%s", c.Pod.ObjectMeta.Name)
