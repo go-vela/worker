@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/go-vela/types/constants"
@@ -214,6 +215,27 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
+	secretValues := []string{}
+
+	for _, secret := range c.pipeline.Secrets {
+		// ignore pulling secrets coming from plugins
+		if !secret.Origin.Empty() {
+			continue
+		}
+
+		c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
+
+		s, err := c.secret.pull(secret)
+		if err != nil {
+			c.err = err
+			return fmt.Errorf("unable to pull secrets: %w", err)
+		}
+		secretValues = append(secretValues, s.GetValue())
+	}
+
+	fmt.Println("LOGGING LOGGING LOGGING")
+	fmt.Println(secretValues)
+
 	defer func() {
 		// tail the runtime container
 		rc, err := c.Runtime.TailContainer(ctx, ctn)
@@ -242,6 +264,16 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		// overwrite the existing log with all bytes
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
+		strData := string(data)
+		fmt.Println("LOG")
+		fmt.Println(strData)
+		for _, secret := range secretValues {
+			fmt.Println("SECRET DEFER:")
+			fmt.Println(secret)
+			strData = strings.ReplaceAll(strData, secret, "********")
+		}
+		data = []byte(strData)
+
 		_log.SetData(data)
 
 		logger.Debug("uploading logs")
@@ -305,7 +337,17 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 						// update the existing log with the new bytes
 						//
 						// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-						_log.AppendData(logs.Bytes())
+
+						strData := string(logs.Bytes())
+						fmt.Println("LOG")
+						fmt.Println(strData)
+						for _, secret := range secretValues {
+							fmt.Println("SECRET TIME CHUNK:")
+							fmt.Println(secret)
+							strData = strings.ReplaceAll(strData, secret, "********")
+						}
+
+						_log.AppendData([]byte(strData))
 
 						logger.Debug("appending logs")
 						// send API call to append the logs for the step
@@ -365,6 +407,14 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 				// update the existing log with the new bytes
 				//
 				// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+				strData := string(logs.Bytes())
+				fmt.Println("LOG")
+				fmt.Println(strData)
+				for _, secret := range secretValues {
+					fmt.Println("SECRET BYTE CHUNK:")
+					fmt.Println(secret)
+					strData = strings.ReplaceAll(strData, secret, "********")
+				}
 				_log.AppendData(logs.Bytes())
 
 				logger.Debug("appending logs")
