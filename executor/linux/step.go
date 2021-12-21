@@ -219,10 +219,6 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	for _, secret := range ctn.Secrets {
 		s := ctn.Environment[strings.ToUpper(secret.Target)]
-		if err != nil {
-			c.err = err
-			return fmt.Errorf("unable to pull secrets: %w", err)
-		}
 		secretValues = append(secretValues, s)
 	}
 
