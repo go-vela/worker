@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -48,6 +49,12 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 	if logrus.GetLevel() == logrus.TraceLevel {
 		// copy output from image pull to standard output
 		_, err = io.Copy(os.Stdout, reader)
+		if err != nil {
+			return err
+		}
+	} else {
+		// discard output from image pull
+		_, err = io.Copy(ioutil.Discard, reader)
 		if err != nil {
 			return err
 		}
