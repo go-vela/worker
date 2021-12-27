@@ -217,8 +217,16 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	secretValues := []string{}
 
+	// gather secrets' values from the environment map for masking
 	for _, secret := range ctn.Secrets {
 		s := ctn.Environment[strings.ToUpper(secret.Target)]
+		// handle multi line secrets from files
+		s = strings.ReplaceAll(s, "\n", " ")
+
+		// drop any trailing spaces
+		if strings.HasSuffix(s, " ") {
+			s = s[:(len(s) - 1)]
+		}
 		secretValues = append(secretValues, s)
 	}
 
@@ -250,6 +258,8 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		// mask secrets in logs before setting them in the database.
 		strData := string(data)
 		for _, secret := range secretValues {
+			fmt.Println("-----DATA-----")
+			fmt.Printf("%q", strData)
 			strData = strings.ReplaceAll(strData, secret, constants.SecretLogMask)
 		}
 		data = []byte(strData)

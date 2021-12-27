@@ -6,9 +6,11 @@ package linux
 
 import (
 	"context"
+	"io"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/docker/docker/api/types"
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/server/mock/server"
@@ -338,6 +340,16 @@ func TestLinux_StreamStep(t *testing.T) {
 	}
 
 	_runtime, err := docker.NewMock()
+	opts := types.ContainerLogsOptions{
+		Follow:     true,
+		ShowStdout: true,
+		ShowStderr: true,
+		Details:    false,
+		Timestamps: false,
+	}
+	mockLogs, err := _runtime.Docker.ContainerLogs(context.Background(), "fakeContainer", opts)
+	data, err := io.ReadAll(mockLogs)
+	_logs.SetData(data)
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
@@ -387,6 +399,33 @@ func TestLinux_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		{ // logs contain secrets that must be masked
+			failure: false,
+			logs:    _logs,
+			container: &pipeline.Container{
+				ID:        "step_github_octocat_1_secretLogs",
+				Directory: "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{
+					"FOO":             "bar",
+					"SECRET_USERNAME": "hello",
+					"SECRET_PASSWORD": "stdout",
+				},
+				Image:  "alpine:latest",
+				Name:   "notfound",
+				Number: 1,
+				Pull:   "not_present",
+				Secrets: pipeline.StepSecretSlice{
+					{
+						Source: "someSource",
+						Target: "secret_username",
+					},
+					{
+						Source: "someOtherSource",
+						Target: "secret_password",
+					},
+				},
+			},
+		},
 		{ // empty step container
 			failure:   true,
 			logs:      _logs,
@@ -409,7 +448,10 @@ func TestLinux_StreamStep(t *testing.T) {
 			t.Errorf("unable to create executor engine: %v", err)
 		}
 
-		if !test.container.Empty() {
+		if test.container.ID == "step_github_octocat_1_secretLogs" {
+			_engine.steps.Store(test.container.ID, new(library.Step))
+			_engine.stepLogs.Store(test.container.ID, _logs)
+		} else if !test.container.Empty() {
 			_engine.steps.Store(test.container.ID, new(library.Step))
 			_engine.stepLogs.Store(test.container.ID, new(library.Log))
 		}
