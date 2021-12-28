@@ -6,11 +6,11 @@ package linux
 
 import (
 	"context"
-	"io"
+	"io/ioutil"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
-	"github.com/docker/docker/api/types"
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/server/mock/server"
@@ -340,19 +340,6 @@ func TestLinux_StreamStep(t *testing.T) {
 	}
 
 	_runtime, err := docker.NewMock()
-	opts := types.ContainerLogsOptions{
-		Follow:     true,
-		ShowStdout: true,
-		ShowStderr: true,
-		Details:    false,
-		Timestamps: false,
-	}
-	mockLogs, err := _runtime.Docker.ContainerLogs(context.Background(), "fakeContainer", opts)
-	data, err := io.ReadAll(mockLogs)
-	_logs.SetData(data)
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
 
 	// setup tests
 	tests := []struct {
@@ -399,33 +386,6 @@ func TestLinux_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // logs contain secrets that must be masked
-			failure: false,
-			logs:    _logs,
-			container: &pipeline.Container{
-				ID:        "step_github_octocat_1_secretLogs",
-				Directory: "/vela/src/github.com/github/octocat",
-				Environment: map[string]string{
-					"FOO":             "bar",
-					"SECRET_USERNAME": "hello",
-					"SECRET_PASSWORD": "stdout",
-				},
-				Image:  "alpine:latest",
-				Name:   "notfound",
-				Number: 1,
-				Pull:   "not_present",
-				Secrets: pipeline.StepSecretSlice{
-					{
-						Source: "someSource",
-						Target: "secret_username",
-					},
-					{
-						Source: "someOtherSource",
-						Target: "secret_password",
-					},
-				},
-			},
-		},
 		{ // empty step container
 			failure:   true,
 			logs:      _logs,
@@ -448,10 +408,7 @@ func TestLinux_StreamStep(t *testing.T) {
 			t.Errorf("unable to create executor engine: %v", err)
 		}
 
-		if test.container.ID == "step_github_octocat_1_secretLogs" {
-			_engine.steps.Store(test.container.ID, new(library.Step))
-			_engine.stepLogs.Store(test.container.ID, _logs)
-		} else if !test.container.Empty() {
+		if !test.container.Empty() {
 			_engine.steps.Store(test.container.ID, new(library.Step))
 			_engine.stepLogs.Store(test.container.ID, new(library.Log))
 		}
@@ -561,6 +518,137 @@ func TestLinux_DestroyStep(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("DestroyStep returned err: %v", err)
+		}
+	}
+}
+
+func TestLinux_getSecretValues(t *testing.T) {
+	fileSecret, err := ioutil.ReadFile("./testdata/step/secret_text.txt")
+	if err != nil {
+		t.Errorf("unable to read from test data file secret. Err: %v", err)
+	}
+	tests := []struct {
+		want      []string
+		container *pipeline.Container
+	}{
+		{ // no secrets container
+			want: []string{},
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_init",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "#init",
+				Name:        "init",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{ // secrets container
+			want: []string{"secretUser", "secretPass"},
+			container: &pipeline.Container{
+				ID:        "step_github_octocat_1_echo",
+				Directory: "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{
+					"FOO":             "bar",
+					"SECRET_USERNAME": "secretUser",
+					"SECRET_PASSWORD": "secretPass",
+				},
+				Image:  "alpine:latest",
+				Name:   "echo",
+				Number: 1,
+				Pull:   "not_present",
+				Secrets: pipeline.StepSecretSlice{
+					{
+						Source: "someSource",
+						Target: "secret_username",
+					},
+					{
+						Source: "someOtherSource",
+						Target: "secret_password",
+					},
+				},
+			},
+		},
+		{ // secrets container with file as value
+			want: []string{"secretUser", "this is a secret"},
+			container: &pipeline.Container{
+				ID:        "step_github_octocat_1_ignorenotfound",
+				Directory: "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{
+					"FOO":             "bar",
+					"SECRET_USERNAME": "secretUser",
+					"SECRET_PASSWORD": string(fileSecret),
+				},
+				Image:  "alpine:latest",
+				Name:   "ignorenotfound",
+				Number: 1,
+				Pull:   "not_present",
+				Secrets: pipeline.StepSecretSlice{
+					{
+						Source: "someSource",
+						Target: "secret_username",
+					},
+					{
+						Source: "someOtherSource",
+						Target: "secret_password",
+					},
+				},
+			},
+		},
+	}
+	// run tests
+	for _, test := range tests {
+		got := getSecretValues(test.container)
+
+		if !reflect.DeepEqual(got, test.want) {
+			t.Errorf("getSecretValues is %v, want %v", got, test.want)
+		}
+	}
+}
+
+func TestLinux_maskSecrets(t *testing.T) {
+	// set up test secrets
+	sVals := []string{"secret", "bigsecret", "littlesecret", "extrasecret"}
+
+	// set up test logs
+	s1 := "$ echo $NO_SECRET\nnosecret\n"
+	s2 := "$ echo $SECRET\nbigsecret\n"
+	s2Masked := "$ echo $SECRET\n***\n"
+	s3 := "$ echo $SECRET1\nbigsecret\n$ echo $SECRET2\nlittlesecret\n"
+	s3Masked := "$ echo $SECRET1\n***\n$ echo $SECRET2\n***\n"
+
+	tests := []struct {
+		want    []byte
+		log     []byte
+		secrets []string
+	}{
+		{ // no secrets in log
+			want:    []byte(s1),
+			log:     []byte(s1),
+			secrets: sVals,
+		},
+		{ // one secret in log
+			want:    []byte(s2Masked),
+			log:     []byte(s2),
+			secrets: sVals,
+		},
+		{ // multiple secrets in log
+			want:    []byte(s3Masked),
+			log:     []byte(s3),
+			secrets: sVals,
+		},
+		{ // empty secrets slice
+			want:    []byte(s3),
+			log:     []byte(s3),
+			secrets: []string{},
+		},
+	}
+	// run tests
+	for _, test := range tests {
+		got := maskSecrets(test.log, test.secrets)
+
+		if !reflect.DeepEqual(got, test.want) {
+			t.Errorf("maskSecrets is %v, want %v", string(got), string(test.want))
 		}
 	}
 }
