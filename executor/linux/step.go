@@ -10,6 +10,8 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/go-vela/types/constants"
@@ -214,6 +216,8 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
+	secretValues := getSecretValues(ctn)
+
 	defer func() {
 		// tail the runtime container
 		rc, err := c.Runtime.TailContainer(ctx, ctn)
@@ -238,6 +242,9 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 			return
 		}
+
+		// mask secrets in logs before setting them in the database.
+		data = maskSecrets(data, secretValues)
 
 		// overwrite the existing log with all bytes
 		//
@@ -305,7 +312,10 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 						// update the existing log with the new bytes
 						//
 						// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-						_log.AppendData(logs.Bytes())
+
+						data := maskSecrets(logs.Bytes(), secretValues)
+
+						_log.AppendData(data)
 
 						logger.Debug("appending logs")
 						// send API call to append the logs for the step
@@ -362,10 +372,13 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 			if logs.Len() > 1000 {
 				logger.Trace(logs.String())
 
+				// mask secrets before updating logs
+				data := maskSecrets(logs.Bytes(), secretValues)
+
 				// update the existing log with the new bytes
 				//
 				// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-				_log.AppendData(logs.Bytes())
+				_log.AppendData(data)
 
 				logger.Debug("appending logs")
 				// send API call to append the logs for the step
@@ -437,4 +450,40 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	}
 
 	return nil
+}
+
+// getSecretValues is a helper function that creates a slice of
+// secret values that will be used to mask secrets in logs before
+// updating the database.
+func getSecretValues(ctn *pipeline.Container) []string {
+	secretValues := []string{}
+	// gather secrets' values from the environment map for masking
+	for _, secret := range ctn.Secrets {
+		s := ctn.Environment[strings.ToUpper(secret.Target)]
+		// handle multi line secrets from files
+		s = strings.ReplaceAll(s, "\n", " ")
+
+		// drop any trailing spaces
+		if strings.HasSuffix(s, " ") {
+			s = s[:(len(s) - 1)]
+		}
+		secretValues = append(secretValues, s)
+	}
+	return secretValues
+}
+
+// maskSecrets is a helper function that takes in a byte array
+// and a slice of secret values to mask.
+func maskSecrets(log []byte, secrets []string) []byte {
+	strData := string(log)
+	for _, secret := range secrets {
+		re := regexp.MustCompile(`\s` + secret + `\s`)
+		matches := re.FindAllString(strData, -1)
+		for _, match := range matches {
+			mask := string(match[0]) + constants.SecretLogMask + string(match[len(match)-1])
+			strData = strings.Replace(strData, match, mask, 1)
+		}
+		strData = re.ReplaceAllString(strData, constants.SecretLogMask)
+	}
+	return []byte(strData)
 }
