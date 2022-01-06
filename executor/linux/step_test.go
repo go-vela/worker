@@ -341,6 +341,10 @@ func TestLinux_StreamStep(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 
+	if err != nil {
+		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		failure   bool
