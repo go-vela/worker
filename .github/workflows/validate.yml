@@ -26,3 +26,8 @@ jobs:
         go fmt ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
         # Check that go fix ./... produces a zero diff; clean up any changes afterwards.
         go fix ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
+
+    - name: validate spec
+      run: |
+        make spec-install
+        make spec

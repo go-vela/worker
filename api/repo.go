@@ -19,20 +19,16 @@ import (
 // Get a currently running repo
 //
 // ---
-// x-success_http_code: '200'
 // produces:
 // - application/json
 // parameters:
-// - in: header
-//   name: Authorization
-//   description: Vela server token
-//   required: true
-//   type: string
 // - in: path
 //   name: executor
 //   description: The executor running the build
 //   required: true
 //   type: string
+// security:
+//   - ApiKeyAuth: []
 // responses:
 //   '200':
 //     description: Successfully retrieved the repo
