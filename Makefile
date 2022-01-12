@@ -5,6 +5,9 @@
 # capture the current date we build the application from
 BUILD_DATE = $(shell date +%Y-%m-%dT%H:%M:%SZ)
 
+# set the filename for the api spec
+SPEC_FILE = api-spec.json
+
 # check if a git commit sha is already set
 ifndef GITHUB_SHA
 	# capture the current git commit sha we build the application from
@@ -243,3 +246,68 @@ compose-down:
 	@echo
 	@echo "### Destroying containers for docker-compose stack"
 	@docker-compose -f docker-compose.yml down
+
+# The `spec-install` target is intended to install the
+# the needed dependencies to generate the api spec.
+# 
+# Tools used:
+# - go-swagger (https://goswagger.io/install.html)
+# - jq (https://stedolan.github.io/jq/download/)
+# - sponge (part of moreutils - https://packages.debian.org/sid/moreutils)
+#
+# Limit use of this make target to CI.
+# Debian-based environment is assumed.
+#
+# Usage: `make spec-install`
+.PHONY: spec-install
+spec-install:
+	$(if $(shell command -v apt-get 2> /dev/null),,$(error 'apt-get' not found - install jq, sponge, and go-swagger manually))
+	@echo
+	@echo "### Installing utilities (jq and sponge)"
+	@apt-get update
+	@apt-get install -y jq moreutils
+	@echo "### Downloading and installing go-swagger"
+	@curl -o /usr/local/bin/swagger -L "https://github.com/go-swagger/go-swagger/releases/download/v0.27.0/swagger_linux_amd64"
+	@chmod +x /usr/local/bin/swagger
+
+# The `spec-gen` target is intended to create an api-spec
+# using go-swagger (https://goswagger.io)
+#
+# Usage: `make spec-gen`
+.PHONY: spec-gen
+spec-gen:
+	@echo
+	@echo "### Generating api spec using go-swagger"
+	@swagger generate spec -m --exclude github.com/docker/docker/api/types --exclude-tag definitions/Step -o ${SPEC_FILE}
+	@echo "### ${SPEC_FILE} created successfully"
+
+# The `spec-validate` target is intended to validate
+# an api-spec using go-swagger (https://goswagger.io)
+#
+# Usage: `make spec-validate`
+.PHONY: spec-validate
+spec-validate:
+	@echo
+	@echo "### Validating api spec using go-swagger"
+	@swagger validate ${SPEC_FILE}
+
+# The `spec-version-update` target is intended to update
+# the api-spec version in the generated api-spec
+# using the latest git tag.
+#
+# Usage: `make spec-version-update`
+.PHONY: spec-version-update
+spec-version-update: APPS = jq sponge
+spec-version-update:
+	$(foreach app,$(APPS),\
+		$(if $(shell command -v $(app) 2> /dev/null),,$(error skipping update of spec version - '$(app)' not found)))
+	@echo
+	@echo "### Updating api-spec version"
+	@jq '.info.version = "$(subst v,,${GITHUB_TAG})"' ${SPEC_FILE} | sponge ${SPEC_FILE}
+
+# The `spec` target will call spec-gen, spec-version-update
+# and spec-validate to create and validate an api-spec.
+#
+# Usage: `make spec`
+.PHONY: spec
+spec: spec-gen spec-version-update spec-validate
