@@ -22,25 +22,17 @@ func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, e
 	// create output for inspecting Pod
 	output := []byte(fmt.Sprintf("> Inspecting pod for pipeline %s\n", b.ID))
 
-	// send API call to capture the Pod
-	//
-	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/pods#Inspect
-	r, err := pods.Inspect(c.Podman, b.ID, &pods.InspectOptions{})
-	if err != nil {
-		return []byte{}, err
-	}
-
-	// convert the Pod type PodInspectReport to bytes with pretty print
-	//
-	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/domain/entities#PodInspectReport
-	podOutput, err := json.MarshalIndent(r, "", " ")
+	// We can't actually inspect the Pod that gets build, because
+	// at this point it hasn't been started yet. So, we're just
+	// printing out the pod config that will be used.
+	podOutput, err := json.MarshalIndent(c.Pod, "", " ")
 	if err != nil {
 		return []byte{}, fmt.Errorf("unable to serialize pod data: %w", err)
 	}
 
-	// TODO: add newline at end of output
-	output = append(output, podOutput...)
+	output = append(output, append(podOutput, "\n"...)...)
 
+	// return output, nil
 	return output, nil
 }
 
@@ -55,21 +47,13 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/specgen#PodSpecGenerator
 	podGen := specgen.NewPodSpecGenerator()
 	podGen.Name = b.ID
+	// the network that the pod will join
+	podGen.CNINetworks = []string{b.ID}
 
 	podSpec.PodSpecGen = *podGen
 
 	// store podSpec on client
 	c.Pod = podSpec
-
-	// create the pod with the created Spec
-	//
-	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/pods#CreatePodFromSpec
-	_, err := pods.CreatePodFromSpec(c.Podman, c.Pod)
-	if err != nil {
-		return err
-	}
-
-	c.Logger.Info("created pod for build %s", b.ID)
 
 	return nil
 }
@@ -78,6 +62,16 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 // This is a no-op for podman.
 func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("no-op: assembling build %s", b.ID)
+
+	// create the pod with the given spec
+	//
+	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/pods#CreatePodFromSpec
+	_, err := pods.CreatePodFromSpec(c.Podman, c.Pod)
+	if err != nil {
+		return err
+	}
+
+	c.Logger.Infof("created pod for build %s", b.ID)
 
 	return nil
 }

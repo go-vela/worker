@@ -13,7 +13,7 @@ package podman
 
 // func TestDocker_Driver(t *testing.T) {
 // 	// setup types
-// 	want := constants.DriverDocker
+// 	want := constants.DriverPodman
 
 // 	_engine, err := NewMock()
 // 	if err != nil {

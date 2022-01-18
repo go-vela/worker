@@ -16,7 +16,6 @@ import (
 	"github.com/containers/podman/v3/pkg/specgen"
 	"github.com/go-vela/types/constants"
 	"github.com/opencontainers/runtime-spec/specs-go"
-	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
@@ -29,7 +28,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// send API call to inspect the container
 	//
 	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/containers#Inspect
-	container, err := containers.Inspect(c.Podman, normalizeContainerName(ctn.Name), &containers.InspectOptions{})
+	container, err := containers.Inspect(c.Podman, ctn.ID, &containers.InspectOptions{})
 	if err != nil {
 		return err
 	}
@@ -58,16 +57,15 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	c.Logger.Tracef("running container %s", ctn.ID)
 
 	// allocate new container config from pipeline container and configuration
-	spec := specConf(ctn, b.ID, c.Logger)
+	spec := specConf(ctn, b.ID)
 
 	// allocate storage configuration for container
 	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/specgen#ContainerStorageConfig
 	spec.ContainerStorageConfig = storageConfig(ctn, b.ID, c.config.Volumes, c.Logger)
 
-	// validate the generated spec
-	if err := spec.Validate(); err != nil {
-		return err
-	}
+	// allocate network configuration for container
+	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/specgen#ContainerNetworkConfig
+	spec.ContainerNetworkConfig = netConfig(b.ID, ctn.Name)
 
 	// -------------------- Start of TODO: --------------------
 	//
@@ -121,6 +119,13 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		spec.Privileged = privileged
 	}
 
+	// validate the generated spec
+	//
+	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/specgen#SpecGenerator.Validate
+	if err := spec.Validate(); err != nil {
+		return err
+	}
+
 	// send API call to create the container
 	//
 	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/containers#CreateWithSpec
@@ -132,7 +137,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	// send API call to start the container
 	//
 	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/containers#Start
-	err = containers.Start(c.Podman, normalizeContainerName(ctn.Name), &containers.StartOptions{})
+	err = containers.Start(c.Podman, ctn.ID, &containers.StartOptions{})
 	if err != nil {
 		return err
 	}
@@ -212,10 +217,12 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 	// spawn a go routine to start capturing logs
 	go func() {
+		c.Logger.Tracef("copying logs for container %s", ctn.ID)
+
 		// send API call to capture the container logs
 		//
 		// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/containers#Logs
-		err := containers.Logs(c.Podman, normalizeContainerName(ctn.Name), opts, stdOutChan, stdErrChan)
+		err := containers.Logs(c.Podman, ctn.ID, opts, stdOutChan, stdErrChan)
 		if err != nil {
 			return
 		}
@@ -233,16 +240,12 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		for {
 			select {
 			case line, ok := <-stdOutChan:
-				c.Logger.Tracef("Log: %s", line)
-
 				// write current log to PipeWriter
 				wc.Write([]byte(fmt.Sprintf("%s\n", line)))
 				if !ok {
 					stdOutChan = nil
 				}
 			case line, ok := <-stdErrChan:
-				c.Logger.Tracef("Log: %s", line)
-
 				// write current log to PipeWriter
 				wc.Write([]byte(fmt.Sprintf("%s\n", line)))
 				if !ok {
@@ -252,7 +255,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 			// if we receive an error exit
 			if stdOutChan == nil && stdErrChan != nil {
-				c.Logger.Tracef("Log: error occured, closing")
+				c.Logger.Tracef("Log: error occurred, closing")
 
 				return
 			}
@@ -275,23 +278,25 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	// send API call to wait for the container completion
 	//
 	// https://pkg.go.dev/github.com/containers/podman/v3/pkg/bindings/containers#Wait
-	_, err := containers.Wait(c.Podman, normalizeContainerName(ctn.Name), waitOpts)
+	_, err := containers.Wait(c.Podman, ctn.ID, waitOpts)
 
 	return err
 }
 
 // ctnConfig is a helper function to
 // generate the container config.
-func specConf(ctn *pipeline.Container, id string, logger *logrus.Entry) *specgen.SpecGenerator {
+func specConf(ctn *pipeline.Container, id string) *specgen.SpecGenerator {
 	// create a new spec
 	spec := specgen.NewSpecGenerator(image.Parse(ctn.Image), false)
 
 	// the pod id that the container will join
 	spec.Pod = id
+	// name of the container
+	spec.Name = ctn.ID
+	// environment to set for the container
+	spec.Env = ctn.Environment
 	spec.Stdin = false
 	spec.Terminal = false
-	spec.Name = normalizeContainerName(ctn.Name)
-	spec.Env = ctn.Environment
 
 	// check if the entrypoint is provided
 	if len(ctn.Entrypoint) > 0 {
@@ -326,14 +331,4 @@ func specConf(ctn *pipeline.Container, id string, logger *logrus.Entry) *specgen
 	}
 
 	return spec
-}
-
-// normalizeContainerName is a helper function to provide
-// a cleaned up container name that can be used as the name
-// for the container being spun up, since that will be its
-// network addressable name by default inside the pod.
-// TODO: see if we can keep using the more unique ID
-// instead of Name and create an Alias instead.
-func normalizeContainerName(name string) string {
-	return strings.ReplaceAll(name, " ", "_")
 }
