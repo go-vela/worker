@@ -2,8 +2,9 @@
 #
 # Use of this source code is governed by the LICENSE file in this repository.
 
-version: "3"
+version: '3'
 services:
+
   # The `worker` compose service hosts the Vela build daemon.
   #
   # This component is used for pulling builds from the FIFO
@@ -20,16 +21,16 @@ services:
       - vela
     environment:
       EXECUTOR_DRIVER: linux
-      EXECUTOR_LOG_METHOD: "time-chunks"
+      EXECUTOR_LOG_METHOD: 'time-chunks'
       QUEUE_DRIVER: redis
-      QUEUE_ADDR: "redis://redis:6379"
+      QUEUE_ADDR: 'redis://redis:6379'
       VELA_BUILD_LIMIT: 1
       VELA_BUILD_TIMEOUT: 30m
       VELA_LOG_LEVEL: trace
       VELA_RUNTIME_DRIVER: docker
-      VELA_RUNTIME_PRIVILEGED_IMAGES: "target/vela-docker"
-      VELA_SERVER_ADDR: "http://server:8080"
-      VELA_SERVER_SECRET: "zB7mrKDTZqNeNTD8z47yG4DHywspAh"
+      VELA_RUNTIME_PRIVILEGED_IMAGES: 'target/vela-docker'
+      VELA_SERVER_ADDR: 'http://server:8080'
+      VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_ADDR: http://worker:8080
       WORKER_CHECK_IN: 1m
     restart: always
@@ -54,29 +55,29 @@ services:
       - vela
     environment:
       DATABASE_DRIVER: postgres
-      DATABASE_ADDR: "postgres://vela:zB7mrKDTZqNeNTD8z47yG4DHywspAh@postgres:5432/vela?sslmode=disable"
+      DATABASE_ADDR: 'postgres://vela:zB7mrKDTZqNeNTD8z47yG4DHywspAh@postgres:5432/vela?sslmode=disable'
       DATABASE_COMPRESSION_LEVEL: 3
-      DATABASE_ENCRYPTION_KEY: "C639A572E14D5075C526FDDD43E4ECF6"
+      DATABASE_ENCRYPTION_KEY: 'C639A572E14D5075C526FDDD43E4ECF6'
       QUEUE_DRIVER: redis
-      QUEUE_ADDR: "redis://redis:6379"
+      QUEUE_ADDR: 'redis://redis:6379'
       SCM_DRIVER: github
-      SCM_CONTEXT: "continuous-integration/vela"
-      SECRET_VAULT: "true"
-      SECRET_VAULT_ADDR: "http://vault:8200"
+      SCM_CONTEXT: 'continuous-integration/vela'
+      SECRET_VAULT: 'true'
+      SECRET_VAULT_ADDR: 'http://vault:8200'
       SECRET_VAULT_TOKEN: vela
-      VELA_ADDR: "http://localhost:8080"
-      VELA_WEBUI_ADDR: "http://localhost:8888"
+      VELA_ADDR: 'http://localhost:8080'
+      VELA_WEBUI_ADDR: 'http://localhost:8888'
       VELA_LOG_LEVEL: trace
-      VELA_SECRET: "zB7mrKDTZqNeNTD8z47yG4DHywspAh"
+      VELA_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       VELA_REFRESH_TOKEN_DURATION: 5m
       VELA_ACCESS_TOKEN_DURATION: 1m
-      VELA_DISABLE_WEBHOOK_VALIDATION: "true"
-      VELA_ENABLE_SECURE_COOKIE: "false"
+      VELA_DISABLE_WEBHOOK_VALIDATION: 'true'
+      VELA_ENABLE_SECURE_COOKIE: 'false'
     env_file:
       - .env
     restart: always
     ports:
-      - "8080:8080"
+      - '8080:8080'
     depends_on:
       - postgres
       - redis
@@ -97,7 +98,7 @@ services:
       - .env
     restart: always
     ports:
-      - "8888:80"
+      - '8888:80'
     depends_on:
       - server
 
@@ -112,7 +113,7 @@ services:
     networks:
       - vela
     ports:
-      - "6379:6379"
+      - '6379:6379'
 
   # The `postgres` compose service hosts the Postgresql database.
   #
@@ -126,10 +127,10 @@ services:
       - vela
     environment:
       POSTGRES_DB: vela
-      POSTGRES_PASSWORD: "zB7mrKDTZqNeNTD8z47yG4DHywspAh"
+      POSTGRES_PASSWORD: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       POSTGRES_USER: vela
     ports:
-      - "5432:5432"
+      - '5432:5432'
 
   # The `vault` compose service hosts the HashiCorp Vault instance.
   #
@@ -146,7 +147,7 @@ services:
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
       VAULT_DEV_ROOT_TOKEN_ID: vela
     ports:
-      - "8200:8200"
+      - '8200:8200'
     cap_add:
       - IPC_LOCK
 
