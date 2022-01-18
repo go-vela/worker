@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/worker/runtime/kubernetes"
+	"github.com/go-vela/worker/runtime/podman"
 
 	"github.com/go-vela/types/constants"
 
@@ -48,6 +49,14 @@ func (s *Setup) Docker() (Engine, error) {
 		docker.WithHostVolumes(s.HostVolumes),
 		docker.WithPrivilegedImages(s.PrivilegedImages),
 		docker.WithLogger(s.Logger),
+	)
+}
+
+func (s *Setup) Podman() (Engine, error) {
+	return podman.New(
+		podman.WithHostVolumes(s.HostVolumes),
+		podman.WithPrivilegedImages(s.PrivilegedImages),
+		podman.WithLogger(s.Logger),
 	)
 }
 

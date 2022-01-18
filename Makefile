@@ -123,6 +123,7 @@ build:
 	GOOS=linux CGO_ENABLED=0 \
 		go build -a \
 		-ldflags '${LD_FLAGS}' \
+		-tags containers_image_openpgp \
 		-o release/vela-worker \
 		github.com/go-vela/worker/cmd/vela-worker
 

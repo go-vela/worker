@@ -37,6 +37,8 @@ func New(s *Setup) (Engine, error) {
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#Setup.Docker
 		return s.Docker()
+	case constants.DriverPodman:
+		return s.Podman()
 	case constants.DriverKubernetes:
 		// handle the Kubernetes runtime driver being provided
 		//
