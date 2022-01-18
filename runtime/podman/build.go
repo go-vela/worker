@@ -59,9 +59,8 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 }
 
 // AssembleBuild finalizes pipeline build setup.
-// This is a no-op for podman.
 func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
-	c.Logger.Tracef("no-op: assembling build %s", b.ID)
+	c.Logger.Tracef("assembling build %s", b.ID)
 
 	// create the pod with the given spec
 	//
