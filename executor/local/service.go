@@ -140,8 +140,8 @@ func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) er
 	if err != nil {
 		// create the service from the container
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#ServiceFromContainer
-		_service = library.ServiceFromContainer(ctn)
+		// https://pkg.go.dev/github.com/go-vela/types/library#ServiceFromContainerEnvironment
+		_service = library.ServiceFromContainerEnvironment(ctn)
 	}
 
 	// defer an upload of the service
