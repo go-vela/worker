@@ -94,7 +94,7 @@ func netConfig(id, alias string) specgen.ContainerNetworkConfig {
 
 	// alias to assign for the given network
 	netConf.Aliases = map[string][]string{
-		id: []string{alias},
+		id: {alias},
 	}
 
 	return netConf
