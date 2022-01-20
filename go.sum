@@ -208,8 +208,8 @@ github.com/go-vela/server v0.11.1-0.20211213155322-eeba06d5ce06 h1:5a2t2rh2/zD/+
 github.com/go-vela/server v0.11.1-0.20211213155322-eeba06d5ce06/go.mod h1:CG7MFRFVZ4s2ov4B2XRJles4R+vLD+3AMQw7O9qzk1c=
 github.com/go-vela/types v0.11.0/go.mod h1:8Oml/G1ATFTJsKdsIsstUuHVLsUv7pl6+EiIyOaUqH0=
 github.com/go-vela/types v0.11.1-0.20211117152001-4dc404f4aabc/go.mod h1:W00S1BayYQhCVqI4GuuhGjg173MOfU9UvK3JEDCr1aw=
-github.com/go-vela/types v0.11.1-0.20211221194436-28210cfa70c9 h1:wvbQB5W9P5F9etlG3T0bLfJd8Ct/SYWnCKCysqF6n1w=
-github.com/go-vela/types v0.11.1-0.20211221194436-28210cfa70c9/go.mod h1:W00S1BayYQhCVqI4GuuhGjg173MOfU9UvK3JEDCr1aw=
+github.com/go-vela/types v0.11.1-0.20220119192503-0787a67e56da h1:OiPwVjGdDFWl9rb+bIGZgMWtBVswBGjEpe0cVg4b09g=
+github.com/go-vela/types v0.11.1-0.20220119192503-0787a67e56da/go.mod h1:nMZJ/0tb0HO8/AVaJXHuR5slG9UPuP9or+CnkuyFcL4=
 github.com/gofrs/uuid v4.0.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
@@ -461,6 +461,7 @@ github.com/mattn/go-sqlite3 v2.0.3+incompatible/go.mod h1:FPy6KqzDD04eiIsT53CuJW
 github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0jegS5sx/RkqARlsWZ6pIwiU=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/microcosm-cc/bluemonday v1.0.16/go.mod h1:Z0r70sCuXHig8YpBzCc5eGHAap2K7e/u082ZUpDRRqM=
+github.com/microcosm-cc/bluemonday v1.0.17/go.mod h1:Z0r70sCuXHig8YpBzCc5eGHAap2K7e/u082ZUpDRRqM=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/copystructure v1.0.0 h1:Laisrj+bAB6b/yJwB5Bt3ITZhGJdqmxquMKeZ+mmkFQ=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=
