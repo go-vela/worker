@@ -10,7 +10,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"strings"
 	"time"
 
@@ -243,13 +242,15 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 			return
 		}
 
-		// mask secrets in logs before setting them in the database.
-		data = maskSecrets(data, secretValues)
-
 		// overwrite the existing log with all bytes
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
 		_log.SetData(data)
+
+		// mask secrets in the log data
+		//
+		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
+		_log.MaskData(secretValues)
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the step
@@ -312,10 +313,12 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 						// update the existing log with the new bytes
 						//
 						// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+						_log.AppendData(logs.Bytes())
 
-						data := maskSecrets(logs.Bytes(), secretValues)
-
-						_log.AppendData(data)
+						// mask secrets within the logs before updating database
+						//
+						// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
+						_log.MaskData(secretValues)
 
 						logger.Debug("appending logs")
 						// send API call to append the logs for the step
@@ -372,13 +375,15 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 			if logs.Len() > 1000 {
 				logger.Trace(logs.String())
 
-				// mask secrets before updating logs
-				data := maskSecrets(logs.Bytes(), secretValues)
-
 				// update the existing log with the new bytes
 				//
 				// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-				_log.AppendData(data)
+				_log.AppendData(logs.Bytes())
+
+				// mask secrets within the logs before updating database
+				//
+				// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
+				_log.MaskData(secretValues)
 
 				logger.Debug("appending logs")
 				// send API call to append the logs for the step
@@ -470,20 +475,4 @@ func getSecretValues(ctn *pipeline.Container) []string {
 		secretValues = append(secretValues, s)
 	}
 	return secretValues
-}
-
-// maskSecrets is a helper function that takes in a byte array
-// and a slice of secret values to mask.
-func maskSecrets(log []byte, secrets []string) []byte {
-	strData := string(log)
-	for _, secret := range secrets {
-		re := regexp.MustCompile(`\s` + secret + `\s`)
-		matches := re.FindAllString(strData, -1)
-		for _, match := range matches {
-			mask := string(match[0]) + constants.SecretLogMask + string(match[len(match)-1])
-			strData = strings.Replace(strData, match, mask, 1)
-		}
-		strData = re.ReplaceAllString(strData, constants.SecretLogMask)
-	}
-	return []byte(strData)
 }
