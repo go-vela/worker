@@ -10,7 +10,7 @@ require (
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-vela/sdk-go v0.11.0
-	github.com/go-vela/server v0.11.1-0.20211213155322-eeba06d5ce06
+	github.com/go-vela/server v0.11.1
 	github.com/go-vela/types v0.11.1-0.20220119192503-0787a67e56da
 	github.com/google/go-cmp v0.5.7
 	github.com/joho/godotenv v1.4.0
