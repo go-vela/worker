@@ -42,3 +42,5 @@ secrets.env
 
 # Files to be excluded.
 .DS_Store
+
+api-spec.json

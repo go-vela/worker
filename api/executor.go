@@ -21,20 +21,16 @@ import (
 // Get a currently running executor
 //
 // ---
-// x-success_http_code: '200'
 // produces:
 // - application/json
 // parameters:
-// - in: header
-//   name: Authorization
-//   description: Vela server token
-//   required: true
-//   type: string
 // - in: path
 //   name: executor
 //   description: The executor to retrieve
 //   required: true
 //   type: string
+// security:
+//   - ApiKeyAuth: []
 // responses:
 //   '200':
 //     description: Successfully retrieved the executor
@@ -96,15 +92,10 @@ func GetExecutor(c *gin.Context) {
 // Get all currently running executors
 //
 // ---
-// x-success_http_code: '200'
 // produces:
 // - application/json
-// parameters:
-// - in: header
-//   name: Authorization
-//   description: Vela server token
-//   required: true
-//   type: string
+// security:
+//   - ApiKeyAuth: []
 // responses:
 //   '200':
 //     description: Successfully retrieved all running executors

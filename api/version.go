@@ -17,7 +17,6 @@ import (
 // Get the version of the Vela API
 //
 // ---
-// x-success_http_code: '200'
 // produces:
 // - application/json
 // parameters:

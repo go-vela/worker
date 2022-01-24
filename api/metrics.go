@@ -15,7 +15,6 @@ import (
 // Retrieve metrics from the worker
 //
 // ---
-// x-success_http_code: '200'
 // produces:
 // - application/json
 // parameters:
