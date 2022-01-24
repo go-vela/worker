@@ -15,7 +15,6 @@ import (
 // Check if the worker API is available
 //
 // ---
-// x-success_http_code: '200'
 // produces:
 // - application/json
 // parameters:

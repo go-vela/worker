@@ -6,9 +6,9 @@
 //
 // API for a Vela worker
 //
-//     Version: 0.4.3
+//     Version: 0.0.0-dev
 //     Schemes: http, https
-//     BasePath: ""
+//     Host: localhost
 //
 //     Consumes:
 //     - application/json
@@ -18,6 +18,7 @@
 //
 //     SecurityDefinitions:
 //       ApiKeyAuth:
+//         description: Bearer token
 //         type: apiKey
 //         in: header
 //         name: Authorization
