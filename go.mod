@@ -22,7 +22,7 @@ require (
 	gotest.tools/v3 v3.1.0
 	k8s.io/api v0.23.3
 	k8s.io/apimachinery v0.23.3
-	k8s.io/client-go v0.23.3
+	k8s.io/client-go v1.5.2
 )
 
 require (
