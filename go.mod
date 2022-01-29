@@ -15,7 +15,7 @@ require (
 	github.com/google/go-cmp v0.5.7
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
-	github.com/prometheus/client_golang v1.12.0
+	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
