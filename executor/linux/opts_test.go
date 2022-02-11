@@ -109,6 +109,38 @@ func TestLinux_Opt_WithLogMethod(t *testing.T) {
 	}
 }
 
+func TestLinux_Opt_WithMaskSecrets(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		failure     bool
+		maskSecrets bool
+	}{
+		{
+			failure:     false,
+			maskSecrets: false,
+		},
+		{
+			failure:     false,
+			maskSecrets: true,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		_engine, err := New(
+			WithMaskSecrets(test.maskSecrets),
+		)
+
+		if err != nil {
+			t.Errorf("WithMaskSecrets returned err: %v", err)
+		}
+
+		if !reflect.DeepEqual(_engine.maskSecrets, test.maskSecrets) {
+			t.Errorf("WithMaskSecrets is %v, want %v", _engine.maskSecrets, test.maskSecrets)
+		}
+	}
+}
+
 func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 	// setup tests
 	tests := []struct {

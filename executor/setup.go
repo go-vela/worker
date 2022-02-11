@@ -35,6 +35,8 @@ type Setup struct {
 	Driver string
 	// specifies the executor method used to publish logs
 	LogMethod string
+	// specifies whether the executor masks secrets in logs
+	MaskSecrets bool
 	// specifies the maximum log size
 	MaxLogSize uint
 	// specifies the executor hostname
@@ -77,6 +79,7 @@ func (s *Setup) Linux() (Engine, error) {
 	return linux.New(
 		linux.WithBuild(s.Build),
 		linux.WithLogMethod(s.LogMethod),
+		linux.WithMaskSecrets(s.MaskSecrets),
 		linux.WithMaxLogSize(s.MaxLogSize),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),

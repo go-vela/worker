@@ -31,6 +31,13 @@ var Flags = []cli.Flag{
 		Usage:    "method used to publish logs to the server - options: (byte-chunks|time-chunks)",
 		Value:    "byte-chunks",
 	},
+	&cli.BoolFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_MASK_SECRETS", "EXECUTOR_MASK_SECRETS"},
+		FilePath: "/vela/executor/mask_secrets",
+		Name:     "executor.mask_secrets",
+		Usage:    "flag to determine whether or not we mask secrets in logs - options: (true|false)",
+		Value:    false,
+	},
 	&cli.UintFlag{
 		EnvVars:  []string{"VELA_EXECUTOR_MAX_LOG_SIZE", "EXECUTOR_MAX_LOG_SIZE"},
 		FilePath: "/vela/executor/max_log_size",

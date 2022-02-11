@@ -51,6 +51,18 @@ func WithLogMethod(method string) Opt {
 	}
 }
 
+// WithMaskSecrets sets whether the executor client will mask secrets in logs for Linux.
+func WithMaskSecrets(mask bool) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring mask secrets option in linux executor client")
+
+		// set the mask secrets option in the client
+		c.maskSecrets = mask
+
+		return nil
+	}
+}
+
 // WithMaxLogSize sets the maximum log size (in bytes) in the executor client for Linux.
 func WithMaxLogSize(size uint) Opt {
 	return func(c *client) error {

@@ -247,10 +247,12 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
 		_log.SetData(data)
 
-		// mask secrets in the log data
+		// mask secrets in the log data if environment var is set to true
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
-		_log.MaskData(secretValues)
+		if c.maskSecrets {
+			_log.MaskData(secretValues)
+		}
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the step
@@ -318,7 +320,9 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 						// mask secrets within the logs before updating database
 						//
 						// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
-						_log.MaskData(secretValues)
+						if c.maskSecrets {
+							_log.MaskData(secretValues)
+						}
 
 						logger.Debug("appending logs")
 						// send API call to append the logs for the step
@@ -383,7 +387,9 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 				// mask secrets within the logs before updating database
 				//
 				// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
-				_log.MaskData(secretValues)
+				if c.maskSecrets {
+					_log.MaskData(secretValues)
+				}
 
 				logger.Debug("appending logs")
 				// send API call to append the logs for the step

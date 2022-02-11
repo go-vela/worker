@@ -30,15 +30,16 @@ func TestExecutor_Retrieve(t *testing.T) {
 	}
 
 	want, err := executor.New(&executor.Setup{
-		Driver:     constants.DriverLinux,
-		LogMethod:  "byte-chunks",
-		MaxLogSize: 2097152,
-		Client:     new(vela.Client),
-		Runtime:    _runtime,
-		Build:      new(library.Build),
-		Pipeline:   new(pipeline.Build),
-		Repo:       new(library.Repo),
-		User:       new(library.User),
+		Driver:      constants.DriverLinux,
+		LogMethod:   "byte-chunks",
+		MaskSecrets: false,
+		MaxLogSize:  2097152,
+		Client:      new(vela.Client),
+		Runtime:     _runtime,
+		Build:       new(library.Build),
+		Pipeline:    new(pipeline.Build),
+		Repo:        new(library.Repo),
+		User:        new(library.User),
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)
@@ -66,15 +67,16 @@ func TestExecutor_Establish(t *testing.T) {
 	}
 
 	want, err := executor.New(&executor.Setup{
-		Driver:     constants.DriverLinux,
-		LogMethod:  "byte-chunks",
-		MaxLogSize: 2097152,
-		Client:     new(vela.Client),
-		Runtime:    _runtime,
-		Build:      new(library.Build),
-		Pipeline:   new(pipeline.Build),
-		Repo:       new(library.Repo),
-		User:       new(library.User),
+		Driver:      constants.DriverLinux,
+		LogMethod:   "byte-chunks",
+		MaskSecrets: false,
+		MaxLogSize:  2097152,
+		Client:      new(vela.Client),
+		Runtime:     _runtime,
+		Build:       new(library.Build),
+		Pipeline:    new(pipeline.Build),
+		Repo:        new(library.Repo),
+		User:        new(library.User),
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)

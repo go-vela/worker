@@ -29,12 +29,13 @@ type (
 		secret *secretSvc
 
 		// private fields
-		init       *pipeline.Container
-		logMethod  string
-		maxLogSize uint
-		build      *library.Build
-		pipeline   *pipeline.Build
-		repo       *library.Repo
+		init        *pipeline.Container
+		logMethod   string
+		maskSecrets bool
+		maxLogSize  uint
+		build       *library.Build
+		pipeline    *pipeline.Build
+		repo        *library.Repo
 		// nolint: structcheck,unused // ignore false positives
 		secrets     sync.Map
 		services    sync.Map

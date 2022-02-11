@@ -22,6 +22,7 @@ services:
     environment:
       EXECUTOR_DRIVER: linux
       EXECUTOR_LOG_METHOD: 'time-chunks'
+      EXECUTOR_MASK_SECRETS: false
       QUEUE_DRIVER: redis
       QUEUE_ADDR: 'redis://redis:6379'
       VELA_BUILD_LIMIT: 1
