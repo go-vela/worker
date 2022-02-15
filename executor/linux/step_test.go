@@ -570,6 +570,10 @@ func TestLinux_getSecretValues(t *testing.T) {
 						Source: "someOtherSource",
 						Target: "secret_password",
 					},
+					{
+						Source: "disallowedSecret",
+						Target: "cannot_find",
+					},
 				},
 			},
 		},
