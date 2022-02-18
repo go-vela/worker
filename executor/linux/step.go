@@ -464,7 +464,11 @@ func getSecretValues(ctn *pipeline.Container) []string {
 	secretValues := []string{}
 	// gather secrets' values from the environment map for masking
 	for _, secret := range ctn.Secrets {
-		s := ctn.Environment[strings.ToUpper(secret.Target)]
+		// capture secret from environment
+		s, ok := ctn.Environment[strings.ToUpper(secret.Target)]
+		if !ok {
+			continue
+		}
 		// handle multi line secrets from files
 		s = strings.ReplaceAll(s, "\n", " ")
 
