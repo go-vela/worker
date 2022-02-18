@@ -472,11 +472,7 @@ func getSecretValues(ctn *pipeline.Container) []string {
 		// handle multi line secrets from files
 		s = strings.ReplaceAll(s, "\n", " ")
 
-		// drop any trailing spaces
-		if strings.HasSuffix(s, " ") {
-			s = s[:(len(s) - 1)]
-		}
-		secretValues = append(secretValues, s)
+		secretValues = append(secretValues, strings.TrimSuffix(s, " "))
 	}
 	return secretValues
 }
