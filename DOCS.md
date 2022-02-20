@@ -66,7 +66,7 @@ This section covers the commands required to get the Vela application running lo
 
 ```bash
 # change into the cloned project directory
-cd $HOME/go-vela/server
+cd $HOME/go-vela/worker
 ```
 
 * Run the repository code:
