@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/image"
 )
 
 const imagePatch = `
@@ -29,8 +30,21 @@ const imagePatch = `
 
 // CreateImage creates the pipeline container image.
 func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error {
-	c.Logger.Tracef("no-op: creating image for container %s", ctn.ID)
+	c.Logger.Tracef("creating image for container %s", ctn.ID)
 
+	// parse/validate image from container
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/internal/image#ParseWithError
+	_, err := image.ParseWithError(ctn.Image)
+	if err != nil {
+		return err
+	}
+
+	// Kubernetes does not have an API to make sure it can access an image,
+	// so we have to query the appropriate docker registry ourselves.
+	// TODO: query docker registry for the image (if possible)
+	//       this might require retrieving the pullSecrets from k8s
+	// 		 or have the admin add a Vela accessible secret as well.
 	return nil
 }
 

@@ -74,8 +74,15 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 // nolint: lll // ignore long line length
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
+	// validate the container image
+	err := c.CreateImage(ctx, ctn)
+	if err != nil {
+		return err
+	}
+
 	// parse image from step
-	_image, err := image.ParseWithError(ctn.Image)
+	var _image string
+	_image, err = image.ParseWithError(ctn.Image)
 	if err != nil {
 		return err
 	}
@@ -98,6 +105,8 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		return err
 	}
 
+	// TODO: watch k8s events for errors pulling container.
+	//       Only return nil once the image has been pulled successfully.
 	return nil
 }
 
@@ -134,6 +143,11 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	case constants.PullAlways:
 		// set the pod container pull policy to always
 		container.ImagePullPolicy = v1.PullAlways
+		// validate ctn.Image
+		err := c.CreateImage(ctx, ctn)
+		if err != nil {
+			return err
+		}
 	case constants.PullNever:
 		// set the pod container pull policy to never
 		container.ImagePullPolicy = v1.PullNever
@@ -149,6 +163,11 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	default:
 		// default the pod container pull policy to if not present
 		container.ImagePullPolicy = v1.PullIfNotPresent
+		// validate ctn.Image
+		err := c.CreateImage(ctx, ctn)
+		if err != nil {
+			return err
+		}
 	}
 
 	// fill in the VolumeMounts including workspaceMount
