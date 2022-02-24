@@ -237,14 +237,13 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 // TailContainer captures the logs for the pipeline container.
 //
 // nolint: lll // ignore long line length due to variable names
-func (c *client) TailContainer(ctx context.Context, runCtx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
+func (c *client) TailContainer(ctx context.Context, runContainerDone chan struct{}, ctn *pipeline.Container) (io.ReadCloser, error) {
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
 	// Tailing starts before RunContainer. For Docker, we wait until RunContainer has finished.
-	select {
-	case <-runCtx.Done():
-		break
+	for range runContainerDone {
 	}
+
 	// create options for capturing container logs
 	//
 	// https://godoc.org/github.com/docker/docker/api/types#ContainerLogsOptions

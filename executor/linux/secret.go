@@ -131,12 +131,12 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// Docker runtime needs to wait to tail logs until after RunContainer.
 		// Kubernetes runtime needs to start tailing logs before RunContainer.
 		// runContainerDone will let Runtime.TailContainer know when RunContainer has finished.
-		runCtx, runContainerDone := context.WithCancel(context.Background())
+		runContainerDone := make(chan struct{})
 
 		go func() {
 			logger.Debug("stream logs for container")
 			// stream logs from container
-			err = s.client.secret.stream(ctx, runCtx, _secret.Origin)
+			err = s.client.secret.stream(ctx, runContainerDone, _secret.Origin)
 			if err != nil {
 				logger.Error(err)
 			}
@@ -146,7 +146,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// run the runtime container
 		err := s.client.Runtime.RunContainer(ctx, _secret.Origin, s.client.pipeline)
 		// Tell Runtime.TailContainer that RunContainer is done.
-		runContainerDone()
+		close(runContainerDone)
 		if err != nil {
 			return err
 		}
@@ -257,7 +257,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 }
 
 // stream tails the output for a secret plugin.
-func (s *secretSvc) stream(ctx context.Context, runCtx context.Context, ctn *pipeline.Container) error {
+func (s *secretSvc) stream(ctx context.Context, runContainerDone chan struct{}, ctn *pipeline.Container) error {
 	// stream all the logs to the init step
 	_log, err := step.LoadLogs(s.client.init, &s.client.stepLogs)
 	if err != nil {
@@ -295,7 +295,7 @@ func (s *secretSvc) stream(ctx context.Context, runCtx context.Context, ctn *pip
 
 	logger.Debug("tailing container")
 	// tail the runtime container
-	rc, err := s.client.Runtime.TailContainer(ctx, runCtx, ctn)
+	rc, err := s.client.Runtime.TailContainer(ctx, runContainerDone, ctn)
 	if err != nil {
 		return err
 	}

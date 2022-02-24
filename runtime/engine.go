@@ -52,7 +52,7 @@ type Engine interface {
 	SetupContainer(context.Context, *pipeline.Container) error
 	// TailContainer defines a function that captures
 	// the logs on the pipeline container.
-	TailContainer(context.Context, context.Context, *pipeline.Container) (io.ReadCloser, error)
+	TailContainer(context.Context, chan struct{}, *pipeline.Container) (io.ReadCloser, error)
 	// WaitContainer defines a function that blocks
 	// until the pipeline container completes.
 	WaitContainer(context.Context, *pipeline.Container) error

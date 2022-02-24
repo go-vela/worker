@@ -70,7 +70,7 @@ type Engine interface {
 	ExecService(context.Context, *pipeline.Container) error
 	// StreamService defines a function that
 	// tails the output for a service.
-	StreamService(context.Context, context.Context, *pipeline.Container) error
+	StreamService(context.Context, chan struct{}, *pipeline.Container) error
 	// DestroyService defines a function that
 	// cleans up the service after execution.
 	DestroyService(context.Context, *pipeline.Container) error
@@ -103,7 +103,7 @@ type Engine interface {
 	ExecStep(context.Context, *pipeline.Container) error
 	// StreamStep defines a function that
 	// tails the output for a step.
-	StreamStep(context.Context, context.Context, *pipeline.Container) error
+	StreamStep(context.Context, chan struct{}, *pipeline.Container) error
 	// DestroyStep defines a function that
 	// cleans up the step after execution.
 	DestroyStep(context.Context, *pipeline.Container) error
