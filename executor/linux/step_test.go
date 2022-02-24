@@ -396,6 +396,8 @@ func TestLinux_StreamStep(t *testing.T) {
 			container: new(pipeline.Container),
 		},
 	}
+	runCtx, runContainerDone := context.WithCancel(context.Background())
+	runContainerDone()
 
 	// run tests
 	for _, test := range tests {
@@ -417,7 +419,7 @@ func TestLinux_StreamStep(t *testing.T) {
 			_engine.stepLogs.Store(test.container.ID, new(library.Log))
 		}
 
-		err = _engine.StreamStep(context.Background(), test.container)
+		err = _engine.StreamStep(context.Background(), runCtx, test.container)
 
 		if test.failure {
 			if err == nil {

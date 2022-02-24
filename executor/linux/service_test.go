@@ -351,6 +351,8 @@ func TestLinux_StreamService(t *testing.T) {
 			container: new(pipeline.Container),
 		},
 	}
+	runCtx, runContainerDone := context.WithCancel(context.Background())
+	runContainerDone()
 
 	// run tests
 	for _, test := range tests {
@@ -371,7 +373,7 @@ func TestLinux_StreamService(t *testing.T) {
 			_engine.serviceLogs.Store(test.container.ID, new(library.Log))
 		}
 
-		err = _engine.StreamService(context.Background(), test.container)
+		err = _engine.StreamService(context.Background(), runCtx, test.container)
 
 		if test.failure {
 			if err == nil {

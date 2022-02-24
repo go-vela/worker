@@ -97,20 +97,27 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
 	defer func() { step.Snapshot(ctn, c.build, nil, nil, nil, _step) }()
 
-	// run the runtime container
-	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
-	if err != nil {
-		return err
-	}
+	// Docker runtime needs to wait to tail logs until after RunContainer.
+	// Kubernetes runtime needs to start tailing logs before RunContainer.
+	// runContainerDone will let Runtime.TailContainer know when RunContainer has finished.
+	runCtx, runContainerDone := context.WithCancel(context.Background())
 
 	go func() {
 		// stream logs from container
-		err := c.StreamStep(context.Background(), ctn)
+		err := c.StreamStep(context.Background(), runCtx, ctn)
 		if err != nil {
 			// TODO: Should this be changed or removed?
 			fmt.Println(err)
 		}
 	}()
+
+	// run the runtime container
+	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
+	// Tell Runtime.TailContainer that RunContainer is done.
+	runContainerDone()
+	if err != nil {
+		return err
+	}
 
 	// do not wait for detached containers
 	if ctn.Detach {
@@ -133,14 +140,14 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 }
 
 // StreamStep tails the output for a step.
-func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) StreamStep(ctx context.Context, runCtx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
 		return nil
 	}
 
 	// tail the runtime container
-	rc, err := c.Runtime.TailContainer(ctx, ctn)
+	rc, err := c.Runtime.TailContainer(ctx, runCtx, ctn)
 	if err != nil {
 		return err
 	}

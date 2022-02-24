@@ -325,6 +325,8 @@ func TestLocal_StreamStep(t *testing.T) {
 			container: new(pipeline.Container),
 		},
 	}
+	runCtx, runContainerDone := context.WithCancel(context.Background())
+	runContainerDone()
 
 	// run tests
 	for _, test := range tests {
@@ -339,7 +341,7 @@ func TestLocal_StreamStep(t *testing.T) {
 			t.Errorf("unable to create executor engine: %v", err)
 		}
 
-		err = _engine.StreamStep(context.Background(), test.container)
+		err = _engine.StreamStep(context.Background(), runCtx, test.container)
 
 		if test.failure {
 			if err == nil {

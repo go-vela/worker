@@ -522,6 +522,8 @@ func TestLinux_Secret_stream(t *testing.T) {
 			},
 		},
 	}
+	runCtx, runContainerDone := context.WithCancel(context.Background())
+	runContainerDone()
 
 	// run tests
 	for _, test := range tests {
@@ -540,7 +542,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		// add init container info to client
 		_ = _engine.CreateBuild(context.Background())
 
-		err = _engine.secret.stream(context.Background(), test.container)
+		err = _engine.secret.stream(context.Background(), runCtx, test.container)
 
 		if test.failure {
 			if err == nil {

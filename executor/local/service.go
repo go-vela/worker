@@ -90,27 +90,34 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Snapshot
 	defer func() { service.Snapshot(ctn, c.build, nil, nil, nil, _service) }()
 
-	// run the runtime container
-	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
-	if err != nil {
-		return err
-	}
+	// Docker runtime needs to wait to tail logs until after RunContainer.
+	// Kubernetes runtime needs to start tailing logs before RunContainer.
+	// runContainerDone will let Runtime.TailContainer know when RunContainer has finished.
+	runCtx, runContainerDone := context.WithCancel(context.Background())
 
 	go func() {
 		// stream logs from container
-		err := c.StreamService(context.Background(), ctn)
+		err := c.StreamService(context.Background(), runCtx, ctn)
 		if err != nil {
 			fmt.Fprintln(os.Stdout, "unable to stream logs for service:", err)
 		}
 	}()
 
+	// run the runtime container
+	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
+	// Tell Runtime.TailContainer that RunContainer is done.
+	runContainerDone()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // StreamService tails the output for a service.
-func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) StreamService(ctx context.Context, runCtx context.Context, ctn *pipeline.Container) error {
 	// tail the runtime container
-	rc, err := c.Runtime.TailContainer(ctx, ctn)
+	rc, err := c.Runtime.TailContainer(ctx, runCtx, ctn)
 	if err != nil {
 		return err
 	}

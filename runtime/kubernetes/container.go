@@ -221,7 +221,7 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 // TailContainer captures the logs for the pipeline container.
 //
 // nolint: lll // ignore long line length due to variable names
-func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
+func (c *client) TailContainer(ctx context.Context, runCtx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
 	// create object to store container logs
