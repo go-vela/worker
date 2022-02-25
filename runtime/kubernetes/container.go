@@ -344,7 +344,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
 	// ->
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-	watch, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Watch(context.Background(), opts)
+	podWatch, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Watch(context.Background(), opts)
 	if err != nil {
 		return err
 	}
@@ -353,7 +353,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 		// capture new result from the channel
 		//
 		// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-		result := <-watch.ResultChan()
+		result := <-podWatch.ResultChan()
 
 		// convert the object from the result to a pod
 		pod, ok := result.Object.(*v1.Pod)
