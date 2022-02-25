@@ -226,33 +226,10 @@ func TestKubernetes_TailContainer(t *testing.T) {
 
 func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup types
-	_engine, err := NewMock(_pod)
+	_engine, _watch, err := newMockWithWatch(_pod, "pods")
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
-
-	// create a new fake kubernetes client
-	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
-	_kubernetes := fake.NewSimpleClientset(_pod)
-
-	// create a new fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#NewFake
-	_watch := watch.NewFake()
-
-	// create a new watch reactor with the fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#DefaultWatchReactor
-	reactor := testcore.DefaultWatchReactor(_watch, nil)
-
-	// add watch reactor to beginning of the client chain
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#Fake.PrependWatchReactor
-	_kubernetes.PrependWatchReactor("pods", reactor)
-
-	// overwrite the mock kubernetes client
-	_engine.Kubernetes = _kubernetes
 
 	// setup tests
 	tests := []struct {
@@ -333,4 +310,37 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			t.Errorf("WaitContainer returned err: %v", err)
 		}
 	}
+}
+
+func newMockWithWatch(pod *v1.Pod, watchResource string, opts ...ClientOpt) (*client, *watch.RaceFreeFakeWatcher, error) {
+	// setup types
+	_engine, err := NewMock(pod, opts...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// create a new fake kubernetes client
+	//
+	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
+	_kubernetes := fake.NewSimpleClientset(pod)
+
+	// create a new fake watcher
+	//
+	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#NewRaceFreeFake
+	_watch := watch.NewRaceFreeFake()
+
+	// create a new watch reactor with the fake watcher
+	//
+	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#DefaultWatchReactor
+	reactor := testcore.DefaultWatchReactor(_watch, nil)
+
+	// add watch reactor to beginning of the client chain
+	//
+	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#Fake.PrependWatchReactor
+	_kubernetes.PrependWatchReactor(watchResource, reactor)
+
+	// overwrite the mock kubernetes client
+	_engine.Kubernetes = _kubernetes
+
+	return _engine, _watch, nil
 }
