@@ -100,27 +100,36 @@ func TestKubernetes_RunContainer(t *testing.T) {
 		pipeline  *pipeline.Build
 		pod       *v1.Pod
 		volumes   []string
+		events    []*v1.Event
 	}{
 		{
 			failure:   false,
 			container: _container,
 			pipeline:  _stages,
 			pod:       _pod,
+			events:    _podEvents,
 		},
 		{
 			failure:   false,
 			container: _container,
 			pipeline:  _steps,
 			pod:       _pod,
+			events:    _podEvents,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock(test.pod)
+		_engine, _watch, err := newMockWithWatch(test.pod, "events")
 		if err != nil {
 			t.Errorf("unable to create runtime engine: %v", err)
 		}
+		go func() {
+			// simulate adding events to the watcher
+			for _, event := range test.events {
+				_watch.Add(event.DeepCopyObject())
+			}
+		}()
 
 		if len(test.volumes) > 0 {
 			_engine.config.Volumes = test.volumes

@@ -154,6 +154,33 @@ var (
 			},
 		},
 	}
+	_podRef, _ = reference.GetReference(latest.Scheme, _pod)
+	_podEvents = []*v1.Event{
+		{
+			InvolvedObject: *_podRef,
+			Reason:         "Pulled",
+			Message:        "Successfully pulled image \"postgres:12-alpine\" in 1.123456789s",
+			Type:           "Normal",
+			Count:          1,
+			ObjectMeta:     metav1.ObjectMeta{Name: "postgres", Namespace: "test"},
+		},
+		{
+			InvolvedObject: *_podRef,
+			Reason:         "Pulled",
+			Message:        "Successfully pulled image \"target/vela-git:v0.4.0\" in 1.123456789s",
+			Type:           "Normal",
+			Count:          1,
+			ObjectMeta:     metav1.ObjectMeta{Name: "vela-git", Namespace: "test"},
+		},
+		{
+			InvolvedObject: *_podRef,
+			Reason:         "Pulled",
+			Message:        "Successfully pulled image \"alpine:latest\" in 1.123456789s",
+			Type:           "Normal",
+			Count:          1,
+			ObjectMeta:     metav1.ObjectMeta{Name: "alpine", Namespace: "test"},
+		},
+	}
 
 	_stages = &pipeline.Build{
 		Version: "1",

@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 // InspectContainer inspects the pipeline container.
@@ -75,8 +76,33 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 // nolint: lll // ignore long line length
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
+
+	field := fields.Set{
+		"involvedObject.name":      fields.EscapeValue(c.Pod.ObjectMeta.Name),
+		"involvedObject.namespace": fields.EscapeValue(c.config.Namespace),
+		"involvedObject.fieldPath": fmt.Sprintf("spec.container{%s}", fields.EscapeValue(ctn.ID)),
+	}
+	fieldSelector := field.AsSelector()
+
+	// create options for watching the container events
+	opts := metav1.ListOptions{
+		FieldSelector: fieldSelector.String(),
+		Watch:         true,
+	}
+
+	// Call Kubernetes API to watch for Image Pull Errors
+	eventWatch, err := c.Kubernetes.CoreV1().Events(c.config.Namespace).Watch(context.Background(), opts)
+	if err != nil {
+		return fmt.Errorf(
+			"unable to watch events for pod %s and container %s",
+			c.Pod.ObjectMeta.Name,
+			ctn.ID,
+		)
+	}
+	defer eventWatch.Stop()
+
 	// validate the container image
-	err := c.CreateImage(ctx, ctn)
+	err = c.CreateImage(ctx, ctn)
 	if err != nil {
 		return err
 	}
@@ -106,9 +132,49 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		return err
 	}
 
-	// TODO: watch k8s events for errors pulling container.
-	//       Only return nil once the image has been pulled successfully.
-	return nil
+	for {
+		// capture new result from the channel
+		//
+		// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
+		result := <-eventWatch.ResultChan()
+
+		// events get deleted after some time so ignore them
+		if result.Type == watch.Deleted {
+			continue
+		}
+
+		// convert the object from the result to a pod
+		event := result.Object.(*v1.Event)
+
+		// check if the event mentions the target image
+		if !(strings.Contains(event.Message, ctn.Image) || strings.Contains(event.Message, _image)) {
+			// if the relevant messages does not include our image
+			// it is probably for "kubernetes/pause:latest"
+			// or it is a generic message that is basically useless like:
+			//    event.Reason => event.Message
+			//    Failed => Error: ErrImagePull
+			//    BackOff => Error: ImagePullBackOff
+			continue
+		}
+
+		// TODO: probably need a timeout of some kind...
+
+		switch event.Reason {
+		// examples: event.Reason => event.Message
+		case "Failed", "BackOff":
+			// Failed => Failed to pull image "image:tag": <containerd message>
+			// BackOff => Back-off pulling image "image:tag"
+			return fmt.Errorf("failed to run container %s in %s: %s", ctn.ID, c.Pod.ObjectMeta.Name, event.Message)
+		case "Pulled":
+			// Pulled => Successfully pulled image "image:tag" in <time>
+			return nil
+		case "Pulling":
+			// Pulling => Pulling image "image:tag"
+			break
+		default:
+			break
+		}
+	}
 }
 
 // SetupContainer prepares the image for the pipeline container.
