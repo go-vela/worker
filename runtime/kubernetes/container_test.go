@@ -116,6 +116,13 @@ func TestKubernetes_RunContainer(t *testing.T) {
 			pod:       _pod,
 			events:    _podEvents,
 		},
+		{
+			failure:   true,
+			container: _container,
+			pipeline:  _steps,
+			pod:       _pod,
+			events:    _ctnFailureEvents,
+		},
 	}
 
 	// run tests

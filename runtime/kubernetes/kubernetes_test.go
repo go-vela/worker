@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/go-vela/types/pipeline"
@@ -179,6 +180,45 @@ var (
 			Type:           "Normal",
 			Count:          1,
 			ObjectMeta:     metav1.ObjectMeta{Name: "alpine", Namespace: "test"},
+		},
+	}
+	_ctnFailureEvents = []*v1.Event{
+		{
+			InvolvedObject: *_podRef,
+			Reason:         "Failed",
+			Message: fmt.Sprintf(
+				"Failed to pull image \"%s\": rpc error: "+
+					"code = NotFound desc = failed to pull and unpack image \"%s\": "+
+					"failed to resolve reference \"%s\": %s: not found",
+				_container.Image, _container.Image, _container.Image, _container.Image,
+			),
+			Type:       "Warning",
+			Count:      1,
+			ObjectMeta: metav1.ObjectMeta{Name: "ctn-event-1234", Namespace: "test"},
+		},
+		{
+			InvolvedObject: *_podRef,
+			Reason:         "Failed",
+			Message:        "Error: ErrImagePull",
+			Type:           "Warning",
+			Count:          1,
+			ObjectMeta:     metav1.ObjectMeta{Name: "ctn-event-1235", Namespace: "test"},
+		},
+		{
+			InvolvedObject: *_podRef,
+			Reason:         "BackOff",
+			Message:        fmt.Sprintf("Back-off pulling image \"%s\"", _container.Image),
+			Type:           "Normal",
+			Count:          1,
+			ObjectMeta:     metav1.ObjectMeta{Name: "ctn-event-1236", Namespace: "test"},
+		},
+		{
+			InvolvedObject: *_podRef,
+			Reason:         "Failed",
+			Message:        "Error: ImagePullBackOff",
+			Type:           "Warning",
+			Count:          1,
+			ObjectMeta:     metav1.ObjectMeta{Name: "ctn-event-1237", Namespace: "test"},
 		},
 	}
 
