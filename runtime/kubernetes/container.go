@@ -19,6 +19,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -311,7 +312,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
 	// create label selector for watching the pod
-	selector := fmt.Sprintf("pipeline=%s", c.Pod.ObjectMeta.Name)
+	selector := fmt.Sprintf("pipeline=%s", fields.EscapeValue(c.Pod.ObjectMeta.Name))
 
 	// create options for watching the container
 	opts := metav1.ListOptions{
