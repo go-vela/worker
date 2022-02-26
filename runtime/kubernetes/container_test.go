@@ -222,12 +222,6 @@ func TestKubernetes_TailContainer(t *testing.T) {
 }
 
 func TestKubernetes_WaitContainer(t *testing.T) {
-	// setup types
-	_engine, _watch, err := newMockWithWatch(_pod, "pods")
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
 	// setup tests
 	tests := []struct {
 		failure   bool
@@ -288,12 +282,18 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
+		// setup types
+		_engine, _watch, err := newMockWithWatch(_pod, "pods")
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+
 		go func() {
 			// simulate adding a pod to the watcher
 			_watch.Add(test.object)
 		}()
 
-		err := _engine.WaitContainer(context.Background(), test.container)
+		err = _engine.WaitContainer(context.Background(), test.container)
 
 		if test.failure {
 			if err == nil {

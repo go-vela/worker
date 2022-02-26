@@ -349,6 +349,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	if err != nil {
 		return err
 	}
+	defer podWatch.Stop()
 
 	for {
 		// capture new result from the channel
