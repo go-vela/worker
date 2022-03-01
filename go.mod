@@ -13,6 +13,7 @@ require (
 	github.com/go-vela/server v0.12.1
 	github.com/go-vela/types v0.12.0
 	github.com/google/go-cmp v0.5.7
+	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.12.1
@@ -60,7 +61,6 @@ require (
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/goware/urlx v0.3.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
