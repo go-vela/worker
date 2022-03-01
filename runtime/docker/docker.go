@@ -7,7 +7,6 @@ package docker
 import (
 	docker "github.com/docker/docker/client"
 	mock "github.com/go-vela/worker/mock/docker"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -72,17 +71,10 @@ func New(opts ...ClientOpt) (*client, error) {
 		}
 	}
 
-	// create a new retryable http client
-	//
-	// https://pkg.go.dev/github.com/hashicorp/go-retryablehttp#NewClient
-	retryClient := retryablehttp.NewClient()
-	// set logger to nil to avoid spam
-	retryClient.Logger = nil
-
 	// create new Docker client from environment
 	//
 	// https://godoc.org/github.com/docker/docker/client#NewClientWithOpts
-	_docker, err := docker.NewClientWithOpts(docker.FromEnv, docker.WithHTTPClient(retryClient.StandardClient()))
+	_docker, err := docker.NewClientWithOpts(docker.FromEnv)
 	if err != nil {
 		return nil, err
 	}
