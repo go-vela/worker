@@ -14,7 +14,9 @@ import (
 // helper function to setup the queue from the CLI arguments.
 func setupClient(s *Server) (*vela.Client, error) {
 	logrus.Debug("creating vela client from worker configuration")
-	// create client to retryable http calls
+	// create a new retryable http client
+	//
+	// https://pkg.go.dev/github.com/hashicorp/go-retryablehttp#NewClient
 	retryClient := retryablehttp.NewClient()
 	// set logger to nil to avoid spam
 	retryClient.Logger = nil
