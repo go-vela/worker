@@ -47,7 +47,7 @@ func (w *Worker) server() (http.Handler, bool) {
 			if err != nil {
 				logrus.Fatalf("expecting certificate file at %s, got %v", w.Config.Certificate.Cert, err)
 			}
-			
+
 			_, err = os.Stat(w.Config.Certificate.Key)
 			if err != nil {
 				logrus.Fatalf("expecting certificate key at %s, got %v", w.Config.Certificate.Key, err)
@@ -55,7 +55,7 @@ func (w *Worker) server() (http.Handler, bool) {
 		} else {
 			logrus.Fatal("unable to run with TLS: No certificate provided")
 		}
-		
+
 		return _server, true
 	}
 

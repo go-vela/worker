@@ -65,7 +65,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 // before running AssembleBuild.
 func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("assembling build %s", b.ID)
-	
+
 	var err error
 
 	// last minute Environment setup
@@ -75,13 +75,13 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 			return err
 		}
 	}
-	
+
 	for _, _stage := range b.Stages {
 		// TODO: remove hardcoded reference
 		if _stage.Name == "init" {
 			continue
 		}
-		
+
 		for _, _step := range _stage.Steps {
 			err = c.setupContainerEnvironment(_step)
 			if err != nil {
@@ -89,24 +89,24 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 			}
 		}
 	}
-	
+
 	for _, _step := range b.Steps {
 		// TODO: remove hardcoded reference
 		if _step.Name == "init" {
 			continue
 		}
-		
+
 		err = c.setupContainerEnvironment(_step)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	for _, _secret := range b.Secrets {
 		if _secret.Origin.Empty() {
 			continue
 		}
-		
+
 		err = c.setupContainerEnvironment(_secret.Origin)
 		if err != nil {
 			return err

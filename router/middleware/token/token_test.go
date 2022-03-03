@@ -33,7 +33,7 @@ func TestToken_Retrieve(t *testing.T) {
 
 func TestToken_Retrieve_Error(t *testing.T) {
 	// setup types
-	request, _ :=  http.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
+	request, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 
 	// run test
 	got, err := Retrieve(request)

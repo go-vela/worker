@@ -135,7 +135,7 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 	for _, test := range tests {
 		_engine, err := NewMock(test.k8sPod)
 		_engine.Pod = test.enginePod
-		
+
 		if err != nil {
 			t.Errorf("unable to create runtime engine: %v", err)
 		}
@@ -208,7 +208,7 @@ func TestKubernetes_RemoveBuild(t *testing.T) {
 		if err != nil {
 			t.Errorf("unable to create runtime engine: %v", err)
 		}
-		
+
 		_engine.createdPod = test.createdPod
 
 		err = _engine.RemoveBuild(context.Background(), test.pipeline)

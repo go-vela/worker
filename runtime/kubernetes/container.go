@@ -156,7 +156,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	if err != nil {
 		return err
 	}
-	
+
 	container.VolumeMounts = volumeMounts
 
 	// check if the image is allowed to run privileged
@@ -216,7 +216,7 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 			container.Env = append(container.Env, v1.EnvVar{Name: k, Value: v})
 		}
 	}
-	
+
 	return nil
 }
 
@@ -266,10 +266,9 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		reader := bufio.NewReader(stream)
 
 		// peek at container logs from the stream
-		//
-		// nolint: gomnd // ignore magic number
 		bytes, err := reader.Peek(5)
 		if err != nil {
+			// nolint: nilerr // ignore nil return
 			// skip so we resend API call to capture stream
 			return false, nil
 		}

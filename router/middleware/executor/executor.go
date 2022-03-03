@@ -64,7 +64,7 @@ func Establish() gin.HandlerFunc {
 		}
 
 		logrus.Debugf("Reading executor %s", param)
-		
+
 		e, ok := executors[number]
 		if !ok {
 			msg := fmt.Sprintf("unable to get executor %s", param)
