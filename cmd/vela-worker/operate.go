@@ -19,7 +19,6 @@ import (
 // operate is a helper function to initiate all
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
-// nolint: funlen // ignore function length
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 
