@@ -122,6 +122,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	// send API call to create the pod
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
+	// nolint: contextcheck // ignore non-inherited new context
 	_, err = c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).
 		Create(context.Background(), c.Pod, metav1.CreateOptions{})
@@ -162,6 +163,7 @@ func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
 
 	c.Logger.Infof("removing pod %s", c.Pod.ObjectMeta.Name)
 	// send API call to delete the pod
+	// nolint: contextcheck // ignore non-inherited new context
 	err := c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).
 		Delete(context.Background(), c.Pod.ObjectMeta.Name, opts)
