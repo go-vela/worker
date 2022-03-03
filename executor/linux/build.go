@@ -73,8 +73,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 }
 
 // PlanBuild prepares the build for execution.
-//
-// nolint: funlen // ignore function length due to comments and logging messages
 func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -386,8 +384,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 }
 
 // ExecBuild runs a pipeline for a build.
-//
-// nolint: funlen // ignore function length due to comments and log messages
 func (c *client) ExecBuild(ctx context.Context) error {
 	// defer an upload of the build
 	//
