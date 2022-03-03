@@ -273,13 +273,11 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 	// create new buffer for uploading logs
 	logs := new(bytes.Buffer)
 
-	// nolint: dupl // ignore similar code with service
 	switch c.logMethod {
 	case "time-chunks":
 		// create new channel for processing logs
 		done := make(chan bool)
 
-		// nolint: dupl // ignore similar code
 		go func() {
 			logger.Debug("polling logs for container")
 

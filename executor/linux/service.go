@@ -230,13 +230,11 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 	// create new buffer for uploading logs
 	logs := new(bytes.Buffer)
 
-	// nolint: dupl // ignore similar code with step
 	switch c.logMethod {
 	case "time-chunks":
 		// create new channel for processing logs
 		done := make(chan bool)
 
-		// nolint: dupl // ignore similar code
 		go func() {
 			logger.Debug("polling logs for container")
 
