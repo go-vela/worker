@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -67,15 +68,14 @@ func (w *Worker) Start() error {
 		var err error
 		logrus.Info("starting worker server")
 		if tls {
-			// nolint: lll // ignore long line length due to error message
-			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); err != http.ErrServerClosed {
+			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server
 				//
 				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 				logrus.Errorf("failing worker server: %v", err)
 			}
 		} else {
-			if err := server.ListenAndServe(); err != http.ErrServerClosed {
+			if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server
 				//
 				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info

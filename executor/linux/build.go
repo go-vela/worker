@@ -38,7 +38,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
-		return fmt.Errorf("unable to upload build state: %v", c.err)
+		return fmt.Errorf("unable to upload build state: %w", c.err)
 	}
 
 	// setup the runtime build
@@ -485,7 +485,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
 	c.err = stages.Wait()
 	if c.err != nil {
-		return fmt.Errorf("unable to wait for stages: %v", c.err)
+		return fmt.Errorf("unable to wait for stages: %w", c.err)
 	}
 
 	return c.err

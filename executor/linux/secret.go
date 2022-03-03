@@ -243,7 +243,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 		secret.Value = _secret.GetValue()
 
 	default:
-		return nil, fmt.Errorf("%s: %s", ErrUnrecognizedSecretType, secret.Type)
+		return nil, fmt.Errorf("%w: %s", ErrUnrecognizedSecretType, secret.Type)
 	}
 
 	return _secret, nil

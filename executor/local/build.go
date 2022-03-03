@@ -338,7 +338,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
 	c.err = stages.Wait()
 	if c.err != nil {
-		return fmt.Errorf("unable to wait for stages: %v", c.err)
+		return fmt.Errorf("unable to wait for stages: %w", c.err)
 	}
 
 	return c.err

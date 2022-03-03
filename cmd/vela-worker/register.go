@@ -19,7 +19,7 @@ func (w *Worker) checkIn(config *library.Worker) error {
 
 	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
 	if err != nil {
-		respErr := fmt.Errorf("unable to retrieve worker %s from the server: %v", config.GetHostname(), err)
+		respErr := fmt.Errorf("unable to retrieve worker %s from the server: %w", config.GetHostname(), err)
 		if resp == nil {
 			return respErr
 		}
@@ -36,7 +36,7 @@ func (w *Worker) checkIn(config *library.Worker) error {
 
 	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
 	if err != nil {
-		return fmt.Errorf("unable to update worker %s on the server: %v", config.GetHostname(), err)
+		return fmt.Errorf("unable to update worker %s on the server: %w", config.GetHostname(), err)
 	}
 
 	return nil
@@ -49,7 +49,7 @@ func (w *Worker) register(config *library.Worker) error {
 	_, _, err := w.VelaClient.Worker.Add(config)
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
-		return fmt.Errorf("unable to register worker %s with the server: %v", config.GetHostname(), err)
+		return fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
 
 	// successfully added the worker so return nil
