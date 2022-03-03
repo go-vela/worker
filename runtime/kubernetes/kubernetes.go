@@ -42,7 +42,7 @@ type client struct {
 // New returns an Engine implementation that
 // integrates with a Kubernetes runtime.
 //
-// nolint: golint // ignore returning unexported client
+// nolint: revive // ignore returning unexported client
 func New(opts ...ClientOpt) (*client, error) {
 	// create new Kubernetes client
 	c := new(client)
@@ -112,7 +112,7 @@ func New(opts ...ClientOpt) (*client, error) {
 //
 // This function is intended for running tests only.
 //
-// nolint: golint // ignore returning unexported client
+// nolint: revive // ignore returning unexported client
 func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	// create new Kubernetes client
 	c := new(client)
