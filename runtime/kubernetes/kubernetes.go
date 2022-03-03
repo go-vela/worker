@@ -77,6 +77,7 @@ func New(opts ...ClientOpt) (*client, error) {
 		config *rest.Config
 		err    error
 	)
+	
 	if c.config.File == "" {
 		// https://pkg.go.dev/k8s.io/client-go/rest?tab=doc#InClusterConfig
 		config, err = rest.InClusterConfig()

@@ -474,5 +474,6 @@ func getSecretValues(ctn *pipeline.Container) []string {
 
 		secretValues = append(secretValues, strings.TrimSuffix(s, " "))
 	}
+	
 	return secretValues
 }
