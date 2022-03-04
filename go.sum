@@ -110,8 +110,8 @@ github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnht
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/xds/go v0.0.0-20210805033703-aa0b78936158/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
-github.com/containerd/containerd v1.4.4 h1:rtRG4N6Ct7GNssATwgpvMGfnjnwfjnu/Zs9W3Ikzq+M=
-github.com/containerd/containerd v1.4.4/go.mod h1:bC6axHOhabU15QhwfG7w5PipXdVtMXFTttgp+kVtyUA=
+github.com/containerd/containerd v1.4.8 h1:H0wkS4AbVKTg9vyvBdCBrxoax8AMObKbNz9Fl2N0i4Y=
+github.com/containerd/containerd v1.4.8/go.mod h1:bC6axHOhabU15QhwfG7w5PipXdVtMXFTttgp+kVtyUA=
 github.com/coreos/go-semver v0.3.0 h1:wkHLiw0WNATZnSG7epLsujiMCgPAc9xhjJ4tgnAxmfM=
 github.com/coreos/go-semver v0.3.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
@@ -202,8 +202,9 @@ github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg78
 github.com/go-test/deep v1.0.2/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3aSFNA=
 github.com/go-vela/sdk-go v0.12.0 h1:McLqz6IVXeApO4/SWmmfsGzeqdU1NcR8LqYauDKJxos=
 github.com/go-vela/sdk-go v0.12.0/go.mod h1:C0N4UOx7jz1bYu2Du48ns0uxPbZBidcac8jc4eOyON4=
-github.com/go-vela/server v0.12.0 h1:QsmE5qN2l5pg9XETRpXHTQ1Zy4p/jtXrNa/pUYja1kQ=
 github.com/go-vela/server v0.12.0/go.mod h1:+ebwdqxI6HnRpbfMYAyxOaQOAeHE0VhXETukhzH/cLk=
+github.com/go-vela/server v0.12.1 h1:IWZhD5eE8m2sHuM/AY9VifZ1uDUYJa8h8hU9YUwa/CY=
+github.com/go-vela/server v0.12.1/go.mod h1:+ebwdqxI6HnRpbfMYAyxOaQOAeHE0VhXETukhzH/cLk=
 github.com/go-vela/types v0.12.0 h1:RnliZ5sZ0ceDRNyjp8o5uPKMIgLF7Gd7JRJWgOLgOPw=
 github.com/go-vela/types v0.12.0/go.mod h1:nMZJ/0tb0HO8/AVaJXHuR5slG9UPuP9or+CnkuyFcL4=
 github.com/gofrs/uuid v4.0.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
