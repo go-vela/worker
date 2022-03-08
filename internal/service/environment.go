@@ -14,8 +14,6 @@ import (
 
 // Environment attempts to update the environment variables
 // for the container based off the library resources.
-//
-// nolint: lll // ignore long line length due to parameters
 func Environment(c *pipeline.Container, b *library.Build, r *library.Repo, s *library.Service, version string) error {
 	// check if container or container environment are empty
 	if c == nil || c.Environment == nil {
