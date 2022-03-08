@@ -17,8 +17,6 @@ import (
 
 // Snapshot creates a moment in time record of the
 // step and attempts to upload it to the server.
-//
-// nolint: lll // ignore long line length due to parameters
 func Snapshot(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Step) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) {
@@ -67,8 +65,6 @@ func Snapshot(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logr
 
 // SnapshotInit creates a moment in time record of the
 // init step and attempts to upload it to the server.
-//
-// nolint: lll // ignore long line length due to parameters
 func SnapshotInit(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Step, lg *library.Log) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) {

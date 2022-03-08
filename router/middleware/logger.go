@@ -29,6 +29,7 @@ func Logger(logger *logrus.Logger, timeFormat string, utc bool) gin.HandlerFunc 
 
 		end := time.Now()
 		latency := end.Sub(start)
+
 		if utc {
 			end = end.UTC()
 		}

@@ -23,8 +23,6 @@ import (
 
 // run executes the worker based
 // off the configuration provided.
-//
-// nolint: funlen // ignore function length due to comments
 func run(c *cli.Context) error {
 	// set log format for the worker
 	switch c.String("log.format") {

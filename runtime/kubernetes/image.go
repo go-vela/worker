@@ -42,7 +42,6 @@ func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]b
 	//
 	// create output for inspecting image
 	output := []byte(
-		// nolint: lll // ignore line length due to string formatting with parameters
 		fmt.Sprintf("$ kubectl get pod -o=jsonpath='{.spec.containers[%d].image}' %s\n", ctn.Number, ctn.ID),
 	)
 
