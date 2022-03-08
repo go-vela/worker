@@ -151,6 +151,7 @@ func (c *client) DestroyStage(ctx context.Context, s *pipeline.Stage) error {
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
+
 	var err error
 
 	// destroy the steps for the stage

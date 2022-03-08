@@ -40,6 +40,8 @@ func Options(c *gin.Context) {
 // Secure is a middleware function that appends security
 // and resource access headers.
 func Secure(c *gin.Context) {
+	// Also consider adding Content-Security-Policy headers
+	// c.Header("Content-Security-Policy", "script-src 'self' https://cdnjs.cloudflare.com")
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("X-Frame-Options", "DENY")
 	c.Header("X-Content-Type-Options", "nosniff")
@@ -48,9 +50,6 @@ func Secure(c *gin.Context) {
 	if c.Request.TLS != nil {
 		c.Header("Strict-Transport-Security", "max-age=31536000")
 	}
-
-	// Also consider adding Content-Security-Policy headers
-	// c.Header("Content-Security-Policy", "script-src 'self' https://cdnjs.cloudflare.com")
 }
 
 // RequestVersion is a middleware function that injects the Vela API version
