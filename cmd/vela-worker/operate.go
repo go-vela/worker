@@ -19,7 +19,6 @@ import (
 // operate is a helper function to initiate all
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
-// nolint: funlen // ignore function length
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 
@@ -63,7 +62,6 @@ func (w *Worker) operate(ctx context.Context) error {
 
 				// if unable to update the worker, log the error but allow the worker to continue running
 				if err != nil {
-					// nolint: lll // ignore long line length due to error message
 					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
 				}
 
@@ -107,6 +105,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					return nil
 				default:
 					// exec operator subprocess to poll and execute builds
+					// nolint: contextcheck // ignore passing context
 					err = w.exec(id)
 					if err != nil {
 						// log the error received from the executor

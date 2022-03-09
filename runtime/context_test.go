@@ -29,7 +29,7 @@ func TestRuntime_FromContext(t *testing.T) {
 		want    Engine
 	}{
 		{
-			// nolint: golint,staticcheck // ignore using string with context value
+			// nolint: staticcheck // ignore using string with context value
 			context: context.WithValue(context.Background(), key, _engine),
 			want:    _engine,
 		},
@@ -38,7 +38,7 @@ func TestRuntime_FromContext(t *testing.T) {
 			want:    nil,
 		},
 		{
-			// nolint: golint,staticcheck // ignore using string with context value
+			// nolint: staticcheck // ignore using string with context value
 			context: context.WithValue(context.Background(), key, "foo"),
 			want:    nil,
 		},
@@ -109,7 +109,7 @@ func TestRuntime_WithContext(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	// nolint: golint,staticcheck // ignore using string with context value
+	// nolint: staticcheck // ignore using string with context value
 	want := context.WithValue(context.Background(), key, _engine)
 
 	// run test

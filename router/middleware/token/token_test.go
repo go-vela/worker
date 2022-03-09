@@ -5,6 +5,7 @@
 package token
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -16,7 +17,7 @@ func TestToken_Retrieve(t *testing.T) {
 	want := "foobar"
 
 	header := fmt.Sprintf("Bearer %s", want)
-	request, _ := http.NewRequest(http.MethodGet, "/test", nil)
+	request, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	request.Header.Set("Authorization", header)
 
 	// run test
@@ -32,7 +33,7 @@ func TestToken_Retrieve(t *testing.T) {
 
 func TestToken_Retrieve_Error(t *testing.T) {
 	// setup types
-	request, _ := http.NewRequest(http.MethodGet, "/test", nil)
+	request, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 
 	// run test
 	got, err := Retrieve(request)

@@ -18,7 +18,6 @@ import (
 func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("creating network for pipeline %s", b.ID)
 
-	// nolint: lll // ignore long line length due to link
 	// create the network for the pod
 	//
 	// This is done due to the nature of how networking works inside the

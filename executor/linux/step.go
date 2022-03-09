@@ -280,13 +280,11 @@ func (c *client) StreamStep(ctx context.Context, runContainerDone chan struct{},
 	// create new buffer for uploading logs
 	logs := new(bytes.Buffer)
 
-	// nolint: dupl // ignore similar code with service
 	switch c.logMethod {
 	case "time-chunks":
 		// create new channel for processing logs
 		done := make(chan bool)
 
-		// nolint: dupl // ignore similar code
 		go func() {
 			logger.Debug("polling logs for container")
 
@@ -377,8 +375,6 @@ func (c *client) StreamStep(ctx context.Context, runContainerDone chan struct{},
 			logs.Write(append(scanner.Bytes(), []byte("\n")...))
 
 			// if we have at least 1000 bytes in our buffer
-			//
-			// nolint: gomnd // ignore magic number
 			if logs.Len() > 1000 {
 				logger.Trace(logs.String())
 
@@ -481,5 +477,6 @@ func getSecretValues(ctn *pipeline.Container) []string {
 
 		secretValues = append(secretValues, strings.TrimSuffix(s, " "))
 	}
+
 	return secretValues
 }

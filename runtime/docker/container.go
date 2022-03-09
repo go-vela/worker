@@ -89,8 +89,6 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-//
-// nolint: lll // ignore long line length due to variable names
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
 
@@ -235,8 +233,6 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 }
 
 // TailContainer captures the logs for the pipeline container.
-//
-// nolint: lll // ignore long line length due to variable names
 func (c *client) TailContainer(ctx context.Context, runContainerDone chan struct{}, ctn *pipeline.Container) (io.ReadCloser, error) {
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 

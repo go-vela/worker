@@ -33,6 +33,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// send API call to capture the container
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
+	// nolint: contextcheck // ignore non-inherited new context
 	pod, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Get(
 		context.Background(),
 		c.Pod.ObjectMeta.Name,
@@ -70,8 +71,6 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-//
-// nolint: lll // ignore long line length
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
 	// parse image from step
@@ -87,6 +86,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	// send API call to patch the pod with the new container image
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
+	// nolint: contextcheck // ignore non-inherited new context
 	_, err = c.Kubernetes.CoreV1().Pods(c.config.Namespace).Patch(
 		context.Background(),
 		c.Pod.ObjectMeta.Name,
@@ -156,6 +156,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	if err != nil {
 		return err
 	}
+
 	container.VolumeMounts = volumeMounts
 
 	// check if the image is allowed to run privileged
@@ -215,12 +216,11 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 			container.Env = append(container.Env, v1.EnvVar{Name: k, Value: v})
 		}
 	}
+
 	return nil
 }
 
 // TailContainer captures the logs for the pipeline container.
-//
-// nolint: lll // ignore long line length due to variable names
 func (c *client) TailContainer(ctx context.Context, runCtx chan struct{}, ctn *pipeline.Container) (io.ReadCloser, error) {
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
@@ -264,10 +264,9 @@ func (c *client) TailContainer(ctx context.Context, runCtx chan struct{}, ctn *p
 		reader := bufio.NewReader(stream)
 
 		// peek at container logs from the stream
-		//
-		// nolint: gomnd // ignore magic number
 		bytes, err := reader.Peek(5)
 		if err != nil {
+			// nolint: nilerr // ignore nil return
 			// skip so we resend API call to capture stream
 			return false, nil
 		}
@@ -325,6 +324,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
 	// ->
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
+	// nolint: contextcheck // ignore non-inherited new context
 	watch, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Watch(context.Background(), opts)
 	if err != nil {
 		return err

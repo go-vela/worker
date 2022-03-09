@@ -533,6 +533,7 @@ func TestLinux_getSecretValues(t *testing.T) {
 	if err != nil {
 		t.Errorf("unable to read from test data file secret. Err: %v", err)
 	}
+
 	tests := []struct {
 		want      []string
 		container *pipeline.Container
