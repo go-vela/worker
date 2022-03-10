@@ -145,8 +145,10 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		logger.Debug("running container")
 		// run the runtime container
 		err := s.client.Runtime.RunContainer(ctx, _secret.Origin, s.client.pipeline)
+
 		// Tell Runtime.TailContainer that RunContainer is done.
 		close(runContainerDone)
+
 		if err != nil {
 			return err
 		}

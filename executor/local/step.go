@@ -113,8 +113,10 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	// run the runtime container
 	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
+
 	// Tell Runtime.TailContainer that RunContainer is done.
 	close(runContainerDone)
+
 	if err != nil {
 		return err
 	}
