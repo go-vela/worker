@@ -48,7 +48,6 @@ func ParseWithError(_volume string) (*Volume, error) {
 			Destination: parts[0],
 			AccessMode:  "ro",
 		}, nil
-	// nolint: gomnd // ignore magic number
 	case 2:
 		// return the read-only volume with different source and destination
 		return &Volume{
@@ -56,7 +55,6 @@ func ParseWithError(_volume string) (*Volume, error) {
 			Destination: parts[1],
 			AccessMode:  "ro",
 		}, nil
-	// nolint: gomnd // ignore magic number
 	case 3:
 		// return the full volume with source, destination and access mode
 		return &Volume{

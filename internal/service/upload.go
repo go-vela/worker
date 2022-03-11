@@ -16,8 +16,6 @@ import (
 
 // Upload tracks the final state of the service
 // and attempts to upload it to the server.
-//
-// nolint: lll // ignore long line length due to parameters
 func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Service) {
 	// handle the service based off the status provided
 	switch s.GetStatus() {
@@ -41,8 +39,6 @@ func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus
 		// SHOULD NOT happen
 		//
 		// TODO: consider making this a constant
-		//
-		// nolint: gomnd // ignore magic number 137
 		s.SetExitCode(137)
 		s.SetFinished(time.Now().UTC().Unix())
 		s.SetStatus(constants.StatusKilled)

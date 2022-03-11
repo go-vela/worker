@@ -65,6 +65,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 // before running AssembleBuild.
 func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("assembling build %s", b.ID)
+
 	var err error
 
 	// last minute Environment setup
@@ -74,11 +75,13 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 			return err
 		}
 	}
+
 	for _, _stage := range b.Stages {
 		// TODO: remove hardcoded reference
 		if _stage.Name == "init" {
 			continue
 		}
+
 		for _, _step := range _stage.Steps {
 			err = c.setupContainerEnvironment(_step)
 			if err != nil {
@@ -86,20 +89,24 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 			}
 		}
 	}
+
 	for _, _step := range b.Steps {
 		// TODO: remove hardcoded reference
 		if _step.Name == "init" {
 			continue
 		}
+
 		err = c.setupContainerEnvironment(_step)
 		if err != nil {
 			return err
 		}
 	}
+
 	for _, _secret := range b.Secrets {
 		if _secret.Origin.Empty() {
 			continue
 		}
+
 		err = c.setupContainerEnvironment(_secret.Origin)
 		if err != nil {
 			return err
@@ -115,6 +122,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	// send API call to create the pod
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
+	// nolint: contextcheck // ignore non-inherited new context
 	_, err = c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).
 		Create(context.Background(), c.Pod, metav1.CreateOptions{})
@@ -155,6 +163,7 @@ func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
 
 	c.Logger.Infof("removing pod %s", c.Pod.ObjectMeta.Name)
 	// send API call to delete the pod
+	// nolint: contextcheck // ignore non-inherited new context
 	err := c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).
 		Delete(context.Background(), c.Pod.ObjectMeta.Name, opts)
