@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/buildkite/yaml v0.0.0-20181016232759-0caa5f0796e3
-	github.com/docker/distribution v2.8.0+incompatible
+	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.7.7
