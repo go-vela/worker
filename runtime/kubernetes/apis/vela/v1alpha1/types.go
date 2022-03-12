@@ -9,6 +9,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +genclient
+// +kubebuilder:object:root=true
+
 // PipelinePodsTemplate defines the config for a given worker.
 type PipelinePodsTemplate struct {
 	metav1.TypeMeta `json:",inline"`
@@ -104,6 +107,8 @@ type PipelineContainerSecurityContext struct {
 	// Note that this field cannot be set when spec.os.name is windows.
 	Capabilities *v1.Capabilities `json:"capabilities,omitempty"`
 }
+
+// +kubebuilder:object:root=true
 
 // PipelinePodsTemplateList is a list of Deployments.
 type PipelinePodsTemplateList struct {

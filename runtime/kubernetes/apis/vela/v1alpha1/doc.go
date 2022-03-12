@@ -2,6 +2,10 @@
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
+// +kubebuilder:object:generate=true
+// +groupName=go-vela.github.io
+// +groupGoName=Vela
+
 // Package v1alpha1 defines version 1alpha1 of the worker-config CRD.
 //
 // Usage:
