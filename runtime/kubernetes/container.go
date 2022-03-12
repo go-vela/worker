@@ -98,6 +98,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 			ctn.ID,
 		)
 	}
+
 	defer eventWatch.Stop()
 
 	// validate the container image
@@ -106,8 +107,9 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		return err
 	}
 
-	// parse image from step
 	var _image string
+
+	// parse image from step
 	_image, err = image.ParseWithError(ctn.Image)
 	if err != nil {
 		return err
@@ -415,6 +417,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	if err != nil {
 		return err
 	}
+
 	defer podWatch.Stop()
 
 	for {

@@ -131,6 +131,7 @@ func TestKubernetes_RunContainer(t *testing.T) {
 		if err != nil {
 			t.Errorf("unable to create runtime engine: %v", err)
 		}
+
 		go func() {
 			// simulate adding events to the watcher
 			for _, event := range test.events {
