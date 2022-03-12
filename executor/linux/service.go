@@ -230,13 +230,11 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 	// create new buffer for uploading logs
 	logs := new(bytes.Buffer)
 
-	// nolint: dupl // ignore similar code with step
 	switch c.logMethod {
 	case "time-chunks":
 		// create new channel for processing logs
 		done := make(chan bool)
 
-		// nolint: dupl // ignore similar code
 		go func() {
 			logger.Debug("polling logs for container")
 
@@ -322,8 +320,6 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 			logs.Write(append(scanner.Bytes(), []byte("\n")...))
 
 			// if we have at least 1000 bytes in our buffer
-			//
-			// nolint: gomnd // ignore magic number
 			if logs.Len() > 1000 {
 				logger.Trace(logs.String())
 

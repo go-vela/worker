@@ -47,7 +47,7 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 	if strings.Contains(name, "notfound") &&
 		!strings.Contains(name, "ignorenotfound") {
 		return types.NetworkCreateResponse{},
-			// nolint:golint,stylecheck // messsage is capitalized to match Docker messages
+			// nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
 
@@ -56,7 +56,7 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 	if strings.Contains(name, "not-found") &&
 		!strings.Contains(name, "ignore-not-found") {
 		return types.NetworkCreateResponse{},
-			// nolint:golint,stylecheck // messsage is capitalized to match Docker messages
+			// nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
 
@@ -89,14 +89,14 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, network string, opt
 	// check if the network is notfound
 	if strings.Contains(network, "notfound") {
 		return types.NetworkResource{},
-			// nolint:golint,stylecheck // messsage is capitalized to match Docker messages
+			// nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", network))
 	}
 
 	// check if the network is not-found
 	if strings.Contains(network, "not-found") {
 		return types.NetworkResource{},
-			// nolint:golint,stylecheck // messsage is capitalized to match Docker messages
+			// nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", network))
 	}
 

@@ -10,7 +10,7 @@ services:
   # This component is used for pulling builds from the FIFO
   # queue and executing them based off their configuration.
   #
-  # https://go-vela.github.io/docs/concepts/infrastructure/worker/
+  # https://go-vela.github.io/docs/administration/worker/
   worker:
     build:
       context: .
@@ -31,8 +31,8 @@ services:
       VELA_RUNTIME_PRIVILEGED_IMAGES: 'target/vela-docker'
       VELA_SERVER_ADDR: 'http://server:8080'
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
-      WORKER_ADDR: http://worker:8080
-      WORKER_CHECK_IN: 1m
+      WORKER_ADDR: 'http://worker:8080'
+      WORKER_CHECK_IN: 5m
     restart: always
     ports:
       - "8081:8080"
@@ -47,7 +47,7 @@ services:
   # managing resources in the database and publishing
   # builds to the FIFO queue.
   #
-  # https://go-vela.github.io/docs/concepts/infrastructure/server/
+  # https://go-vela.github.io/docs/administration/server/
   server:
     container_name: server
     image: target/vela-server:latest
@@ -69,8 +69,8 @@ services:
       VELA_WEBUI_ADDR: 'http://localhost:8888'
       VELA_LOG_LEVEL: trace
       VELA_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
-      VELA_REFRESH_TOKEN_DURATION: 5m
-      VELA_ACCESS_TOKEN_DURATION: 1m
+      VELA_REFRESH_TOKEN_DURATION: 90m
+      VELA_ACCESS_TOKEN_DURATION: 60m
       VELA_DISABLE_WEBHOOK_VALIDATION: 'true'
       VELA_ENABLE_SECURE_COOKIE: 'false'
     env_file:
@@ -88,7 +88,7 @@ services:
   # This component is used for providing a user-friendly
   # interface for triggering actions in the Vela system.
   #
-  # https://go-vela.github.io/docs/concepts/infrastructure/ui/
+  # https://go-vela.github.io/docs/administration/ui/
   ui:
     container_name: ui
     image: target/vela-ui:latest
