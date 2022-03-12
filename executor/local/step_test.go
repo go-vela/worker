@@ -326,6 +326,11 @@ func TestLocal_StreamStep(t *testing.T) {
 		},
 	}
 
+	// these tests use docker runtime, so simulate docker runtime behavior by
+	// passing a closed channel to let TailContainer start right away
+	runtimeChannel := make(chan struct{})
+	close(runtimeChannel)
+
 	// run tests
 	for _, test := range tests {
 		_engine, err := New(
@@ -339,7 +344,7 @@ func TestLocal_StreamStep(t *testing.T) {
 			t.Errorf("unable to create executor engine: %v", err)
 		}
 
-		err = _engine.StreamStep(context.Background(), test.container)
+		err = _engine.StreamStep(context.Background(), test.container, runtimeChannel)
 
 		if test.failure {
 			if err == nil {

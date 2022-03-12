@@ -19,6 +19,7 @@ import (
 	"github.com/go-vela/worker/internal/step"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 // secretSvc handles communication with secret processes during a build.
@@ -128,21 +129,44 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
 		logger := s.client.Logger.WithField("secret", _secret.Origin.Name)
 
-		logger.Debug("running container")
-		// run the runtime container
-		err := s.client.Runtime.RunContainer(ctx, _secret.Origin, s.client.pipeline)
-		if err != nil {
-			return err
-		}
+		// create a channel so Runtime can optionally synchronize RunContainer and TailContainer
+		runtimeChannel := make(chan struct{})
 
-		go func() {
+		// create an error group with the parent context
+		//
+		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+		run, runCtx := errgroup.WithContext(ctx)
+
+		run.Go(func() error {
+			logger.Debug("running container")
+			// run the runtime container
+			err := s.client.Runtime.RunContainer(runCtx, _secret.Origin, s.client.pipeline, runtimeChannel)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+
+		// create an error group with the parent context
+		//
+		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+		logs, logCtx := errgroup.WithContext(ctx)
+
+		logs.Go(func() error {
 			logger.Debug("stream logs for container")
 			// stream logs from container
-			err = s.client.secret.stream(ctx, _secret.Origin)
+			err = s.client.secret.stream(logCtx, _secret.Origin, runtimeChannel)
 			if err != nil {
 				logger.Error(err)
 			}
-		}()
+			return nil
+		})
+
+		// ensure that RunContainer has finished requesting the runtime container
+		err = run.Wait()
+		if err != nil {
+			return err
+		}
 
 		logger.Debug("waiting for container")
 		// wait for the runtime container
@@ -250,7 +274,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 }
 
 // stream tails the output for a secret plugin.
-func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
+func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container, runtimeChannel chan struct{}) error {
 	// stream all the logs to the init step
 	_log, err := step.LoadLogs(s.client.init, &s.client.stepLogs)
 	if err != nil {
@@ -288,7 +312,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 
 	logger.Debug("tailing container")
 	// tail the runtime container
-	rc, err := s.client.Runtime.TailContainer(ctx, ctn)
+	rc, err := s.client.Runtime.TailContainer(ctx, ctn, runtimeChannel)
 	if err != nil {
 		return err
 	}

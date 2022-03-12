@@ -16,6 +16,8 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // create a service logging pattern.
@@ -90,27 +92,50 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Snapshot
 	defer func() { service.Snapshot(ctn, c.build, nil, nil, nil, _service) }()
 
-	// run the runtime container
-	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
-	if err != nil {
-		return err
-	}
+	// create a channel so Runtime can optionally synchronize RunContainer and TailContainer
+	runtimeChannel := make(chan struct{})
 
-	go func() {
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	run, runCtx := errgroup.WithContext(ctx)
+
+	run.Go(func() error {
+		// run the runtime container
+		err = c.Runtime.RunContainer(runCtx, ctn, c.pipeline, runtimeChannel)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	logs, logCtx := errgroup.WithContext(ctx)
+
+	logs.Go(func() error {
 		// stream logs from container
-		err := c.StreamService(context.Background(), ctn)
+		err := c.StreamService(logCtx, ctn, runtimeChannel)
 		if err != nil {
 			fmt.Fprintln(os.Stdout, "unable to stream logs for service:", err)
 		}
-	}()
+		return nil
+	})
+
+	// ensure that RunContainer has finished requesting the runtime container
+	err = run.Wait()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 // StreamService tails the output for a service.
-func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container, runtimeChannel chan struct{}) error {
 	// tail the runtime container
-	rc, err := c.Runtime.TailContainer(ctx, ctn)
+	rc, err := c.Runtime.TailContainer(ctx, ctn, runtimeChannel)
 	if err != nil {
 		return err
 	}

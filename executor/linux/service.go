@@ -136,12 +136,23 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Snapshot
 	defer func() { service.Snapshot(ctn, c.build, c.Vela, c.Logger, c.repo, _service) }()
 
-	logger.Debug("running container")
-	// run the runtime container
-	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
-	if err != nil {
-		return err
-	}
+	// create a channel so Runtime can optionally synchronize RunContainer and TailContainer
+	runtimeChannel := make(chan struct{})
+
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	run, runCtx := errgroup.WithContext(ctx)
+
+	run.Go(func() error {
+		logger.Debug("running container")
+		// run the runtime container
+		err = c.Runtime.RunContainer(runCtx, ctn, c.pipeline, runtimeChannel)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 
 	// create an error group with the parent context
 	//
@@ -151,13 +162,18 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	logs.Go(func() error {
 		logger.Debug("streaming logs for container")
 		// stream logs from container
-		err := c.StreamService(logCtx, ctn)
+		err := c.StreamService(logCtx, ctn, runtimeChannel)
 		if err != nil {
 			logger.Error(err)
 		}
-
 		return nil
 	})
+
+	// ensure that RunContainer has finished requesting the runtime container
+	err = run.Wait()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -165,7 +181,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 // StreamService tails the output for a service.
 //
 // nolint: funlen // ignore function length
-func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container, runtimeChannel chan struct{}) error {
 	// update engine logger with service metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
@@ -181,7 +197,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 
 	defer func() {
 		// tail the runtime container
-		rc, err := c.Runtime.TailContainer(ctx, ctn)
+		rc, err := c.Runtime.TailContainer(ctx, ctn, runtimeChannel)
 		if err != nil {
 			logger.Errorf("unable to tail container output for upload: %v", err)
 
@@ -221,7 +237,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 
 	logger.Debug("tailing container")
 	// tail the runtime container
-	rc, err := c.Runtime.TailContainer(ctx, ctn)
+	rc, err := c.Runtime.TailContainer(ctx, ctn, runtimeChannel)
 	if err != nil {
 		return err
 	}

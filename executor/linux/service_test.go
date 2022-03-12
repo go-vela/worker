@@ -352,6 +352,11 @@ func TestLinux_StreamService(t *testing.T) {
 		},
 	}
 
+	// these tests use docker runtime, so simulate docker runtime behavior by
+	// passing a closed channel to let TailContainer start right away
+	runtimeChannel := make(chan struct{})
+	close(runtimeChannel)
+
 	// run tests
 	for _, test := range tests {
 		_engine, err := New(
@@ -371,7 +376,7 @@ func TestLinux_StreamService(t *testing.T) {
 			_engine.serviceLogs.Store(test.container.ID, new(library.Log))
 		}
 
-		err = _engine.StreamService(context.Background(), test.container)
+		err = _engine.StreamService(context.Background(), test.container, runtimeChannel)
 
 		if test.failure {
 			if err == nil {

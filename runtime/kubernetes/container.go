@@ -72,7 +72,9 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
+func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build, runtimeChannel chan struct{}) error {
+	// wait for TailContainer to establish logs stream before continuing
+	<-runtimeChannel
 	c.Logger.Tracef("running container %s", ctn.ID)
 	// parse image from step
 	_image, err := image.ParseWithError(ctn.Image)
@@ -222,8 +224,10 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 }
 
 // TailContainer captures the logs for the pipeline container.
-func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
+func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container, runtimeChannel chan struct{}) (io.ReadCloser, error) {
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
+
+	defer close(runtimeChannel)
 
 	// create object to store container logs
 	var logs io.ReadCloser
@@ -243,7 +247,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 			// Pods get deleted after job completion, and names for
 			// pod+container don't get reused. So, previous
 			// should only retrieve logs for the current build step.
-			Previous:   true,
+			//Previous:   true,
 			Timestamps: false,
 		}
 

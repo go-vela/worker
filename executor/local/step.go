@@ -15,6 +15,8 @@ import (
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // create a step logging pattern.
@@ -97,20 +99,43 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
 	defer func() { step.Snapshot(ctn, c.build, nil, nil, nil, _step) }()
 
-	// run the runtime container
-	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
-	if err != nil {
-		return err
-	}
+	// create a channel so Runtime can optionally synchronize RunContainer and TailContainer
+	runtimeChannel := make(chan struct{})
 
-	go func() {
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	run, runCtx := errgroup.WithContext(ctx)
+
+	run.Go(func() error {
+		// run the runtime container
+		err = c.Runtime.RunContainer(runCtx, ctn, c.pipeline, runtimeChannel)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	logs, logCtx := errgroup.WithContext(ctx)
+
+	logs.Go(func() error {
 		// stream logs from container
-		err := c.StreamStep(context.Background(), ctn)
+		err := c.StreamStep(logCtx, ctn, runtimeChannel)
 		if err != nil {
 			// TODO: Should this be changed or removed?
 			fmt.Println(err)
 		}
-	}()
+		return nil
+	})
+
+	// ensure that RunContainer has finished requesting the runtime container
+	err = run.Wait()
+	if err != nil {
+		return err
+	}
 
 	// do not wait for detached containers
 	if ctn.Detach {
@@ -133,14 +158,14 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 }
 
 // StreamStep tails the output for a step.
-func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container, runtimeChannel chan struct{}) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
 		return nil
 	}
 
 	// tail the runtime container
-	rc, err := c.Runtime.TailContainer(ctx, ctn)
+	rc, err := c.Runtime.TailContainer(ctx, ctn, runtimeChannel)
 	if err != nil {
 		return err
 	}

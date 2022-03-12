@@ -115,6 +115,10 @@ func TestKubernetes_RunContainer(t *testing.T) {
 		},
 	}
 
+	// pass a closed channel to let RunContainer start right away
+	runtimeChannel := make(chan struct{})
+	close(runtimeChannel)
+
 	// run tests
 	for _, test := range tests {
 		_engine, err := NewMock(test.pod)
@@ -126,7 +130,7 @@ func TestKubernetes_RunContainer(t *testing.T) {
 			_engine.config.Volumes = test.volumes
 		}
 
-		err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
+		err = _engine.RunContainer(context.Background(), test.container, test.pipeline, runtimeChannel)
 
 		if test.failure {
 			if err == nil {

@@ -46,13 +46,13 @@ type Engine interface {
 	RemoveContainer(context.Context, *pipeline.Container) error
 	// RunContainer defines a function that creates
 	// and starts the pipeline container.
-	RunContainer(context.Context, *pipeline.Container, *pipeline.Build) error
+	RunContainer(context.Context, *pipeline.Container, *pipeline.Build, chan struct{}) error
 	// SetupContainer defines a function that prepares
 	// the image for the pipeline container.
 	SetupContainer(context.Context, *pipeline.Container) error
 	// TailContainer defines a function that captures
 	// the logs on the pipeline container.
-	TailContainer(context.Context, *pipeline.Container) (io.ReadCloser, error)
+	TailContainer(context.Context, *pipeline.Container, chan struct{}) (io.ReadCloser, error)
 	// WaitContainer defines a function that blocks
 	// until the pipeline container completes.
 	WaitContainer(context.Context, *pipeline.Container) error

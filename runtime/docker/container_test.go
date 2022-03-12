@@ -208,7 +208,9 @@ func TestDocker_RunContainer(t *testing.T) {
 			_engine.config.Volumes = test.volumes
 		}
 
-		err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
+		runtimeChannel := make(chan struct{})
+
+		err = _engine.RunContainer(context.Background(), test.container, test.pipeline, runtimeChannel)
 
 		if test.failure {
 			if err == nil {
@@ -330,9 +332,13 @@ func TestDocker_TailContainer(t *testing.T) {
 		},
 	}
 
+	// pass a closed channel to let TailContainer start right away
+	runtimeChannel := make(chan struct{})
+	close(runtimeChannel)
+
 	// run tests
 	for _, test := range tests {
-		_, err = _engine.TailContainer(context.Background(), test.container)
+		_, err = _engine.TailContainer(context.Background(), test.container, runtimeChannel)
 
 		if test.failure {
 			if err == nil {

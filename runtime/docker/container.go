@@ -89,8 +89,10 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
+func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build, runtimeChannel chan struct{}) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
+
+	defer close(runtimeChannel)
 
 	// allocate new container config from pipeline container
 	containerConf := ctnConfig(ctn)
@@ -233,7 +235,10 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 }
 
 // TailContainer captures the logs for the pipeline container.
-func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
+func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container, runtimeChannel chan struct{}) (io.ReadCloser, error) {
+	// wait for RunContainer to finish before continuing
+	<-runtimeChannel
+
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
 	// create options for capturing container logs

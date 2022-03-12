@@ -148,12 +148,23 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
 	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, c.repo, _step) }()
 
-	logger.Debug("running container")
-	// run the runtime container
-	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
-	if err != nil {
-		return err
-	}
+	// create a channel so Runtime can optionally synchronize RunContainer and TailContainer
+	runtimeChannel := make(chan struct{})
+
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	run, runCtx := errgroup.WithContext(ctx)
+
+	run.Go(func() error {
+		logger.Debug("running container")
+		// run the runtime container
+		err = c.Runtime.RunContainer(runCtx, ctn, c.pipeline, runtimeChannel)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 
 	// create an error group with the parent context
 	//
@@ -163,13 +174,19 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	logs.Go(func() error {
 		logger.Debug("streaming logs for container")
 		// stream logs from container
-		err := c.StreamStep(logCtx, ctn)
+		err := c.StreamStep(logCtx, ctn, runtimeChannel)
 		if err != nil {
 			logger.Error(err)
 		}
 
 		return nil
 	})
+
+	// ensure that RunContainer has finished requesting the runtime container
+	err = run.Wait()
+	if err != nil {
+		return err
+	}
 
 	// do not wait for detached containers
 	if ctn.Detach {
@@ -196,7 +213,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 // StreamStep tails the output for a step.
 //
 // nolint: funlen // ignore function length
-func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container, runtimeChannel chan struct{}) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
 		return nil
@@ -219,7 +236,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	defer func() {
 		// tail the runtime container
-		rc, err := c.Runtime.TailContainer(ctx, ctn)
+		rc, err := c.Runtime.TailContainer(ctx, ctn, runtimeChannel)
 		if err != nil {
 			logger.Errorf("unable to tail container output for upload: %v", err)
 
@@ -264,7 +281,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	logger.Debug("tailing container")
 	// tail the runtime container
-	rc, err := c.Runtime.TailContainer(ctx, ctn)
+	rc, err := c.Runtime.TailContainer(ctx, ctn, runtimeChannel)
 	if err != nil {
 		return err
 	}
