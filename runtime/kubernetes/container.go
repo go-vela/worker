@@ -90,6 +90,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	}
 
 	// Call Kubernetes API to watch for Image Pull Errors
+	// nolint: contextcheck // ignore non-inherited new context
 	eventWatch, err := c.Kubernetes.CoreV1().Events(c.config.Namespace).Watch(context.Background(), opts)
 	if err != nil {
 		return fmt.Errorf(
