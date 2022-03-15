@@ -13,9 +13,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/kubernetes/fake"
-	testcore "k8s.io/client-go/testing"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -211,49 +208,57 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 	}
 }
 
-// TODO: implement this once they resolve the bug
-//
-// https://github.com/kubernetes/kubernetes/issues/84203
 func TestKubernetes_TailContainer(t *testing.T) {
-	// Unfortunately, we can't implement this test using
-	// the native Kubernetes fake. This is because there
-	// is a bug in that code where an "empty" request is
-	// always returned when calling the GetLogs function.
+	// Unfortunately, we can't test failures using the native Kubernetes fake.
+	// k8s.client-go v0.19.0 added a mock GetLogs() response so that
+	// it no longer panics with an "empty" request, but now it always returns
+	// a successful response with Body: "fake logs".
 	//
 	// https://github.com/kubernetes/kubernetes/issues/84203
-	// fixed in k8s.io/client-go v0.19.0; we already have v0.22.2
-}
-
-func TestKubernetes_WaitContainer(t *testing.T) {
+	// https://github.com/kubernetes/kubernetes/pulls/91485
+	//
 	// setup types
 	_engine, err := NewMock(_pod)
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	// create a new fake kubernetes client
-	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
-	_kubernetes := fake.NewSimpleClientset(_pod)
+	// setup tests
+	tests := []struct {
+		failure   bool
+		container *pipeline.Container
+	}{
+		{
+			failure:   false,
+			container: _container,
+		},
+		// We cannot test failures, because the mock GetLogs() always
+		// returns a successful response with logs body: "fake logs"
+		//{
+		//	failure:   true,
+		//	container: new(pipeline.Container),
+		//},
+	}
 
-	// create a new fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#NewFake
-	_watch := watch.NewFake()
+	// run tests
+	for _, test := range tests {
+		_, err = _engine.TailContainer(context.Background(), test.container)
 
-	// create a new watch reactor with the fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#DefaultWatchReactor
-	reactor := testcore.DefaultWatchReactor(_watch, nil)
+		if test.failure {
+			if err == nil {
+				t.Errorf("TailContainer should have returned err")
+			}
 
-	// add watch reactor to beginning of the client chain
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#Fake.PrependWatchReactor
-	_kubernetes.PrependWatchReactor("pods", reactor)
+			continue
+		}
 
-	// overwrite the mock kubernetes client
-	_engine.Kubernetes = _kubernetes
+		if err != nil {
+			t.Errorf("TailContainer returned err: %v", err)
+		}
+	}
+}
 
+func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
 		failure   bool
@@ -314,12 +319,18 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
+		// setup types
+		_engine, _watch, err := newMockWithWatch(_pod, "pods")
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+
 		go func() {
 			// simulate adding a pod to the watcher
 			_watch.Add(test.object)
 		}()
 
-		err := _engine.WaitContainer(context.Background(), test.container)
+		err = _engine.WaitContainer(context.Background(), test.container)
 
 		if test.failure {
 			if err == nil {
