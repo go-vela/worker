@@ -17,7 +17,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/urfave/cli/v2 v2.3.0
+	github.com/urfave/cli/v2 v2.4.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gotest.tools/v3 v3.1.0
 	k8s.io/api v0.23.4
@@ -37,7 +37,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/containerd/containerd v1.4.13 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -78,9 +78,8 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/russross/blackfriday/v2 v2.0.1 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/spf13/afero v1.8.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
