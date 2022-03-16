@@ -19,6 +19,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -311,7 +312,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
 	// create label selector for watching the pod
-	selector := fmt.Sprintf("pipeline=%s", c.Pod.ObjectMeta.Name)
+	selector := fmt.Sprintf("pipeline=%s", fields.EscapeValue(c.Pod.ObjectMeta.Name))
 
 	// create options for watching the container
 	opts := metav1.ListOptions{
@@ -325,16 +326,18 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	// ->
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
 	// nolint: contextcheck // ignore non-inherited new context
-	watch, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Watch(context.Background(), opts)
+	podWatch, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Watch(context.Background(), opts)
 	if err != nil {
 		return err
 	}
+
+	defer podWatch.Stop()
 
 	for {
 		// capture new result from the channel
 		//
 		// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-		result := <-watch.ResultChan()
+		result := <-podWatch.ResultChan()
 
 		// convert the object from the result to a pod
 		pod, ok := result.Object.(*v1.Pod)

@@ -162,7 +162,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Pulling service images...")
+	fmt.Fprintln(os.Stdout, _pattern, "> Preparing service images...")
 
 	// create the services for the pipeline
 	for _, _service := range c.pipeline.Services {
@@ -187,7 +187,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Pulling stage images...")
+	fmt.Fprintln(os.Stdout, _pattern, "> Preparing stage images...")
 
 	// create the stages for the pipeline
 	for _, _stage := range c.pipeline.Stages {
@@ -206,7 +206,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Pulling step images...")
+	fmt.Fprintln(os.Stdout, _pattern, "> Preparing step images...")
 
 	// create the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {

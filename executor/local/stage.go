@@ -23,7 +23,7 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	_pattern := fmt.Sprintf(stagePattern, c.init.Name, c.init.Name)
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Pulling step images for stage", s.Name, "...")
+	fmt.Fprintln(os.Stdout, _pattern, "> Preparing step images for stage", s.Name, "...")
 
 	// create the steps for the stage
 	for _, _step := range s.Steps {
