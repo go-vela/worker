@@ -12,6 +12,8 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 )
 
 type config struct {
@@ -23,6 +25,8 @@ type config struct {
 	Images []string
 	// specifies a list of host volumes to use for the Kubernetes client
 	Volumes []string
+	// PipelinePodsTemplateName has the name of the PipelinePodTemplate to retrieve from the Namespace
+	PipelinePodsTemplateName string
 }
 
 type client struct {
@@ -33,6 +37,8 @@ type client struct {
 	Logger *logrus.Entry
 	// https://pkg.go.dev/k8s.io/api/core/v1#Pod
 	Pod *v1.Pod
+	// PipelinePodTemplate has default values to be used in Setup* methods
+	PipelinePodTemplate *velav1alpha1.PipelinePodTemplate
 	// commonVolumeMounts includes workspace mount and any global host mounts (VELA_RUNTIME_VOLUMES)
 	commonVolumeMounts []v1.VolumeMount
 	// indicates when the pod has been created in kubernetes
