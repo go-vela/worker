@@ -57,21 +57,70 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 	}
 
+	// These labels will be used to call k8s watch APIs.
+	labels := map[string]string{"pipeline": b.ID}
+
+	if c.PipelinePodTemplate.Meta.Labels != nil {
+		// merge the template labels into the worker-defined labels.
+		for k, v := range c.PipelinePodTemplate.Meta.Labels {
+			// do not allow overwriting any of the worker-defined labels.
+			if _, ok := labels[k]; ok {
+				continue
+			}
+
+			labels[k] = v
+		}
+	}
+
 	// create the object metadata for the pod
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1?tab=doc#ObjectMeta
 	c.Pod.ObjectMeta = metav1.ObjectMeta{
-		Name:   b.ID,
-		Labels: map[string]string{"pipeline": b.ID},
+		Name:        b.ID,
+		Labels:      labels,
+		Annotations: c.PipelinePodTemplate.Meta.Annotations,
 	}
 
-	// TODO: Vela admin defined worker-specific:
-	//       NodeSelector, Tolerations, Affinity, AutomountServiceAccountToken
+	// TODO: Vela admin defined worker-specific: AutomountServiceAccountToken
+
+	if c.PipelinePodTemplate.Spec.NodeSelector != nil {
+		c.Pod.Spec.NodeSelector = c.PipelinePodTemplate.Spec.NodeSelector
+	}
+
+	if c.PipelinePodTemplate.Spec.Tolerations != nil {
+		c.Pod.Spec.Tolerations = c.PipelinePodTemplate.Spec.Tolerations
+	}
+
+	if c.PipelinePodTemplate.Spec.Affinity != nil {
+		c.Pod.Spec.Affinity = c.PipelinePodTemplate.Spec.Affinity
+	}
 
 	// create the restart policy for the pod
 	//
 	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#RestartPolicy
 	c.Pod.Spec.RestartPolicy = v1.RestartPolicyNever
+
+	if len(c.PipelinePodTemplate.Spec.DNSPolicy) > 0 {
+		c.Pod.Spec.DNSPolicy = c.PipelinePodTemplate.Spec.DNSPolicy
+	}
+
+	if c.PipelinePodTemplate.Spec.DNSConfig != nil {
+		c.Pod.Spec.DNSConfig = c.PipelinePodTemplate.Spec.DNSConfig
+	}
+
+	if c.PipelinePodTemplate.Spec.SecurityContext != nil {
+		if c.Pod.Spec.SecurityContext == nil {
+			c.Pod.Spec.SecurityContext = &v1.PodSecurityContext{}
+		}
+
+		if c.PipelinePodTemplate.Spec.SecurityContext.RunAsNonRoot != nil {
+			c.Pod.Spec.SecurityContext.RunAsNonRoot = c.PipelinePodTemplate.Spec.SecurityContext.RunAsNonRoot
+		}
+
+		if c.PipelinePodTemplate.Spec.SecurityContext.Sysctls != nil {
+			c.Pod.Spec.SecurityContext.Sysctls = c.PipelinePodTemplate.Spec.SecurityContext.Sysctls
+		}
+	}
 
 	return nil
 }
