@@ -1,0 +1,14 @@
+domain: go-vela.github.io
+layout:
+- go.kubebuilder.io/v3
+projectName: worker
+repo: github.com/go-vela/worker
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: go-vela.github.io
+  kind: PipelinePodsTemplate
+  path: pkg/runtime/kubernetes/apis/vela/v1alpha1
+  version: v1alpha1
+version: "3"

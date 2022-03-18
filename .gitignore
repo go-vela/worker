@@ -7,6 +7,8 @@
 *.dll
 *.so
 *.dylib
+# install makefile required bins in the bin/ dir
+bin
 
 # Test binary, build with `go test -c`
 *.test
