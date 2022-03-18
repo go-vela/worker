@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
+	velaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned"
 )
 
 type config struct {
@@ -33,6 +34,8 @@ type client struct {
 	config *config
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes#Interface
 	Kubernetes kubernetes.Interface
+	// VelaKubernetes is a client for custom Vela CRD-based APIs
+	VelaKubernetes velaK8sClient.Interface
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry
 	// https://pkg.go.dev/k8s.io/api/core/v1#Pod
@@ -109,6 +112,15 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// set the Kubernetes client in the runtime client
 	c.Kubernetes = _kubernetes
+
+	// creates VelaKubernetes client from configuration
+	_velaKubernetes, err := velaK8sClient.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	// set the VelaKubernetes client in the runtime client
+	c.VelaKubernetes = _velaKubernetes
 
 	return c, nil
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	"github.com/buildkite/yaml"
 	v1 "k8s.io/api/core/v1"
@@ -38,6 +39,23 @@ func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, e
 // SetupBuild prepares the pod metadata for the pipeline build.
 func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("setting up for build %s", b.ID)
+
+	if c.PipelinePodTemplate == nil {
+		if len(c.config.PipelinePodsTemplateName) > 0 {
+			// nolint: contextcheck // ignore non-inherited new context
+			podsTemplateResponse, err := c.VelaKubernetes.VelaV1alpha1().PipelinePodsTemplates(c.config.Namespace).Get(
+				context.Background(), c.config.PipelinePodsTemplateName, metav1.GetOptions{},
+			)
+			if err != nil {
+				return err
+			}
+
+			// save the PipelinePodTemplate to use later in SetupContainer and other Setup methods
+			c.PipelinePodTemplate = &podsTemplateResponse.Spec.Template
+		} else {
+			c.PipelinePodTemplate = &v1alpha1.PipelinePodTemplate{}
+		}
+	}
 
 	// create the object metadata for the pod
 	//
