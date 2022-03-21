@@ -3,6 +3,7 @@
 // Use of this source code is governed by the LICENSE file in this repository.
 
 // +kubebuilder:object:generate=true
+// +kubebuilder:validation:Optional
 // +groupName=go-vela.github.io
 // +groupGoName=Vela
 

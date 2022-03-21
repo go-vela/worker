@@ -26,6 +26,7 @@ type PipelinePodsTemplate struct {
 // PipelinePodsTemplateSpec configures creation of Pipeline Pods by Vela Workers.
 type PipelinePodsTemplateSpec struct {
 	// Template defines defaults for Pipeline Pod creation in Vela Workers.
+	// +kubebuilder:validation:Required
 	Template PipelinePodTemplate `json:"template"`
 }
 
@@ -64,6 +65,7 @@ type PipelinePodTemplateSpec struct {
 	// DNSPolicy sets DNS policy for the pipeline pod.
 	// Defaults to "ClusterFirst".
 	// Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'.
+	// +kubebuilder:validation:Enum={"ClusterFirstWithHostNet","ClusterFirst","Default","None"}
 	DNSPolicy v1.DNSPolicy `json:"dnsPolicy,omitempty"`
 	// DNSConfig specifies the DNS parameters of a pod.
 	// Parameters specified here will be merged to the generated DNS
@@ -117,5 +119,6 @@ type PipelinePodsTemplateList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 
 	// Items is the list of Deployments.
+	// +kubebuilder:validation:Required
 	Items []PipelinePodsTemplate `json:"items"`
 }
