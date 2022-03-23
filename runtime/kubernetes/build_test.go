@@ -54,29 +54,52 @@ func TestKubernetes_InspectBuild(t *testing.T) {
 }
 
 func TestKubernetes_SetupBuild(t *testing.T) {
-	// setup types
-	_engine, err := NewMock(&v1.Pod{})
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
 	// setup tests
 	tests := []struct {
 		failure  bool
 		pipeline *pipeline.Build
+		opts     []ClientOpt
 	}{
 		{
 			failure:  false,
 			pipeline: _stages,
+			opts:     nil,
 		},
 		{
 			failure:  false,
 			pipeline: _steps,
+			opts:     nil,
+		},
+		{
+			failure:  false,
+			pipeline: _stages,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-empty.yaml")},
+		},
+		{
+			failure:  false,
+			pipeline: _steps,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-empty.yaml")},
+		},
+		{
+			failure:  false,
+			pipeline: _stages,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template.yaml")},
+		},
+		{
+			failure:  false,
+			pipeline: _steps,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template.yaml")},
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
+		// setup types
+		_engine, err := NewMock(&v1.Pod{}, test.opts...)
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+
 		err = _engine.SetupBuild(context.Background(), test.pipeline)
 
 		// this does not test the resulting pod spec (ie no tests for ObjectMeta, RestartPolicy)
