@@ -143,20 +143,16 @@ func TestKubernetes_RunContainer(t *testing.T) {
 }
 
 func TestKubernetes_SetupContainer(t *testing.T) {
-	// setup types
-	_engine, err := NewMock(_pod)
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
 	// setup tests
 	tests := []struct {
 		failure   bool
 		container *pipeline.Container
+		opts      []ClientOpt
 	}{
 		{
 			failure:   false,
 			container: _container,
+			opts:      nil,
 		},
 		{
 			failure: false,
@@ -171,6 +167,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
+			opts: nil,
 		},
 		{
 			failure: false,
@@ -185,11 +182,23 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
+			opts: nil,
+		},
+		{
+			failure:   false,
+			container: _container,
+			opts:      []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
+		// setup types
+		_engine, err := NewMock(_pod, test.opts...)
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+
 		err = _engine.SetupContainer(context.Background(), test.container)
 
 		// this does not test the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
