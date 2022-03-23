@@ -9,3 +9,5 @@ spec:
         annotation/foo: bar
       labels:
         foo: bar
+        # attempting to override worker-provided labels will be ignored.
+        pipeline: this-is-ignored

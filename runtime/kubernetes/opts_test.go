@@ -256,7 +256,10 @@ func TestKubernetes_ClientOpt_WithPodsTemplate(t *testing.T) {
 			wantTemplate: &velav1alpha1.PipelinePodTemplate{
 				Metadata: velav1alpha1.PipelinePodTemplateMeta{
 					Annotations: map[string]string{"annotation/foo": "bar"},
-					Labels:      map[string]string{"foo": "bar"},
+					Labels: map[string]string{
+						"foo":      "bar",
+						"pipeline": "this-is-ignored", // loaded in opts. Ignored in SetupBuild.
+					},
 				},
 			},
 		},
