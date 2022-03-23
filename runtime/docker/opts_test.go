@@ -5,6 +5,7 @@
 package docker
 
 import (
+	"github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
 )
@@ -69,6 +70,50 @@ func TestDocker_ClientOpt_WithHostVolumes(t *testing.T) {
 
 		if !reflect.DeepEqual(_service.config.Volumes, test.want) {
 			t.Errorf("WithHostVolumes is %v, want %v", _service.config.Volumes, test.want)
+		}
+	}
+}
+
+func TestDocker_ClientOpt_WithLogger(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		failure bool
+		logger  *logrus.Entry
+	}{
+		{
+			failure: false,
+			logger:  &logrus.Entry{},
+		},
+		{
+			failure: false,
+			logger:  nil,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		_service, err := New(
+			WithLogger(test.logger),
+		)
+
+		if test.failure {
+			if err == nil {
+				t.Errorf("WithLogger should have returned err")
+			}
+
+			continue
+		}
+
+		if err != nil {
+			t.Errorf("WithLogger returned err: %v", err)
+		}
+
+		if test.logger == nil && _service.Logger == nil {
+			t.Errorf("_engine.Logger should not be nil even if nil is passed to WithLogger")
+		}
+
+		if test.logger != nil && !reflect.DeepEqual(_service.Logger, test.logger) {
+			t.Errorf("WithLogger set %v, want %v", _service.Logger, test.logger)
 		}
 	}
 }
