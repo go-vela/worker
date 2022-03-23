@@ -6,9 +6,11 @@ package kubernetes
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/go-vela/types/pipeline"
+	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -145,14 +147,16 @@ func TestKubernetes_RunContainer(t *testing.T) {
 func TestKubernetes_SetupContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
-		failure   bool
-		container *pipeline.Container
-		opts      []ClientOpt
+		failure          bool
+		container        *pipeline.Container
+		opts             []ClientOpt
+		wantFromTemplate interface{}
 	}{
 		{
-			failure:   false,
-			container: _container,
-			opts:      nil,
+			failure:          false,
+			container:        _container,
+			opts:             nil,
+			wantFromTemplate: nil,
 		},
 		{
 			failure: false,
@@ -167,7 +171,8 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			opts: nil,
+			opts:             nil,
+			wantFromTemplate: nil,
 		},
 		{
 			failure: false,
@@ -182,21 +187,58 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			opts: nil,
+			opts:             nil,
+			wantFromTemplate: nil,
 		},
 		{
 			failure:   false,
 			container: _container,
 			opts:      []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
+			wantFromTemplate: velav1alpha1.PipelineContainerSecurityContext{
+				Capabilities: &v1.Capabilities{
+					Drop: []v1.Capability{"ALL"},
+					Add:  []v1.Capability{"NET_ADMIN", "SYS_TIME"},
+				},
+			},
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
 		// setup types
-		_engine, err := NewMock(_pod, test.opts...)
+		_engine, err := NewMock(_pod.DeepCopy(), test.opts...)
 		if err != nil {
 			t.Errorf("unable to create runtime engine: %v", err)
+		}
+		// Adjust config for containers already defined in _pod
+		switch test.wantFromTemplate.(type) {
+		case velav1alpha1.PipelineContainerSecurityContext:
+			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+
+			if want.Capabilities != nil {
+				for i, ctn := range _engine.Pod.Spec.Containers {
+					if ctn.SecurityContext == nil {
+						_engine.Pod.Spec.Containers[i].SecurityContext = &v1.SecurityContext{}
+					}
+					_engine.Pod.Spec.Containers[i].SecurityContext.Capabilities = want.Capabilities
+				}
+			}
+		}
+
+		// Adjust config for containers already defined in _pod
+		switch test.wantFromTemplate.(type) {
+		case velav1alpha1.PipelineContainerSecurityContext:
+			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+
+			if want.Capabilities != nil {
+				for i, ctn := range _engine.Pod.Spec.Containers {
+					if ctn.SecurityContext == nil {
+						_engine.Pod.Spec.Containers[i].SecurityContext = &v1.SecurityContext{}
+					}
+
+					_engine.Pod.Spec.Containers[i].SecurityContext.Capabilities = want.Capabilities
+				}
+			}
 		}
 
 		err = _engine.SetupContainer(context.Background(), test.container)
@@ -213,6 +255,22 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("SetupContainer returned err: %v", err)
+		}
+
+		switch test.wantFromTemplate.(type) {
+		case velav1alpha1.PipelineContainerSecurityContext:
+			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+
+			// PipelinePodsTemplate defined SecurityContext.Capabilities
+			if want.Capabilities != nil {
+				for i, ctn := range _engine.Pod.Spec.Containers {
+					if ctn.SecurityContext == nil {
+						t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+					} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
+						t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
+					}
+				}
+			}
 		}
 	}
 }
