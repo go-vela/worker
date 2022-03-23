@@ -11,9 +11,12 @@ import (
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
-	"github.com/buildkite/yaml"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	// The k8s libraries have some quirks around yaml marshalling (see opts.go).
+	// So, just use the same library for all kubernetes-related YAML.
+	"sigs.k8s.io/yaml"
 )
 
 // InspectBuild displays details about the pod for the init step.

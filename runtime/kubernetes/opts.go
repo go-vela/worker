@@ -8,8 +8,12 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/buildkite/yaml"
 	"github.com/sirupsen/logrus"
+
+	// The k8s libraries have some quirks around yaml marshalling.
+	// They use `json` instead of `yaml` to annotate their struct Tags.
+	// So, we need to use "sigs.k8s.io/yaml" instead of "github.com/buildkite/yaml"
+	"sigs.k8s.io/yaml"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 )
