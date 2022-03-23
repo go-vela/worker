@@ -213,6 +213,13 @@ func TestKubernetes_ClientOpt_WithPodsTemplate(t *testing.T) {
 				},
 			},
 		},
+		{
+			failure:          true,
+			podsTemplateName: "",
+			podsTemplatePath: "testdata/pipeline-pods-template-malformed.yaml",
+			wantName:         "",
+			wantTemplate:     nil,
+		},
 	}
 
 	// run tests
