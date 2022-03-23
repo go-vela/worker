@@ -103,6 +103,26 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 		{
 			failure:  false,
 			pipeline: _stages,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-node-selection.yaml")},
+		},
+		{
+			failure:  false,
+			pipeline: _steps,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-node-selection.yaml")},
+		},
+		{
+			failure:  false,
+			pipeline: _stages,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-dns.yaml")},
+		},
+		{
+			failure:  false,
+			pipeline: _steps,
+			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-dns.yaml")},
+		},
+		{
+			failure:  false,
+			pipeline: _stages,
 			opts:     []ClientOpt{WithPodsTemplate("mock-pipeline-pods-template", "")},
 		},
 		{
