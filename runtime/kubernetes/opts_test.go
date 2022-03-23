@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
 )
@@ -158,6 +159,51 @@ func TestKubernetes_ClientOpt_WithPrivilegedImages(t *testing.T) {
 
 		if !reflect.DeepEqual(_engine.config.Images, test.want) {
 			t.Errorf("WithPrivilegedImages is %v, want %v", _engine.config.Images, test.want)
+		}
+	}
+}
+
+func TestKubernetes_ClientOpt_WithLogger(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		failure bool
+		logger  *logrus.Entry
+	}{
+		{
+			failure: false,
+			logger:  &logrus.Entry{},
+		},
+		{
+			failure: false,
+			logger:  nil,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		_engine, err := New(
+			WithConfigFile("testdata/config"),
+			WithLogger(test.logger),
+		)
+
+		if test.failure {
+			if err == nil {
+				t.Errorf("WithLogger should have returned err")
+			}
+
+			continue
+		}
+
+		if err != nil {
+			t.Errorf("WithLogger returned err: %v", err)
+		}
+
+		if test.logger == nil && _engine.Logger == nil {
+			t.Errorf("_engine.Logger should not be nil even if nil is passed to WithLogger")
+		}
+
+		if test.logger != nil && !reflect.DeepEqual(_engine.Logger, test.logger) {
+			t.Errorf("WithLogger set %v, want %v", _engine.Logger, test.logger)
 		}
 	}
 }
