@@ -60,9 +60,9 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	// These labels will be used to call k8s watch APIs.
 	labels := map[string]string{"pipeline": b.ID}
 
-	if c.PipelinePodTemplate.Meta.Labels != nil {
+	if c.PipelinePodTemplate.Metadata.Labels != nil {
 		// merge the template labels into the worker-defined labels.
-		for k, v := range c.PipelinePodTemplate.Meta.Labels {
+		for k, v := range c.PipelinePodTemplate.Metadata.Labels {
 			// do not allow overwriting any of the worker-defined labels.
 			if _, ok := labels[k]; ok {
 				continue
@@ -78,7 +78,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Pod.ObjectMeta = metav1.ObjectMeta{
 		Name:        b.ID,
 		Labels:      labels,
-		Annotations: c.PipelinePodTemplate.Meta.Annotations,
+		Annotations: c.PipelinePodTemplate.Metadata.Annotations,
 	}
 
 	// TODO: Vela admin defined worker-specific: AutomountServiceAccountToken

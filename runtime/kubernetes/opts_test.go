@@ -7,6 +7,8 @@ package kubernetes
 import (
 	"reflect"
 	"testing"
+
+	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 )
 
 func TestKubernetes_ClientOpt_WithConfigFile(t *testing.T) {
@@ -158,6 +160,87 @@ func TestKubernetes_ClientOpt_WithPrivilegedImages(t *testing.T) {
 
 		if !reflect.DeepEqual(_engine.config.Images, test.want) {
 			t.Errorf("WithPrivilegedImages is %v, want %v", _engine.config.Images, test.want)
+		}
+	}
+}
+
+func TestKubernetes_ClientOpt_WithPodsTemplate(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		failure          bool
+		podsTemplateName string
+		podsTemplatePath string
+		wantName         string
+		wantTemplate     *velav1alpha1.PipelinePodTemplate
+	}{
+		{
+			failure:          false,
+			podsTemplateName: "foo-bar-name",
+			podsTemplatePath: "",
+			wantName:         "foo-bar-name",
+			wantTemplate:     nil,
+		},
+		{
+			failure:          false,
+			podsTemplateName: "",
+			podsTemplatePath: "",
+			wantName:         "",
+			wantTemplate:     nil,
+		},
+		{
+			failure:          false, // ignores missing files; can be added later
+			podsTemplateName: "",
+			podsTemplatePath: "testdata/does-not-exist.yaml",
+			wantName:         "",
+			wantTemplate:     nil,
+		},
+		{
+			failure:          false,
+			podsTemplateName: "",
+			podsTemplatePath: "testdata/pipeline-pods-template-empty.yaml",
+			wantName:         "",
+			wantTemplate:     &velav1alpha1.PipelinePodTemplate{},
+		},
+		{
+			failure:          false,
+			podsTemplateName: "",
+			podsTemplatePath: "testdata/pipeline-pods-template.yaml",
+			wantName:         "",
+			wantTemplate: &velav1alpha1.PipelinePodTemplate{
+				Metadata: velav1alpha1.PipelinePodTemplateMeta{
+					Annotations: map[string]string{"annotation/foo": "bar"},
+					Labels:      map[string]string{"foo": "bar"},
+				},
+			},
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		_engine, err := New(
+			WithConfigFile("testdata/config"),
+			WithNamespace("foo"),
+			WithPodsTemplate(test.podsTemplateName, test.podsTemplatePath),
+		)
+
+		if test.failure {
+			if err == nil {
+				t.Errorf("WithPodsTemplate should have returned err")
+			}
+
+			continue
+		}
+
+		if err != nil {
+			t.Errorf("WithPodsTemplate returned err: %v", err)
+		}
+
+		if !reflect.DeepEqual(_engine.config.PipelinePodsTemplateName, test.wantName) {
+			t.Errorf("WithPodsTemplate is %v, wantName %v", _engine.config.PipelinePodsTemplateName, test.wantName)
+		}
+
+		if test.wantTemplate != nil && !reflect.DeepEqual(_engine.PipelinePodTemplate, test.wantTemplate) {
+			t.Errorf("WithPodsTemplate is %v, wantTemplate %v", _engine.PipelinePodTemplate, test.wantTemplate)
 		}
 	}
 }

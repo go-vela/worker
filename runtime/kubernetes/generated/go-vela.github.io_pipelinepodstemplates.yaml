@@ -41,8 +41,8 @@ spec:
                   Vela Workers.
                 properties:
                   metadata:
-                    description: 'Meta contains a subset of the standard object metadata
-                      (see: metav1.ObjectMeta).'
+                    description: 'Metadata contains a subset of the standard object
+                      metadata (see: metav1.ObjectMeta).'
                     properties:
                       annotations:
                         additionalProperties:

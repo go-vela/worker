@@ -32,8 +32,8 @@ type PipelinePodsTemplateSpec struct {
 
 // PipelinePodTemplate describes the data defaults to use when creating each pipeline pod.
 type PipelinePodTemplate struct {
-	// Meta contains a subset of the standard object metadata (see: metav1.ObjectMeta).
-	Meta PipelinePodTemplateMeta `json:"metadata,omitempty"`
+	// Metadata contains a subset of the standard object metadata (see: metav1.ObjectMeta).
+	Metadata PipelinePodTemplateMeta `json:"metadata,omitempty"`
 
 	// Spec contains a subset of the pod configuration options (see: v1.PodSpec).
 	Spec PipelinePodTemplateSpec `json:"spec,omitempty"`

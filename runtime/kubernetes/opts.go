@@ -90,7 +90,7 @@ func WithPodsTemplate(name string, path string) ClientOpt {
 			if data, err := ioutil.ReadFile(path); err == nil {
 				pipelinePodsTemplate := velav1alpha1.PipelinePodsTemplate{}
 
-				err := yaml.Unmarshal(data, pipelinePodsTemplate)
+				err := yaml.Unmarshal(data, &pipelinePodsTemplate)
 				if err != nil {
 					return err
 				}
