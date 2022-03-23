@@ -168,9 +168,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 			return err
 		}
 
-		container.SecurityContext = &v1.SecurityContext{
-			Privileged: &privileged,
-		}
+		container.SecurityContext.Privileged = &privileged
 	}
 
 	if c.PipelinePodTemplate != nil && c.PipelinePodTemplate.Spec.Container != nil {
