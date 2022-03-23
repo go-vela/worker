@@ -91,6 +91,16 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 			opts:     []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template.yaml")},
 		},
 		{
+			failure:  false,
+			pipeline: _stages,
+			opts:     []ClientOpt{WithPodsTemplate("mock-pipeline-pods-template", "")},
+		},
+		{
+			failure:  false,
+			pipeline: _steps,
+			opts:     []ClientOpt{WithPodsTemplate("mock-pipeline-pods-template", "")},
+		},
+		{
 			failure:  true,
 			pipeline: _stages,
 			opts:     []ClientOpt{WithPodsTemplate("missing-pipeline-pods-template", "")},

@@ -6,6 +6,7 @@ package kubernetes
 
 import (
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -170,7 +171,14 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	c.Kubernetes = fake.NewSimpleClientset(c.Pod)
 
 	// set the VelaKubernetes fake client in the runtime client
-	c.VelaKubernetes = fakeVelaK8sClient.NewSimpleClientset()
+	c.VelaKubernetes = fakeVelaK8sClient.NewSimpleClientset(
+		&velav1alpha1.PipelinePodsTemplate{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: c.config.Namespace,
+				Name:      "mock-pipeline-pods-template",
+			},
+		},
+	)
 
 	return c, nil
 }
