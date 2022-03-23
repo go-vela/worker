@@ -15,6 +15,7 @@ import (
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 	velaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned"
+	fakeVelaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/fake"
 )
 
 type config struct {
@@ -167,6 +168,9 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
 	c.Kubernetes = fake.NewSimpleClientset(c.Pod)
+
+	// set the VelaKubernetes fake client in the runtime client
+	c.VelaKubernetes = fakeVelaK8sClient.NewSimpleClientset()
 
 	return c, nil
 }
