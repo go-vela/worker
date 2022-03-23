@@ -247,7 +247,6 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
 				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
 			}
-
 		}
 
 		switch test.wantFromTemplate.(type) {

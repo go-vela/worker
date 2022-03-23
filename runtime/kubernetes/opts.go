@@ -10,9 +10,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	// The k8s libraries have some quirks around yaml marshalling.
+	// The k8s libraries have some quirks around yaml marshaling.
 	// They use `json` instead of `yaml` to annotate their struct Tags.
-	// So, we need to use "sigs.k8s.io/yaml" instead of "github.com/buildkite/yaml"
+	// So, we need to use "sigs.k8s.io/yaml" instead of "github.com/buildkite/yaml".
 	"sigs.k8s.io/yaml"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"

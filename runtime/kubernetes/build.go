@@ -14,7 +14,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	// The k8s libraries have some quirks around yaml marshalling (see opts.go).
+	// The k8s libraries have some quirks around yaml marshaling (see opts.go).
 	// So, just use the same library for all kubernetes-related YAML.
 	"sigs.k8s.io/yaml"
 )
