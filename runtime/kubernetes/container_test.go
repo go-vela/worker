@@ -150,12 +150,14 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 		failure          bool
 		container        *pipeline.Container
 		opts             []ClientOpt
+		wantPrivileged   bool
 		wantFromTemplate interface{}
 	}{
 		{
 			failure:          false,
 			container:        _container,
 			opts:             nil,
+			wantPrivileged:   false,
 			wantFromTemplate: nil,
 		},
 		{
@@ -172,6 +174,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Pull:        "always",
 			},
 			opts:             nil,
+			wantPrivileged:   false,
 			wantFromTemplate: nil,
 		},
 		{
@@ -187,13 +190,15 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			opts:             nil,
+			opts:             []ClientOpt{WithPrivilegedImages([]string{"target/vela-docker"})},
+			wantPrivileged:   true,
 			wantFromTemplate: nil,
 		},
 		{
-			failure:   false,
-			container: _container,
-			opts:      []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
+			failure:        false,
+			container:      _container,
+			opts:           []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
+			wantPrivileged: false,
 			wantFromTemplate: velav1alpha1.PipelineContainerSecurityContext{
 				Capabilities: &v1.Capabilities{
 					Drop: []v1.Capability{"ALL"},
@@ -210,40 +215,10 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 		if err != nil {
 			t.Errorf("unable to create runtime engine: %v", err)
 		}
-		// Adjust config for containers already defined in _pod
-		switch test.wantFromTemplate.(type) {
-		case velav1alpha1.PipelineContainerSecurityContext:
-			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
-
-			if want.Capabilities != nil {
-				for i, ctn := range _engine.Pod.Spec.Containers {
-					if ctn.SecurityContext == nil {
-						_engine.Pod.Spec.Containers[i].SecurityContext = &v1.SecurityContext{}
-					}
-					_engine.Pod.Spec.Containers[i].SecurityContext.Capabilities = want.Capabilities
-				}
-			}
-		}
-
-		// Adjust config for containers already defined in _pod
-		switch test.wantFromTemplate.(type) {
-		case velav1alpha1.PipelineContainerSecurityContext:
-			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
-
-			if want.Capabilities != nil {
-				for i, ctn := range _engine.Pod.Spec.Containers {
-					if ctn.SecurityContext == nil {
-						_engine.Pod.Spec.Containers[i].SecurityContext = &v1.SecurityContext{}
-					}
-
-					_engine.Pod.Spec.Containers[i].SecurityContext.Capabilities = want.Capabilities
-				}
-			}
-		}
-
+		// actually run the test
 		err = _engine.SetupContainer(context.Background(), test.container)
 
-		// this does not test the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
+		// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
 
 		if test.failure {
 			if err == nil {
@@ -257,18 +232,34 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			t.Errorf("SetupContainer returned err: %v", err)
 		}
 
+		// SetupContainer added the last pod so get it for inspection
+		i := len(_engine.Pod.Spec.Containers) - 1
+		ctn := _engine.Pod.Spec.Containers[i]
+
+		// Make sure Container has Privileged configured correctly
+		if test.wantPrivileged {
+			if ctn.SecurityContext == nil {
+				t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+			} else if *ctn.SecurityContext.Privileged != test.wantPrivileged {
+				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			}
+		} else {
+			if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
+				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			}
+
+		}
+
 		switch test.wantFromTemplate.(type) {
 		case velav1alpha1.PipelineContainerSecurityContext:
 			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
 
 			// PipelinePodsTemplate defined SecurityContext.Capabilities
 			if want.Capabilities != nil {
-				for i, ctn := range _engine.Pod.Spec.Containers {
-					if ctn.SecurityContext == nil {
-						t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
-					} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
-						t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
-					}
+				if ctn.SecurityContext == nil {
+					t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+				} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
+					t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
 				}
 			}
 		}
