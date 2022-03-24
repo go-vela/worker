@@ -9,9 +9,9 @@ require (
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.7.7
-	github.com/go-vela/sdk-go v0.13.0-rc2
-	github.com/go-vela/server v0.13.0-rc2
-	github.com/go-vela/types v0.13.0-rc2
+	github.com/go-vela/sdk-go v0.13.0
+	github.com/go-vela/server v0.13.0
+	github.com/go-vela/types v0.13.0
 	github.com/google/go-cmp v0.5.7
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
@@ -32,7 +32,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
-	github.com/alicebob/miniredis/v2 v2.18.0 // indirect
+	github.com/alicebob/miniredis/v2 v2.19.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/containerd/containerd v1.4.13 // indirect
@@ -51,7 +51,7 @@ require (
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.3.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-github/v42 v42.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
