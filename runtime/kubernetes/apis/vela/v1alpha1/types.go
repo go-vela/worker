@@ -9,6 +9,23 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Important: Run "make crd" after editing this file.
+
+// Helpful hints on adjusting the CRD generated from these types:
+//
+// - Use "+kubebuilder:object" tags on top-level structs:
+//   https://book.kubebuilder.io/reference/markers/object.html
+//
+// - Some fields (list, map, or struct types) may need additional tags.
+//   https://book.kubebuilder.io/reference/markers/crd-processing.html
+//
+// - Use "+kubebuilder:validation:*" tags to add more validation rules.
+//   https://book.kubebuilder.io/reference/generating-crd.html#validation
+//   https://book.kubebuilder.io/reference/markers/crd-validation.html
+//
+// - Use "+kubebuilder:printercolumn:*" tags to change the "kubectl get" columns.
+//   https://book.kubebuilder.io/reference/generating-crd.html#additional-printer-columns
+
 // +genclient
 // +kubebuilder:object:root=true
 
