@@ -4,7 +4,7 @@
 
 package vela
 
-// GroupName is the group name used in this package.
 const (
+	// GroupName is the group name used in this package.
 	GroupName = "go-vela.github.io"
 )
