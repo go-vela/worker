@@ -38,13 +38,13 @@ var Flags = []cli.Flag{
 	},
 	&cli.StringFlag{
 		EnvVars:  []string{"VELA_RUNTIME_PODS_TEMPLATE_NAME", "RUNTIME_PODS_TEMPLATE_NAME"},
-		FilePath: "/vela/runtime/pods-template-name",
+		FilePath: "/vela/runtime/pods_template_name",
 		Name:     "runtime.pods-template-name",
 		Usage:    "name of the PipelinePodsTemplate to retrieve from the runtime.namespace (only used by kubernetes)",
 	},
 	&cli.PathFlag{
 		EnvVars:  []string{"VELA_RUNTIME_PODS_TEMPLATE_FILE", "RUNTIME_PODS_TEMPLATE_FILE"},
-		FilePath: "/vela/runtime/pods-template-file",
+		FilePath: "/vela/runtime/pods_template_file",
 		Name:     "runtime.pods-template-file",
 		Usage:    "path to local fallback file containing a PipelinePodsTemplate in YAML (only used by kubernetes; only used if runtime.pods-template-name is not defined)",
 	},
