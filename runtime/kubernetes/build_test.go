@@ -6,11 +6,14 @@ package kubernetes
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/go-vela/types/pipeline"
+	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestKubernetes_InspectBuild(t *testing.T) {
@@ -54,29 +57,222 @@ func TestKubernetes_InspectBuild(t *testing.T) {
 }
 
 func TestKubernetes_SetupBuild(t *testing.T) {
-	// setup types
-	_engine, err := NewMock(&v1.Pod{})
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+	// needed to be able to make a pointers:
+	trueBool := true
+	twoString := "2"
+
+	// testdata/pipeline-pods-template.yaml
+	wantFromTemplateMetadata := velav1alpha1.PipelinePodTemplateMeta{
+		Annotations: map[string]string{"annotation/foo": "bar"},
+		Labels: map[string]string{
+			"foo":      "bar",
+			"pipeline": _steps.ID,
+		},
+	}
+
+	// testdata/pipeline-pods-template-security-context.yaml
+	wantFromTemplateSecurityContext := velav1alpha1.PipelinePodSecurityContext{
+		RunAsNonRoot: &trueBool,
+		Sysctls: []v1.Sysctl{
+			{Name: "kernel.shm_rmid_forced", Value: "0"},
+			{Name: "net.core.somaxconn", Value: "1024"},
+			{Name: "kernel.msgmax", Value: "65536"},
+		},
+	}
+
+	// testdata/pipeline-pods-template-node-selection.yaml
+	wantFromTemplateNodeSelection := velav1alpha1.PipelinePodTemplateSpec{
+		NodeSelector: map[string]string{"disktype": "ssd"},
+		Affinity: &v1.Affinity{
+			NodeAffinity: &v1.NodeAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: &v1.NodeSelector{
+					NodeSelectorTerms: []v1.NodeSelectorTerm{
+						{MatchExpressions: []v1.NodeSelectorRequirement{
+							{Key: "kubernetes.io/os", Operator: v1.NodeSelectorOpIn, Values: []string{"linux"}},
+						}},
+					},
+				},
+				PreferredDuringSchedulingIgnoredDuringExecution: []v1.PreferredSchedulingTerm{
+					{Weight: 1, Preference: v1.NodeSelectorTerm{
+						MatchExpressions: []v1.NodeSelectorRequirement{
+							{Key: "another-node-label-key", Operator: v1.NodeSelectorOpIn, Values: []string{"another-node-label-value"}},
+						},
+					}},
+				},
+			},
+			PodAffinity: &v1.PodAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []v1.PodAffinityTerm{
+					{
+						LabelSelector: &metav1.LabelSelector{
+							MatchExpressions: []metav1.LabelSelectorRequirement{
+								{Key: "security", Operator: metav1.LabelSelectorOpIn, Values: []string{"S1"}},
+							},
+						},
+						TopologyKey: "topology.kubernetes.io/zone",
+					},
+				},
+			},
+			PodAntiAffinity: &v1.PodAntiAffinity{
+				PreferredDuringSchedulingIgnoredDuringExecution: []v1.WeightedPodAffinityTerm{
+					{
+						Weight: 100,
+						PodAffinityTerm: v1.PodAffinityTerm{
+							LabelSelector: &metav1.LabelSelector{
+								MatchExpressions: []metav1.LabelSelectorRequirement{
+									{Key: "security", Operator: metav1.LabelSelectorOpIn, Values: []string{"S2"}},
+								},
+							},
+							TopologyKey: "topology.kubernetes.io/zone",
+						},
+					},
+				},
+			},
+		},
+		Tolerations: []v1.Toleration{
+			{
+				Key:      "key1",
+				Operator: v1.TolerationOpEqual,
+				Value:    "value1",
+				Effect:   v1.TaintEffectNoSchedule,
+			},
+			{
+				Key:      "key1",
+				Operator: v1.TolerationOpEqual,
+				Value:    "value1",
+				Effect:   v1.TaintEffectNoExecute,
+			},
+		},
+	}
+
+	// testdata/pipeline-pods-template-dns.yaml
+	wantFromTemplateDNS := velav1alpha1.PipelinePodTemplateSpec{
+		DNSPolicy: v1.DNSNone,
+		DNSConfig: &v1.PodDNSConfig{
+			Nameservers: []string{"1.2.3.4"},
+			Searches: []string{
+				"ns1.svc.cluster-domain.example",
+				"my.dns.search.suffix",
+			},
+			Options: []v1.PodDNSConfigOption{
+				{Name: "ndots", Value: &twoString},
+				{Name: "edns0"},
+			},
+		},
 	}
 
 	// setup tests
 	tests := []struct {
-		failure  bool
-		pipeline *pipeline.Build
+		failure          bool
+		pipeline         *pipeline.Build
+		opts             []ClientOpt
+		wantFromTemplate interface{}
 	}{
 		{
-			failure:  false,
-			pipeline: _stages,
+			failure:          false,
+			pipeline:         _stages,
+			opts:             nil,
+			wantFromTemplate: nil,
 		},
 		{
-			failure:  false,
-			pipeline: _steps,
+			failure:          false,
+			pipeline:         _steps,
+			opts:             nil,
+			wantFromTemplate: nil,
+		},
+		{
+			failure:          false,
+			pipeline:         _stages,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-empty.yaml")},
+			wantFromTemplate: nil,
+		},
+		{
+			failure:          false,
+			pipeline:         _steps,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-empty.yaml")},
+			wantFromTemplate: nil,
+		},
+		{
+			failure:          false,
+			pipeline:         _stages,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template.yaml")},
+			wantFromTemplate: wantFromTemplateMetadata,
+		},
+		{
+			failure:          false,
+			pipeline:         _steps,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template.yaml")},
+			wantFromTemplate: wantFromTemplateMetadata,
+		},
+		{
+			failure:          false,
+			pipeline:         _stages,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
+			wantFromTemplate: wantFromTemplateSecurityContext,
+		},
+		{
+			failure:          false,
+			pipeline:         _steps,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
+			wantFromTemplate: wantFromTemplateSecurityContext,
+		},
+		{
+			failure:          false,
+			pipeline:         _stages,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-node-selection.yaml")},
+			wantFromTemplate: wantFromTemplateNodeSelection,
+		},
+		{
+			failure:          false,
+			pipeline:         _steps,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-node-selection.yaml")},
+			wantFromTemplate: wantFromTemplateNodeSelection,
+		},
+		{
+			failure:          false,
+			pipeline:         _stages,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-dns.yaml")},
+			wantFromTemplate: wantFromTemplateDNS,
+		},
+		{
+			failure:          false,
+			pipeline:         _steps,
+			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-dns.yaml")},
+			wantFromTemplate: wantFromTemplateDNS,
+		},
+		{
+			failure:          false,
+			pipeline:         _stages,
+			opts:             []ClientOpt{WithPodsTemplate("mock-pipeline-pods-template", "")},
+			wantFromTemplate: nil,
+		},
+		{
+			failure:          false,
+			pipeline:         _steps,
+			opts:             []ClientOpt{WithPodsTemplate("mock-pipeline-pods-template", "")},
+			wantFromTemplate: nil,
+		},
+		{
+			failure:          true,
+			pipeline:         _stages,
+			opts:             []ClientOpt{WithPodsTemplate("missing-pipeline-pods-template", "")},
+			wantFromTemplate: nil,
+		},
+		{
+			failure:          true,
+			pipeline:         _steps,
+			opts:             []ClientOpt{WithPodsTemplate("missing-pipeline-pods-template", "")},
+			wantFromTemplate: nil,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
+		// setup types
+		_engine, err := NewMock(&v1.Pod{}, test.opts...)
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+
 		err = _engine.SetupBuild(context.Background(), test.pipeline)
 
 		// this does not test the resulting pod spec (ie no tests for ObjectMeta, RestartPolicy)
@@ -91,6 +287,67 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("SetupBuild returned err: %v", err)
+		}
+
+		// make sure that worker-defined labels are set and cannot be overridden by PipelinePodsTemplate
+		if pipelineLabel, ok := _engine.Pod.ObjectMeta.Labels["pipeline"]; !ok {
+			t.Errorf("Pod is missing the pipeline label: %v", _engine.Pod.ObjectMeta)
+		} else if pipelineLabel != test.pipeline.ID {
+			t.Errorf("Pod's pipeline label is %v, want %v", pipelineLabel, test.pipeline.ID)
+		}
+
+		switch test.wantFromTemplate.(type) {
+		case velav1alpha1.PipelinePodTemplateMeta:
+			want := test.wantFromTemplate.(velav1alpha1.PipelinePodTemplateMeta)
+
+			// PipelinePodsTemplate defined Annotations
+			if want.Annotations != nil && !reflect.DeepEqual(_engine.Pod.Annotations, want.Annotations) {
+				t.Errorf("Pod.Annotations is %v, want %v", _engine.Pod.Annotations, want.Annotations)
+			}
+
+			// PipelinePodsTemplate defined Labels
+			if want.Labels != nil && !reflect.DeepEqual(_engine.Pod.Labels, want.Labels) {
+				t.Errorf("Pod.Labels is %v, want %v", _engine.Pod.Labels, want.Labels)
+			}
+		case velav1alpha1.PipelinePodSecurityContext:
+			want := test.wantFromTemplate.(velav1alpha1.PipelinePodSecurityContext)
+
+			// PipelinePodsTemplate defined SecurityContext.RunAsNonRoot
+			if !reflect.DeepEqual(_engine.Pod.Spec.SecurityContext.RunAsNonRoot, want.RunAsNonRoot) {
+				t.Errorf("Pod.SecurityContext.RunAsNonRoot is %v, want %v", _engine.Pod.Spec.SecurityContext.RunAsNonRoot, want.RunAsNonRoot)
+			}
+
+			// PipelinePodsTemplate defined SecurityContext.Sysctls
+			if want.Sysctls != nil && !reflect.DeepEqual(_engine.Pod.Spec.SecurityContext.Sysctls, want.Sysctls) {
+				t.Errorf("Pod.SecurityContext.Sysctls is %v, want %v", _engine.Pod.Spec.SecurityContext.Sysctls, want.Sysctls)
+			}
+		case velav1alpha1.PipelinePodTemplateSpec:
+			want := test.wantFromTemplate.(velav1alpha1.PipelinePodTemplateSpec)
+
+			// PipelinePodsTemplate defined NodeSelector
+			if want.NodeSelector != nil && !reflect.DeepEqual(_engine.Pod.Spec.NodeSelector, want.NodeSelector) {
+				t.Errorf("Pod.NodeSelector is %v, want %v", _engine.Pod.Spec.NodeSelector, want.NodeSelector)
+			}
+
+			// PipelinePodsTemplate defined Affinity
+			if want.Affinity != nil && !reflect.DeepEqual(_engine.Pod.Spec.Affinity, want.Affinity) {
+				t.Errorf("Pod.Affinity is %v, want %v", _engine.Pod.Spec.Affinity, want.Affinity)
+			}
+
+			// PipelinePodsTemplate defined Tolerations
+			if want.Tolerations != nil && !reflect.DeepEqual(_engine.Pod.Spec.Tolerations, want.Tolerations) {
+				t.Errorf("Pod.Tolerations is %v, want %v", _engine.Pod.Spec.Tolerations, want.Tolerations)
+			}
+
+			// PipelinePodsTemplate defined DNSPolicy
+			if len(want.DNSPolicy) > 0 && _engine.Pod.Spec.DNSPolicy != want.DNSPolicy {
+				t.Errorf("Pod.DNSPolicy is %v, want %v", _engine.Pod.Spec.DNSPolicy, want.DNSPolicy)
+			}
+
+			// PipelinePodsTemplate defined DNSConfig
+			if want.DNSConfig != nil && !reflect.DeepEqual(_engine.Pod.Spec.DNSConfig, want.DNSConfig) {
+				t.Errorf("Pod.DNSConfig is %v, want %v", _engine.Pod.Spec.DNSConfig, want.DNSConfig)
+			}
 		}
 	}
 }

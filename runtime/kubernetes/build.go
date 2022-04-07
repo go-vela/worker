@@ -9,10 +9,14 @@ import (
 	"fmt"
 
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
-	"github.com/buildkite/yaml"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	// The k8s libraries have some quirks around yaml marshaling (see opts.go).
+	// So, just use the same library for all kubernetes-related YAML.
+	"sigs.k8s.io/yaml"
 )
 
 // InspectBuild displays details about the pod for the init step.
@@ -39,21 +43,87 @@ func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, e
 func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("setting up for build %s", b.ID)
 
+	if c.PipelinePodTemplate == nil {
+		if len(c.config.PipelinePodsTemplateName) > 0 {
+			// nolint: contextcheck // ignore non-inherited new context
+			podsTemplateResponse, err := c.VelaKubernetes.VelaV1alpha1().PipelinePodsTemplates(c.config.Namespace).Get(
+				context.Background(), c.config.PipelinePodsTemplateName, metav1.GetOptions{},
+			)
+			if err != nil {
+				return err
+			}
+
+			// save the PipelinePodTemplate to use later in SetupContainer and other Setup methods
+			c.PipelinePodTemplate = &podsTemplateResponse.Spec.Template
+		} else {
+			c.PipelinePodTemplate = &v1alpha1.PipelinePodTemplate{}
+		}
+	}
+
+	// These labels will be used to call k8s watch APIs.
+	labels := map[string]string{"pipeline": b.ID}
+
+	if c.PipelinePodTemplate.Metadata.Labels != nil {
+		// merge the template labels into the worker-defined labels.
+		for k, v := range c.PipelinePodTemplate.Metadata.Labels {
+			// do not allow overwriting any of the worker-defined labels.
+			if _, ok := labels[k]; ok {
+				continue
+			}
+
+			labels[k] = v
+		}
+	}
+
 	// create the object metadata for the pod
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1?tab=doc#ObjectMeta
 	c.Pod.ObjectMeta = metav1.ObjectMeta{
-		Name:   b.ID,
-		Labels: map[string]string{"pipeline": b.ID},
+		Name:        b.ID,
+		Labels:      labels,
+		Annotations: c.PipelinePodTemplate.Metadata.Annotations,
 	}
 
-	// TODO: Vela admin defined worker-specific:
-	//       NodeSelector, Tolerations, Affinity, AutomountServiceAccountToken
+	// TODO: Vela admin defined worker-specific: AutomountServiceAccountToken
+
+	if c.PipelinePodTemplate.Spec.NodeSelector != nil {
+		c.Pod.Spec.NodeSelector = c.PipelinePodTemplate.Spec.NodeSelector
+	}
+
+	if c.PipelinePodTemplate.Spec.Tolerations != nil {
+		c.Pod.Spec.Tolerations = c.PipelinePodTemplate.Spec.Tolerations
+	}
+
+	if c.PipelinePodTemplate.Spec.Affinity != nil {
+		c.Pod.Spec.Affinity = c.PipelinePodTemplate.Spec.Affinity
+	}
 
 	// create the restart policy for the pod
 	//
 	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#RestartPolicy
 	c.Pod.Spec.RestartPolicy = v1.RestartPolicyNever
+
+	if len(c.PipelinePodTemplate.Spec.DNSPolicy) > 0 {
+		c.Pod.Spec.DNSPolicy = c.PipelinePodTemplate.Spec.DNSPolicy
+	}
+
+	if c.PipelinePodTemplate.Spec.DNSConfig != nil {
+		c.Pod.Spec.DNSConfig = c.PipelinePodTemplate.Spec.DNSConfig
+	}
+
+	if c.PipelinePodTemplate.Spec.SecurityContext != nil {
+		if c.Pod.Spec.SecurityContext == nil {
+			c.Pod.Spec.SecurityContext = &v1.PodSecurityContext{}
+		}
+
+		if c.PipelinePodTemplate.Spec.SecurityContext.RunAsNonRoot != nil {
+			c.Pod.Spec.SecurityContext.RunAsNonRoot = c.PipelinePodTemplate.Spec.SecurityContext.RunAsNonRoot
+		}
+
+		if c.PipelinePodTemplate.Spec.SecurityContext.Sysctls != nil {
+			c.Pod.Spec.SecurityContext.Sysctls = c.PipelinePodTemplate.Spec.SecurityContext.Sysctls
+		}
+	}
 
 	return nil
 }

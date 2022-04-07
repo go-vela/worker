@@ -6,9 +6,11 @@ package kubernetes
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/go-vela/types/pipeline"
+	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -143,20 +145,20 @@ func TestKubernetes_RunContainer(t *testing.T) {
 }
 
 func TestKubernetes_SetupContainer(t *testing.T) {
-	// setup types
-	_engine, err := NewMock(_pod)
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
 	// setup tests
 	tests := []struct {
-		failure   bool
-		container *pipeline.Container
+		failure          bool
+		container        *pipeline.Container
+		opts             []ClientOpt
+		wantPrivileged   bool
+		wantFromTemplate interface{}
 	}{
 		{
-			failure:   false,
-			container: _container,
+			failure:          false,
+			container:        _container,
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
 		},
 		{
 			failure: false,
@@ -171,6 +173,9 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
 		},
 		{
 			failure: false,
@@ -185,14 +190,35 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
+			opts:             []ClientOpt{WithPrivilegedImages([]string{"target/vela-docker"})},
+			wantPrivileged:   true,
+			wantFromTemplate: nil,
+		},
+		{
+			failure:        false,
+			container:      _container,
+			opts:           []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
+			wantPrivileged: false,
+			wantFromTemplate: velav1alpha1.PipelineContainerSecurityContext{
+				Capabilities: &v1.Capabilities{
+					Drop: []v1.Capability{"ALL"},
+					Add:  []v1.Capability{"NET_ADMIN", "SYS_TIME"},
+				},
+			},
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
+		// setup types
+		_engine, err := NewMock(_pod.DeepCopy(), test.opts...)
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+		// actually run the test
 		err = _engine.SetupContainer(context.Background(), test.container)
 
-		// this does not test the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
+		// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
 
 		if test.failure {
 			if err == nil {
@@ -204,6 +230,37 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("SetupContainer returned err: %v", err)
+		}
+
+		// SetupContainer added the last pod so get it for inspection
+		i := len(_engine.Pod.Spec.Containers) - 1
+		ctn := _engine.Pod.Spec.Containers[i]
+
+		// Make sure Container has Privileged configured correctly
+		if test.wantPrivileged {
+			if ctn.SecurityContext == nil {
+				t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+			} else if *ctn.SecurityContext.Privileged != test.wantPrivileged {
+				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			}
+		} else {
+			if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
+				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			}
+		}
+
+		switch test.wantFromTemplate.(type) {
+		case velav1alpha1.PipelineContainerSecurityContext:
+			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+
+			// PipelinePodsTemplate defined SecurityContext.Capabilities
+			if want.Capabilities != nil {
+				if ctn.SecurityContext == nil {
+					t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+				} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
+					t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
+				}
+			}
 		}
 	}
 }

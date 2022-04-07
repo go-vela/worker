@@ -5,9 +5,10 @@
 package docker
 
 import (
-	"github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TestDocker_ClientOpt_WithPrivilegedImages(t *testing.T) {

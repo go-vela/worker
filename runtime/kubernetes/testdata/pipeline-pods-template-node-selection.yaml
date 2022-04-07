@@ -1,0 +1,64 @@
+apiVersion: "go-vela.github.io/v1alpha1"
+kind: PipelinePodsTemplate
+metadata:
+  name: pipeline-pods-template
+spec:
+  template:
+    spec:
+      # nodeName is not supported. Using nodeSelector or affinity should be sufficient.
+      # nodeName: foo-node
+
+      # https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#create-a-pod-that-gets-scheduled-to-your-chosen-node
+      nodeSelector:
+        disktype: ssd
+
+      affinity:
+        # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: another-node-label-key
+                    operator: In
+                    values:
+                      - another-node-label-value
+        # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: security
+                    operator: In
+                    values:
+                      - S1
+              topologyKey: topology.kubernetes.io/zone
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: security
+                      operator: In
+                      values:
+                        - S2
+                topologyKey: topology.kubernetes.io/zone
+
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+      tolerations:
+        - key: "key1"
+          operator: "Equal"
+          value: "value1"
+          effect: "NoSchedule"
+        - key: "key1"
+          operator: "Equal"
+          value: "value1"
+          effect: "NoExecute"
