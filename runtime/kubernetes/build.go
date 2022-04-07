@@ -7,6 +7,8 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"k8s.io/client-go/tools/cache"
+	"time"
 
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
@@ -125,6 +127,13 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 	}
 
+	tracker, err := NewPodTracker(c.Logger, c.Kubernetes, c.Pod, time.Second*30)
+	if err != nil {
+		return err
+	}
+
+	c.PodTracker = tracker
+
 	return nil
 }
 
@@ -181,6 +190,20 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	// TODO: use these to start streaming logs before TailContainer is called
+	// Add the ResourceEventHandler
+	//c.PodTracker.AddPodInformerEventHandler(cache.ResourceEventHandlerFuncs{
+	//	AddFunc:    func(new interface{}) {},
+	//	UpdateFunc: func(old, new interface{}) {},
+	//	DeleteFunc: func(old interface{}) {},
+	//})
+
+	// Populate the PodTracker caches
+	c.PodTracker.Start(ctx.Done())
+	if ok := cache.WaitForCacheSync(ctx.Done(), c.PodTracker.PodSynced); !ok {
+		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
 	// If the api call to create the pod fails, the pod might

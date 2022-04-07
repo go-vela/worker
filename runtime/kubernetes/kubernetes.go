@@ -5,6 +5,8 @@
 package kubernetes
 
 import (
+	"time"
+
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -42,6 +44,8 @@ type client struct {
 	Logger *logrus.Entry
 	// https://pkg.go.dev/k8s.io/api/core/v1#Pod
 	Pod *v1.Pod
+	// PodTracker wraps the Kubernetes client to simplify watching the pod for changes
+	PodTracker *podTracker
 	// PipelinePodTemplate has default values to be used in Setup* methods
 	PipelinePodTemplate *velav1alpha1.PipelinePodTemplate
 	// commonVolumeMounts includes workspace mount and any global host mounts (VELA_RUNTIME_VOLUMES)
@@ -179,6 +183,17 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 			},
 		},
 	)
+
+	// set the PodTracker (normally populated in SetupBuild)
+	tracker, err := NewPodTracker(c.Logger, c.Kubernetes, _pod, time.Second*0)
+	if err != nil {
+		return c, err
+	}
+
+	// mock tracker is always ready
+	tracker.PodSynced = func() bool { return true }
+
+	c.PodTracker = tracker
 
 	return c, nil
 }
