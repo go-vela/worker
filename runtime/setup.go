@@ -32,6 +32,10 @@ type Setup struct {
 	HostVolumes []string
 	// specifies the namespace to use for the runtime client (only used by kubernetes)
 	Namespace string
+	// specifies the name of the PipelinePodsTemplate to retrieve from the given namespace (only used by kubernetes)
+	PodsTemplateName string
+	// specifies the fallback path of a PipelinePodsTemplate in a local YAML file (only used by kubernetes; only used if PodsTemplateName not defined)
+	PodsTemplateFile string
 	// specifies a list of privileged images to use for the runtime client
 	PrivilegedImages []string
 }
@@ -63,6 +67,7 @@ func (s *Setup) Kubernetes() (Engine, error) {
 		kubernetes.WithConfigFile(s.ConfigFile),
 		kubernetes.WithHostVolumes(s.HostVolumes),
 		kubernetes.WithNamespace(s.Namespace),
+		kubernetes.WithPodsTemplate(s.PodsTemplateName, s.PodsTemplateFile),
 		kubernetes.WithPrivilegedImages(s.PrivilegedImages),
 		kubernetes.WithLogger(s.Logger),
 	)

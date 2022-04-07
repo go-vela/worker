@@ -1,0 +1,11 @@
+apiVersion: "go-vela.github.io/v1alpha1"
+kind: PipelinePodsTemplate
+metadata:
+  name: pipeline-pods-template
+spec:
+  template:
+    metadata:
+      annotations:
+        # annotations is a map[string]string, so this is malformed.
+        - name: annotation/foo
+          value: bar

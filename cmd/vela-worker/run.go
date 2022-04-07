@@ -107,6 +107,8 @@ func run(c *cli.Context) error {
 				Driver:           c.String("runtime.driver"),
 				ConfigFile:       c.String("runtime.config"),
 				Namespace:        c.String("runtime.namespace"),
+				PodsTemplateName: c.String("runtime.pods-template-name"),
+				PodsTemplateFile: c.Path("runtime.pods-template-file"),
 				HostVolumes:      c.StringSlice("runtime.volumes"),
 				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
 			},

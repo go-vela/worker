@@ -1,0 +1,19 @@
+apiVersion: "go-vela.github.io/v1alpha1"
+kind: PipelinePodsTemplate
+metadata:
+  name: pipeline-pods-template
+spec:
+  template:
+    spec:
+      # https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 1.2.3.4
+        searches:
+          - ns1.svc.cluster-domain.example
+          - my.dns.search.suffix
+        options:
+          - name: ndots
+            value: "2"
+          - name: edns0

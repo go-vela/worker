@@ -56,6 +56,8 @@ func (w *Worker) exec(index int) error {
 		ConfigFile:       w.Config.Runtime.ConfigFile,
 		HostVolumes:      w.Config.Runtime.HostVolumes,
 		Namespace:        w.Config.Runtime.Namespace,
+		PodsTemplateName: w.Config.Runtime.PodsTemplateName,
+		PodsTemplateFile: w.Config.Runtime.PodsTemplateFile,
 		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
 	})
 	if err != nil {
