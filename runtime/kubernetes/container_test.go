@@ -417,6 +417,7 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 				// this will trigger a sync which will use the fake clientset to get "updated"
 				pod := test.cached.DeepCopy()
 				pod.SetResourceVersion("older")
+
 				err = _engine.PodTracker.podInformer.Informer().GetIndexer().Add(pod)
 				if err != nil {
 					t.Errorf("loading the podInformer cache failed: %v", err)

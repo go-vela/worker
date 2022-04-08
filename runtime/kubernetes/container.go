@@ -356,7 +356,6 @@ func (p podTracker) inspectContainerStatuses(pod *v1.Pod) {
 			// if that is still needed, then we can add that check here
 			// or retrieve the pod with something like this in WaitContainer:
 			// c.PodTracker.PodLister.Pods(c.config.Namespace).Get(c.Pod.GetName())
-
 			tracker.terminatedOnce.Do(func() {
 				// let WaitContainer know the container is terminated
 				close(tracker.Terminated)

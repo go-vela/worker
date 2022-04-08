@@ -64,6 +64,7 @@ func (p podTracker) HandlePodAdd(newObj interface{}) {
 		// not valid or not our tracked pod
 		return
 	}
+
 	p.inspectContainerStatuses(newPod)
 }
 
@@ -95,6 +96,7 @@ func (p podTracker) HandlePodDelete(oldObj interface{}) {
 		// not valid or not our tracked pod
 		return
 	}
+
 	p.inspectContainerStatuses(oldPod)
 }
 
@@ -130,7 +132,7 @@ func (p podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 }
 
 // Start kicks off the API calls to start populating the cache.
-// There is no need to run this in a separate goroutine. (ie go podTracker.Start(stopCh))
+// There is no need to run this in a separate goroutine (ie go podTracker.Start(stopCh)).
 func (p podTracker) Start(stopCh <-chan struct{}) {
 	p.Logger.Tracef("starting PodTracker for pod %s", p.TrackedPod)
 
@@ -143,6 +145,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	if pod == nil {
 		return nil, fmt.Errorf("newPodTracker expected a pod, got nil")
 	}
+
 	trackedPod := pod.ObjectMeta.Namespace + "/" + pod.ObjectMeta.Name
 	log.Tracef("creating PodTracker for pod %s", trackedPod)
 
@@ -193,5 +196,6 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		UpdateFunc: tracker.HandlePodUpdate,
 		DeleteFunc: tracker.HandlePodDelete,
 	})
+
 	return &tracker, nil
 }
