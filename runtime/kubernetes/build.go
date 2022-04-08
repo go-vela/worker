@@ -193,6 +193,9 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 	}
 
+	// setup containerTeachers now that all containers are defined.
+	c.PodTracker.TrackContainers(c.Pod.Spec.Containers)
+
 	// Populate the PodTracker caches before creating the pipeline pod
 	c.PodTracker.Start(ctx)
 

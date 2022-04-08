@@ -14,8 +14,6 @@ import (
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -424,33 +422,29 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 		name      string
 		failure   bool
 		container *pipeline.Container
-		object    runtime.Object
+		oldPod    *v1.Pod
+		newPod    *v1.Pod
 	}{
 		{
 			name:      "default order in ContainerStatuses",
 			failure:   false,
 			container: _container,
-			object:    _pod,
+			oldPod:    _pod,
+			newPod:    _pod,
 		},
 		{
 			name:      "inverted order in ContainerStatuses",
 			failure:   false,
 			container: _container,
-			object: &v1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "github-octocat-1",
-					Namespace: "test",
-					Labels: map[string]string{
-						"pipeline": "github-octocat-1",
-					},
-				},
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: "v1",
-					Kind:       "Pod",
-				},
+			oldPod:    _pod,
+			newPod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
 				Status: v1.PodStatus{
 					Phase: v1.PodRunning,
 					ContainerStatuses: []v1.ContainerStatus{
+						// alternate order
 						{
 							Name: "step-github-octocat-1-echo",
 							State: v1.ContainerState{
@@ -476,25 +470,57 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			},
 		},
 		{
-			name:      "watch returns invalid type",
+			name:      "container goes from running to terminated",
+			failure:   false,
+			container: _container,
+			oldPod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name: "step-github-octocat-1-clone",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+			newPod: _pod,
+		},
+		{
+			name:      "if client.Pod.Spec is empty podTracker fails",
 			failure:   true,
 			container: _container,
-			object:    new(v1.PodTemplate),
+			oldPod:    _pod,
+			newPod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Status:     _pod.Status,
+				// if client.Pod.Spec is empty, podTracker will fail
+				//Spec:       _pod.Spec,
+			},
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// setup types
-			_engine, _watch, err := newMockWithWatch(_pod, "pods")
+			// set up the fake k8s clientset so that it returns the final/updated state
+			_engine, err := NewMock(test.newPod)
 			if err != nil {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
 			go func() {
-				// simulate adding a pod to the watcher
-				_watch.Add(test.object)
+				oldPod := test.oldPod.DeepCopy()
+				oldPod.SetResourceVersion("older")
+
+				// simulate a re-sync/PodUpdate event
+				_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
 			}()
 
 			err = _engine.WaitContainer(context.Background(), test.container)

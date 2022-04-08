@@ -19,7 +19,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -317,74 +316,56 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
-	// create label selector for watching the pod
-	selector := fmt.Sprintf("pipeline=%s", fields.EscapeValue(c.Pod.ObjectMeta.Name))
-
-	// create options for watching the container
-	opts := metav1.ListOptions{
-		LabelSelector: selector,
-		Watch:         true,
+	// get the containerTracker for this container
+	tracker, ok := c.PodTracker.Containers[ctn.ID]
+	if !ok {
+		return fmt.Errorf("containerTracker is missing for %s", ctn.ID)
 	}
 
-	// send API call to capture channel for watching the container
+	// wait for the container terminated signal
+	<-tracker.Terminated
+
+	return nil
+}
+
+// inspectContainerStatuses signals when a container reaches a terminal state.
+func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
+	// check if the pod is in a pending state
 	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// ->
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-	podWatch, err := c.Kubernetes.CoreV1().
-		Pods(c.config.Namespace).
-		Watch(ctx, opts)
-	if err != nil {
-		return err
+	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodStatus
+	if pod.Status.Phase == v1.PodPending {
+		p.Logger.Debugf("skipping container status inspection as pod %s is pending", p.TrackedPod)
+
+		// nothing to inspect if pod is in a pending state
+		return
 	}
 
-	defer podWatch.Stop()
-
-	for {
-		// capture new result from the channel
-		//
-		// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-		result := <-podWatch.ResultChan()
-
-		// convert the object from the result to a pod
-		pod, ok := result.Object.(*v1.Pod)
+	// iterate through each container in the pod
+	for _, cst := range pod.Status.ContainerStatuses {
+		// get the containerTracker for this container
+		tracker, ok := p.Containers[cst.Name]
 		if !ok {
-			return fmt.Errorf("unable to watch pod %s", c.Pod.ObjectMeta.Name)
-		}
+			// unknown container (probably a sidecar injected by an admissions controller)
+			p.Logger.Debugf("ignoring untracked container %s from pod %s", cst.Name, p.TrackedPod)
 
-		// check if the pod is in a pending state
-		//
-		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodStatus
-		if pod.Status.Phase == v1.PodPending {
-			// skip pod if it's in a pending state
 			continue
 		}
 
-		// iterate through each container in the pod
-		for _, cst := range pod.Status.ContainerStatuses {
-			// check if the container has a matching ID
-			//
-			// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerStatus
-			if !strings.EqualFold(cst.Name, ctn.ID) {
-				// skip container if it's not a matching ID
-				continue
-			}
+		// check if the container is in a terminated state
+		//
+		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
+		if cst.State.Terminated != nil {
+			// && len(cst.State.Terminated.Reason) > 0 {
+			// WaitContainer used to check Terminated.Reason as well.
+			// if that is still needed, then we can add that check here
+			// or retrieve the pod with something like this in WaitContainer:
+			// c.PodTracker.PodLister.Pods(c.config.Namespace).Get(c.Pod.GetName())
+			tracker.terminatedOnce.Do(func() {
+				p.Logger.Debugf("container completed: %s in pod %s, %v", cst.Name, p.TrackedPod, cst)
 
-			// check if the container is in a terminated state
-			//
-			// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
-			if cst.State.Terminated == nil {
-				// skip container if it's not in a terminated state
-				break
-			}
-
-			// check if the container has a terminated state reason
-			//
-			// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerStateTerminated
-			if len(cst.State.Terminated.Reason) > 0 {
-				// break watching the container as it's complete
-				return nil
-			}
+				// let WaitContainer know the container is terminated
+				close(tracker.Terminated)
+			})
 		}
 	}
 }

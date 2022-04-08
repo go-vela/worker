@@ -165,7 +165,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	c.config.Namespace = "test"
 
 	// set the Kubernetes pod in the runtime client
-	c.Pod = _pod
+	c.Pod = _pod.DeepCopy()
+	c.Pod.SetResourceVersion("0")
 
 	// apply all provided configuration options
 	for _, opt := range opts {
@@ -197,6 +198,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	}
 
 	c.PodTracker = tracker
+
+	// The test is responsible for calling c.PodTracker.Start() if needed
 
 	return c, nil
 }

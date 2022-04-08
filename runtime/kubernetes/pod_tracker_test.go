@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/tools/cache"
 )
 
 func TestNewPodTracker(t *testing.T) {
@@ -68,6 +70,83 @@ func TestNewPodTracker(t *testing.T) {
 			if (err != nil) != test.wantErr {
 				t.Errorf("newPodTracker() error = %v, wantErr %v", err, test.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func Test_podTracker_getTrackedPod(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	tests := []struct {
+		name       string
+		trackedPod string // namespace/podName
+		obj        interface{}
+		want       *v1.Pod
+	}{
+		{
+			name:       "got-tracked-pod",
+			trackedPod: "test/github-octocat-1",
+			obj:        _pod,
+			want:       _pod,
+		},
+		{
+			name:       "wrong-pod",
+			trackedPod: "test/github-octocat-2",
+			obj:        _pod,
+			want:       nil,
+		},
+		{
+			name:       "invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj:        new(v1.PodTemplate),
+			want:       nil,
+		},
+		{
+			name:       "nil",
+			trackedPod: "test/nil",
+			obj:        nil,
+			want:       nil,
+		},
+		{
+			name:       "tombstone-pod",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: _pod,
+			},
+			want: _pod,
+		},
+		{
+			name:       "tombstone-nil",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: nil,
+			},
+			want: nil,
+		},
+		{
+			name:       "tombstone-invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: new(v1.PodTemplate),
+			},
+			want: nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p := podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				// other fields not used by getTrackedPod
+				// if they're needed, use newPodTracker
+			}
+			if got := p.getTrackedPod(test.obj); !reflect.DeepEqual(got, test.want) {
+				t.Errorf("getTrackedPod() = %v, want %v", got, test.want)
 			}
 		})
 	}
