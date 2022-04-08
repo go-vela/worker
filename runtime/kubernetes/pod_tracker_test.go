@@ -54,9 +54,9 @@ func TestNewPodTracker(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewPodTracker(logger, clientset, tt.pod, time.Second*0)
+			_, err := newPodTracker(logger, clientset, tt.pod, time.Second*0)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NewPodTracker() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("newPodTracker() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -131,7 +131,7 @@ func Test_podTracker_getTrackedPod(t *testing.T) {
 				Logger:     logger,
 				TrackedPod: tt.trackedPod,
 				// other fields not used by getTrackedPod
-				// if they're needed, use NewPodTracker
+				// if they're needed, use newPodTracker
 			}
 			if got := p.getTrackedPod(tt.obj); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getTrackedPod() = %v, want %v", got, tt.want)

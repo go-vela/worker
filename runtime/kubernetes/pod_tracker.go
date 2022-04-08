@@ -34,8 +34,8 @@ type containerTracker struct {
 	// TODO: collect streaming logs here before TailContainer is called
 }
 
-// podTracker contains Informers used to watch and synchronize local k8s caches
-// This is similar to a typical Kubernetes controller (eg like k8s.io/sample-controller.Controller)
+// podTracker contains Informers used to watch and synchronize local k8s caches.
+// This is similar to a typical Kubernetes controller (eg like k8s.io/sample-controller.Controller).
 type podTracker struct {
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry
@@ -57,7 +57,7 @@ type podTracker struct {
 	Containers map[string]containerTracker
 }
 
-// HandlePodAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Pods
+// HandlePodAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Pods.
 func (p podTracker) HandlePodAdd(newObj interface{}) {
 	newPod := p.getTrackedPod(newObj)
 	if newPod == nil {
@@ -65,13 +65,13 @@ func (p podTracker) HandlePodAdd(newObj interface{}) {
 		return
 	}
 	p.inspectContainerStatuses(newPod)
-	return
 }
 
-// HandlePodUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Pods
+// HandlePodUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Pods.
 func (p podTracker) HandlePodUpdate(oldObj, newObj interface{}) {
 	oldPod := p.getTrackedPod(oldObj)
 	newPod := p.getTrackedPod(newObj)
+
 	if oldPod == nil || newPod == nil {
 		// not valid or not our tracked pod
 		return
@@ -84,11 +84,11 @@ func (p podTracker) HandlePodUpdate(oldObj, newObj interface{}) {
 	//		return
 	//	}
 	//}
+
 	p.inspectContainerStatuses(newPod)
-	return
 }
 
-// HandlePodDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Pods
+// HandlePodDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Pods.
 func (p podTracker) HandlePodDelete(oldObj interface{}) {
 	oldPod := p.getTrackedPod(oldObj)
 	if oldPod == nil {
@@ -96,31 +96,36 @@ func (p podTracker) HandlePodDelete(oldObj interface{}) {
 		return
 	}
 	p.inspectContainerStatuses(oldPod)
-	return
 }
 
 // getTrackedPod tries to convert the obj into a Pod and makes sure it is the tracked Pod.
 // This should only be used by the funcs of cache.ResourceEventHandlerFuncs.
 func (p podTracker) getTrackedPod(obj interface{}) *v1.Pod {
-	var pod *v1.Pod
-	var ok bool
+	var (
+		pod *v1.Pod
+		ok  bool
+	)
+
 	if pod, ok = obj.(*v1.Pod); !ok {
 		tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
 		if !ok {
 			p.Logger.Errorf("error decoding pod, invalid type")
 			return nil
 		}
+
 		pod, ok = tombstone.Obj.(*v1.Pod)
 		if !ok {
 			p.Logger.Errorf("error decoding pod tombstone, invalid type")
 			return nil
 		}
 	}
+
 	trackedPod := pod.GetNamespace() + "/" + pod.GetName()
 	if trackedPod != p.TrackedPod {
 		p.Logger.Errorf("error got unexpected pod: %s", trackedPod)
 		return nil
 	}
+
 	return pod
 }
 
@@ -133,10 +138,10 @@ func (p podTracker) Start(stopCh <-chan struct{}) {
 	p.informerFactory.Start(stopCh)
 }
 
-// NewPodTracker initializes a podTracker with a given clientset for a given pod.
-func NewPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Pod, defaultResync time.Duration) (*podTracker, error) {
+// newPodTracker initializes a podTracker with a given clientset for a given pod.
+func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Pod, defaultResync time.Duration) (*podTracker, error) {
 	if pod == nil {
-		return nil, fmt.Errorf("NewPodTracker expected a pod, got nil")
+		return nil, fmt.Errorf("newPodTracker expected a pod, got nil")
 	}
 	trackedPod := pod.ObjectMeta.Namespace + "/" + pod.ObjectMeta.Name
 	log.Tracef("creating PodTracker for pod %s", trackedPod)

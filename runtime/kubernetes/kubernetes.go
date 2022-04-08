@@ -186,7 +186,7 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	)
 
 	// set the PodTracker (normally populated in SetupBuild)
-	tracker, err := NewPodTracker(c.Logger, c.Kubernetes, c.Pod, time.Second*0)
+	tracker, err := newPodTracker(c.Logger, c.Kubernetes, c.Pod, time.Second*0)
 	if err != nil {
 		return c, err
 	}
