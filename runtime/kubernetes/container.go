@@ -316,6 +316,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
+	// get the containerTracker for this container
 	tracker, ok := c.PodTracker.Containers[ctn.ID]
 	if !ok {
 		return fmt.Errorf("containerTracker is missing for %s", ctn.ID)
@@ -339,6 +340,7 @@ func (p podTracker) inspectContainerStatuses(pod *v1.Pod) {
 
 	// iterate through each container in the pod
 	for _, cst := range pod.Status.ContainerStatuses {
+		// get the containerTracker for this container
 		tracker, ok := p.Containers[cst.Name]
 		if !ok {
 			// unknown container

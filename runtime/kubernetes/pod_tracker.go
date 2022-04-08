@@ -167,6 +167,7 @@ func NewPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		}
 	}
 
+	// initialize podTracker
 	tracker := podTracker{
 		Logger:          log,
 		TrackedPod:      trackedPod,
@@ -177,7 +178,8 @@ func NewPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		Containers:      containers,
 	}
 
-	tracker.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	// register event handler funcs in podInformer
+	podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    tracker.HandlePodAdd,
 		UpdateFunc: tracker.HandlePodUpdate,
 		DeleteFunc: tracker.HandlePodDelete,
