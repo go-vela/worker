@@ -54,7 +54,7 @@ type podTracker struct {
 	PodSynced cache.InformerSynced
 
 	// Containers maps the container name to a containerTracker
-	Containers map[string]containerTracker
+	Containers map[string]*containerTracker
 }
 
 // HandlePodAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Pods.
@@ -168,9 +168,9 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	podInformer := informerFactory.Core().V1().Pods()
 
 	// initialize the containerTrackers
-	containers := map[string]containerTracker{}
+	containers := map[string]*containerTracker{}
 	for _, ctn := range pod.Spec.Containers {
-		containers[ctn.Name] = containerTracker{
+		containers[ctn.Name] = &containerTracker{
 			Name:       ctn.Name,
 			Terminated: make(chan struct{}),
 		}
