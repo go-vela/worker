@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -134,6 +135,9 @@ func (p podTracker) Start(stopCh <-chan struct{}) {
 
 // NewPodTracker initializes a podTracker with a given clientset for a given pod.
 func NewPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Pod, defaultResync time.Duration) (*podTracker, error) {
+	if pod == nil {
+		return nil, fmt.Errorf("NewPodTracker expected a pod, got nil")
+	}
 	trackedPod := pod.ObjectMeta.Namespace + "/" + pod.ObjectMeta.Name
 	log.Tracef("creating PodTracker for pod %s", trackedPod)
 
