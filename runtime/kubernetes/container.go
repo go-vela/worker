@@ -27,18 +27,8 @@ import (
 func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("inspecting container %s", ctn.ID)
 
-	// create options for getting the container
-	opts := metav1.GetOptions{}
-
-	// send API call to capture the container
-	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// nolint: contextcheck // ignore non-inherited new context
-	pod, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Get(
-		context.Background(),
-		c.Pod.ObjectMeta.Name,
-		opts,
-	)
+	// get the pod from the local cache, which the Informer keeps up-to-date
+	pod, err := c.PodTracker.PodLister.Pods(c.config.Namespace).Get(c.Pod.ObjectMeta.Name)
 	if err != nil {
 		return err
 	}
