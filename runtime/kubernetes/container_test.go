@@ -13,8 +13,6 @@ import (
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -320,31 +318,27 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 	tests := []struct {
 		failure   bool
 		container *pipeline.Container
-		object    runtime.Object
+		cached    *v1.Pod
+		updated   *v1.Pod
 	}{
 		{
 			failure:   false,
 			container: _container,
-			object:    _pod,
+			cached:    _pod,
+			updated:   _pod,
 		},
 		{
 			failure:   false,
 			container: _container,
-			object: &v1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "github-octocat-1",
-					Namespace: "test",
-					Labels: map[string]string{
-						"pipeline": "github-octocat-1",
-					},
-				},
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: "v1",
-					Kind:       "Pod",
-				},
+			cached:    _pod,
+			updated: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
 				Status: v1.PodStatus{
 					Phase: v1.PodRunning,
 					ContainerStatuses: []v1.ContainerStatus{
+						// alternate order
 						{
 							Name: "step-github-octocat-1-echo",
 							State: v1.ContainerState{
@@ -368,37 +362,80 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			},
 		},
 		{
+			failure:   false,
+			container: _container,
+			cached: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name: "step-github-octocat-1-clone",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+			updated: _pod,
+		},
+		{
 			failure:   true,
 			container: _container,
-			object:    new(v1.PodTemplate),
+			cached:    _pod,
+			updated: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Status:     _pod.Status,
+				// if client.Pod.Spec is empty, podTracker will fail
+				//Spec:       _pod.Spec,
+			},
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		// setup types
-		_engine, _watch, err := newMockWithWatch(_pod, "pods")
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		go func() {
-			// simulate adding a pod to the watcher
-			_watch.Add(test.object)
-		}()
-
-		err = _engine.WaitContainer(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("WaitContainer should have returned err")
+		// anonymous function to allow "defer close(stopCh)" on each iteration
+		func() {
+			// set up the fake k8s clientset so that it returns the final/updated state
+			_engine, err := NewMock(test.updated)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			stopCh := make(chan struct{})
+			defer close(stopCh)
 
-		if err != nil {
-			t.Errorf("WaitContainer returned err: %v", err)
-		}
+			// enable the add/update/delete funcs for pod changes
+			_engine.PodTracker.Start(stopCh)
+
+			go func() {
+				// revert the cached pod to an "older" version
+				// this will trigger a sync which will use the fake clientset to get "updated"
+				pod := test.cached.DeepCopy()
+				pod.SetResourceVersion("older")
+				err = _engine.PodTracker.podInformer.Informer().GetIndexer().Add(pod)
+				if err != nil {
+					t.Errorf("loading the podInformer cache failed: %v", err)
+				}
+			}()
+
+			err = _engine.WaitContainer(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WaitContainer should have returned err")
+				}
+
+				return // effectively "continue" to next test
+			}
+
+			if err != nil {
+				t.Errorf("WaitContainer returned err: %v", err)
+			}
+		}()
 	}
 }

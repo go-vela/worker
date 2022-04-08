@@ -159,7 +159,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	c.config.Namespace = "test"
 
 	// set the Kubernetes pod in the runtime client
-	c.Pod = _pod
+	c.Pod = _pod.DeepCopy()
+	c.Pod.SetResourceVersion("0")
 
 	// apply all provided configuration options
 	for _, opt := range opts {
@@ -185,7 +186,13 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	)
 
 	// set the PodTracker (normally populated in SetupBuild)
-	tracker, err := NewPodTracker(c.Logger, c.Kubernetes, _pod, time.Second*0)
+	tracker, err := NewPodTracker(c.Logger, c.Kubernetes, c.Pod, time.Second*0)
+	if err != nil {
+		return c, err
+	}
+
+	// pre-populate the podInformer cache
+	err = tracker.podInformer.Informer().GetIndexer().Add(c.Pod)
 	if err != nil {
 		return c, err
 	}
@@ -194,6 +201,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	tracker.PodSynced = func() bool { return true }
 
 	c.PodTracker = tracker
+
+	// The test is responsible for calling c.PodTracker.Start() if needed
 
 	return c, nil
 }

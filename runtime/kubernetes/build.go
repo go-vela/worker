@@ -192,14 +192,6 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 	}
 
-	// TODO: use these to start streaming logs before TailContainer is called
-	// Add the ResourceEventHandler
-	//c.PodTracker.AddPodInformerEventHandler(cache.ResourceEventHandlerFuncs{
-	//	AddFunc:    func(new interface{}) {},
-	//	UpdateFunc: func(old, new interface{}) {},
-	//	DeleteFunc: func(old interface{}) {},
-	//})
-
 	// Populate the PodTracker caches
 	c.PodTracker.Start(ctx.Done())
 	if ok := cache.WaitForCacheSync(ctx.Done(), c.PodTracker.PodSynced); !ok {
