@@ -11,9 +11,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/kubernetes/fake"
-	testcore "k8s.io/client-go/testing"
 )
 
 func TestKubernetes_New(t *testing.T) {
@@ -317,39 +314,3 @@ var (
 		},
 	}
 )
-
-// newMockWithWatch returns an Engine implementation that
-// integrates with a Kubernetes runtime and a FakeWatcher
-// that can be used to inject resource events into it.
-func newMockWithWatch(pod *v1.Pod, watchResource string, opts ...ClientOpt) (*client, *watch.RaceFreeFakeWatcher, error) {
-	// setup types
-	_engine, err := NewMock(pod, opts...)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// create a new fake kubernetes client
-	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
-	_kubernetes := fake.NewSimpleClientset(pod)
-
-	// create a new fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#NewRaceFreeFake
-	_watch := watch.NewRaceFreeFake()
-
-	// create a new watch reactor with the fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#DefaultWatchReactor
-	reactor := testcore.DefaultWatchReactor(_watch, nil)
-
-	// add watch reactor to beginning of the client chain
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#Fake.PrependWatchReactor
-	_kubernetes.PrependWatchReactor(watchResource, reactor)
-
-	// overwrite the mock kubernetes client
-	_engine.Kubernetes = _kubernetes
-
-	return _engine, _watch, nil
-}
