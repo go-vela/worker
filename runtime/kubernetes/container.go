@@ -271,6 +271,8 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 			return false, nil
 		}
 
+		defer stream.Close()
+
 		// create new reader from the container output
 		reader := bufio.NewReader(stream)
 
