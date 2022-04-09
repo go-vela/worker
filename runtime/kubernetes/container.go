@@ -265,18 +265,39 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 			GetLogs(p.Name, opts).
 			Stream(context.Background())
 		if err != nil {
-			p.Logger.Errorf("%v", err)
+			p.Logger.Errorf("failed to stream logs for %s, %v", p.TrackedPod, err)
+
+			// retry the API call
 			return false, nil
 		}
 
-		// create new scanner from the container output
-		scanner := bufio.NewScanner(stream)
+		// create new reader from the container output
+		reader := bufio.NewReader(stream)
 
-		// scan entire container output
-		for scanner.Scan() { // for each line in stream
-			// cache the log line
-			ctnTracker.logs = append(ctnTracker.logs, append(scanner.Bytes(), []byte("\n")...)...)
+		// this loop is loosely based on github.com/stern/stern.Tail.ConsumeRequest()
+		for {
+			// for each line in stream
+			line, err := reader.ReadBytes('\n')
+			if len(line) != 0 {
+				// cache the log line
+				ctnTracker.logs = append(ctnTracker.logs, line...)
+			}
 
+			if err != nil {
+				if err != io.EOF {
+					ctnTracker.LogsError = err
+					p.Logger.Errorf("error while streaming logs for %s, %v", p.TrackedPod, err)
+
+					// we did not reach the end of the logs so let's try again.
+					// If this proves problematic, we might need to de-dup log lines
+					// which might require using opts.Timestamps or opts.SinceSeconds.
+					return false, nil
+				}
+				// hooray! we reached io.EOF (the end of the logs)
+				break
+			}
+
+			// there are more logs to read
 			// check whether we've reached the maximum log size
 			if maxLogSize > 0 && uint(len(ctnTracker.logs)) >= maxLogSize {
 				p.Logger.Trace("maximum log size reached")
@@ -285,9 +306,6 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 				break
 			}
 		}
-		// TODO: what if the connection was terminated, but there are more logs?
-		//       detect this (how?) and 'return false, nil' to try to get more logs.
-		//       might require Timestamps to detect duplicate chunks in restarted stream
 
 		// check if we have container logs from the stream
 		if len(ctnTracker.logs) > 0 {
