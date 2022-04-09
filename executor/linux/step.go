@@ -398,6 +398,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 			if c.maxLogSize > 0 && uint(len(_log.GetData())) >= c.maxLogSize {
 				logger.Trace("maximum log size reached")
 
+				logs.Write([]byte("LOGS TRUNCATED: Vela Executor MaxLogSize exceeded.\n"))
 				break
 			}
 		}
