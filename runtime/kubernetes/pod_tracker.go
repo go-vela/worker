@@ -5,10 +5,10 @@
 package kubernetes
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"sync"
 	"time"
 
@@ -24,6 +24,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
+
+	"github.com/go-vela/worker/internal/log"
 )
 
 // TruncatedLogs is an error that allows the log streaming to indicate
@@ -39,14 +41,14 @@ type containerTracker struct {
 	// Terminated will be closed once the container reaches a terminal state.
 	Terminated chan struct{}
 	// logs contains all logs streamed for this container (they may be truncated if too large).
-	logs []byte
+	logs log.Buffer
 	// LogsError holds an error if streaming the logs had an unrecoverable failure
 	LogsError error
 }
 
-// Logs provides a bytes.Reader on top of all the logs streamed so far
-func (c *containerTracker) Logs() *bytes.Reader {
-	return bytes.NewReader(c.logs)
+// Logs provides an io.Reader that streams all the logs streamed so far
+func (c *containerTracker) Logs() io.Reader {
+	return c.logs.NewReader()
 }
 
 // podTracker contains Informers used to watch and synchronize local k8s caches.
