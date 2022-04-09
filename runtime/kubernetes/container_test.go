@@ -398,7 +398,7 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// anonymous function to allow "defer close(stopCh)" on each iteration
+		// anonymous function to allow "defer done()" on each iteration
 		func() {
 			// set up the fake k8s clientset so that it returns the final/updated state
 			_engine, err := NewMock(test.updated)
@@ -406,11 +406,11 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			stopCh := make(chan struct{})
-			defer close(stopCh)
+			ctx, done := context.WithCancel(context.Background())
+			defer done()
 
 			// enable the add/update/delete funcs for pod changes
-			_engine.PodTracker.Start(stopCh)
+			_engine.PodTracker.Start(ctx)
 
 			go func() {
 				// revert the cached pod to an "older" version
