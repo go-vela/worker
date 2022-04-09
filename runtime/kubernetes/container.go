@@ -232,7 +232,8 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	logs = io.NopCloser(containerTracker.Logs())
 
 	logsError := containerTracker.LogsError
-	if logsError != nil {
+	// io.EOF means that all logs have been captured.
+	if logsError != nil && logsError != io.EOF {
 		// TODO: modify the executor to accept record partial logs before the failure
 		return logs, logsError
 	}
@@ -286,8 +287,10 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 			}
 
 			if err != nil {
+				// save err even if its io.EOF as EOF indicates all logs were read.
+				ctnTracker.LogsError = err
+
 				if err != io.EOF {
-					ctnTracker.LogsError = err
 					p.Logger.Errorf("error while streaming logs for %s, %v", p.TrackedPod, err)
 
 					// we did not reach the end of the logs so let's try again.
@@ -295,6 +298,7 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 					// which might require using opts.Timestamps or opts.SinceSeconds.
 					return false, nil
 				}
+
 				// hooray! we reached io.EOF (the end of the logs)
 				break
 			}
@@ -315,7 +319,7 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 			return true, nil
 		}
 
-		// no logs are available
+		// no logs are available, so try again
 		return false, nil
 	}
 
@@ -337,7 +341,11 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
 	err := wait.ExponentialBackoffWithContext(ctx, backoff, logsFunc)
 	if err != nil {
-		ctnTracker.LogsError = err
+		p.Logger.Errorf("exponential backoff error while streaming logs for %s, %v", ctnTracker.Name, err)
+
+		if ctnTracker.LogsError == nil {
+			ctnTracker.LogsError = err
+		}
 	}
 }
 
