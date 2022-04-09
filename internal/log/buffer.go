@@ -40,6 +40,7 @@ func (b *buffer) Write(p []byte) (n int, err error) {
 	b.Lock()
 	b.data = append(b.data, p2)
 	b.Unlock()
+
 	return len(p), nil
 }
 
@@ -47,6 +48,7 @@ func (b *buffer) Write(p []byte) (n int, err error) {
 func (b *buffer) Length() (n int) {
 	b.RLock()
 	defer b.RUnlock()
+
 	return len(b.data)
 }
 
@@ -74,12 +76,14 @@ func (br *bufferReader) Read(p []byte) (n int, err error) {
 		}
 		buf.RUnlock()
 	}
+
 	if len(br.data) == 0 {
 		return 0, io.EOF
 	}
 
 	n = copy(p, br.data)
 	br.data = br.data[n:]
+
 	return n, nil
 }
 

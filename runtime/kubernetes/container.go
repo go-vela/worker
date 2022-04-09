@@ -7,6 +7,7 @@ package kubernetes
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -233,7 +234,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 	logsError := containerTracker.LogsError
 	// io.EOF means that all logs have been captured.
-	if logsError != nil && logsError != io.EOF && logsError != TruncatedLogs {
+	if logsError != nil && !errors.Is(logsError, io.EOF) && !errors.Is(logsError, ErrTruncatedLogs) {
 		// TODO: modify the executor to accept record partial logs before the failure
 		return logs, logsError
 	}
@@ -288,7 +289,7 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 				// save err even if its io.EOF as EOF indicates all logs were read.
 				ctnTracker.LogsError = err
 
-				if err != io.EOF {
+				if !errors.Is(err, io.EOF) {
 					p.Logger.Errorf("error while streaming logs for %s, %v", p.TrackedPod, err)
 
 					// we did not reach the end of the logs so let's try again.
@@ -306,11 +307,13 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 			if maxLogSize > 0 && uint(ctnTracker.logs.Length()) >= maxLogSize {
 				p.Logger.Trace("maximum log size reached")
 
-				ctnTracker.LogsError = TruncatedLogs
+				ctnTracker.LogsError = ErrTruncatedLogs
+
 				_, err = ctnTracker.logs.Write([]byte("LOGS TRUNCATED: Vela Runtime MaxLogSize exceeded.\n"))
 				if err != nil {
 					p.Logger.Errorf("error adding log truncated message for %s, %v", p.TrackedPod, err)
 				}
+
 				break
 			}
 		}

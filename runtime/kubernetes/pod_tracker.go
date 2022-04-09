@@ -28,9 +28,9 @@ import (
 	"github.com/go-vela/worker/internal/log"
 )
 
-// TruncatedLogs is an error that allows the log streaming to indicate
+// ErrTruncatedLogs is an error that allows the log streaming to indicate
 // that it had to stop streaming logs due to maxLogSize.
-var TruncatedLogs = errors.New("TruncatedLogs")
+var ErrTruncatedLogs = errors.New("TruncatedLogs")
 
 // containerTracker contains useful signals that are managed by the podTracker.
 type containerTracker struct {
@@ -46,7 +46,7 @@ type containerTracker struct {
 	LogsError error
 }
 
-// Logs provides an io.Reader that streams all the logs streamed so far
+// Logs provides an io.Reader that streams all the logs streamed so far.
 func (c *containerTracker) Logs() io.Reader {
 	return c.logs.NewReader()
 }
