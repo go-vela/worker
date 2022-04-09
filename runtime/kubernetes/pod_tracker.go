@@ -7,6 +7,7 @@ package kubernetes
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -24,6 +25,10 @@ import (
 	listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 )
+
+// TruncatedLogs is an error that allows the log streaming to indicate
+// that it had to stop streaming logs due to maxLogSize.
+var TruncatedLogs = errors.New("TruncatedLogs")
 
 // containerTracker contains useful signals that are managed by the podTracker.
 type containerTracker struct {
