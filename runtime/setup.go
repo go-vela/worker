@@ -38,6 +38,8 @@ type Setup struct {
 	PodsTemplateFile string
 	// specifies a list of privileged images to use for the runtime client
 	PrivilegedImages []string
+	// specifies the maximum log size (expose an executor setting for kubernetes runtime)
+	MaxLogSize uint
 }
 
 // Docker creates and returns a Vela engine capable of
@@ -70,6 +72,7 @@ func (s *Setup) Kubernetes() (Engine, error) {
 		kubernetes.WithPodsTemplate(s.PodsTemplateName, s.PodsTemplateFile),
 		kubernetes.WithPrivilegedImages(s.PrivilegedImages),
 		kubernetes.WithLogger(s.Logger),
+		kubernetes.WithMaxLogSize(s.MaxLogSize),
 	)
 }
 

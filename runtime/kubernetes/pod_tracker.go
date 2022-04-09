@@ -134,7 +134,7 @@ func (p podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 
 // Start kicks off the API calls to start populating the cache.
 // There is no need to run this in a separate goroutine (ie go podTracker.Start(stopCh)).
-func (p podTracker) Start(ctx context.Context) {
+func (p podTracker) Start(ctx context.Context, maxLogSize uint) {
 	p.Logger.Tracef("starting PodTracker for pod %s", p.TrackedPod)
 
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.

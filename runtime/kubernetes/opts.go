@@ -123,3 +123,15 @@ func WithPrivilegedImages(images []string) ClientOpt {
 		return nil
 	}
 }
+
+// WithMaxLogSize sets the maximum log size (in bytes) enforced in the executor.
+func WithMaxLogSize(size uint) ClientOpt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring maximum log size in kubernetes runtime client")
+
+		// set the maximum container log size in the kubernetes client
+		c.config.maxLogSize = size
+
+		return nil
+	}
+}

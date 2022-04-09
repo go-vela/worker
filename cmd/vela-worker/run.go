@@ -111,6 +111,7 @@ func run(c *cli.Context) error {
 				PodsTemplateFile: c.Path("runtime.pods-template-file"),
 				HostVolumes:      c.StringSlice("runtime.volumes"),
 				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
+				MaxLogSize:       c.Uint("executor.max_log_size"),
 			},
 			// queue configuration
 			Queue: &queue.Setup{

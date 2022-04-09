@@ -30,6 +30,8 @@ type config struct {
 	Volumes []string
 	// PipelinePodsTemplateName has the name of the PipelinePodTemplate to retrieve from the Namespace
 	PipelinePodsTemplateName string
+	// maxLogSize is the max log size enforced by the executor
+	maxLogSize uint
 }
 
 type client struct {
