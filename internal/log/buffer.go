@@ -16,6 +16,8 @@ type Buffer interface {
 	io.Writer
 	// NewReader returns an io.Reader that reads the Buffer from the beginning.
 	NewReader() io.Reader
+	// Length returns the current length of buffer contents.
+	Length() int
 }
 
 // buffer implements the in-memory log cache Buffer.
@@ -39,6 +41,13 @@ func (b *buffer) Write(p []byte) (n int, err error) {
 	b.data = append(b.data, p2)
 	b.Unlock()
 	return len(p), nil
+}
+
+// Length returns the current length of buffer contents.
+func (b *buffer) Length() (n int) {
+	b.RLock()
+	defer b.RUnlock()
+	return len(b.data)
 }
 
 // bufferReader reads from buffer from the beginning without consuming its contents.
