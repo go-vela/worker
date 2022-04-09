@@ -48,6 +48,8 @@ type podTracker struct {
 	// podInformer watches the given pod, caches the results, and makes them available in podLister
 	podInformer informers.PodInformer
 
+	// https://pkg.go.dev/k8s.io/client-go/kubernetes#Interface
+	Kubernetes kubernetes.Interface
 	// PodLister helps list Pods. All objects returned here must be treated as read-only.
 	PodLister listers.PodLister
 	// PodSynced is a function that can be used to determine if an informer has synced.
@@ -193,6 +195,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	tracker := podTracker{
 		Logger:          log,
 		TrackedPod:      trackedPod,
+		Kubernetes:      clientset,
 		informerFactory: informerFactory,
 		podInformer:     podInformer,
 		PodLister:       podInformer.Lister(),
