@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"sync"
@@ -32,7 +33,15 @@ type containerTracker struct {
 	terminatedOnce sync.Once
 	// Terminated will be closed once the container reaches a terminal state.
 	Terminated chan struct{}
-	// TODO: collect streaming logs here before TailContainer is called
+	// logs contains all logs streamed for this container (they may be truncated if too large).
+	logs []byte
+	// LogsError holds an error if streaming the logs had an unrecoverable failure
+	LogsError error
+}
+
+// Logs provides a bytes.Reader on top of all the logs streamed so far
+func (c *containerTracker) Logs() *bytes.Reader {
+	return bytes.NewReader(c.logs)
 }
 
 // podTracker contains Informers used to watch and synchronize local k8s caches.
@@ -142,6 +151,12 @@ func (p podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 // There is no need to run this in a separate goroutine (ie go podTracker.Start(stopCh)).
 func (p podTracker) Start(ctx context.Context, maxLogSize uint) {
 	p.Logger.Tracef("starting PodTracker for pod %s", p.TrackedPod)
+
+	// Begin log streaming before any of the step containers have started
+	// to ensure to capture logs for short-lived steps.
+	for _, containerTracker := range p.Containers {
+		go p.streamContainerLogs(ctx, containerTracker, maxLogSize)
+	}
 
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
 	p.informerFactory.Start(ctx.Done())

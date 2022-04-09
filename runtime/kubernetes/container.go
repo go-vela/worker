@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -223,6 +222,27 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// create object to store container logs
 	var logs io.ReadCloser
 
+	// get the containerTracker for this container
+	containerTracker, ok := c.PodTracker.Containers[ctn.ID]
+	if !ok {
+		return nil, fmt.Errorf("containerTracker is missing for %s", ctn.ID)
+	}
+
+	// wrap the bytes.Reader in an io.NopCloser
+	logs = io.NopCloser(containerTracker.Logs())
+
+	logsError := containerTracker.LogsError
+	if logsError != nil {
+		// TODO: modify the executor to accept record partial logs before the failure
+		return logs, logsError
+	}
+
+	return logs, nil
+}
+
+// streamContainerLogs streams the logs to a cache up to a maxLogSize, restarting the stream as needed.
+// streamContainerLogs is designed to run in its own goroutine.
+func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *containerTracker, maxLogSize uint) {
 	// create function for periodically capturing
 	// the logs from the container with backoff
 	logsFunc := func() (bool, error) {
@@ -230,15 +250,8 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodLogOptions
 		opts := &v1.PodLogOptions{
-			Container: ctn.ID,
-			Follow:    true,
-			// steps can exit quickly, and might be gone before
-			// log tailing has started, so we need to request
-			// logs for previously exited containers as well.
-			// Pods get deleted after job completion, and names for
-			// pod+container don't get reused. So, previous
-			// should only retrieve logs for the current build step.
-			Previous:   true,
+			Container:  ctnTracker.Name,
+			Follow:     true,
 			Timestamps: false,
 		}
 
@@ -247,30 +260,37 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodExpansion
 		// ->
 		// https://pkg.go.dev/k8s.io/client-go/rest?tab=doc#Request.Stream
-		stream, err := c.Kubernetes.CoreV1().
-			Pods(c.config.Namespace).
-			GetLogs(c.Pod.ObjectMeta.Name, opts).
+		stream, err := p.Kubernetes.CoreV1().
+			Pods(p.Namespace).
+			GetLogs(p.Name, opts).
 			Stream(context.Background())
 		if err != nil {
-			c.Logger.Errorf("%v", err)
+			p.Logger.Errorf("%v", err)
 			return false, nil
 		}
 
-		// create temporary reader to ensure logs are available
-		reader := bufio.NewReader(stream)
+		// create new scanner from the container output
+		scanner := bufio.NewScanner(stream)
 
-		// peek at container logs from the stream
-		bytes, err := reader.Peek(5)
-		if err != nil {
-			// nolint: nilerr // ignore nil return
-			// skip so we resend API call to capture stream
-			return false, nil
+		// scan entire container output
+		for scanner.Scan() { // for each line in stream
+			// cache the log line
+			ctnTracker.logs = append(ctnTracker.logs, append(scanner.Bytes(), []byte("\n")...)...)
+
+			// check whether we've reached the maximum log size
+			if maxLogSize > 0 && uint(len(ctnTracker.logs)) >= maxLogSize {
+				p.Logger.Trace("maximum log size reached")
+
+				break
+			}
 		}
+		// TODO: what if the connection was terminated, but there are more logs?
+		//       detect this (how?) and 'return false, nil' to try to get more logs.
+		//       might require Timestamps to detect duplicate chunks in restarted stream
 
 		// check if we have container logs from the stream
-		if len(bytes) > 0 {
-			// set the logs to the reader
-			logs = ioutil.NopCloser(reader)
+		if len(ctnTracker.logs) > 0 {
+			// no more logs to stream
 			return true, nil
 		}
 
@@ -290,16 +310,14 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		Cap:      2 * time.Minute,
 	}
 
-	c.Logger.Tracef("capturing logs with exponential backoff for container %s", ctn.ID)
+	p.Logger.Tracef("capturing logs with exponential backoff for container %s", ctnTracker.Name)
 	// perform the function to capture logs with periodic backoff
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
-	err := wait.ExponentialBackoff(backoff, logsFunc)
+	err := wait.ExponentialBackoffWithContext(ctx, backoff, logsFunc)
 	if err != nil {
-		return nil, err
+		ctnTracker.LogsError = err
 	}
-
-	return logs, nil
 }
 
 // WaitContainer blocks until the pipeline container completes.
