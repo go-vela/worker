@@ -200,3 +200,22 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 
 	return &tracker, nil
 }
+
+// mockPodTracker returns a new podTracker with the given pod pre-loaded in the cache.
+func mockPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Pod) (*podTracker, error) {
+	tracker, err := newPodTracker(log, clientset, pod, time.Second*0)
+	if err != nil {
+		return nil, err
+	}
+
+	// pre-populate the podInformer cache
+	err = tracker.podInformer.Informer().GetIndexer().Add(pod)
+	if err != nil {
+		return nil, err
+	}
+
+	// mock tracker is always ready
+	tracker.PodSynced = func() bool { return true }
+
+	return tracker, err
+}

@@ -5,8 +5,6 @@
 package kubernetes
 
 import (
-	"time"
-
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -186,19 +184,10 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	)
 
 	// set the PodTracker (normally populated in SetupBuild)
-	tracker, err := newPodTracker(c.Logger, c.Kubernetes, c.Pod, time.Second*0)
+	tracker, err := mockPodTracker(c.Logger, c.Kubernetes, c.Pod)
 	if err != nil {
 		return c, err
 	}
-
-	// pre-populate the podInformer cache
-	err = tracker.podInformer.Informer().GetIndexer().Add(c.Pod)
-	if err != nil {
-		return c, err
-	}
-
-	// mock tracker is always ready
-	tracker.PodSynced = func() bool { return true }
 
 	c.PodTracker = tracker
 
