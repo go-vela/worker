@@ -355,6 +355,7 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 func TestKubernetes_AssembleBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 		// k8sPod is the pod that the mock Kubernetes client will return
@@ -363,24 +364,28 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 		enginePod *v1.Pod
 	}{
 		{
+			name:      "assemble-stages-build-new",
 			failure:   false,
 			pipeline:  _stages,
 			k8sPod:    &v1.Pod{},
 			enginePod: _stagesPod,
 		},
 		{
+			name:      "assemble-steps-build-new",
 			failure:   false,
 			pipeline:  _steps,
 			k8sPod:    &v1.Pod{},
 			enginePod: _pod,
 		},
 		{
+			name:      "assemble-stages-build-exists",
 			failure:   true,
 			pipeline:  _stages,
 			k8sPod:    _stagesPod,
 			enginePod: _stagesPod,
 		},
 		{
+			name:      "assemble-steps-build-exists",
 			failure:   true,
 			pipeline:  _steps,
 			k8sPod:    _pod,
@@ -390,26 +395,40 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock(test.k8sPod)
-		_engine.Pod = test.enginePod
+		// subtest to allow "defer done()" on each iteration
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock(test.k8sPod)
+			_engine.Pod = test.enginePod.DeepCopy()
 
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		err = _engine.AssembleBuild(context.Background(), test.pipeline)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("AssembleBuild should have returned err")
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			// replace the PodTracker to ensure test.enginePod is loaded in the cache.
+			_tracker, err := mockPodTracker(_engine.Logger, _engine.Kubernetes, _engine.Pod)
+			if err != nil {
+				t.Errorf("unable to create runtime podTracker: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("AssembleBuild returned err: %v", err)
-		}
+			_engine.PodTracker = _tracker
+
+			ctx, done := context.WithCancel(context.Background())
+			defer done()
+
+			err = _engine.AssembleBuild(ctx, test.pipeline)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("AssembleBuild should have returned err")
+				}
+
+				return // effectively "continue" to next test
+			}
+
+			if err != nil {
+				t.Errorf("AssembleBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
