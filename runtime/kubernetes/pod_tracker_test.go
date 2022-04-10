@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -13,7 +14,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	k8sTesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -21,6 +24,16 @@ func TestNewPodTracker(t *testing.T) {
 	// setup types
 	logger := logrus.NewEntry(logrus.StandardLogger())
 	clientset := fake.NewSimpleClientset()
+
+	// work around bug in default ObjectReactor: github.com/kubernetes/client-go/issues/873
+	clientset.PrependReactor("get", "pods/log",
+		func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+			// handled=true to avoid calling the default * reactor which is buggy, and
+			// ret=nil as it is unused in k8s.io/client-go/kubernetes/typed/v1/fake.*FakePods.GetLogs
+			// where it is returned from c.Fake.Invokes() .
+			return true, nil, fmt.Errorf("no reaction implemented for verb:get resource:pods/log")
+		},
+	)
 
 	tests := []struct {
 		name    string

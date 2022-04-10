@@ -5,13 +5,17 @@
 package kubernetes
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/clientcmd"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
@@ -170,10 +174,23 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 		}
 	}
 
-	// set the Kubernetes fake client in the runtime client
+	// make the Kubernetes fake client in the runtime client
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
-	c.Kubernetes = fake.NewSimpleClientset(c.Pod)
+	fakeClientset := fake.NewSimpleClientset(c.Pod)
+
+	// work around bug in default ObjectReactor: github.com/kubernetes/client-go/issues/873
+	fakeClientset.PrependReactor("get", "pods/log",
+		func(action testing.Action) (handled bool, ret runtime.Object, err error) {
+			// handled=true to avoid calling the default * reactor which is buggy, and
+			// ret=nil as it is unused in k8s.io/client-go/kubernetes/typed/v1/fake.*FakePods.GetLogs
+			// where it is returned from c.Fake.Invokes() .
+			return true, nil, fmt.Errorf("no reaction implemented for verb:get resource:pods/log")
+		},
+	)
+
+	// set the Kubernetes fake client in the runtime client
+	c.Kubernetes = fakeClientset
 
 	// set the VelaKubernetes fake client in the runtime client
 	c.VelaKubernetes = fakeVelaK8sClient.NewSimpleClientset(
