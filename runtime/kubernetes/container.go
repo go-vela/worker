@@ -230,7 +230,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	}
 
 	// wrap the bytes.Reader in an io.NopCloser
-	logs = io.NopCloser(containerTracker.Logs())
+	logs = io.NopCloser(containerTracker.Logs.NewReader())
 
 	logsError := containerTracker.LogsError
 	// io.EOF means that all logs have been captured.
@@ -276,7 +276,7 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 		defer stream.Close()
 
 		// save everything read from the stream to the logs cache.
-		tee := io.TeeReader(stream, ctnTracker.logs)
+		tee := io.TeeReader(stream, ctnTracker.Logs)
 		// create a reader that allows reading one line at a time
 		reader := bufio.NewReader(tee)
 
@@ -304,12 +304,12 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 
 			// there are more logs to read
 			// check whether we've reached the maximum log size
-			if maxLogSize > 0 && uint(ctnTracker.logs.Length()) >= maxLogSize {
+			if maxLogSize > 0 && uint(ctnTracker.Logs.Length()) >= maxLogSize {
 				p.Logger.Trace("maximum log size reached")
 
 				ctnTracker.LogsError = ErrTruncatedLogs
 
-				_, err = ctnTracker.logs.Write([]byte("LOGS TRUNCATED: Vela Runtime MaxLogSize exceeded.\n"))
+				_, err = ctnTracker.Logs.Write([]byte("LOGS TRUNCATED: Vela Runtime MaxLogSize exceeded.\n"))
 				if err != nil {
 					p.Logger.Errorf("error adding log truncated message for %s, %v", p.TrackedPod, err)
 				}
@@ -319,7 +319,7 @@ func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *contain
 		}
 
 		// check if we have container logs from the stream
-		if ctnTracker.logs.Length() > 0 {
+		if ctnTracker.Logs.Length() > 0 {
 			// no more logs to stream
 			return true, nil
 		}
