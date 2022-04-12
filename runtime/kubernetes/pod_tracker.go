@@ -142,7 +142,7 @@ func (p podTracker) Start(ctx context.Context) {
 }
 
 // TrackContainers creates a containerTracker for each container.
-func (p podTracker) TrackContainers(containers v1.Container) {
+func (p podTracker) TrackContainers(containers []v1.Container) {
 	ctnTrackers := map[string]*containerTracker{}
 	for _, ctn := range containers {
 		ctnTrackers[ctn.Name] = &containerTracker{
@@ -214,6 +214,7 @@ func mockPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.P
 	if pod.ObjectMeta.Name == "" {
 		pod.ObjectMeta.Name = "test-pod"
 	}
+
 	if pod.ObjectMeta.Namespace == "" {
 		pod.ObjectMeta.Namespace = "test"
 	}
