@@ -148,6 +148,10 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	}
 
 	trackedPod := pod.ObjectMeta.Namespace + "/" + pod.ObjectMeta.Name
+	if pod.ObjectMeta.Name == "" || pod.ObjectMeta.Namespace == "" {
+		return nil, fmt.Errorf("newPodTracker expects pod to have Name and Namespace, got %s", trackedPod)
+	}
+
 	log.Tracef("creating PodTracker for pod %s", trackedPod)
 
 	// create label selector for watching the pod
@@ -203,6 +207,14 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 
 // mockPodTracker returns a new podTracker with the given pod pre-loaded in the cache.
 func mockPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Pod) (*podTracker, error) {
+	// Make sure test pods are valid before passing to PodTracker (ie support &v1.Pod{}).
+	if pod.ObjectMeta.Name == "" {
+		pod.ObjectMeta.Name = "test-pod"
+	}
+	if pod.ObjectMeta.Namespace == "" {
+		pod.ObjectMeta.Namespace = "test"
+	}
+
 	tracker, err := newPodTracker(log, clientset, pod, time.Second*0)
 	if err != nil {
 		return nil, err
