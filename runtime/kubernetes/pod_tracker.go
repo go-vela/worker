@@ -141,6 +141,19 @@ func (p podTracker) Start(ctx context.Context) {
 	p.informerFactory.Start(ctx.Done())
 }
 
+// TrackContainers creates a containerTracker for each container.
+func (p podTracker) TrackContainers(containers v1.Container) {
+	ctnTrackers := map[string]*containerTracker{}
+	for _, ctn := range containers {
+		ctnTrackers[ctn.Name] = &containerTracker{
+			Name:       ctn.Name,
+			Terminated: make(chan struct{}),
+		}
+	}
+
+	p.Containers = ctnTrackers
+}
+
 // newPodTracker initializes a podTracker with a given clientset for a given pod.
 func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Pod, defaultResync time.Duration) (*podTracker, error) {
 	if pod == nil {
@@ -175,15 +188,6 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	)
 	podInformer := informerFactory.Core().V1().Pods()
 
-	// initialize the containerTrackers
-	containers := map[string]*containerTracker{}
-	for _, ctn := range pod.Spec.Containers {
-		containers[ctn.Name] = &containerTracker{
-			Name:       ctn.Name,
-			Terminated: make(chan struct{}),
-		}
-	}
-
 	// initialize podTracker
 	tracker := podTracker{
 		Logger:          log,
@@ -192,7 +196,6 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		podInformer:     podInformer,
 		PodLister:       podInformer.Lister(),
 		PodSynced:       podInformer.Informer().HasSynced,
-		Containers:      containers,
 	}
 
 	// register event handler funcs in podInformer
