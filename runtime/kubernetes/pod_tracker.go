@@ -165,6 +165,7 @@ func (p podTracker) Start(ctx context.Context, maxLogSize uint) {
 
 // TrackContainers creates a containerTracker for each container.
 func (p *podTracker) TrackContainers(containers []v1.Container) {
+	p.Logger.Tracef("adding %d containerTrackers for pod %s", len(containers), p.TrackedPod)
 	if p.Containers == nil {
 		p.Containers = map[string]*containerTracker{}
 	}

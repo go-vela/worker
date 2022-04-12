@@ -245,6 +245,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 // streamContainerLogs streams the logs to a cache up to a maxLogSize, restarting the stream as needed.
 // streamContainerLogs is designed to run in its own goroutine.
 func (p podTracker) streamContainerLogs(ctx context.Context, ctnTracker *containerTracker, maxLogSize uint) {
+	p.Logger.Tracef("begin streaming logs for container %s in %s", ctnTracker.Name, p.TrackedPod)
 	// create function for periodically capturing
 	// the logs from the container with backoff
 	logsFunc := func() (bool, error) {
