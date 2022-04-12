@@ -220,19 +220,19 @@ func mockPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.P
 		pod.ObjectMeta.Namespace = "test"
 	}
 
-	tracker, err := newPodTracker(log, clientset, pod, time.Second*0)
+	tracker, err := newPodTracker(log, clientset, pod, 0*time.Second)
 	if err != nil {
 		return nil, err
 	}
+
+	// init containerTrackers as well
+	tracker.TrackContainers(pod.Spec.Containers)
 
 	// pre-populate the podInformer cache
 	err = tracker.podInformer.Informer().GetIndexer().Add(pod)
 	if err != nil {
 		return nil, err
 	}
-
-	// mock tracker is always ready
-	tracker.PodSynced = func() bool { return true }
 
 	return tracker, err
 }

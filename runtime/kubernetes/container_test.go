@@ -316,22 +316,25 @@ func TestKubernetes_TailContainer(t *testing.T) {
 func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
-		cached    *v1.Pod
-		updated   *v1.Pod
+		oldPod    *v1.Pod
+		newPod    *v1.Pod
 	}{
 		{
+			name:      "podInformer resync with same statuses",
 			failure:   false,
 			container: _container,
-			cached:    _pod,
-			updated:   _pod,
+			oldPod:    _pod,
+			newPod:    _pod,
 		},
 		{
+			name:      "order of container statuses differs",
 			failure:   false,
 			container: _container,
-			cached:    _pod,
-			updated: &v1.Pod{
+			oldPod:    _pod,
+			newPod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
 				Spec:       _pod.Spec,
@@ -362,9 +365,10 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			},
 		},
 		{
+			name:      "container goes from pending to terminated",
 			failure:   false,
 			container: _container,
-			cached: &v1.Pod{
+			oldPod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
 				Spec:       _pod.Spec,
@@ -380,13 +384,14 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 					},
 				},
 			},
-			updated: _pod,
+			newPod: _pod,
 		},
 		{
+			name:      "if client.Pod.Spec is empty podTracker fails",
 			failure:   true,
 			container: _container,
-			cached:    _pod,
-			updated: &v1.Pod{
+			oldPod:    _pod,
+			newPod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
 				Status:     _pod.Status,
@@ -398,30 +403,18 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// anonymous function to allow "defer done()" on each iteration
-		func() {
-			// set up the fake k8s clientset so that it returns the final/updated state
-			_engine, err := NewMock(test.updated)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock(test.newPod)
 			if err != nil {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			ctx, done := context.WithCancel(context.Background())
-			defer done()
-
-			// enable the add/update/delete funcs for pod changes
-			_engine.PodTracker.Start(ctx)
-
 			go func() {
-				// revert the cached pod to an "older" version
-				// this will trigger a sync which will use the fake clientset to get "updated"
-				pod := test.cached.DeepCopy()
-				pod.SetResourceVersion("older")
+				oldPod := test.oldPod.DeepCopy()
+				oldPod.SetResourceVersion("older")
 
-				err = _engine.PodTracker.podInformer.Informer().GetIndexer().Add(pod)
-				if err != nil {
-					t.Errorf("loading the podInformer cache failed: %v", err)
-				}
+				// simulate a re-sync/PodUpdate event
+				_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
 			}()
 
 			err = _engine.WaitContainer(context.Background(), test.container)
@@ -437,6 +430,6 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			if err != nil {
 				t.Errorf("WaitContainer returned err: %v", err)
 			}
-		}()
+		})
 	}
 }
