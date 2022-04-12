@@ -142,16 +142,17 @@ func (p podTracker) Start(ctx context.Context) {
 }
 
 // TrackContainers creates a containerTracker for each container.
-func (p podTracker) TrackContainers(containers []v1.Container) {
-	ctnTrackers := map[string]*containerTracker{}
+func (p *podTracker) TrackContainers(containers []v1.Container) {
+	if p.Containers == nil {
+		p.Containers = map[string]*containerTracker{}
+	}
+
 	for _, ctn := range containers {
-		ctnTrackers[ctn.Name] = &containerTracker{
+		p.Containers[ctn.Name] = &containerTracker{
 			Name:       ctn.Name,
 			Terminated: make(chan struct{}),
 		}
 	}
-
-	p.Containers = ctnTrackers
 }
 
 // newPodTracker initializes a podTracker with a given clientset for a given pod.
