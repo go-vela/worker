@@ -350,11 +350,6 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
 		if cst.State.Terminated != nil {
-			// && len(cst.State.Terminated.Reason) > 0 {
-			// WaitContainer used to check Terminated.Reason as well.
-			// if that is still needed, then we can add that check here
-			// or retrieve the pod with something like this in WaitContainer:
-			// c.PodTracker.PodLister.Pods(c.config.Namespace).Get(c.Pod.GetName())
 			tracker.terminatedOnce.Do(func() {
 				p.Logger.Debugf("container completed: %s in pod %s, %v", cst.Name, p.TrackedPod, cst)
 
