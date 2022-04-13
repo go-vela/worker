@@ -54,6 +54,12 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 			continue
 		}
 
+		// avoid a panic if the build ends without terminating all containers
+		// (e.g. when a step has an error, the "pause" steps are still running).
+		if cst.State.Terminated == nil {
+			return fmt.Errorf("expected container %s to be terminated, got %v", ctn.ID, cst.State)
+		}
+
 		// set the step exit code
 		ctn.ExitCode = int(cst.State.Terminated.ExitCode)
 
