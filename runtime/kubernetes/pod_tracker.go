@@ -45,6 +45,8 @@ type podTracker struct {
 
 	// informerFactory is used to create Informers and Listers
 	informerFactory kubeinformers.SharedInformerFactory
+	// informerDone is a function used to stop the informerFactory
+	informerDone context.CancelFunc
 	// podInformer watches the given pod, caches the results, and makes them available in podLister
 	podInformer informers.PodInformer
 
@@ -143,8 +145,20 @@ func (p *podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 func (p *podTracker) Start(ctx context.Context) {
 	p.Logger.Tracef("starting PodTracker for pod %s", p.TrackedPod)
 
+	informerCtx, done := context.WithCancel(ctx)
+	p.informerDone = done
+
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
-	p.informerFactory.Start(ctx.Done())
+	p.informerFactory.Start(informerCtx.Done())
+}
+
+// Stop shuts down any informers (e.g. stop watching APIs).
+func (p *podTracker) Stop() {
+	p.Logger.Tracef("stopping PodTracker for pod %s", p.TrackedPod)
+
+	if p.informerDone != nil {
+		p.informerDone()
+	}
 }
 
 // TrackContainers creates a containerTracker for each container.

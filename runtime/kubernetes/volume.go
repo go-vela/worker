@@ -122,6 +122,7 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 	//
 	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
 	c.Pod.Spec.Volumes = []v1.Volume{}
+	c.commonVolumeMounts = []v1.VolumeMount{}
 
 	return nil
 }

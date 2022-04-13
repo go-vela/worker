@@ -227,6 +227,15 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("removing build %s", b.ID)
 
+	// PodTracker gets created in SetupBuild before pod is created
+	defer func() {
+		// check for nil as RemoveBuild may get called multiple times
+		if c.PodTracker != nil {
+			c.PodTracker.Stop()
+			c.PodTracker = nil
+		}
+	}()
+
 	if !c.createdPod {
 		// nothing to do
 		return nil
