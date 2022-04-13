@@ -151,3 +151,191 @@ func Test_podTracker_getTrackedPod(t *testing.T) {
 		})
 	}
 }
+
+func Test_podTracker_HandlePodAdd(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	tests := []struct {
+		name       string
+		trackedPod string // namespace/podName
+		obj        interface{}
+	}{
+		{
+			name:       "got-tracked-pod",
+			trackedPod: "test/github-octocat-1",
+			obj:        _pod,
+		},
+		{
+			name:       "wrong-pod",
+			trackedPod: "test/github-octocat-2",
+			obj:        _pod,
+		},
+		{
+			name:       "invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj:        new(v1.PodTemplate),
+		},
+		{
+			name:       "nil",
+			trackedPod: "test/nil",
+			obj:        nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p := &podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				// other fields not used by getTrackedPod
+				// if they're needed, use newPodTracker
+			}
+
+			// just make sure this doesn't panic
+			p.HandlePodAdd(test.obj)
+		})
+	}
+}
+
+func Test_podTracker_HandlePodUpdate(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	tests := []struct {
+		name       string
+		trackedPod string // namespace/podName
+		oldObj     interface{}
+		newObj     interface{}
+	}{
+		{
+			name:       "re-sync event without change",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _pod,
+			newObj:     _pod,
+		},
+		{
+			name:       "wrong-pod",
+			trackedPod: "test/github-octocat-2",
+			oldObj:     _pod,
+			newObj:     _pod,
+		},
+		{
+			name:       "invalid-type-old",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     new(v1.PodTemplate),
+			newObj:     _pod,
+		},
+		{
+			name:       "nil-old",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     nil,
+			newObj:     _pod,
+		},
+		{
+			name:       "invalid-type-new",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _pod,
+			newObj:     new(v1.PodTemplate),
+		},
+		{
+			name:       "nil-new",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _pod,
+			newObj:     nil,
+		},
+		{
+			name:       "invalid-type-both",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     new(v1.PodTemplate),
+			newObj:     new(v1.PodTemplate),
+		},
+		{
+			name:       "nil-both",
+			trackedPod: "test/nil",
+			oldObj:     nil,
+			newObj:     nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p := &podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				// other fields not used by getTrackedPod
+				// if they're needed, use newPodTracker
+			}
+
+			// just make sure this doesn't panic
+			p.HandlePodUpdate(test.oldObj, test.newObj)
+		})
+	}
+}
+
+func Test_podTracker_HandlePodDelete(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	tests := []struct {
+		name       string
+		trackedPod string // namespace/podName
+		obj        interface{}
+	}{
+		{
+			name:       "got-tracked-pod",
+			trackedPod: "test/github-octocat-1",
+			obj:        _pod,
+		},
+		{
+			name:       "wrong-pod",
+			trackedPod: "test/github-octocat-2",
+			obj:        _pod,
+		},
+		{
+			name:       "invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj:        new(v1.PodTemplate),
+		},
+		{
+			name:       "nil",
+			trackedPod: "test/nil",
+			obj:        nil,
+		},
+		{
+			name:       "tombstone-pod",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: _pod,
+			},
+		},
+		{
+			name:       "tombstone-nil",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: nil,
+			},
+		},
+		{
+			name:       "tombstone-invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: new(v1.PodTemplate),
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p := &podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				// other fields not used by getTrackedPod
+				// if they're needed, use newPodTracker
+			}
+
+			// just make sure this doesn't panic
+			p.HandlePodDelete(test.obj)
+		})
+	}
+}
