@@ -13,6 +13,7 @@ import (
 	"github.com/go-vela/worker/internal/image"
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -536,6 +537,126 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			if err != nil {
 				t.Errorf("WaitContainer returned err: %v", err)
 			}
+		})
+	}
+}
+
+func Test_podTracker_inspectContainerStatuses(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	tests := []struct {
+		name       string
+		trackedPod string
+		ctnName    string
+		terminated bool
+		pod        *v1.Pod
+	}{
+		{
+			name:       "container is terminated",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			terminated: true,
+			pod:        _pod,
+		},
+		{
+			name:       "pod is pending",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			terminated: false,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodPending,
+				},
+			},
+		},
+		{
+			name:       "container is running",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			terminated: false,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name: "step-github-octocat-1-clone",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:       "pod has an untracked container",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			terminated: true,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name: "step-github-octocat-1-clone",
+							State: v1.ContainerState{
+								Terminated: &v1.ContainerStateTerminated{
+									Reason:   "Completed",
+									ExitCode: 0,
+								},
+							},
+						},
+						{
+							Name: "injected-by-admissions-controller",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctnTracker := containerTracker{
+				Name:       test.ctnName,
+				Terminated: make(chan struct{}),
+			}
+			podTracker := podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				Containers: map[string]*containerTracker{},
+				// other fields not used by inspectContainerStatuses
+				// if they're needed, use newPodTracker
+			}
+			podTracker.Containers[test.ctnName] = &ctnTracker
+
+			podTracker.inspectContainerStatuses(test.pod)
+
+			func() {
+				defer func() {
+					// nolint: errcheck // repeat close() panics (otherwise it won't)
+					recover()
+				}()
+
+				close(ctnTracker.Terminated)
+
+				// this will only run if close() did not panic
+				if test.terminated {
+					t.Error("inspectContainerStatuses should have signaled termination")
+				}
+			}()
 		})
 	}
 }
