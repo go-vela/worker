@@ -392,6 +392,10 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 	for _, test := range tests {
 		_engine, err := NewMock(test.k8sPod)
 		_engine.Pod = test.enginePod
+		_engine.containersLookup = map[string]int{}
+		for i, ctn := range test.enginePod.Spec.Containers {
+			_engine.containersLookup[ctn.Name] = i
+		}
 
 		if err != nil {
 			t.Errorf("unable to create runtime engine: %v", err)

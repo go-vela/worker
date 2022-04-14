@@ -236,6 +236,11 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 		i := len(_engine.Pod.Spec.Containers) - 1
 		ctn := _engine.Pod.Spec.Containers[i]
 
+		// make sure the lookup map is working as expected
+		if j := _engine.containersLookup[ctn.Name]; i != j {
+			t.Errorf("expected containersLookup[ctn.Name] to be %d, got %d", i, j)
+		}
+
 		// Make sure Container has Privileged configured correctly
 		if test.wantPrivileged {
 			if ctn.SecurityContext == nil {
