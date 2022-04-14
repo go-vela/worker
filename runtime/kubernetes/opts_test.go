@@ -49,25 +49,27 @@ func TestKubernetes_ClientOpt_WithConfigFile(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithConfigFile(test.file),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithConfigFile(test.file),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithConfigFile should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithConfigFile should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithConfigFile returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithConfigFile returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.config.File, test.want) {
-			t.Errorf("WithConfigFile is %v, want %v", _engine.config.File, test.want)
-		}
+			if !reflect.DeepEqual(_engine.config.File, test.want) {
+				t.Errorf("WithConfigFile is %v, want %v", _engine.config.File, test.want)
+			}
+		})
 	}
 }
 
@@ -95,26 +97,28 @@ func TestKubernetes_ClientOpt_WithNamespace(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithConfigFile("testdata/config"),
-			WithNamespace(test.namespace),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithConfigFile("testdata/config"),
+				WithNamespace(test.namespace),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithNamespace should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithNamespace should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithNamespace returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithNamespace returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.config.Namespace, test.want) {
-			t.Errorf("WithNamespace is %v, want %v", _engine.config.Namespace, test.want)
-		}
+			if !reflect.DeepEqual(_engine.config.Namespace, test.want) {
+				t.Errorf("WithNamespace is %v, want %v", _engine.config.Namespace, test.want)
+			}
+		})
 	}
 }
 
@@ -139,18 +143,20 @@ func TestKubernetes_ClientOpt_WithHostVolumes(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithConfigFile("testdata/config"),
-			WithHostVolumes(test.volumes),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithConfigFile("testdata/config"),
+				WithHostVolumes(test.volumes),
+			)
 
-		if err != nil {
-			t.Errorf("WithHostVolumes returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithHostVolumes returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.config.Volumes, test.want) {
-			t.Errorf("WithHostVolumes is %v, want %v", _engine.config.Volumes, test.want)
-		}
+			if !reflect.DeepEqual(_engine.config.Volumes, test.want) {
+				t.Errorf("WithHostVolumes is %v, want %v", _engine.config.Volumes, test.want)
+			}
+		})
 	}
 }
 
@@ -175,18 +181,20 @@ func TestKubernetes_ClientOpt_WithPrivilegedImages(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithConfigFile("testdata/config"),
-			WithPrivilegedImages(test.images),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithConfigFile("testdata/config"),
+				WithPrivilegedImages(test.images),
+			)
 
-		if err != nil {
-			t.Errorf("WithPrivilegedImages returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithPrivilegedImages returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.config.Images, test.want) {
-			t.Errorf("WithPrivilegedImages is %v, want %v", _engine.config.Images, test.want)
-		}
+			if !reflect.DeepEqual(_engine.config.Images, test.want) {
+				t.Errorf("WithPrivilegedImages is %v, want %v", _engine.config.Images, test.want)
+			}
+		})
 	}
 }
 
@@ -211,30 +219,32 @@ func TestKubernetes_ClientOpt_WithLogger(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithConfigFile("testdata/config"),
-			WithLogger(test.logger),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithConfigFile("testdata/config"),
+				WithLogger(test.logger),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithLogger should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithLogger should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithLogger returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithLogger returned err: %v", err)
-		}
+			if test.logger == nil && _engine.Logger == nil {
+				t.Errorf("_engine.Logger should not be nil even if nil is passed to WithLogger")
+			}
 
-		if test.logger == nil && _engine.Logger == nil {
-			t.Errorf("_engine.Logger should not be nil even if nil is passed to WithLogger")
-		}
-
-		if test.logger != nil && !reflect.DeepEqual(_engine.Logger, test.logger) {
-			t.Errorf("WithLogger set %v, want %v", _engine.Logger, test.logger)
-		}
+			if test.logger != nil && !reflect.DeepEqual(_engine.Logger, test.logger) {
+				t.Errorf("WithLogger set %v, want %v", _engine.Logger, test.logger)
+			}
+		})
 	}
 }
 
@@ -308,30 +318,32 @@ func TestKubernetes_ClientOpt_WithPodsTemplate(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithConfigFile("testdata/config"),
-			WithNamespace("foo"),
-			WithPodsTemplate(test.podsTemplateName, test.podsTemplatePath),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithConfigFile("testdata/config"),
+				WithNamespace("foo"),
+				WithPodsTemplate(test.podsTemplateName, test.podsTemplatePath),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithPodsTemplate should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithPodsTemplate should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithPodsTemplate returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithPodsTemplate returned err: %v", err)
-		}
+			if !reflect.DeepEqual(_engine.config.PipelinePodsTemplateName, test.wantName) {
+				t.Errorf("WithPodsTemplate is %v, wantName %v", _engine.config.PipelinePodsTemplateName, test.wantName)
+			}
 
-		if !reflect.DeepEqual(_engine.config.PipelinePodsTemplateName, test.wantName) {
-			t.Errorf("WithPodsTemplate is %v, wantName %v", _engine.config.PipelinePodsTemplateName, test.wantName)
-		}
-
-		if test.wantTemplate != nil && !reflect.DeepEqual(_engine.PipelinePodTemplate, test.wantTemplate) {
-			t.Errorf("WithPodsTemplate is %v, wantTemplate %v", _engine.PipelinePodTemplate, test.wantTemplate)
-		}
+			if test.wantTemplate != nil && !reflect.DeepEqual(_engine.PipelinePodTemplate, test.wantTemplate) {
+				t.Errorf("WithPodsTemplate is %v, wantTemplate %v", _engine.PipelinePodTemplate, test.wantTemplate)
+			}
+		})
 	}
 }

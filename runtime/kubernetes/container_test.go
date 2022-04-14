@@ -44,19 +44,21 @@ func TestKubernetes_InspectContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.InspectContainer(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.InspectContainer(context.Background(), test.container)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("InspectContainer should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("InspectContainer should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("InspectContainer returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("InspectContainer returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -82,19 +84,21 @@ func TestKubernetes_RemoveContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.RemoveContainer(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.RemoveContainer(context.Background(), test.container)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("RemoveContainer should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("RemoveContainer should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("RemoveContainer returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("RemoveContainer returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -127,28 +131,30 @@ func TestKubernetes_RunContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock(test.pod)
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		if len(test.volumes) > 0 {
-			_engine.config.Volumes = test.volumes
-		}
-
-		err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("RunContainer should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock(test.pod)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			if len(test.volumes) > 0 {
+				_engine.config.Volumes = test.volumes
+			}
 
-		if err != nil {
-			t.Errorf("RunContainer returned err: %v", err)
-		}
+			err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("RunContainer should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("RunContainer returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -223,58 +229,60 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// setup types
-		_engine, err := NewMock(_pod.DeepCopy(), test.opts...)
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-		// actually run the test
-		err = _engine.SetupContainer(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_engine, err := NewMock(_pod.DeepCopy(), test.opts...)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
+			}
+			// actually run the test
+			err = _engine.SetupContainer(context.Background(), test.container)
 
-		// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
+			// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("SetupContainer should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("SetupContainer should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("SetupContainer returned err: %v", err)
-		}
-
-		// SetupContainer added the last pod so get it for inspection
-		i := len(_engine.Pod.Spec.Containers) - 1
-		ctn := _engine.Pod.Spec.Containers[i]
-
-		// Make sure Container has Privileged configured correctly
-		if test.wantPrivileged {
-			if ctn.SecurityContext == nil {
-				t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
-			} else if *ctn.SecurityContext.Privileged != test.wantPrivileged {
-				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			if err != nil {
+				t.Errorf("SetupContainer returned err: %v", err)
 			}
-		} else {
-			if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
-				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
-			}
-		}
 
-		switch test.wantFromTemplate.(type) {
-		case velav1alpha1.PipelineContainerSecurityContext:
-			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+			// SetupContainer added the last pod so get it for inspection
+			i := len(_engine.Pod.Spec.Containers) - 1
+			ctn := _engine.Pod.Spec.Containers[i]
 
-			// PipelinePodsTemplate defined SecurityContext.Capabilities
-			if want.Capabilities != nil {
+			// Make sure Container has Privileged configured correctly
+			if test.wantPrivileged {
 				if ctn.SecurityContext == nil {
 					t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
-				} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
-					t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
+				} else if *ctn.SecurityContext.Privileged != test.wantPrivileged {
+					t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+				}
+			} else {
+				if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
+					t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
 				}
 			}
-		}
+
+			switch test.wantFromTemplate.(type) {
+			case velav1alpha1.PipelineContainerSecurityContext:
+				want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+
+				// PipelinePodsTemplate defined SecurityContext.Capabilities
+				if want.Capabilities != nil {
+					if ctn.SecurityContext == nil {
+						t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+					} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
+						t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
+					}
+				}
+			}
+		})
 	}
 }
 
@@ -315,19 +323,21 @@ func TestKubernetes_TailContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err = _engine.TailContainer(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			_, err = _engine.TailContainer(context.Background(), test.container)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("TailContainer should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("TailContainer should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("TailContainer returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("TailContainer returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -396,29 +406,31 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// setup types
-		_engine, _watch, err := newMockWithWatch(_pod, "pods")
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		go func() {
-			// simulate adding a pod to the watcher
-			_watch.Add(test.object)
-		}()
-
-		err = _engine.WaitContainer(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("WaitContainer should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_engine, _watch, err := newMockWithWatch(_pod, "pods")
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			go func() {
+				// simulate adding a pod to the watcher
+				_watch.Add(test.object)
+			}()
 
-		if err != nil {
-			t.Errorf("WaitContainer returned err: %v", err)
-		}
+			err = _engine.WaitContainer(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WaitContainer should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WaitContainer returned err: %v", err)
+			}
+		})
 	}
 }

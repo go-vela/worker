@@ -50,22 +50,24 @@ func TestKubernetes_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err := New(
-			WithConfigFile(test.path),
-			WithNamespace(test.namespace),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_, err := New(
+				WithConfigFile(test.path),
+				WithNamespace(test.namespace),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
+			}
+		})
 	}
 }
 
