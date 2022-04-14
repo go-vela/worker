@@ -18,14 +18,14 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 // nolint: nilerr // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int) error {
+func (w *Worker) exec(ctx context.Context, index int) error {
 	var err error
 
 	// setup the version
 	v := version.New()
 
 	// capture an item from the queue
-	item, err := w.Queue.Pop(context.Background())
+	item, err := w.Queue.Pop(ctx)
 	if err != nil {
 		return err
 	}
@@ -93,19 +93,20 @@ func (w *Worker) exec(index int) error {
 		t = time.Duration(item.Repo.GetTimeout()) * time.Minute
 	}
 
-	// create a background context
-	buildCtx, done := context.WithCancel(context.Background())
+	// create a build context
+	buildCtx, done := context.WithCancel(ctx)
 	defer done()
 
 	// add to the background context with a timeout
 	// built in for ensuring a build doesn't run forever
-	ctx, timeout := context.WithTimeout(buildCtx, t)
+	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
 
 	defer func() {
 		logger.Info("destroying build")
 		// destroy the build with the executor
-		err = _executor.DestroyBuild(context.Background())
+		// using buildCtx instead of timeoutCtx so that it happens after the timeout
+		err = _executor.DestroyBuild(buildCtx)
 		if err != nil {
 			logger.Errorf("unable to destroy build: %v", err)
 		}
@@ -115,7 +116,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("creating build")
 	// create the build with the executor
-	err = _executor.CreateBuild(ctx)
+	err = _executor.CreateBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to create build: %v", err)
 		return nil
@@ -123,7 +124,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("planning build")
 	// plan the build with the executor
-	err = _executor.PlanBuild(ctx)
+	err = _executor.PlanBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to plan build: %v", err)
 		return nil
@@ -141,7 +142,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("assembling build")
 	// assemble the build with the executor
-	err = _executor.AssembleBuild(ctx)
+	err = _executor.AssembleBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to assemble build: %v", err)
 		return nil
@@ -149,7 +150,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("executing build")
 	// execute the build with the executor
-	err = _executor.ExecBuild(ctx)
+	err = _executor.ExecBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to execute build: %v", err)
 		return nil

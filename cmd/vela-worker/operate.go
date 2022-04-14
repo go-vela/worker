@@ -105,8 +105,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					return nil
 				default:
 					// exec operator subprocess to poll and execute builds
-					// nolint: contextcheck // ignore passing context
-					err = w.exec(id)
+					err = w.exec(gctx, id)
 					if err != nil {
 						// log the error received from the executor
 						//
