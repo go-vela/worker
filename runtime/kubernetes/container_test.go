@@ -26,14 +26,17 @@ func TestKubernetes_InspectContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "build container",
 			failure:   false,
 			container: _container,
 		},
 		{
+			name:      "empty build container",
 			failure:   false,
 			container: new(pipeline.Container),
 		},
@@ -66,10 +69,12 @@ func TestKubernetes_RemoveContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "build container",
 			failure:   false,
 			container: _container,
 		},
@@ -97,6 +102,7 @@ func TestKubernetes_RunContainer(t *testing.T) {
 	// TODO: include VolumeMounts?
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		pipeline  *pipeline.Build
@@ -104,12 +110,14 @@ func TestKubernetes_RunContainer(t *testing.T) {
 		volumes   []string
 	}{
 		{
+			name:      "stages",
 			failure:   false,
 			container: _container,
 			pipeline:  _stages,
 			pod:       _pod,
 		},
 		{
+			name:      "steps",
 			failure:   false,
 			container: _container,
 			pipeline:  _steps,
@@ -147,6 +155,7 @@ func TestKubernetes_RunContainer(t *testing.T) {
 func TestKubernetes_SetupContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name             string
 		failure          bool
 		container        *pipeline.Container
 		opts             []ClientOpt
@@ -154,13 +163,15 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 		wantFromTemplate interface{}
 	}{
 		{
+			name:             "step-clone",
 			failure:          false,
-			container:        _container,
+			container:        _container, // clone step
 			opts:             nil,
 			wantPrivileged:   false,
 			wantFromTemplate: nil,
 		},
 		{
+			name:    "step-echo",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -178,6 +189,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			wantFromTemplate: nil,
 		},
 		{
+			name:    "privileged",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -195,6 +207,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			wantFromTemplate: nil,
 		},
 		{
+			name:           "PipelinePodsTemplate",
 			failure:        false,
 			container:      _container,
 			opts:           []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
@@ -282,16 +295,19 @@ func TestKubernetes_TailContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "got logs",
 			failure:   false,
 			container: _container,
 		},
 		// We cannot test failures, because the mock GetLogs() always
 		// returns a successful response with logs body: "fake logs"
 		//{
+		//	name:      "empty build container",
 		//	failure:   true,
 		//	container: new(pipeline.Container),
 		//},
@@ -318,16 +334,19 @@ func TestKubernetes_TailContainer(t *testing.T) {
 func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		object    runtime.Object
 	}{
 		{
+			name:      "default order in ContainerStatuses",
 			failure:   false,
 			container: _container,
 			object:    _pod,
 		},
 		{
+			name:      "inverted order in ContainerStatuses",
 			failure:   false,
 			container: _container,
 			object: &v1.Pod{
@@ -368,6 +387,7 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			},
 		},
 		{
+			name:      "watch returns invalid type",
 			failure:   true,
 			container: _container,
 			object:    new(v1.PodTemplate),

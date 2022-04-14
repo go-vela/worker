@@ -20,10 +20,12 @@ func TestKubernetes_InspectImage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "valid image",
 			failure:   false,
 			container: _container,
 		},

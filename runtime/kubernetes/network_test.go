@@ -20,14 +20,17 @@ func TestKubernetes_CreateNetwork(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},
@@ -60,14 +63,17 @@ func TestKubernetes_InspectNetwork(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},
@@ -100,14 +106,17 @@ func TestKubernetes_RemoveNetwork(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},

@@ -22,14 +22,17 @@ func TestKubernetes_CreateVolume(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},
@@ -56,16 +59,19 @@ func TestKubernetes_CreateVolume(t *testing.T) {
 func TestKubernetes_InspectVolume(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 		pod      *v1.Pod
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 			pod:      _pod,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 			pod:      _pod,
@@ -104,14 +110,17 @@ func TestKubernetes_RemoveVolume(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},
