@@ -1,0 +1,6 @@
+apiVersion: "go-vela.github.io/v1alpha1"
+kind: PipelinePodsTemplate
+metadata:
+  name: pipeline-pods-template-empty
+spec:
+  template: {}

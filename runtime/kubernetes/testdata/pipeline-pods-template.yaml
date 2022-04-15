@@ -1,0 +1,13 @@
+apiVersion: "go-vela.github.io/v1alpha1"
+kind: PipelinePodsTemplate
+metadata:
+  name: pipeline-pods-template
+spec:
+  template:
+    metadata:
+      annotations:
+        annotation/foo: bar
+      labels:
+        foo: bar
+        # attempting to override worker-provided labels will be ignored.
+        pipeline: this-is-ignored

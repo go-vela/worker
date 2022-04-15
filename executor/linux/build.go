@@ -38,7 +38,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
-		return fmt.Errorf("unable to upload build state: %v", c.err)
+		return fmt.Errorf("unable to upload build state: %w", c.err)
 	}
 
 	// setup the runtime build
@@ -73,8 +73,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 }
 
 // PlanBuild prepares the build for execution.
-//
-// nolint: funlen // ignore function length due to comments and logging messages
 func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -153,7 +151,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// update the init log with progress
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte("> Pulling secrets...\n"))
+	_log.AppendData([]byte("> Preparing secrets...\n"))
 
 	// iterate through each secret provided in the pipeline
 	for _, secret := range c.pipeline.Secrets {
@@ -233,7 +231,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// update the init log with progress
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte("> Pulling service images...\n"))
+	_log.AppendData([]byte("> Preparing service images...\n"))
 
 	// create the services for the pipeline
 	for _, s := range c.pipeline.Services {
@@ -264,7 +262,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// update the init log with progress
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte("> Pulling stage images...\n"))
+	_log.AppendData([]byte("> Preparing stage images...\n"))
 
 	// create the stages for the pipeline
 	for _, s := range c.pipeline.Stages {
@@ -286,7 +284,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// update the init log with progress
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte("> Pulling step images...\n"))
+	_log.AppendData([]byte("> Preparing step images...\n"))
 
 	// create the steps for the pipeline
 	for _, s := range c.pipeline.Steps {
@@ -319,7 +317,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// update the init log with progress
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte("> Pulling secret images...\n"))
+	_log.AppendData([]byte("> Preparing secret images...\n"))
 
 	// create the secrets for the pipeline
 	for _, s := range c.pipeline.Secrets {
@@ -386,8 +384,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 }
 
 // ExecBuild runs a pipeline for a build.
-//
-// nolint: funlen // ignore function length due to comments and log messages
 func (c *client) ExecBuild(ctx context.Context) error {
 	// defer an upload of the build
 	//
@@ -489,7 +485,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
 	c.err = stages.Wait()
 	if c.err != nil {
-		return fmt.Errorf("unable to wait for stages: %v", c.err)
+		return fmt.Errorf("unable to wait for stages: %w", c.err)
 	}
 
 	return c.err

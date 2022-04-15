@@ -243,7 +243,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 		secret.Value = _secret.GetValue()
 
 	default:
-		return nil, fmt.Errorf("%s: %s", ErrUnrecognizedSecretType, secret.Type)
+		return nil, fmt.Errorf("%w: %s", ErrUnrecognizedSecretType, secret.Type)
 	}
 
 	return _secret, nil
@@ -303,8 +303,6 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 		logs.Write(append(scanner.Bytes(), []byte("\n")...))
 
 		// if we have at least 1000 bytes in our buffer
-		//
-		// nolint: gomnd // ignore magic number
 		if logs.Len() > 1000 {
 			logger.Trace(logs.String())
 
@@ -317,7 +315,6 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 			// send API call to append the logs for the init step
 			//
 			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
-			// nolint: lll // skip line length due to variable names
 			_log, _, err = s.client.Vela.Log.UpdateStep(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
 			if err != nil {
 				return err

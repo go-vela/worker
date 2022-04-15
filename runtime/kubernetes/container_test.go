@@ -6,16 +6,15 @@ package kubernetes
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/go-vela/types/pipeline"
+	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/kubernetes/fake"
-	testcore "k8s.io/client-go/testing"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -146,6 +145,135 @@ func TestKubernetes_RunContainer(t *testing.T) {
 }
 
 func TestKubernetes_SetupContainer(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		failure          bool
+		container        *pipeline.Container
+		opts             []ClientOpt
+		wantPrivileged   bool
+		wantFromTemplate interface{}
+	}{
+		{
+			failure:          false,
+			container:        _container,
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        "always",
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "target/vela-docker:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        "always",
+			},
+			opts:             []ClientOpt{WithPrivilegedImages([]string{"target/vela-docker"})},
+			wantPrivileged:   true,
+			wantFromTemplate: nil,
+		},
+		{
+			failure:        false,
+			container:      _container,
+			opts:           []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
+			wantPrivileged: false,
+			wantFromTemplate: velav1alpha1.PipelineContainerSecurityContext{
+				Capabilities: &v1.Capabilities{
+					Drop: []v1.Capability{"ALL"},
+					Add:  []v1.Capability{"NET_ADMIN", "SYS_TIME"},
+				},
+			},
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		// setup types
+		_engine, err := NewMock(_pod.DeepCopy(), test.opts...)
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+		// actually run the test
+		err = _engine.SetupContainer(context.Background(), test.container)
+
+		// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
+
+		if test.failure {
+			if err == nil {
+				t.Errorf("SetupContainer should have returned err")
+			}
+
+			continue
+		}
+
+		if err != nil {
+			t.Errorf("SetupContainer returned err: %v", err)
+		}
+
+		// SetupContainer added the last pod so get it for inspection
+		i := len(_engine.Pod.Spec.Containers) - 1
+		ctn := _engine.Pod.Spec.Containers[i]
+
+		// Make sure Container has Privileged configured correctly
+		if test.wantPrivileged {
+			if ctn.SecurityContext == nil {
+				t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+			} else if *ctn.SecurityContext.Privileged != test.wantPrivileged {
+				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			}
+		} else {
+			if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
+				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			}
+		}
+
+		switch test.wantFromTemplate.(type) {
+		case velav1alpha1.PipelineContainerSecurityContext:
+			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+
+			// PipelinePodsTemplate defined SecurityContext.Capabilities
+			if want.Capabilities != nil {
+				if ctn.SecurityContext == nil {
+					t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+				} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
+					t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
+				}
+			}
+		}
+	}
+}
+
+func TestKubernetes_TailContainer(t *testing.T) {
+	// Unfortunately, we can't test failures using the native Kubernetes fake.
+	// k8s.client-go v0.19.0 added a mock GetLogs() response so that
+	// it no longer panics with an "empty" request, but now it always returns
+	// a successful response with Body: "fake logs".
+	//
+	// https://github.com/kubernetes/kubernetes/issues/84203
+	// https://github.com/kubernetes/kubernetes/pulls/91485
+	//
 	// setup types
 	_engine, err := NewMock(_pod)
 	if err != nil {
@@ -161,99 +289,33 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			failure:   false,
 			container: _container,
 		},
-		{
-			failure: false,
-			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
-				Commands:    []string{"echo", "hello"},
-				Directory:   "/vela/src/github.com/octocat/helloworld",
-				Environment: map[string]string{"FOO": "bar"},
-				Entrypoint:  []string{"/bin/sh", "-c"},
-				Image:       "alpine:latest",
-				Name:        "echo",
-				Number:      2,
-				Pull:        "always",
-			},
-		},
-		{
-			failure: false,
-			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
-				Commands:    []string{"echo", "hello"},
-				Directory:   "/vela/src/github.com/octocat/helloworld",
-				Environment: map[string]string{"FOO": "bar"},
-				Entrypoint:  []string{"/bin/sh", "-c"},
-				Image:       "target/vela-docker:latest",
-				Name:        "echo",
-				Number:      2,
-				Pull:        "always",
-			},
-		},
+		// We cannot test failures, because the mock GetLogs() always
+		// returns a successful response with logs body: "fake logs"
+		//{
+		//	failure:   true,
+		//	container: new(pipeline.Container),
+		//},
 	}
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.SetupContainer(context.Background(), test.container)
-
-		// this does not test the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
+		_, err = _engine.TailContainer(context.Background(), test.container)
 
 		if test.failure {
 			if err == nil {
-				t.Errorf("SetupContainer should have returned err")
+				t.Errorf("TailContainer should have returned err")
 			}
 
 			continue
 		}
 
 		if err != nil {
-			t.Errorf("SetupContainer returned err: %v", err)
+			t.Errorf("TailContainer returned err: %v", err)
 		}
 	}
 }
 
-// TODO: implement this once they resolve the bug
-//
-// https://github.com/kubernetes/kubernetes/issues/84203
-func TestKubernetes_TailContainer(t *testing.T) {
-	// Unfortunately, we can't implement this test using
-	// the native Kubernetes fake. This is because there
-	// is a bug in that code where an "empty" request is
-	// always returned when calling the GetLogs function.
-	//
-	// https://github.com/kubernetes/kubernetes/issues/84203
-	// fixed in k8s.io/client-go v0.19.0; we already have v0.22.2
-}
-
 func TestKubernetes_WaitContainer(t *testing.T) {
-	// setup types
-	_engine, err := NewMock(_pod)
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
-	// create a new fake kubernetes client
-	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
-	_kubernetes := fake.NewSimpleClientset(_pod)
-
-	// create a new fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#NewFake
-	_watch := watch.NewFake()
-
-	// create a new watch reactor with the fake watcher
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#DefaultWatchReactor
-	reactor := testcore.DefaultWatchReactor(_watch, nil)
-
-	// add watch reactor to beginning of the client chain
-	//
-	// https://pkg.go.dev/k8s.io/client-go/testing?tab=doc#Fake.PrependWatchReactor
-	_kubernetes.PrependWatchReactor("pods", reactor)
-
-	// overwrite the mock kubernetes client
-	_engine.Kubernetes = _kubernetes
-
 	// setup tests
 	tests := []struct {
 		failure   bool
@@ -314,12 +376,18 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
+		// setup types
+		_engine, _watch, err := newMockWithWatch(_pod, "pods")
+		if err != nil {
+			t.Errorf("unable to create runtime engine: %v", err)
+		}
+
 		go func() {
 			// simulate adding a pod to the watcher
 			_watch.Add(test.object)
 		}()
 
-		err := _engine.WaitContainer(context.Background(), test.container)
+		err = _engine.WaitContainer(context.Background(), test.container)
 
 		if test.failure {
 			if err == nil {

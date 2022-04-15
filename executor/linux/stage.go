@@ -31,7 +31,7 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	// update the init log with progress
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte(fmt.Sprintf("> Pulling step images for stage %s...\n", s.Name)))
+	_log.AppendData([]byte(fmt.Sprintf("> Preparing step images for stage %s...\n", s.Name)))
 
 	// create the steps for the stage
 	for _, _step := range s.Steps {
@@ -151,6 +151,7 @@ func (c *client) DestroyStage(ctx context.Context, s *pipeline.Stage) error {
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
+
 	var err error
 
 	// destroy the steps for the stage

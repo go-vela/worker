@@ -1,0 +1,23 @@
+apiVersion: "go-vela.github.io/v1alpha1"
+kind: PipelinePodsTemplate
+metadata:
+  name: pipeline-pods-template
+spec:
+  template:
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        sysctls:
+          # https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
+          - name: kernel.shm_rmid_forced
+            value: "0"
+          - name: net.core.somaxconn
+            value: "1024"
+          - name: kernel.msgmax
+            value: "65536"
+      container:
+        securityContext:
+          capabilities:
+            # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container
+            drop: ["ALL"]
+            add: ["NET_ADMIN","SYS_TIME"]

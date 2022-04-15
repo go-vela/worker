@@ -431,7 +431,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 		// in a privileged fashion.
 		err = _runtime.CreateVolume(context.Background(), _pipeline)
 		if err != nil {
-			t.Errorf("unable to create runtime volume: %w", err)
+			t.Errorf("unable to create runtime volume: %v", err)
 		}
 
 		// TODO: hack - remove this

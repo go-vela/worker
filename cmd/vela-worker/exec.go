@@ -17,8 +17,7 @@ import (
 
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
-//
-// nolint:funlen // ignore function length due to comments and log messages
+// nolint: nilerr // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int) error {
 	var err error
 
@@ -57,6 +56,8 @@ func (w *Worker) exec(index int) error {
 		ConfigFile:       w.Config.Runtime.ConfigFile,
 		HostVolumes:      w.Config.Runtime.HostVolumes,
 		Namespace:        w.Config.Runtime.Namespace,
+		PodsTemplateName: w.Config.Runtime.PodsTemplateName,
+		PodsTemplateFile: w.Config.Runtime.PodsTemplateFile,
 		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
 	})
 	if err != nil {

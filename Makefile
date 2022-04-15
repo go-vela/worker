@@ -23,6 +23,14 @@ endif
 # create a list of linker flags for building the golang application
 LD_FLAGS = -X github.com/go-vela/worker/version.Commit=${GITHUB_SHA} -X github.com/go-vela/worker/version.Date=${BUILD_DATE} -X github.com/go-vela/worker/version.Tag=${GITHUB_TAG}
 
+# Misc settings for the generating the Kubernetes CRD for the Kubernetes Runtime
+K8S_CRD_OUTPUT_PKG=github.com/go-vela/worker/runtime/kubernetes/generated
+K8S_CRD_INPUT_PKG=github.com/go-vela/worker/runtime/kubernetes/apis
+K8S_CRD_CLIENTSET_PKG_NAME=clientset
+K8S_CRD_CLIENTSET_NAME_VERSIONED=versioned
+K8S_CRD_GROUP=vela
+K8S_CRD_VERSION=v1alpha1
+
 # The `clean` target is intended to clean the workspace
 # and prepare the local changes for submission.
 #
@@ -311,3 +319,76 @@ spec-version-update:
 # Usage: `make spec`
 .PHONY: spec
 spec: spec-gen spec-version-update spec-validate
+
+# The `crd-gen` target is intended to create a k8s CRD client
+# for the kubernetes runtime using k8s.io/code-generator
+#
+# Usage: `make crd-gen`
+.PHONY: crd-client-gen
+crd-client-gen: controller-gen client-gen
+	$(eval TMP := $(shell mktemp -d))
+	@echo
+	@echo "### Generating CRD deepcopy funcs using sig.k8s.io/controller-tools"
+	$(CONTROLLER_GEN) \
+		object:headerFile="runtime/kubernetes/codegen/header.go.txt" \
+		paths="${K8S_CRD_INPUT_PKG}/${K8S_CRD_GROUP}/${K8S_CRD_VERSION}"
+	@echo "### Generating CRD clientset using k8s.io/code-generator"
+	@echo "Generating clientset for ${K8S_CRD_GROUP}:${K8S_CRD_VERSION} at ${K8S_CRD_OUTPUT_PKG}/${K8S_CRD_CLIENTSET_PKG_NAME}"
+	$(CLIENT_GEN) \
+		--clientset-name "${K8S_CRD_CLIENTSET_NAME_VERSIONED}" \
+		--input-base "" \
+		--input \
+			"${K8S_CRD_INPUT_PKG}/${K8S_CRD_GROUP}/${K8S_CRD_VERSION}" \
+		--output-package \
+			"${K8S_CRD_OUTPUT_PKG}/${K8S_CRD_CLIENTSET_PKG_NAME}" \
+		--output-base "${TMP}" \
+		--go-header-file runtime/kubernetes/codegen/header.go.txt
+	@echo "### Copying generated files"
+	rm -rf runtime/kubernetes/generated/clientset
+	cp -r ${TMP}/github.com/go-vela/worker/runtime/kubernetes/* runtime/kubernetes/
+	rm -rf $(TMP)
+	@echo "### CRD clientset created successfully"
+
+# The `crd-manifest` target will call crd-gen to create a k8s crd
+# for the kubernetes runtime.
+#
+# Usage: `make crd`
+.PHONY: crd-manifest
+crd-manifest: controller-gen ## Generate CustomResourceDefinition object.
+	@echo
+	@echo "### Generating CRD manifest using sig.k8s.io/controller-tools"
+	@echo "Generating CRD manifest in runtime/kubernetes/generated"
+	$(CONTROLLER_GEN) crd paths="./..." output:crd:artifacts:config=runtime/kubernetes/generated
+	@echo "### CRD manifest created successfully"
+
+# The `crd` target will call crd-client-gen and crd-manifest
+# to create a k8s CRD for the kubernetes runtime.
+#
+# Usage: `make crd`
+.PHONY: crd
+crd: crd-client-gen crd-manifest
+
+CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
+.PHONY: controller-gen
+controller-gen: ## Download controller-gen locally if necessary.
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
+
+CLIENT_GEN = $(shell pwd)/bin/client-gen
+.PHONY: client-gen
+client-gen: ## Download client-gen locally if necessary.
+	$(eval K8S_LIB_VERSION := $(shell go mod graph | grep 'github.com/go-vela/worker k8s.io/client-go@' | sed 's/.*@//'))
+	$(call go-get-tool,$(CLIENT_GEN),k8s.io/code-generator/cmd/client-gen@$(K8S_LIB_VERSION))
+
+# go-get-tool will 'go get' any package $2 and install it to $1.
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+define go-get-tool
+@[ -f $(1) ] || { \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
