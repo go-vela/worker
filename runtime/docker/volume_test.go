@@ -38,19 +38,21 @@ func TestDocker_CreateVolume(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.CreateVolume(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.CreateVolume(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateVolume should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateVolume should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("CreateVolume returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("CreateVolume returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -81,19 +83,21 @@ func TestDocker_InspectVolume(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err = _engine.InspectVolume(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			_, err = _engine.InspectVolume(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("InspectVolume should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("InspectVolume should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("InspectVolume returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("InspectVolume returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -124,18 +128,20 @@ func TestDocker_RemoveVolume(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.RemoveVolume(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.RemoveVolume(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("RemoveVolume should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("RemoveVolume should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("RemoveVolume returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("RemoveVolume returned err: %v", err)
+			}
+		})
 	}
 }

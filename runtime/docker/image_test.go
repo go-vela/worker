@@ -51,18 +51,20 @@ func TestDocker_InspectImage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err = _engine.InspectImage(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			_, err = _engine.InspectImage(context.Background(), test.container)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("InspectImage should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("InspectImage should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("InspectImage returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("InspectImage returned err: %v", err)
+			}
+		})
 	}
 }

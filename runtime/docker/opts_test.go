@@ -32,17 +32,19 @@ func TestDocker_ClientOpt_WithPrivilegedImages(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_service, err := New(
-			WithPrivilegedImages(test.images),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_service, err := New(
+				WithPrivilegedImages(test.images),
+			)
 
-		if err != nil {
-			t.Errorf("WithPrivilegedImages returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithPrivilegedImages returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_service.config.Images, test.want) {
-			t.Errorf("WithPrivilegedImages is %v, want %v", _service.config.Images, test.want)
-		}
+			if !reflect.DeepEqual(_service.config.Images, test.want) {
+				t.Errorf("WithPrivilegedImages is %v, want %v", _service.config.Images, test.want)
+			}
+		})
 	}
 }
 
@@ -67,17 +69,19 @@ func TestDocker_ClientOpt_WithHostVolumes(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_service, err := New(
-			WithHostVolumes(test.volumes),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_service, err := New(
+				WithHostVolumes(test.volumes),
+			)
 
-		if err != nil {
-			t.Errorf("WithHostVolumes returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithHostVolumes returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_service.config.Volumes, test.want) {
-			t.Errorf("WithHostVolumes is %v, want %v", _service.config.Volumes, test.want)
-		}
+			if !reflect.DeepEqual(_service.config.Volumes, test.want) {
+				t.Errorf("WithHostVolumes is %v, want %v", _service.config.Volumes, test.want)
+			}
+		})
 	}
 }
 
@@ -102,28 +106,30 @@ func TestDocker_ClientOpt_WithLogger(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_service, err := New(
-			WithLogger(test.logger),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_service, err := New(
+				WithLogger(test.logger),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithLogger should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithLogger should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithLogger returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithLogger returned err: %v", err)
-		}
+			if test.logger == nil && _service.Logger == nil {
+				t.Errorf("_engine.Logger should not be nil even if nil is passed to WithLogger")
+			}
 
-		if test.logger == nil && _service.Logger == nil {
-			t.Errorf("_engine.Logger should not be nil even if nil is passed to WithLogger")
-		}
-
-		if test.logger != nil && !reflect.DeepEqual(_service.Logger, test.logger) {
-			t.Errorf("WithLogger set %v, want %v", _service.Logger, test.logger)
-		}
+			if test.logger != nil && !reflect.DeepEqual(_service.Logger, test.logger) {
+				t.Errorf("WithLogger set %v, want %v", _service.Logger, test.logger)
+			}
+		})
 	}
 }

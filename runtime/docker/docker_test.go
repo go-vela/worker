@@ -38,25 +38,27 @@ func TestDocker_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// patch environment for tests
-		env.PatchAll(t, test.envs)
+		t.Run(test.name, func(t *testing.T) {
+			// patch environment for tests
+			env.PatchAll(t, test.envs)
 
-		_, err := New(
-			WithPrivilegedImages([]string{"alpine"}),
-			WithHostVolumes([]string{"/foo/bar.txt:/foo/bar.txt"}),
-		)
+			_, err := New(
+				WithPrivilegedImages([]string{"alpine"}),
+				WithHostVolumes([]string{"/foo/bar.txt:/foo/bar.txt"}),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
+			}
+		})
 	}
 }
 
