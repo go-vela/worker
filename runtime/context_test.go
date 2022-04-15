@@ -25,19 +25,23 @@ func TestRuntime_FromContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context context.Context
 		want    Engine
 	}{
 		{
+			name: "valid runtime in context",
 			// nolint: staticcheck // ignore using string with context value
 			context: context.WithValue(context.Background(), key, _engine),
 			want:    _engine,
 		},
 		{
+			name:    "runtime not in context",
 			context: context.Background(),
 			want:    nil,
 		},
 		{
+			name: "invalid runtime in context",
 			// nolint: staticcheck // ignore using string with context value
 			context: context.WithValue(context.Background(), key, "foo"),
 			want:    nil,
@@ -65,21 +69,25 @@ func TestRuntime_FromGinContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context *gin.Context
 		value   interface{}
 		want    Engine
 	}{
 		{
+			name:    "valid runtime in context",
 			context: new(gin.Context),
 			value:   _engine,
 			want:    _engine,
 		},
 		{
+			name:    "runtime not in context",
 			context: new(gin.Context),
 			value:   nil,
 			want:    nil,
 		},
 		{
+			name:    "invalid runtime in context",
 			context: new(gin.Context),
 			value:   "foo",
 			want:    nil,

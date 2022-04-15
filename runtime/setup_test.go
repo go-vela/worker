@@ -41,17 +41,20 @@ func TestRuntime_Setup_Kubernetes(t *testing.T) {
 func TestRuntime_Validate(t *testing.T) {
 	// setup types
 	tests := []struct {
+		name    string
 		failure bool
 		setup   *Setup
 		want    error
 	}{
 		{
+			name:    "docker driver",
 			failure: false,
 			setup: &Setup{
 				Driver: constants.DriverDocker,
 			},
 		},
 		{
+			name:    "kubernetes driver",
 			failure: false,
 			setup: &Setup{
 				Driver:    constants.DriverKubernetes,
@@ -59,12 +62,14 @@ func TestRuntime_Validate(t *testing.T) {
 			},
 		},
 		{
+			name:    "empty driver",
 			failure: true,
 			setup: &Setup{
 				Driver: "",
 			},
 		},
 		{
+			name:    "kubernetes driver-missing namespace",
 			failure: true,
 			setup: &Setup{
 				Driver: constants.DriverKubernetes,

@@ -13,16 +13,19 @@ import (
 func TestRuntime_New(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		setup   *Setup
 	}{
 		{
+			name:    "docker driver",
 			failure: false,
 			setup: &Setup{
 				Driver: constants.DriverDocker,
 			},
 		},
 		{
+			name:    "kubernetes driver",
 			failure: false,
 			setup: &Setup{
 				Driver:     constants.DriverKubernetes,
@@ -31,12 +34,14 @@ func TestRuntime_New(t *testing.T) {
 			},
 		},
 		{
+			name:    "invalid driver fails",
 			failure: true,
 			setup: &Setup{
 				Driver: "invalid",
 			},
 		},
 		{
+			name:    "empty driver fails",
 			failure: true,
 			setup: &Setup{
 				Driver: "",
