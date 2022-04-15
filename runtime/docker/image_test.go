@@ -20,18 +20,22 @@ func TestDocker_InspectImage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "tag exists",
 			failure:   false,
 			container: _container,
 		},
 		{
+			name:      "empty build container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
 		{
+			name:    "tag notfound",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_clone",

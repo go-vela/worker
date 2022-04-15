@@ -20,14 +20,17 @@ func TestDocker_InspectContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "build container",
 			failure:   false,
 			container: _container,
 		},
 		{
+			name:      "empty build container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -60,18 +63,22 @@ func TestDocker_RemoveContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "build container",
 			failure:   false,
 			container: _container,
 		},
 		{
+			name:      "empty build container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
 		{
+			name:    "absent build container",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_ignorenotfound",
@@ -112,17 +119,20 @@ func TestDocker_RunContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		pipeline  *pipeline.Build
 		container *pipeline.Container
 		volumes   []string
 	}{
 		{
+			name:      "steps-clone step",
 			failure:   false,
 			pipeline:  _pipeline,
 			container: _container,
 		},
 		{
+			name:     "steps-echo step",
 			failure:  false,
 			pipeline: _pipeline,
 			container: &pipeline.Container{
@@ -138,6 +148,7 @@ func TestDocker_RunContainer(t *testing.T) {
 			},
 		},
 		{
+			name:     "steps-privileged",
 			failure:  false,
 			pipeline: _pipeline,
 			container: &pipeline.Container{
@@ -153,6 +164,7 @@ func TestDocker_RunContainer(t *testing.T) {
 			},
 		},
 		{
+			name:     "steps-kaniko-volumes",
 			failure:  false,
 			pipeline: _pipeline,
 			container: &pipeline.Container{
@@ -169,11 +181,13 @@ func TestDocker_RunContainer(t *testing.T) {
 			volumes: []string{"/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:rw"},
 		},
 		{
+			name:      "steps-empty build container",
 			failure:   true,
 			pipeline:  _pipeline,
 			container: new(pipeline.Container),
 		},
 		{
+			name:     "steps-absent build container",
 			failure:  true,
 			pipeline: _pipeline,
 			container: &pipeline.Container{
@@ -187,6 +201,7 @@ func TestDocker_RunContainer(t *testing.T) {
 			},
 		},
 		{
+			name:     "steps-user-absent build container",
 			failure:  true,
 			pipeline: _pipeline,
 			container: &pipeline.Container{
@@ -195,6 +210,23 @@ func TestDocker_RunContainer(t *testing.T) {
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "target/vela-git:v0.4.0",
 				Name:        "ignorenotfound",
+				Number:      2,
+				Pull:        "always",
+				User:        "foo",
+			},
+		},
+		{
+			name:     "steps-user-echo step",
+			failure:  false,
+			pipeline: _pipeline,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
 				Number:      2,
 				Pull:        "always",
 				User:        "foo",
@@ -233,14 +265,17 @@ func TestDocker_SetupContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "pull-always-tag_exists",
 			failure:   false,
 			container: _container,
 		},
 		{
+			name:    "pull-not_present-tag_exists",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_clone",
@@ -253,6 +288,7 @@ func TestDocker_SetupContainer(t *testing.T) {
 			},
 		},
 		{
+			name:    "pull-not_present-mock tag ignorenotfound", // mock returns as if this exists
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_clone",
@@ -265,6 +301,7 @@ func TestDocker_SetupContainer(t *testing.T) {
 			},
 		},
 		{
+			name:    "pull-always-tag notfound fails",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_clone",
@@ -277,6 +314,7 @@ func TestDocker_SetupContainer(t *testing.T) {
 			},
 		},
 		{
+			name:    "pull-not_present-tag notfound fails",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_clone",
@@ -317,14 +355,17 @@ func TestDocker_TailContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "build container",
 			failure:   false,
 			container: _container,
 		},
 		{
+			name:      "empty build container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -357,14 +398,17 @@ func TestDocker_WaitContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "build container",
 			failure:   false,
 			container: _container,
 		},
 		{
+			name:      "empty build container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},

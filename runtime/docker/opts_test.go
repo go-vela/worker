@@ -14,14 +14,17 @@ import (
 func TestDocker_ClientOpt_WithPrivilegedImages(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name   string
 		images []string
 		want   []string
 	}{
 		{
+			name:   "defined",
 			images: []string{"alpine", "golang"},
 			want:   []string{"alpine", "golang"},
 		},
 		{
+			name:   "empty",
 			images: []string{},
 			want:   []string{},
 		},
@@ -46,14 +49,17 @@ func TestDocker_ClientOpt_WithPrivilegedImages(t *testing.T) {
 func TestDocker_ClientOpt_WithHostVolumes(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		volumes []string
 		want    []string
 	}{
 		{
+			name:    "defined",
 			volumes: []string{"/foo/bar.txt:/foo/bar.txt", "/tmp/baz.conf:/tmp/baz.conf"},
 			want:    []string{"/foo/bar.txt:/foo/bar.txt", "/tmp/baz.conf:/tmp/baz.conf"},
 		},
 		{
+			name:    "empty",
 			volumes: []string{},
 			want:    []string{},
 		},
@@ -78,14 +84,17 @@ func TestDocker_ClientOpt_WithHostVolumes(t *testing.T) {
 func TestDocker_ClientOpt_WithLogger(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		logger  *logrus.Entry
 	}{
 		{
+			name:    "provided logger",
 			failure: false,
 			logger:  &logrus.Entry{},
 		},
 		{
+			name:    "nil logger",
 			failure: false,
 			logger:  nil,
 		},

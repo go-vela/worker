@@ -20,10 +20,12 @@ func TestDocker_InspectBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
@@ -56,10 +58,12 @@ func TestDocker_SetupBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
@@ -86,10 +90,12 @@ func TestDocker_SetupBuild(t *testing.T) {
 func TestDocker_AssembleBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
@@ -121,10 +127,12 @@ func TestDocker_AssembleBuild(t *testing.T) {
 func TestDocker_RemoveBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},

@@ -20,14 +20,17 @@ func TestDocker_CreateNetwork(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
 		{
+			name:     "empty",
 			failure:  true,
 			pipeline: new(pipeline.Build),
 		},
@@ -60,14 +63,17 @@ func TestDocker_InspectNetwork(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
 		{
+			name:     "empty",
 			failure:  true,
 			pipeline: new(pipeline.Build),
 		},
@@ -100,14 +106,17 @@ func TestDocker_RemoveNetwork(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
 		{
+			name:     "empty",
 			failure:  true,
 			pipeline: new(pipeline.Build),
 		},

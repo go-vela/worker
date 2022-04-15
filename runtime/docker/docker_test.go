@@ -15,14 +15,17 @@ import (
 func TestDocker_New(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		envs    map[string]string
 	}{
 		{
+			name:    "default",
 			failure: false,
 			envs:    map[string]string{},
 		},
 		{
+			name:    "with invalid DOCKER_CERT_PATH",
 			failure: true,
 			envs: map[string]string{
 				"DOCKER_CERT_PATH": "invalid/path",
