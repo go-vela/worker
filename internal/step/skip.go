@@ -25,10 +25,11 @@ func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/pipeline#RuleData
 	ruledata := &pipeline.RuleData{
-		Branch: b.GetBranch(),
-		Event:  b.GetEvent(),
-		Repo:   r.GetFullName(),
-		Status: b.GetStatus(),
+		Branch:   b.GetBranch(),
+		Event:    b.GetEvent(),
+		Repo:     r.GetFullName(),
+		Status:   b.GetStatus(),
+		Parallel: c.Ruleset.If.Parallel,
 	}
 
 	// check if the build event is tag

@@ -118,11 +118,22 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 	}()
 
 	logger.Debug("starting execution of stage")
+	stop := false
 	// execute the steps for the stage
 	for _, _step := range s.Steps {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
+		ruleset := _step.Ruleset
+
+		if !stop && !s.Dependent {
+			ruleset.If.Parallel = true
+		} else {
+			ruleset.If.Parallel = false
+		}
+
+		_step.Ruleset = ruleset
+
 		if step.Skip(_step, c.build, c.repo) {
 			continue
 		}
@@ -139,6 +150,9 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		err = c.ExecStep(ctx, _step)
 		if err != nil {
 			return fmt.Errorf("unable to exec step %s: %w", _step.Name, err)
+		}
+		if _step.ExitCode != 0 && !_step.Ruleset.Continue {
+			stop = true
 		}
 	}
 
