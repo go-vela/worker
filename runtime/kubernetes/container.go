@@ -54,6 +54,24 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 			continue
 		}
 
+		// avoid a panic if the build ends without terminating all containers
+		if cst.State.Terminated == nil {
+			for _, container := range pod.Spec.Containers {
+				if cst.Name != container.Name {
+					continue
+				}
+
+				// steps that were not executed will still be "running" the pause image as expected.
+				if container.Image == pauseImage {
+					return nil
+				}
+
+				break
+			}
+
+			return fmt.Errorf("expected container %s to be terminated, got %v", ctn.ID, cst.State)
+		}
+
 		// set the step exit code
 		ctn.ExitCode = int(cst.State.Terminated.ExitCode)
 
@@ -122,7 +140,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		// the containers with the proper image.
 		//
 		// https://hub.docker.com/r/kubernetes/pause
-		Image:           image.Parse("kubernetes/pause:latest"),
+		Image:           image.Parse(pauseImage),
 		Env:             []v1.EnvVar{},
 		Stdin:           false,
 		StdinOnce:       false,

@@ -14,7 +14,9 @@ import (
 	"github.com/go-vela/types/pipeline"
 )
 
-const imagePatch = `
+const (
+	pauseImage = "kubernetes/pause:latest"
+	imagePatch = `
 {
   "spec": {
     "containers": [
@@ -26,6 +28,7 @@ const imagePatch = `
   }
 }
 `
+)
 
 // CreateImage creates the pipeline container image.
 func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error {
