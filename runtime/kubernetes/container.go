@@ -259,15 +259,8 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodLogOptions
 		opts := &v1.PodLogOptions{
-			Container: ctn.ID,
-			Follow:    true,
-			// steps can exit quickly, and might be gone before
-			// log tailing has started, so we need to request
-			// logs for previously exited containers as well.
-			// Pods get deleted after job completion, and names for
-			// pod+container don't get reused. So, previous
-			// should only retrieve logs for the current build step.
-			Previous:   true,
+			Container:  ctn.ID,
+			Follow:     true,
 			Timestamps: false,
 		}
 
