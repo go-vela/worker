@@ -18,33 +18,57 @@ import (
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
-	// setup types
-	_engine, err := NewMock(_pod)
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
 	// setup tests
 	tests := []struct {
 		name      string
 		failure   bool
+		pod       *v1.Pod
 		container *pipeline.Container
 	}{
 		{
 			name:      "build container",
 			failure:   false,
+			pod:       _pod,
 			container: _container,
 		},
 		{
 			name:      "empty build container",
 			failure:   false,
+			pod:       _pod,
 			container: new(pipeline.Container),
+		},
+		{
+			name:    "container not terminated",
+			failure: true,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name: "step-github-octocat-1-clone",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+			container: _container,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_engine, err := NewMock(test.pod)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
+			}
+
 			err = _engine.InspectContainer(context.Background(), test.container)
 
 			if test.failure {
