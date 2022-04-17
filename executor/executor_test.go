@@ -73,11 +73,13 @@ func TestExecutor_New(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		setup   *Setup
 		want    Engine
 	}{
 		{
+			name:    "driver-darwin",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,
@@ -92,6 +94,7 @@ func TestExecutor_New(t *testing.T) {
 			want: nil,
 		},
 		{
+			name:    "driver-linux",
 			failure: false,
 			setup: &Setup{
 				Build:      _build,
@@ -108,6 +111,7 @@ func TestExecutor_New(t *testing.T) {
 			want: _linux,
 		},
 		{
+			name:    "driver-local",
 			failure: false,
 			setup: &Setup{
 				Build:    _build,
@@ -122,6 +126,7 @@ func TestExecutor_New(t *testing.T) {
 			want: _local,
 		},
 		{
+			name:    "driver-windows",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,
@@ -136,6 +141,7 @@ func TestExecutor_New(t *testing.T) {
 			want: nil,
 		},
 		{
+			name:    "driver-invalid",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,
@@ -150,6 +156,7 @@ func TestExecutor_New(t *testing.T) {
 			want: nil,
 		},
 		{
+			name:    "driver-empty",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,

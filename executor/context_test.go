@@ -51,19 +51,23 @@ func TestExecutor_FromContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context context.Context
 		want    Engine
 	}{
 		{
+			name: "valid executor in context",
 			// nolint: staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, _engine),
 			want:    _engine,
 		},
 		{
+			name:    "executor not in context",
 			context: context.Background(),
 			want:    nil,
 		},
 		{
+			name: "invalid executor in context",
 			// nolint: staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, "foo"),
 			want:    nil,
@@ -110,21 +114,25 @@ func TestExecutor_FromGinContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context *gin.Context
 		value   interface{}
 		want    Engine
 	}{
 		{
+			name:    "valid executor in context",
 			context: new(gin.Context),
 			value:   _engine,
 			want:    _engine,
 		},
 		{
+			name:    "executor not in context",
 			context: new(gin.Context),
 			value:   nil,
 			want:    nil,
 		},
 		{
+			name:    "invalid executor in context",
 			context: new(gin.Context),
 			value:   "foo",
 			want:    nil,
