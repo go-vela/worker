@@ -22,14 +22,17 @@ func TestLocal_GetBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		engine  *client
 	}{
 		{
+			name:    "with build",
 			failure: false,
 			engine:  _engine,
 		},
 		{
+			name:    "missing build",
 			failure: true,
 			engine:  new(client),
 		},
@@ -70,14 +73,17 @@ func TestLocal_GetPipeline(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		engine  *client
 	}{
 		{
+			name:    "with pipeline",
 			failure: false,
 			engine:  _engine,
 		},
 		{
+			name:    "missing pipeline",
 			failure: true,
 			engine:  new(client),
 		},
@@ -118,14 +124,17 @@ func TestLocal_GetRepo(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		engine  *client
 	}{
 		{
+			name:    "with repo",
 			failure: false,
 			engine:  _engine,
 		},
 		{
+			name:    "missing repo",
 			failure: true,
 			engine:  new(client),
 		},

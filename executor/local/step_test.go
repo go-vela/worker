@@ -27,10 +27,12 @@ func TestLocal_CreateStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -42,7 +44,8 @@ func TestLocal_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -54,7 +57,8 @@ func TestLocal_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with image not found
+		{
+			name:    "step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -66,7 +70,8 @@ func TestLocal_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -114,10 +119,12 @@ func TestLocal_PlanStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -129,7 +136,8 @@ func TestLocal_PlanStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -177,10 +185,12 @@ func TestLocal_ExecStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -192,7 +202,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -204,7 +215,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // detached step container
+		{
+			name:    "detached step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -217,7 +229,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with image not found
+		{
+			name:    "step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -229,7 +242,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -281,10 +295,12 @@ func TestLocal_StreamStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -296,7 +312,8 @@ func TestLocal_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -308,7 +325,8 @@ func TestLocal_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic stage container
+		{
+			name:    "basic stage container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "github_octocat_1_echo_echo",
@@ -320,7 +338,8 @@ func TestLocal_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -368,10 +387,12 @@ func TestLocal_DestroyStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -383,7 +404,8 @@ func TestLocal_DestroyStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",

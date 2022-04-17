@@ -27,10 +27,12 @@ func TestLocal_CreateService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -44,7 +46,8 @@ func TestLocal_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with image not found
+		{
+			name:    "service container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -58,7 +61,8 @@ func TestLocal_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -106,10 +110,12 @@ func TestLocal_PlanService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -123,7 +129,8 @@ func TestLocal_PlanService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -171,10 +178,12 @@ func TestLocal_ExecService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -188,7 +197,8 @@ func TestLocal_ExecService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with image not found
+		{
+			name:    "service container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -202,7 +212,8 @@ func TestLocal_ExecService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -254,10 +265,12 @@ func TestLocal_StreamService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -271,7 +284,8 @@ func TestLocal_StreamService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -319,10 +333,12 @@ func TestLocal_DestroyService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",

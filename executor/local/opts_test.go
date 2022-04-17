@@ -28,9 +28,11 @@ func TestLocal_Opt_WithBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name  string
 		build *library.Build
 	}{
 		{
+			name:  "build",
 			build: _build,
 		},
 	}
@@ -54,14 +56,17 @@ func TestLocal_Opt_WithBuild(t *testing.T) {
 func TestLocal_Opt_WithHostname(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		hostname string
 		want     string
 	}{
 		{
+			name:     "dns hostname",
 			hostname: "vela.worker.localhost",
 			want:     "vela.worker.localhost",
 		},
 		{
+			name:     "empty hostname is localhost",
 			hostname: "",
 			want:     "localhost",
 		},
@@ -88,14 +93,17 @@ func TestLocal_Opt_WithPipeline(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps pipeline",
 			failure:  false,
 			pipeline: _steps,
 		},
 		{
+			name:     "nil pipeline",
 			failure:  true,
 			pipeline: nil,
 		},
@@ -131,9 +139,11 @@ func TestLocal_Opt_WithRepo(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name string
 		repo *library.Repo
 	}{
 		{
+			name: "repo",
 			repo: _repo,
 		},
 	}
@@ -163,14 +173,17 @@ func TestLocal_Opt_WithRuntime(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		runtime runtime.Engine
 	}{
 		{
+			name:    "docker runtime",
 			failure: false,
 			runtime: _runtime,
 		},
 		{
+			name:    "nil runtime",
 			failure: true,
 			runtime: nil,
 		},
@@ -206,9 +219,11 @@ func TestLocal_Opt_WithUser(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name string
 		user *library.User
 	}{
 		{
+			name: "user",
 			user: _user,
 		},
 	}
@@ -242,9 +257,11 @@ func TestLocal_Opt_WithVelaClient(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name   string
 		client *vela.Client
 	}{
 		{
+			name:   "vela client",
 			client: _client,
 		},
 	}
@@ -268,14 +285,17 @@ func TestLocal_Opt_WithVelaClient(t *testing.T) {
 func TestLocal_Opt_WithVersion(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		version string
 		want    string
 	}{
 		{
+			name:    "version",
 			version: "v1.0.0",
 			want:    "v1.0.0",
 		},
 		{
+			name:    "empty version",
 			version: "",
 			want:    "v0.0.0",
 		},

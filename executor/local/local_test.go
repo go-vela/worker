@@ -38,14 +38,17 @@ func TestLocal_New(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps pipeline",
 			failure:  false,
 			pipeline: testSteps(),
 		},
 		{
+			name:     "nil pipeline",
 			failure:  true,
 			pipeline: nil,
 		},
