@@ -61,10 +61,12 @@ func TestLinux_CreateStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		stage   *pipeline.Stage
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -81,7 +83,8 @@ func TestLinux_CreateStage(t *testing.T) {
 				},
 			},
 		},
-		{ // stage with step container with image not found
+		{
+			name:    "stage with step container with image not found",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -98,7 +101,8 @@ func TestLinux_CreateStage(t *testing.T) {
 				},
 			},
 		},
-		{ // empty stage
+		{
+			name:    "empty stage",
 			failure: true,
 			stage:   new(pipeline.Stage),
 		},
@@ -178,11 +182,13 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		stage    *pipeline.Stage
 		stageMap *sync.Map
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -200,7 +206,8 @@ func TestLinux_PlanStage(t *testing.T) {
 			},
 			stageMap: new(sync.Map),
 		},
-		{ // basic stage with nil stage map
+		{
+			name:    "basic stage with nil stage map",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name:  "echo",
@@ -219,7 +226,8 @@ func TestLinux_PlanStage(t *testing.T) {
 			},
 			stageMap: testMap,
 		},
-		{ // basic stage with error stage map
+		{
+			name:    "basic stage with error stage map",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name:  "echo",
@@ -292,10 +300,12 @@ func TestLinux_ExecStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		stage   *pipeline.Stage
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -312,7 +322,8 @@ func TestLinux_ExecStage(t *testing.T) {
 				},
 			},
 		},
-		{ // stage with step container with image not found
+		{
+			name:    "stage with step container with image not found",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -329,7 +340,8 @@ func TestLinux_ExecStage(t *testing.T) {
 				},
 			},
 		},
-		{ // stage with step container with bad number
+		{
+			name:    "stage with step container with bad number",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -403,10 +415,12 @@ func TestLinux_DestroyStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		stage   *pipeline.Stage
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",

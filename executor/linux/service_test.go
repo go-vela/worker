@@ -43,10 +43,12 @@ func TestLinux_CreateService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -60,7 +62,8 @@ func TestLinux_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with image not found
+		{
+			name:    "service container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -74,7 +77,8 @@ func TestLinux_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -132,10 +136,12 @@ func TestLinux_PlanService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -149,7 +155,8 @@ func TestLinux_PlanService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with nil environment
+		{
+			name:    "service container with nil environment",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -163,7 +170,8 @@ func TestLinux_PlanService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -221,10 +229,12 @@ func TestLinux_ExecService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -238,7 +248,8 @@ func TestLinux_ExecService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with image not found
+		{
+			name:    "service container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -252,7 +263,8 @@ func TestLinux_ExecService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -315,10 +327,12 @@ func TestLinux_StreamService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -332,7 +346,8 @@ func TestLinux_StreamService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with name not found
+		{
+			name:    "service container with name not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_notfound",
@@ -346,7 +361,8 @@ func TestLinux_StreamService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -409,10 +425,12 @@ func TestLinux_DestroyService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -426,7 +444,8 @@ func TestLinux_DestroyService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with ignoring name not found
+		{
+			name:    "service container with ignoring name not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_ignorenotfound",

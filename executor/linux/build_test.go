@@ -47,31 +47,37 @@ func TestLinux_CreateBuild(t *testing.T) {
 	}
 
 	tests := []struct {
+		name     string
 		failure  bool
 		build    *library.Build
 		pipeline string
 	}{
-		{ // basic secrets pipeline
+		{
+			name:     "basic secrets pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
-		{ // basic services pipeline
+		{
+			name:     "basic services pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
-		{ // basic steps pipeline
+		{
+			name:     "basic steps pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
-		{ // basic stages pipeline
+		{
+			name:     "basic stages pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
-		{ // steps pipeline with empty build
+		{
+			name:     "steps pipeline with empty build",
 			failure:  true,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
@@ -142,22 +148,27 @@ func TestLinux_PlanBuild(t *testing.T) {
 	}
 
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline string
 	}{
-		{ // basic secrets pipeline
+		{
+			name:     "basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
-		{ // basic services pipeline
+		{
+			name:     "basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
-		{ // basic steps pipeline
+		{
+			name:     "basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
-		{ // basic stages pipeline
+		{
+			name:     "basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
@@ -233,54 +244,67 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	}
 
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline string
 	}{
-		{ // basic secrets pipeline
+		{
+			name:     "basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
-		{ // secrets pipeline with image not found
+		{
+			name:     "secrets pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/secrets/img_notfound.yml",
 		},
-		{ // secrets pipeline with ignoring image not found
+		{
+			name:     "secrets pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
 		},
-		{ // basic services pipeline
+		{
+			name:     "basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
-		{ // services pipeline with image not found
+		{
+			name:     "services pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
-		{ // services pipeline with ignoring image not found
+		{
+			name:     "services pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		},
-		{ // basic steps pipeline
+		{
+			name:     "basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
-		{ // steps pipeline with image not found
+		{
+			name:     "steps pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
-		{ // steps pipeline with ignoring image not found
+		{
+			name:     "steps pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		},
-		{ // basic stages pipeline
+		{
+			name:     "basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
-		{ // stages pipeline with image not found
+		{
+			name:     "stages pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
-		{ // stages pipeline with ignoring image not found
+		{
+			name:     "stages pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/stages/img_ignorenotfound.yml",
 		},
@@ -356,30 +380,37 @@ func TestLinux_ExecBuild(t *testing.T) {
 	}
 
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline string
 	}{
-		{ // basic services pipeline
+		{
+			name:     "basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
-		{ // services pipeline with image not found
+		{
+			name:     "services pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
-		{ // basic steps pipeline
+		{
+			name:     "basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
-		{ // steps pipeline with image not found
+		{
+			name:     "steps pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
-		{ // basic stages pipeline
+		{
+			name:     "basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
-		{ // stages pipeline with image not found
+		{
+			name:     "stages pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
@@ -489,38 +520,47 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	}
 
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline string
 	}{
-		{ // basic secrets pipeline
+		{
+			name:     "basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
-		{ // secrets pipeline with name not found
+		{
+			name:     "secrets pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
-		{ // basic services pipeline
+		{
+			name:     "basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
-		{ // services pipeline with name not found
+		{
+			name:     "services pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/services/name_notfound.yml",
 		},
-		{ // basic steps pipeline
+		{
+			name:     "basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
-		{ // steps pipeline with name not found
+		{
+			name:     "steps pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/steps/name_notfound.yml",
 		},
-		{ // basic stages pipeline
+		{
+			name:     "basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
-		{ // stages pipeline with name not found
+		{
+			name:     "stages pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/stages/name_notfound.yml",
 		},

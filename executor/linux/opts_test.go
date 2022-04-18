@@ -28,14 +28,17 @@ func TestLinux_Opt_WithBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		build   *library.Build
 	}{
 		{
+			name:    "build",
 			failure: false,
 			build:   _build,
 		},
 		{
+			name:    "nil build",
 			failure: true,
 			build:   nil,
 		},
@@ -68,18 +71,22 @@ func TestLinux_Opt_WithBuild(t *testing.T) {
 func TestLinux_Opt_WithLogMethod(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		logMethod string
 	}{
 		{
+			name:      "byte-chunks",
 			failure:   false,
 			logMethod: "byte-chunks",
 		},
 		{
+			name:      "time-chunks",
 			failure:   false,
 			logMethod: "time-chunks",
 		},
 		{
+			name:      "empty",
 			failure:   true,
 			logMethod: "",
 		},
@@ -112,10 +119,12 @@ func TestLinux_Opt_WithLogMethod(t *testing.T) {
 func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name       string
 		failure    bool
 		maxLogSize uint
 	}{
 		{
+			name:       "defined",
 			failure:    false,
 			maxLogSize: 2097152,
 		},
@@ -147,14 +156,17 @@ func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 func TestLinux_Opt_WithHostname(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		hostname string
 		want     string
 	}{
 		{
+			name:     "dns hostname",
 			hostname: "vela.worker.localhost",
 			want:     "vela.worker.localhost",
 		},
 		{
+			name:     "empty hostname is localhost",
 			hostname: "",
 			want:     "localhost",
 		},
@@ -181,14 +193,17 @@ func TestLinux_Opt_WithPipeline(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps pipeline",
 			failure:  false,
 			pipeline: _steps,
 		},
 		{
+			name:     "nil pipeline",
 			failure:  true,
 			pipeline: nil,
 		},
@@ -224,14 +239,17 @@ func TestLinux_Opt_WithRepo(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		repo    *library.Repo
 	}{
 		{
+			name:    "repo",
 			failure: false,
 			repo:    _repo,
 		},
 		{
+			name:    "nil repo",
 			failure: true,
 			repo:    nil,
 		},
@@ -270,14 +288,17 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		runtime runtime.Engine
 	}{
 		{
+			name:    "docker runtime",
 			failure: false,
 			runtime: _runtime,
 		},
 		{
+			name:    "nil runtime",
 			failure: true,
 			runtime: nil,
 		},
@@ -313,14 +334,17 @@ func TestLinux_Opt_WithUser(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		user    *library.User
 	}{
 		{
+			name:    "user",
 			failure: false,
 			user:    _user,
 		},
 		{
+			name:    "nil user",
 			failure: true,
 			user:    nil,
 		},
@@ -363,14 +387,17 @@ func TestLinux_Opt_WithVelaClient(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		client  *vela.Client
 	}{
 		{
+			name:    "vela client",
 			failure: false,
 			client:  _client,
 		},
 		{
+			name:    "nil vela client",
 			failure: true,
 			client:  nil,
 		},
@@ -403,14 +430,17 @@ func TestLinux_Opt_WithVelaClient(t *testing.T) {
 func TestLinux_Opt_WithVersion(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		version string
 		want    string
 	}{
 		{
+			name:    "version",
 			version: "v1.0.0",
 			want:    "v1.0.0",
 		},
 		{
+			name:    "empty version",
 			version: "",
 			want:    "v0.0.0",
 		},

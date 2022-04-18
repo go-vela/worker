@@ -51,10 +51,12 @@ func TestLinux_Secret_create(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:    "good image tag",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -67,6 +69,7 @@ func TestLinux_Secret_create(t *testing.T) {
 			},
 		},
 		{
+			name:    "notfound image tag",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -138,11 +141,13 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		step      *library.Step
 	}{
 		{
+			name:    "running container-empty step",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -156,6 +161,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: new(library.Step),
 		},
 		{
+			name:    "running container-pending step",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -169,6 +175,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: _step,
 		},
 		{
+			name:    "inspecting container failure due to invalid container id",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
@@ -182,6 +189,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: new(library.Step),
 		},
 		{
+			name:    "removing container failure",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_ignorenotfound",
@@ -255,14 +263,17 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline string
 	}{
-		{ // basic secrets pipeline
+		{
+			name:     "basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
-		{ // pipeline with secret name not found
+		{
+			name:     "pipeline with secret name not found",
 			failure:  true,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
@@ -334,10 +345,12 @@ func TestLinux_Secret_pull(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		secret  *pipeline.Secret
 	}{
-		{ // success with org secret
+		{
+			name:    "success with org secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -348,7 +361,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with invalid org secret
+		{
+			name:    "failure with invalid org secret",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -359,7 +373,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with org secret key not found
+		{
+			name:    "failure with org secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -370,7 +385,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // success with repo secret
+		{
+			name:    "success with repo secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -381,7 +397,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with invalid repo secret
+		{
+			name:    "failure with invalid repo secret",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -392,7 +409,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with repo secret key not found
+		{
+			name:    "failure with repo secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -403,7 +421,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // success with shared secret
+		{
+			name:    "success with shared secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -414,7 +433,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with shared secret key not found
+		{
+			name:    "failure with shared secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -425,7 +445,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with invalid type
+		{
+			name:    "failure with invalid type",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -491,11 +512,13 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		logs      *library.Log
 		container *pipeline.Container
 	}{
-		{ // container step succeeds
+		{
+			name:    "container step succeeds",
 			failure: false,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
@@ -508,7 +531,8 @@ func TestLinux_Secret_stream(t *testing.T) {
 				Pull:        "always",
 			},
 		},
-		{ // container step fails because of invalid container id
+		{
+			name:    "container step fails because of invalid container id",
 			failure: true,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
@@ -562,12 +586,14 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 
 	// setup types
 	tests := []struct {
+		name string
 		step *pipeline.Container
 		msec map[string]*library.Secret
 		want *pipeline.Container
 	}{
 		// Tests for secrets with image ACLs
 		{
+			name: "secret with empty image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -580,6 +606,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with matching image ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -592,6 +619,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with matching image:tag ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -604,6 +632,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -618,6 +647,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 
 		// Tests for secrets with event ACLs
 		{ // push event checks
+			name: "secret with matching push event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -630,6 +660,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching push event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -642,6 +673,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{ // pull_request event checks
+			name: "secret with matching pull_request event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
@@ -654,6 +686,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching pull_request event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
@@ -666,6 +699,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{ // tag event checks
+			name: "secret with matching tag event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "tag"},
@@ -678,6 +712,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching tag event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "tag"},
@@ -690,6 +725,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{ // deployment event checks
+			name: "secret with matching deployment event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "deployment"},
@@ -702,6 +738,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching deployment event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "deployment"},
@@ -716,6 +753,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 
 		// Tests for secrets with event and image ACLs
 		{
+			name: "secret with matching event ACL and non-matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -728,6 +766,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching event ACL and matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "centos:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -740,6 +779,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with matching event ACL and matching image ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -778,15 +818,17 @@ func TestLinux_Secret_escapeNewlineSecrets(t *testing.T) {
 
 	// setup types
 	tests := []struct {
+		name      string
 		secretMap map[string]*library.Secret
 		want      map[string]*library.Secret
 	}{
-
 		{
+			name:      "not escaped",
 			secretMap: map[string]*library.Secret{"FOO": {Name: &n, Value: &v}},
 			want:      map[string]*library.Secret{"FOO": {Name: &n, Value: &w}},
 		},
 		{
+			name:      "already escaped",
 			secretMap: map[string]*library.Secret{"FOO": {Name: &n, Value: &vEscaped}},
 			want:      map[string]*library.Secret{"FOO": {Name: &n, Value: &w}},
 		},

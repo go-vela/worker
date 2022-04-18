@@ -39,14 +39,17 @@ func TestLinux_New(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		build   *library.Build
 	}{
 		{
+			name:    "with build",
 			failure: false,
 			build:   testBuild(),
 		},
 		{
+			name:    "nil build",
 			failure: true,
 			build:   nil,
 		},

@@ -45,10 +45,12 @@ func TestLinux_CreateStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -60,7 +62,8 @@ func TestLinux_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -72,7 +75,8 @@ func TestLinux_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with image not found
+		{
+			name:    "step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -84,7 +88,8 @@ func TestLinux_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -142,10 +147,12 @@ func TestLinux_PlanStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -157,7 +164,8 @@ func TestLinux_PlanStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with nil environment
+		{
+			name:    "step container with nil environment",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -169,7 +177,8 @@ func TestLinux_PlanStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -227,10 +236,12 @@ func TestLinux_ExecStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -242,7 +253,8 @@ func TestLinux_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -254,7 +266,8 @@ func TestLinux_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // detached step container
+		{
+			name:    "detached step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -267,7 +280,8 @@ func TestLinux_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with image not found
+		{
+			name:    "step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -279,7 +293,8 @@ func TestLinux_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -347,11 +362,13 @@ func TestLinux_StreamStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		logs      *library.Log
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			logs:    _logs,
 			container: &pipeline.Container{
@@ -364,7 +381,8 @@ func TestLinux_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			logs:    _logs,
 			container: &pipeline.Container{
@@ -377,7 +395,8 @@ func TestLinux_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with name not found
+		{
+			name:    "step container with name not found",
 			failure: true,
 			logs:    _logs,
 			container: &pipeline.Container{
@@ -390,7 +409,8 @@ func TestLinux_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			logs:      _logs,
 			container: new(pipeline.Container),
@@ -455,10 +475,12 @@ func TestLinux_DestroyStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -470,7 +492,8 @@ func TestLinux_DestroyStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -482,7 +505,8 @@ func TestLinux_DestroyStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with ignoring name not found
+		{
+			name:    "step container with ignoring name not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_ignorenotfound",
@@ -533,10 +557,12 @@ func TestLinux_getSecretValues(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		want      []string
 		container *pipeline.Container
 	}{
-		{ // no secrets container
+		{
+			name: "no secrets container",
 			want: []string{},
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -548,7 +574,8 @@ func TestLinux_getSecretValues(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // secrets container
+		{
+			name: "secrets container",
 			want: []string{"secretUser", "secretPass"},
 			container: &pipeline.Container{
 				ID:        "step_github_octocat_1_echo",
@@ -578,7 +605,8 @@ func TestLinux_getSecretValues(t *testing.T) {
 				},
 			},
 		},
-		{ // secrets container with file as value
+		{
+			name: "secrets container with file as value",
 			want: []string{"secretUser", "this is a secret"},
 			container: &pipeline.Container{
 				ID:        "step_github_octocat_1_ignorenotfound",
