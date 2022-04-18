@@ -20,10 +20,12 @@ func TestDocker_InspectBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
@@ -31,19 +33,21 @@ func TestDocker_InspectBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err = _engine.InspectBuild(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			_, err = _engine.InspectBuild(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("InspectBuild should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("InspectBuild should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("InspectBuild returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("InspectBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -56,10 +60,12 @@ func TestDocker_SetupBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
@@ -67,29 +73,33 @@ func TestDocker_SetupBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.SetupBuild(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.SetupBuild(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("SetupBuild should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("SetupBuild should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("SetupBuild returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("SetupBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
 func TestDocker_AssembleBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
@@ -97,34 +107,38 @@ func TestDocker_AssembleBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock()
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		err = _engine.AssembleBuild(context.Background(), test.pipeline)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("AssembleBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock()
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.AssembleBuild(context.Background(), test.pipeline)
 
-		if err != nil {
-			t.Errorf("AssembleBuild returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("AssembleBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("AssembleBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
 func TestDocker_RemoveBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _pipeline,
 		},
@@ -132,23 +146,25 @@ func TestDocker_RemoveBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock()
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		err = _engine.RemoveBuild(context.Background(), test.pipeline)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("RemoveBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock()
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.RemoveBuild(context.Background(), test.pipeline)
 
-		if err != nil {
-			t.Errorf("RemoveBuild returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("RemoveBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("RemoveBuild returned err: %v", err)
+			}
+		})
 	}
 }
