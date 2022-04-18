@@ -52,40 +52,42 @@ func TestLocal_CreateBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithLocal(true).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.CreateBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithLocal(true).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("CreateBuild returned err: %v", err)
-		}
+			err = _engine.CreateBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -126,46 +128,48 @@ func TestLocal_PlanBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithLocal(true).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.PlanBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("PlanBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithLocal(true).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("PlanBuild returned err: %v", err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			err = _engine.PlanBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("PlanBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PlanBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -236,46 +240,48 @@ func TestLocal_AssembleBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithLocal(true).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.AssembleBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("AssembleBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithLocal(true).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("AssembleBuild returned err: %v", err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			err = _engine.AssembleBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("AssembleBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("AssembleBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -331,46 +337,48 @@ func TestLocal_ExecBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithLocal(true).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.ExecBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("ExecBuild for %s should have returned err", test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithLocal(true).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("ExecBuild for %s returned err: %v", test.pipeline, err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			err = _engine.ExecBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("ExecBuild for %s should have returned err", test.pipeline)
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ExecBuild for %s returned err: %v", test.pipeline, err)
+			}
+		})
 	}
 }
 
@@ -426,45 +434,47 @@ func TestLocal_DestroyBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithLocal(true).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.DestroyBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("DestroyBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithLocal(true).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("DestroyBuild returned err: %v", err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			err = _engine.DestroyBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("DestroyBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("DestroyBuild returned err: %v", err)
+			}
+		})
 	}
 }

@@ -79,30 +79,32 @@ func TestLocal_CreateStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.CreateStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.CreateStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("CreateStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -145,30 +147,32 @@ func TestLocal_PlanStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.PlanStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("PlanStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.PlanStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("PlanStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("PlanStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PlanStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -251,34 +255,36 @@ func TestLocal_ExecStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		if !test.container.Empty() {
-			_engine.steps.Store(test.container.ID, new(library.Step))
-		}
-
-		err = _engine.ExecStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("ExecStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			if !test.container.Empty() {
+				_engine.steps.Store(test.container.ID, new(library.Step))
+			}
 
-		if err != nil {
-			t.Errorf("ExecStep returned err: %v", err)
-		}
+			err = _engine.ExecStep(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("ExecStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ExecStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -347,30 +353,32 @@ func TestLocal_StreamStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.StreamStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("StreamStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.StreamStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("StreamStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("StreamStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("StreamStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -421,29 +429,31 @@ func TestLocal_DestroyStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.DestroyStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("DestroyStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.DestroyStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("DestroyStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("DestroyStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("DestroyStep returned err: %v", err)
+			}
+		})
 	}
 }

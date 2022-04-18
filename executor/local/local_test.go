@@ -56,27 +56,29 @@ func TestLocal_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err := New(
-			WithBuild(testBuild()),
-			WithHostname("localhost"),
-			WithPipeline(test.pipeline),
-			WithRepo(testRepo()),
-			WithRuntime(_runtime),
-			WithUser(testUser()),
-			WithVelaClient(_client),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_, err := New(
+				WithBuild(testBuild()),
+				WithHostname("localhost"),
+				WithPipeline(test.pipeline),
+				WithRepo(testRepo()),
+				WithRuntime(_runtime),
+				WithUser(testUser()),
+				WithVelaClient(_client),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
+			}
+		})
 	}
 }
 
