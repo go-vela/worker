@@ -46,25 +46,27 @@ func TestLinux_Opt_WithBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(test.build),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(test.build),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithBuild should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithBuild should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithBuild returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithBuild returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.build, _build) {
-			t.Errorf("WithBuild is %v, want %v", _engine.build, _build)
-		}
+			if !reflect.DeepEqual(_engine.build, _build) {
+				t.Errorf("WithBuild is %v, want %v", _engine.build, _build)
+			}
+		})
 	}
 }
 
@@ -94,25 +96,27 @@ func TestLinux_Opt_WithLogMethod(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithLogMethod(test.logMethod),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithLogMethod(test.logMethod),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithLogMethod should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithLogMethod should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithLogMethod returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithLogMethod returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.logMethod, test.logMethod) {
-			t.Errorf("WithLogMethod is %v, want %v", _engine.logMethod, test.logMethod)
-		}
+			if !reflect.DeepEqual(_engine.logMethod, test.logMethod) {
+				t.Errorf("WithLogMethod is %v, want %v", _engine.logMethod, test.logMethod)
+			}
+		})
 	}
 }
 
@@ -132,25 +136,27 @@ func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithMaxLogSize(test.maxLogSize),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithMaxLogSize(test.maxLogSize),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithMaxLogSize should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithMaxLogSize should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithMaxLogSize returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithMaxLogSize returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.maxLogSize, test.maxLogSize) {
-			t.Errorf("WithMaxLogSize is %v, want %v", _engine.maxLogSize, test.maxLogSize)
-		}
+			if !reflect.DeepEqual(_engine.maxLogSize, test.maxLogSize) {
+				t.Errorf("WithMaxLogSize is %v, want %v", _engine.maxLogSize, test.maxLogSize)
+			}
+		})
 	}
 }
 func TestLinux_Opt_WithHostname(t *testing.T) {
@@ -174,16 +180,18 @@ func TestLinux_Opt_WithHostname(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithHostname(test.hostname),
-		)
-		if err != nil {
-			t.Errorf("unable to create linux engine: %v", err)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithHostname(test.hostname),
+			)
+			if err != nil {
+				t.Errorf("unable to create linux engine: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.Hostname, test.want) {
-			t.Errorf("WithHostname is %v, want %v", _engine.Hostname, test.want)
-		}
+			if !reflect.DeepEqual(_engine.Hostname, test.want) {
+				t.Errorf("WithHostname is %v, want %v", _engine.Hostname, test.want)
+			}
+		})
 	}
 }
 
@@ -211,25 +219,27 @@ func TestLinux_Opt_WithPipeline(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithPipeline(test.pipeline),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithPipeline(test.pipeline),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithPipeline should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithPipeline should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithPipeline returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithPipeline returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.pipeline, _steps) {
-			t.Errorf("WithPipeline is %v, want %v", _engine.pipeline, _steps)
-		}
+			if !reflect.DeepEqual(_engine.pipeline, _steps) {
+				t.Errorf("WithPipeline is %v, want %v", _engine.pipeline, _steps)
+			}
+		})
 	}
 }
 
@@ -257,25 +267,27 @@ func TestLinux_Opt_WithRepo(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithRepo(test.repo),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithRepo(test.repo),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithRepo should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithRepo should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithRepo returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithRepo returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.repo, _repo) {
-			t.Errorf("WithRepo is %v, want %v", _engine.repo, _repo)
-		}
+			if !reflect.DeepEqual(_engine.repo, _repo) {
+				t.Errorf("WithRepo is %v, want %v", _engine.repo, _repo)
+			}
+		})
 	}
 }
 
@@ -306,25 +318,27 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithRuntime(test.runtime),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithRuntime(test.runtime),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithRuntime should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithRuntime should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithRuntime returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithRuntime returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.Runtime, _runtime) {
-			t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, _runtime)
-		}
+			if !reflect.DeepEqual(_engine.Runtime, _runtime) {
+				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, _runtime)
+			}
+		})
 	}
 }
 
@@ -352,25 +366,27 @@ func TestLinux_Opt_WithUser(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithUser(test.user),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithUser(test.user),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithUser should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithUser should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithUser returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithUser returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.user, _user) {
-			t.Errorf("WithUser is %v, want %v", _engine.user, _user)
-		}
+			if !reflect.DeepEqual(_engine.user, _user) {
+				t.Errorf("WithUser is %v, want %v", _engine.user, _user)
+			}
+		})
 	}
 }
 
@@ -405,25 +421,27 @@ func TestLinux_Opt_WithVelaClient(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithVelaClient(test.client),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithVelaClient(test.client),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithVelaClient should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithVelaClient should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithVelaClient returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithVelaClient returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.Vela, _client) {
-			t.Errorf("WithVelaClient is %v, want %v", _engine.Vela, _client)
-		}
+			if !reflect.DeepEqual(_engine.Vela, _client) {
+				t.Errorf("WithVelaClient is %v, want %v", _engine.Vela, _client)
+			}
+		})
 	}
 }
 
@@ -448,15 +466,17 @@ func TestLinux_Opt_WithVersion(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithVersion(test.version),
-		)
-		if err != nil {
-			t.Errorf("unable to create linux engine: %v", err)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithVersion(test.version),
+			)
+			if err != nil {
+				t.Errorf("unable to create linux engine: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.Version, test.want) {
-			t.Errorf("WithVersion is %v, want %v", _engine.Version, test.want)
-		}
+			if !reflect.DeepEqual(_engine.Version, test.want) {
+				t.Errorf("WithVersion is %v, want %v", _engine.Version, test.want)
+			}
+		})
 	}
 }

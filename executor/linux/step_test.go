@@ -97,31 +97,33 @@ func TestLinux_CreateStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.CreateStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.CreateStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("CreateStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -186,31 +188,33 @@ func TestLinux_PlanStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.PlanStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("PlanStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.PlanStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("PlanStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("PlanStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PlanStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -302,36 +306,38 @@ func TestLinux_ExecStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		if !test.container.Empty() {
-			_engine.steps.Store(test.container.ID, new(library.Step))
-			_engine.stepLogs.Store(test.container.ID, new(library.Log))
-		}
-
-		err = _engine.ExecStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("ExecStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			if !test.container.Empty() {
+				_engine.steps.Store(test.container.ID, new(library.Step))
+				_engine.stepLogs.Store(test.container.ID, new(library.Log))
+			}
 
-		if err != nil {
-			t.Errorf("ExecStep returned err: %v", err)
-		}
+			err = _engine.ExecStep(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("ExecStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ExecStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -419,37 +425,39 @@ func TestLinux_StreamStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithMaxLogSize(10),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		if !test.container.Empty() {
-			_engine.steps.Store(test.container.ID, new(library.Step))
-			_engine.stepLogs.Store(test.container.ID, new(library.Log))
-		}
-
-		err = _engine.StreamStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("StreamStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithMaxLogSize(10),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			if !test.container.Empty() {
+				_engine.steps.Store(test.container.ID, new(library.Step))
+				_engine.stepLogs.Store(test.container.ID, new(library.Log))
+			}
 
-		if err != nil {
-			t.Errorf("StreamStep returned err: %v", err)
-		}
+			err = _engine.StreamStep(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("StreamStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("StreamStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -522,31 +530,33 @@ func TestLinux_DestroyStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.DestroyStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("DestroyStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.DestroyStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("DestroyStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("DestroyStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("DestroyStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -635,10 +645,12 @@ func TestLinux_getSecretValues(t *testing.T) {
 	}
 	// run tests
 	for _, test := range tests {
-		got := getSecretValues(test.container)
+		t.Run(test.name, func(t *testing.T) {
+			got := getSecretValues(test.container)
 
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("getSecretValues is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("getSecretValues is %v, want %v", got, test.want)
+			}
+		})
 	}
 }

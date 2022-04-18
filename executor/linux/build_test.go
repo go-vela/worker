@@ -86,41 +86,43 @@ func TestLinux_CreateBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithMetadata(_metadata).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(test.build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.CreateBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithMetadata(_metadata).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(test.build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("CreateBuild returned err: %v", err)
-		}
+			err = _engine.CreateBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -176,47 +178,49 @@ func TestLinux_PlanBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithMetadata(_metadata).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.PlanBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("PlanBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithMetadata(_metadata).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("PlanBuild returned err: %v", err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			err = _engine.PlanBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("PlanBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PlanBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -312,47 +316,49 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithMetadata(_metadata).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.AssembleBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("AssembleBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithMetadata(_metadata).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("AssembleBuild returned err: %v", err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			err = _engine.AssembleBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("AssembleBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("AssembleBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -418,81 +424,83 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithMetadata(_metadata).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		// TODO: hack - remove this
-		//
-		// When using our Docker mock we default the list of
-		// Docker images that have privileged access. One of
-		// these images is target/vela-git which is injected
-		// by the compiler into every build.
-		//
-		// The problem this causes is that we haven't called
-		// all the necessary functions we do in a real world
-		// scenario to ensure we can run privileged images.
-		//
-		// This is the necessary function to create the
-		// runtime host config so we can run images
-		// in a privileged fashion.
-		err = _runtime.CreateVolume(context.Background(), _pipeline)
-		if err != nil {
-			t.Errorf("unable to create runtime volume: %v", err)
-		}
-
-		// TODO: hack - remove this
-		//
-		// When calling CreateBuild(), it will automatically set the
-		// test build object to a status of `created`. This happens
-		// because we use a mock for the go-vela/server in our tests
-		// which only returns dummy based responses.
-		//
-		// The problem this causes is that our container.Execute()
-		// function isn't setup to handle builds in a `created` state.
-		//
-		// In a real world scenario, we never would have a build
-		// in this state when we call ExecBuild() because the
-		// go-vela/server has logic to set it to an expected state.
-		_engine.build.SetStatus("running")
-
-		err = _engine.ExecBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("ExecBuild for %s should have returned err", test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithMetadata(_metadata).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("ExecBuild for %s returned err: %v", test.pipeline, err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			// TODO: hack - remove this
+			//
+			// When using our Docker mock we default the list of
+			// Docker images that have privileged access. One of
+			// these images is target/vela-git which is injected
+			// by the compiler into every build.
+			//
+			// The problem this causes is that we haven't called
+			// all the necessary functions we do in a real world
+			// scenario to ensure we can run privileged images.
+			//
+			// This is the necessary function to create the
+			// runtime host config so we can run images
+			// in a privileged fashion.
+			err = _runtime.CreateVolume(context.Background(), _pipeline)
+			if err != nil {
+				t.Errorf("unable to create runtime volume: %v", err)
+			}
+
+			// TODO: hack - remove this
+			//
+			// When calling CreateBuild(), it will automatically set the
+			// test build object to a status of `created`. This happens
+			// because we use a mock for the go-vela/server in our tests
+			// which only returns dummy based responses.
+			//
+			// The problem this causes is that our container.Execute()
+			// function isn't setup to handle builds in a `created` state.
+			//
+			// In a real world scenario, we never would have a build
+			// in this state when we call ExecBuild() because the
+			// go-vela/server has logic to set it to an expected state.
+			_engine.build.SetStatus("running")
+
+			err = _engine.ExecBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("ExecBuild for %s should have returned err", test.pipeline)
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ExecBuild for %s returned err: %v", test.pipeline, err)
+			}
+		})
 	}
 }
 
@@ -568,46 +576,48 @@ func TestLinux_DestroyBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_pipeline, err := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithMetadata(_metadata).
-			WithUser(_user).
-			Compile(test.pipeline)
-		if err != nil {
-			t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
-		}
-
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.DestroyBuild(context.Background())
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("DestroyBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, err := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithMetadata(_metadata).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
-			continue
-		}
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("DestroyBuild returned err: %v", err)
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
+
+			err = _engine.DestroyBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("DestroyBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("DestroyBuild returned err: %v", err)
+			}
+		})
 	}
 }
