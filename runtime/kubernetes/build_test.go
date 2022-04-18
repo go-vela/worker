@@ -25,14 +25,17 @@ func TestKubernetes_InspectBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},
@@ -40,19 +43,21 @@ func TestKubernetes_InspectBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err = _engine.InspectBuild(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			_, err = _engine.InspectBuild(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("InspectBuild should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("InspectBuild should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("InspectBuild returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("InspectBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -162,102 +167,119 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name             string
 		failure          bool
 		pipeline         *pipeline.Build
 		opts             []ClientOpt
 		wantFromTemplate interface{}
 	}{
 		{
+			name:             "stages",
 			failure:          false,
 			pipeline:         _stages,
 			opts:             nil,
 			wantFromTemplate: nil,
 		},
 		{
+			name:             "steps",
 			failure:          false,
 			pipeline:         _steps,
 			opts:             nil,
 			wantFromTemplate: nil,
 		},
 		{
+			name:             "stages-PipelinePodsTemplate-empty",
 			failure:          false,
 			pipeline:         _stages,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-empty.yaml")},
 			wantFromTemplate: nil,
 		},
 		{
+			name:             "steps-PipelinePodsTemplate-empty",
 			failure:          false,
 			pipeline:         _steps,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-empty.yaml")},
 			wantFromTemplate: nil,
 		},
 		{
+			name:             "stages-PipelinePodsTemplate-metadata",
 			failure:          false,
 			pipeline:         _stages,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template.yaml")},
 			wantFromTemplate: wantFromTemplateMetadata,
 		},
 		{
+			name:             "steps-PipelinePodsTemplate-metadata",
 			failure:          false,
 			pipeline:         _steps,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template.yaml")},
 			wantFromTemplate: wantFromTemplateMetadata,
 		},
 		{
+			name:             "stages-PipelinePodsTemplate-SecurityContext",
 			failure:          false,
 			pipeline:         _stages,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
 			wantFromTemplate: wantFromTemplateSecurityContext,
 		},
 		{
+			name:             "steps-PipelinePodsTemplate-SecurityContext",
 			failure:          false,
 			pipeline:         _steps,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
 			wantFromTemplate: wantFromTemplateSecurityContext,
 		},
 		{
+			name:             "stages-PipelinePodsTemplate-NodeSelection",
 			failure:          false,
 			pipeline:         _stages,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-node-selection.yaml")},
 			wantFromTemplate: wantFromTemplateNodeSelection,
 		},
 		{
+			name:             "steps-PipelinePodsTemplate-NodeSelection",
 			failure:          false,
 			pipeline:         _steps,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-node-selection.yaml")},
 			wantFromTemplate: wantFromTemplateNodeSelection,
 		},
 		{
+			name:             "stages-PipelinePodsTemplate-dns",
 			failure:          false,
 			pipeline:         _stages,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-dns.yaml")},
 			wantFromTemplate: wantFromTemplateDNS,
 		},
 		{
+			name:             "steps-PipelinePodsTemplate-dns",
 			failure:          false,
 			pipeline:         _steps,
 			opts:             []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-dns.yaml")},
 			wantFromTemplate: wantFromTemplateDNS,
 		},
 		{
+			name:             "stages-named PipelinePodsTemplate present",
 			failure:          false,
 			pipeline:         _stages,
 			opts:             []ClientOpt{WithPodsTemplate("mock-pipeline-pods-template", "")},
 			wantFromTemplate: nil,
 		},
 		{
+			name:             "steps-named PipelinePodsTemplate present",
 			failure:          false,
 			pipeline:         _steps,
 			opts:             []ClientOpt{WithPodsTemplate("mock-pipeline-pods-template", "")},
 			wantFromTemplate: nil,
 		},
 		{
+			name:             "stages-named PipelinePodsTemplate missing",
 			failure:          true,
 			pipeline:         _stages,
 			opts:             []ClientOpt{WithPodsTemplate("missing-pipeline-pods-template", "")},
 			wantFromTemplate: nil,
 		},
 		{
+			name:             "steps-named PipelinePodsTemplate missing",
 			failure:          true,
 			pipeline:         _steps,
 			opts:             []ClientOpt{WithPodsTemplate("missing-pipeline-pods-template", "")},
@@ -267,94 +289,97 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// setup types
-		_engine, err := NewMock(&v1.Pod{}, test.opts...)
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		err = _engine.SetupBuild(context.Background(), test.pipeline)
-
-		// this does not test the resulting pod spec (ie no tests for ObjectMeta, RestartPolicy)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("SetupBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_engine, err := NewMock(&v1.Pod{}, test.opts...)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.SetupBuild(context.Background(), test.pipeline)
 
-		if err != nil {
-			t.Errorf("SetupBuild returned err: %v", err)
-		}
+			// this does not test the resulting pod spec (ie no tests for ObjectMeta, RestartPolicy)
 
-		// make sure that worker-defined labels are set and cannot be overridden by PipelinePodsTemplate
-		if pipelineLabel, ok := _engine.Pod.ObjectMeta.Labels["pipeline"]; !ok {
-			t.Errorf("Pod is missing the pipeline label: %v", _engine.Pod.ObjectMeta)
-		} else if pipelineLabel != test.pipeline.ID {
-			t.Errorf("Pod's pipeline label is %v, want %v", pipelineLabel, test.pipeline.ID)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("SetupBuild should have returned err")
+				}
 
-		switch test.wantFromTemplate.(type) {
-		case velav1alpha1.PipelinePodTemplateMeta:
-			want := test.wantFromTemplate.(velav1alpha1.PipelinePodTemplateMeta)
-
-			// PipelinePodsTemplate defined Annotations
-			if want.Annotations != nil && !reflect.DeepEqual(_engine.Pod.Annotations, want.Annotations) {
-				t.Errorf("Pod.Annotations is %v, want %v", _engine.Pod.Annotations, want.Annotations)
+				return // continue to next test
 			}
 
-			// PipelinePodsTemplate defined Labels
-			if want.Labels != nil && !reflect.DeepEqual(_engine.Pod.Labels, want.Labels) {
-				t.Errorf("Pod.Labels is %v, want %v", _engine.Pod.Labels, want.Labels)
-			}
-		case velav1alpha1.PipelinePodSecurityContext:
-			want := test.wantFromTemplate.(velav1alpha1.PipelinePodSecurityContext)
-
-			// PipelinePodsTemplate defined SecurityContext.RunAsNonRoot
-			if !reflect.DeepEqual(_engine.Pod.Spec.SecurityContext.RunAsNonRoot, want.RunAsNonRoot) {
-				t.Errorf("Pod.SecurityContext.RunAsNonRoot is %v, want %v", _engine.Pod.Spec.SecurityContext.RunAsNonRoot, want.RunAsNonRoot)
+			if err != nil {
+				t.Errorf("SetupBuild returned err: %v", err)
 			}
 
-			// PipelinePodsTemplate defined SecurityContext.Sysctls
-			if want.Sysctls != nil && !reflect.DeepEqual(_engine.Pod.Spec.SecurityContext.Sysctls, want.Sysctls) {
-				t.Errorf("Pod.SecurityContext.Sysctls is %v, want %v", _engine.Pod.Spec.SecurityContext.Sysctls, want.Sysctls)
-			}
-		case velav1alpha1.PipelinePodTemplateSpec:
-			want := test.wantFromTemplate.(velav1alpha1.PipelinePodTemplateSpec)
-
-			// PipelinePodsTemplate defined NodeSelector
-			if want.NodeSelector != nil && !reflect.DeepEqual(_engine.Pod.Spec.NodeSelector, want.NodeSelector) {
-				t.Errorf("Pod.NodeSelector is %v, want %v", _engine.Pod.Spec.NodeSelector, want.NodeSelector)
+			// make sure that worker-defined labels are set and cannot be overridden by PipelinePodsTemplate
+			if pipelineLabel, ok := _engine.Pod.ObjectMeta.Labels["pipeline"]; !ok {
+				t.Errorf("Pod is missing the pipeline label: %v", _engine.Pod.ObjectMeta)
+			} else if pipelineLabel != test.pipeline.ID {
+				t.Errorf("Pod's pipeline label is %v, want %v", pipelineLabel, test.pipeline.ID)
 			}
 
-			// PipelinePodsTemplate defined Affinity
-			if want.Affinity != nil && !reflect.DeepEqual(_engine.Pod.Spec.Affinity, want.Affinity) {
-				t.Errorf("Pod.Affinity is %v, want %v", _engine.Pod.Spec.Affinity, want.Affinity)
-			}
+			switch test.wantFromTemplate.(type) {
+			case velav1alpha1.PipelinePodTemplateMeta:
+				want := test.wantFromTemplate.(velav1alpha1.PipelinePodTemplateMeta)
 
-			// PipelinePodsTemplate defined Tolerations
-			if want.Tolerations != nil && !reflect.DeepEqual(_engine.Pod.Spec.Tolerations, want.Tolerations) {
-				t.Errorf("Pod.Tolerations is %v, want %v", _engine.Pod.Spec.Tolerations, want.Tolerations)
-			}
+				// PipelinePodsTemplate defined Annotations
+				if want.Annotations != nil && !reflect.DeepEqual(_engine.Pod.Annotations, want.Annotations) {
+					t.Errorf("Pod.Annotations is %v, want %v", _engine.Pod.Annotations, want.Annotations)
+				}
 
-			// PipelinePodsTemplate defined DNSPolicy
-			if len(want.DNSPolicy) > 0 && _engine.Pod.Spec.DNSPolicy != want.DNSPolicy {
-				t.Errorf("Pod.DNSPolicy is %v, want %v", _engine.Pod.Spec.DNSPolicy, want.DNSPolicy)
-			}
+				// PipelinePodsTemplate defined Labels
+				if want.Labels != nil && !reflect.DeepEqual(_engine.Pod.Labels, want.Labels) {
+					t.Errorf("Pod.Labels is %v, want %v", _engine.Pod.Labels, want.Labels)
+				}
+			case velav1alpha1.PipelinePodSecurityContext:
+				want := test.wantFromTemplate.(velav1alpha1.PipelinePodSecurityContext)
 
-			// PipelinePodsTemplate defined DNSConfig
-			if want.DNSConfig != nil && !reflect.DeepEqual(_engine.Pod.Spec.DNSConfig, want.DNSConfig) {
-				t.Errorf("Pod.DNSConfig is %v, want %v", _engine.Pod.Spec.DNSConfig, want.DNSConfig)
+				// PipelinePodsTemplate defined SecurityContext.RunAsNonRoot
+				if !reflect.DeepEqual(_engine.Pod.Spec.SecurityContext.RunAsNonRoot, want.RunAsNonRoot) {
+					t.Errorf("Pod.SecurityContext.RunAsNonRoot is %v, want %v", _engine.Pod.Spec.SecurityContext.RunAsNonRoot, want.RunAsNonRoot)
+				}
+
+				// PipelinePodsTemplate defined SecurityContext.Sysctls
+				if want.Sysctls != nil && !reflect.DeepEqual(_engine.Pod.Spec.SecurityContext.Sysctls, want.Sysctls) {
+					t.Errorf("Pod.SecurityContext.Sysctls is %v, want %v", _engine.Pod.Spec.SecurityContext.Sysctls, want.Sysctls)
+				}
+			case velav1alpha1.PipelinePodTemplateSpec:
+				want := test.wantFromTemplate.(velav1alpha1.PipelinePodTemplateSpec)
+
+				// PipelinePodsTemplate defined NodeSelector
+				if want.NodeSelector != nil && !reflect.DeepEqual(_engine.Pod.Spec.NodeSelector, want.NodeSelector) {
+					t.Errorf("Pod.NodeSelector is %v, want %v", _engine.Pod.Spec.NodeSelector, want.NodeSelector)
+				}
+
+				// PipelinePodsTemplate defined Affinity
+				if want.Affinity != nil && !reflect.DeepEqual(_engine.Pod.Spec.Affinity, want.Affinity) {
+					t.Errorf("Pod.Affinity is %v, want %v", _engine.Pod.Spec.Affinity, want.Affinity)
+				}
+
+				// PipelinePodsTemplate defined Tolerations
+				if want.Tolerations != nil && !reflect.DeepEqual(_engine.Pod.Spec.Tolerations, want.Tolerations) {
+					t.Errorf("Pod.Tolerations is %v, want %v", _engine.Pod.Spec.Tolerations, want.Tolerations)
+				}
+
+				// PipelinePodsTemplate defined DNSPolicy
+				if len(want.DNSPolicy) > 0 && _engine.Pod.Spec.DNSPolicy != want.DNSPolicy {
+					t.Errorf("Pod.DNSPolicy is %v, want %v", _engine.Pod.Spec.DNSPolicy, want.DNSPolicy)
+				}
+
+				// PipelinePodsTemplate defined DNSConfig
+				if want.DNSConfig != nil && !reflect.DeepEqual(_engine.Pod.Spec.DNSConfig, want.DNSConfig) {
+					t.Errorf("Pod.DNSConfig is %v, want %v", _engine.Pod.Spec.DNSConfig, want.DNSConfig)
+				}
 			}
-		}
+		})
 	}
 }
 
 func TestKubernetes_AssembleBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 		// k8sPod is the pod that the mock Kubernetes client will return
@@ -363,24 +388,28 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 		enginePod *v1.Pod
 	}{
 		{
+			name:      "stages",
 			failure:   false,
 			pipeline:  _stages,
 			k8sPod:    &v1.Pod{},
 			enginePod: _stagesPod,
 		},
 		{
+			name:      "steps",
 			failure:   false,
 			pipeline:  _steps,
 			k8sPod:    &v1.Pod{},
 			enginePod: _pod,
 		},
 		{
+			name:      "stages-pod already exists",
 			failure:   true,
 			pipeline:  _stages,
 			k8sPod:    _stagesPod,
 			enginePod: _stagesPod,
 		},
 		{
+			name:      "steps-pod already exists",
 			failure:   true,
 			pipeline:  _steps,
 			k8sPod:    _pod,
@@ -390,73 +419,82 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock(test.k8sPod)
-		_engine.Pod = test.enginePod
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock(test.k8sPod)
+			_engine.Pod = test.enginePod
 
-		_engine.containersLookup = map[string]int{}
-		for i, ctn := range test.enginePod.Spec.Containers {
-			_engine.containersLookup[ctn.Name] = i
-		}
-
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		err = _engine.AssembleBuild(context.Background(), test.pipeline)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("AssembleBuild should have returned err")
+			_engine.containersLookup = map[string]int{}
+			for i, ctn := range test.enginePod.Spec.Containers {
+				_engine.containersLookup[ctn.Name] = i
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("AssembleBuild returned err: %v", err)
-		}
+			err = _engine.AssembleBuild(context.Background(), test.pipeline)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("AssembleBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("AssembleBuild returned err: %v", err)
+			}
+		})
 	}
 }
 
 func TestKubernetes_RemoveBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name       string
 		failure    bool
 		createdPod bool
 		pipeline   *pipeline.Build
 		pod        *v1.Pod
 	}{
 		{
+			name:       "stages-createdPod-pod in k8s",
 			failure:    false,
 			createdPod: true,
 			pipeline:   _stages,
 			pod:        _pod,
 		},
 		{
+			name:       "steps-createdPod-pod in k8s",
 			failure:    false,
 			createdPod: true,
 			pipeline:   _steps,
 			pod:        _pod,
 		},
 		{
+			name:       "stages-not createdPod-pod not in k8s",
 			failure:    false,
 			createdPod: false,
 			pipeline:   _stages,
 			pod:        &v1.Pod{},
 		},
 		{
+			name:       "steps-not createdPod-pod not in k8s",
 			failure:    false,
 			pipeline:   _steps,
 			pod:        &v1.Pod{},
 			createdPod: false,
 		},
 		{
+			name:       "stages-createdPod-pod not in k8s",
 			failure:    true,
 			pipeline:   _stages,
 			pod:        &v1.Pod{},
 			createdPod: true,
 		},
 		{
+			name:       "steps-createdPod-pod not in k8s",
 			failure:    true,
 			pipeline:   _steps,
 			pod:        &v1.Pod{},
@@ -466,24 +504,26 @@ func TestKubernetes_RemoveBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock(test.pod)
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		_engine.createdPod = test.createdPod
-
-		err = _engine.RemoveBuild(context.Background(), test.pipeline)
-		if test.failure {
-			if err == nil {
-				t.Errorf("RemoveBuild should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock(test.pod)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			_engine.createdPod = test.createdPod
 
-		if err != nil {
-			t.Errorf("RemoveBuild returned err: %v", err)
-		}
+			err = _engine.RemoveBuild(context.Background(), test.pipeline)
+			if test.failure {
+				if err == nil {
+					t.Errorf("RemoveBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("RemoveBuild returned err: %v", err)
+			}
+		})
 	}
 }
