@@ -82,42 +82,49 @@ func TestBuild_Upload(t *testing.T) {
 	}
 
 	tests := []struct {
+		name   string
 		build  *library.Build
 		client *vela.Client
 		err    error
 		repo   *library.Repo
 	}{
 		{
+			name:   "build with error",
 			build:  _build,
 			client: _client,
 			err:    errors.New("unable to create network"),
 			repo:   _repo,
 		},
 		{
+			name:   "canceled build with error",
 			build:  &_canceled,
 			client: _client,
 			err:    errors.New("unable to create network"),
 			repo:   _repo,
 		},
 		{
+			name:   "errored build with error",
 			build:  &_error,
 			client: _client,
 			err:    errors.New("unable to create network"),
 			repo:   _repo,
 		},
 		{
+			name:   "pending build with error",
 			build:  &_pending,
 			client: _client,
 			err:    errors.New("unable to create network"),
 			repo:   _repo,
 		},
 		{
+			name:   "nil build with error",
 			build:  nil,
 			client: _client,
 			err:    errors.New("unable to create network"),
 			repo:   _repo,
 		},
 		{
+			name:   "everything nil",
 			build:  nil,
 			client: nil,
 			err:    nil,

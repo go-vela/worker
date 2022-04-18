@@ -73,24 +73,28 @@ func TestBuild_Snapshot(t *testing.T) {
 	}
 
 	tests := []struct {
+		name   string
 		build  *library.Build
 		client *vela.Client
 		err    error
 		repo   *library.Repo
 	}{
 		{
+			name:   "build with error",
 			build:  b,
 			client: _client,
 			err:    errors.New("unable to create network"),
 			repo:   r,
 		},
 		{
+			name:   "nil build with error",
 			build:  nil,
 			client: _client,
 			err:    errors.New("unable to create network"),
 			repo:   r,
 		},
 		{
+			name:   "nil everything",
 			build:  nil,
 			client: nil,
 			err:    nil,

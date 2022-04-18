@@ -152,36 +152,42 @@ func TestStep_Skip(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		build     *library.Build
 		container *pipeline.Container
 		repo      *library.Repo
 		want      bool
 	}{
 		{
+			name:      "build",
 			build:     _build,
 			container: _container,
 			repo:      _repo,
 			want:      false,
 		},
 		{
+			name:      "comment",
 			build:     _comment,
 			container: _container,
 			repo:      _repo,
 			want:      false,
 		},
 		{
+			name:      "deploy",
 			build:     _deploy,
 			container: _container,
 			repo:      _repo,
 			want:      false,
 		},
 		{
+			name:      "tag",
 			build:     _tag,
 			container: _container,
 			repo:      _repo,
 			want:      false,
 		},
 		{
+			name:      "skip nil",
 			build:     nil,
 			container: nil,
 			repo:      nil,

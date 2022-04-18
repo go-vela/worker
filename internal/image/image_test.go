@@ -12,50 +12,62 @@ import (
 func TestImage_Parse(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name  string
 		image string
 		want  string
 	}{
 		{
+			name:  "image only",
 			image: "golang",
 			want:  "docker.io/library/golang:latest",
 		},
 		{
+			name:  "image and tag",
 			image: "golang:latest",
 			want:  "docker.io/library/golang:latest",
 		},
 		{
+			name:  "repo and image",
 			image: "library/golang",
 			want:  "docker.io/library/golang:latest",
 		},
 		{
+			name:  "repo image and tag",
 			image: "library/golang:1.14",
 			want:  "docker.io/library/golang:1.14",
 		},
 		{
+			name:  "hub repo and image",
 			image: "docker.io/library/golang",
 			want:  "docker.io/library/golang:latest",
 		},
 		{
+			name:  "hub repo image and tag",
 			image: "docker.io/library/golang:latest",
 			want:  "docker.io/library/golang:latest",
 		},
 		{
+			name:  "alt hub with repo and image",
 			image: "index.docker.io/library/golang",
 			want:  "docker.io/library/golang:latest",
 		},
 		{
+			name:  "alt hub with repo image and tag",
 			image: "index.docker.io/library/golang:latest",
 			want:  "docker.io/library/golang:latest",
 		},
 		{
+			name:  "gcr hub with repo and image",
 			image: "gcr.io/library/golang",
 			want:  "gcr.io/library/golang:latest",
 		},
 		{
+			name:  "gcr hub with repo image and tag",
 			image: "gcr.io/library/golang:latest",
 			want:  "gcr.io/library/golang:latest",
 		},
 		{
+			name:  "garbage in garbage out",
 			image: "!@#$%^&*()",
 			want:  "!@#$%^&*()",
 		},
@@ -74,31 +86,37 @@ func TestImage_Parse(t *testing.T) {
 func TestImage_ParseWithError(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		image   string
 		want    string
 	}{
 		{
+			name:    "image only",
 			failure: false,
 			image:   "golang",
 			want:    "docker.io/library/golang:latest",
 		},
 		{
+			name:    "image and tag",
 			failure: false,
 			image:   "golang:latest",
 			want:    "docker.io/library/golang:latest",
 		},
 		{
+			name:    "image and tag",
 			failure: false,
 			image:   "golang:1.14",
 			want:    "docker.io/library/golang:1.14",
 		},
 		{
+			name:    "fails with bad image",
 			failure: true,
 			image:   "!@#$%^&*()",
 			want:    "!@#$%^&*()",
 		},
 		{
+			name:    "fails with image sha",
 			failure: true,
 			image:   "1a3f5e7d9c1b3a5f7e9d1c3b5a7f9e1d3c5b7a9f1e3d5d7c9b1a3f5e7d9c1b3a",
 			want:    "sha256:1a3f5e7d9c1b3a5f7e9d1c3b5a7f9e1d3c5b7a9f1e3d5d7c9b1a3f5e7d9c1b3a",

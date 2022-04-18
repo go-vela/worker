@@ -34,30 +34,35 @@ func TestService_Load(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		_map      *sync.Map
 		want      *library.Service
 	}{
 		{
+			name:      "good map",
 			failure:   false,
 			container: c,
 			want:      new(library.Service),
 			_map:      goodMap,
 		},
 		{
+			name:      "bad map",
 			failure:   true,
 			container: c,
 			want:      nil,
 			_map:      badMap,
 		},
 		{
+			name:      "empty map",
 			failure:   true,
 			container: new(pipeline.Container),
 			want:      nil,
 			_map:      new(sync.Map),
 		},
 		{
+			name:      "nil map",
 			failure:   true,
 			container: nil,
 			want:      nil,
@@ -108,30 +113,35 @@ func TestStep_LoadLogs(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		_map      *sync.Map
 		want      *library.Log
 	}{
 		{
+			name:      "good map",
 			failure:   false,
 			container: c,
 			want:      new(library.Log),
 			_map:      goodMap,
 		},
 		{
+			name:      "bad map",
 			failure:   true,
 			container: c,
 			want:      nil,
 			_map:      badMap,
 		},
 		{
+			name:      "empty map",
 			failure:   true,
 			container: new(pipeline.Container),
 			want:      nil,
 			_map:      new(sync.Map),
 		},
 		{
+			name:      "nil map",
 			failure:   true,
 			container: nil,
 			want:      nil,

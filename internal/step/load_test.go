@@ -33,30 +33,35 @@ func TestStep_Load(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		_map      *sync.Map
 		want      *library.Step
 	}{
 		{
+			name:      "good map",
 			failure:   false,
 			container: c,
 			want:      new(library.Step),
 			_map:      goodMap,
 		},
 		{
+			name:      "bad map",
 			failure:   true,
 			container: c,
 			want:      nil,
 			_map:      badMap,
 		},
 		{
+			name:      "empty map",
 			failure:   true,
 			container: new(pipeline.Container),
 			want:      nil,
 			_map:      new(sync.Map),
 		},
 		{
+			name:      "nil map",
 			failure:   true,
 			container: nil,
 			want:      nil,
@@ -89,11 +94,13 @@ func TestStep_Load(t *testing.T) {
 func TestStep_LoadInit(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 		want     *pipeline.Container
 	}{
 		{
+			name:    "stages",
 			failure: false,
 			pipeline: &pipeline.Build{
 				Version: "1",
@@ -126,6 +133,7 @@ func TestStep_LoadInit(t *testing.T) {
 			},
 		},
 		{
+			name:    "steps",
 			failure: false,
 			pipeline: &pipeline.Build{
 				Version: "1",
@@ -153,6 +161,7 @@ func TestStep_LoadInit(t *testing.T) {
 			},
 		},
 		{
+			name:     "nil failure",
 			failure:  true,
 			pipeline: nil,
 			want:     nil,
@@ -201,30 +210,35 @@ func TestStep_LoadLogs(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		_map      *sync.Map
 		want      *library.Log
 	}{
 		{
+			name:      "good map",
 			failure:   false,
 			container: c,
 			want:      new(library.Log),
 			_map:      goodMap,
 		},
 		{
+			name:      "bad map",
 			failure:   true,
 			container: c,
 			want:      nil,
 			_map:      badMap,
 		},
 		{
+			name:      "empty map",
 			failure:   true,
 			container: new(pipeline.Container),
 			want:      nil,
 			_map:      new(sync.Map),
 		},
 		{
+			name:      "nil map",
 			failure:   true,
 			container: nil,
 			want:      nil,

@@ -92,6 +92,7 @@ func TestStep_Environment(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		build     *library.Build
 		container *pipeline.Container
@@ -99,6 +100,7 @@ func TestStep_Environment(t *testing.T) {
 		step      *library.Step
 	}{
 		{
+			name:      "success",
 			failure:   false,
 			build:     b,
 			container: c,
@@ -106,6 +108,7 @@ func TestStep_Environment(t *testing.T) {
 			step:      s,
 		},
 		{
+			name:      "nil failure",
 			failure:   true,
 			build:     nil,
 			container: nil,

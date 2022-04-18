@@ -93,6 +93,7 @@ func TestService_Environment(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		build     *library.Build
 		container *pipeline.Container
@@ -100,6 +101,7 @@ func TestService_Environment(t *testing.T) {
 		service   *library.Service
 	}{
 		{
+			name:      "success",
 			failure:   false,
 			build:     b,
 			container: c,
@@ -107,6 +109,7 @@ func TestService_Environment(t *testing.T) {
 			service:   s,
 		},
 		{
+			name:      "nil failure",
 			failure:   true,
 			build:     nil,
 			container: nil,

@@ -111,6 +111,7 @@ func TestStep_Snapshot(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
@@ -118,6 +119,7 @@ func TestStep_Snapshot(t *testing.T) {
 		step      *library.Step
 	}{
 		{
+			name:      "running step",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -125,6 +127,7 @@ func TestStep_Snapshot(t *testing.T) {
 			step:      _step,
 		},
 		{
+			name:      "exited step",
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
@@ -235,6 +238,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
@@ -243,6 +247,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		step      *library.Step
 	}{
 		{
+			name:      "running step",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -251,6 +256,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 			step:      _step,
 		},
 		{
+			name:      "exited step",
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
