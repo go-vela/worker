@@ -19,16 +19,19 @@ import (
 func TestKubernetes_New(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		namespace string
 		path      string
 	}{
 		{
+			name:      "valid config file",
 			failure:   false,
 			namespace: "test",
 			path:      "testdata/config",
 		},
 		{
+			name:      "invalid config file",
 			failure:   true,
 			namespace: "test",
 			path:      "testdata/config_empty",
@@ -38,6 +41,7 @@ func TestKubernetes_New(t *testing.T) {
 		// run in kubernetes, so we would need a way to mock the
 		// return value of rest.InClusterConfig(), but how?
 		//{
+		//	name:      "InClusterConfig file",
 		//	failure:   false,
 		//	namespace: "test",
 		//	path:      "",
@@ -46,22 +50,24 @@ func TestKubernetes_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err := New(
-			WithConfigFile(test.path),
-			WithNamespace(test.namespace),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_, err := New(
+				WithConfigFile(test.path),
+				WithNamespace(test.namespace),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
+			}
+		})
 	}
 }
 
