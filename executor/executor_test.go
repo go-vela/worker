@@ -174,27 +174,29 @@ func TestExecutor_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := New(test.setup)
+		t.Run(test.name, func(t *testing.T) {
+			got, err := New(test.setup)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				if !reflect.DeepEqual(got, test.want) {
+					t.Errorf("New is %v, want %v", got, test.want)
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
 			}
 
 			if !reflect.DeepEqual(got, test.want) {
 				t.Errorf("New is %v, want %v", got, test.want)
 			}
-
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("New is %v, want %v", got, test.want)
-		}
+		})
 	}
 }
 

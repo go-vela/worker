@@ -381,18 +381,20 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = test.setup.Validate()
+		t.Run(test.name, func(t *testing.T) {
+			err = test.setup.Validate()
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("Validate should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("Validate should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("Validate returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("Validate returned err: %v", err)
+			}
+		})
 	}
 }
