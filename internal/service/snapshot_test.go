@@ -140,6 +140,8 @@ func TestService_Snapshot(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		Snapshot(test.container, test.build, test.client, nil, test.repo, test.service)
+		t.Run(test.name, func(t *testing.T) {
+			Snapshot(test.container, test.build, test.client, nil, test.repo, test.service)
+		})
 	}
 }

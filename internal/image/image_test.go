@@ -75,11 +75,13 @@ func TestImage_Parse(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got := Parse(test.image)
+		t.Run(test.name, func(t *testing.T) {
+			got := Parse(test.image)
 
-		if !strings.EqualFold(got, test.want) {
-			t.Errorf("Parse is %s want %s", got, test.want)
-		}
+			if !strings.EqualFold(got, test.want) {
+				t.Errorf("Parse is %s want %s", got, test.want)
+			}
+		})
 	}
 }
 
@@ -125,27 +127,29 @@ func TestImage_ParseWithError(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := ParseWithError(test.image)
+		t.Run(test.name, func(t *testing.T) {
+			got, err := ParseWithError(test.image)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("ParseWithError should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("ParseWithError should have returned err")
+				}
+
+				if !strings.EqualFold(got, test.want) {
+					t.Errorf("ParseWithError is %s want %s", got, test.want)
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ParseWithError returned err: %v", err)
 			}
 
 			if !strings.EqualFold(got, test.want) {
 				t.Errorf("ParseWithError is %s want %s", got, test.want)
 			}
-
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("ParseWithError returned err: %v", err)
-		}
-
-		if !strings.EqualFold(got, test.want) {
-			t.Errorf("ParseWithError is %s want %s", got, test.want)
-		}
+		})
 	}
 }
 

@@ -119,18 +119,20 @@ func TestStep_Environment(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err := Environment(test.container, test.build, test.repo, test.step, "v0.0.0")
+		t.Run(test.name, func(t *testing.T) {
+			err := Environment(test.container, test.build, test.repo, test.step, "v0.0.0")
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("Environment should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("Environment should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("Environment returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("Environment returned err: %v", err)
+			}
+		})
 	}
 }

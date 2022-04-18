@@ -134,6 +134,8 @@ func TestBuild_Upload(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		Upload(test.build, test.client, test.err, nil, test.repo)
+		t.Run(test.name, func(t *testing.T) {
+			Upload(test.build, test.client, test.err, nil, test.repo)
+		})
 	}
 }

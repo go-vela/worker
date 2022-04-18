@@ -61,11 +61,13 @@ func TestVolume_Parse(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got := Parse(test.volume)
+		t.Run(test.name, func(t *testing.T) {
+			got := Parse(test.volume)
 
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("Parse is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("Parse is %v, want %v", got, test.want)
+			}
+		})
 	}
 }
 
@@ -127,26 +129,28 @@ func TestImage_ParseWithError(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := ParseWithError(test.volume)
+		t.Run(test.name, func(t *testing.T) {
+			got, err := ParseWithError(test.volume)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("ParseWithError should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("ParseWithError should have returned err")
+				}
+
+				if !reflect.DeepEqual(got, test.want) {
+					t.Errorf("ParseWithError is %s want %s", got, test.want)
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ParseWithError returned err: %v", err)
 			}
 
 			if !reflect.DeepEqual(got, test.want) {
-				t.Errorf("ParseWithError is %s want %s", got, test.want)
+				t.Errorf("ParseWithError is %v, want %v", got, test.want)
 			}
-
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("ParseWithError returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("ParseWithError is %v, want %v", got, test.want)
-		}
+		})
 	}
 }

@@ -104,6 +104,8 @@ func TestBuild_Snapshot(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		Snapshot(test.build, test.client, test.err, nil, test.repo)
+		t.Run(test.name, func(t *testing.T) {
+			Snapshot(test.build, test.client, test.err, nil, test.repo)
+		})
 	}
 }
