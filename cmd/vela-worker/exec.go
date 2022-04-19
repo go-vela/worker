@@ -108,6 +108,8 @@ func (w *Worker) exec(index int) error {
 		if err != nil {
 			logger.Errorf("unable to destroy build: %v", err)
 		}
+
+		logger.Info("completed build")
 	}()
 
 	logger.Info("creating build")
@@ -141,15 +143,6 @@ func (w *Worker) exec(index int) error {
 		logger.Errorf("unable to execute build: %v", err)
 		return nil
 	}
-
-	logger.Info("destroying build")
-	// destroy the build with the executor
-	err = _executor.DestroyBuild(context.Background())
-	if err != nil {
-		logger.Errorf("unable to destroy build: %v", err)
-	}
-
-	logger.Info("completed build")
 
 	return nil
 }
