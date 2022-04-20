@@ -129,14 +129,6 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
-	logger.Info("assembling build")
-	// assemble the build with the executor
-	err = _executor.AssembleBuild(ctx)
-	if err != nil {
-		logger.Errorf("unable to assemble build: %v", err)
-		return nil
-	}
-
 	streamRequests := make(chan executor.StreamRequest)
 
 	// log streaming uses buildCtx so that it is not subject to the timeout.
@@ -148,6 +140,14 @@ func (w *Worker) exec(index int) error {
 			logger.Errorf("unable to stream build logs: %v", err)
 		}
 	}()
+
+	logger.Info("assembling build")
+	// assemble the build with the executor
+	err = _executor.AssembleBuild(ctx, streamRequests)
+	if err != nil {
+		logger.Errorf("unable to assemble build: %v", err)
+		return nil
+	}
 
 	logger.Info("executing build")
 	// execute the build with the executor

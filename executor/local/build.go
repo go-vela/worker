@@ -134,7 +134,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 }
 
 // AssembleBuild prepares the containers within a build for execution.
-func (c *client) AssembleBuild(ctx context.Context) error {
+func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- executor.StreamRequest) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot

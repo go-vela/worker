@@ -49,7 +49,7 @@ type Engine interface {
 	// AssembleBuild defines a function that
 	// prepares the containers within a build
 	// for execution.
-	AssembleBuild(context.Context) error
+	AssembleBuild(context.Context, chan<- StreamRequest) error
 	// ExecBuild defines a function that
 	// runs a pipeline for a build.
 	ExecBuild(context.Context, chan<- StreamRequest) error

@@ -191,7 +191,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 // AssembleBuild prepares the containers within a build for execution.
 //
 // nolint: funlen // ignore function length due to comments and logging messages
-func (c *client) AssembleBuild(ctx context.Context) error {
+func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- executor.StreamRequest) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
@@ -376,7 +376,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	c.Logger.Info("executing secret images")
 	// execute the secret
-	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
+	c.err = c.secret.exec(ctx, &c.pipeline.Secrets, streamRequests)
 	if c.err != nil {
 		return fmt.Errorf("unable to execute secret: %w", c.err)
 	}
