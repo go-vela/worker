@@ -298,8 +298,8 @@ func TestLinux_ExecStage(t *testing.T) {
 		{ // basic stage
 			failure: false,
 			stage: &pipeline.Stage{
-				Dependent: true,
-				Name:      "echo",
+				Continue: true,
+				Name:     "echo",
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",
@@ -316,8 +316,8 @@ func TestLinux_ExecStage(t *testing.T) {
 		{ // stage with step container with image not found
 			failure: true,
 			stage: &pipeline.Stage{
-				Name:      "echo",
-				Dependent: true,
+				Name:     "echo",
+				Continue: true,
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",
@@ -334,8 +334,8 @@ func TestLinux_ExecStage(t *testing.T) {
 		{ // stage with step container with bad number
 			failure: true,
 			stage: &pipeline.Stage{
-				Name:      "echo",
-				Dependent: true,
+				Name:     "echo",
+				Continue: true,
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",

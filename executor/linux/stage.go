@@ -126,7 +126,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
 		ruleset := _step.Ruleset
 
-		if !stop && !s.Dependent {
+		if !stop && s.Continue {
 			ruleset.If.Parallel = true
 		} else {
 			ruleset.If.Parallel = false
