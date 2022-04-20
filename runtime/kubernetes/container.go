@@ -34,12 +34,9 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// send API call to capture the container
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// nolint: contextcheck // ignore non-inherited new context
-	pod, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Get(
-		context.Background(),
-		c.Pod.ObjectMeta.Name,
-		opts,
-	)
+	pod, err := c.Kubernetes.CoreV1().
+		Pods(c.config.Namespace).
+		Get(ctx, c.Pod.ObjectMeta.Name, opts)
 	if err != nil {
 		return err
 	}
@@ -104,9 +101,8 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	// send API call to patch the pod with the new container image
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// nolint: contextcheck // ignore non-inherited new context
 	_, err = c.Kubernetes.CoreV1().Pods(c.config.Namespace).Patch(
-		context.Background(),
+		ctx,
 		c.Pod.ObjectMeta.Name,
 		types.StrategicMergePatchType,
 		[]byte(fmt.Sprintf(imagePatch, ctn.ID, _image)),
@@ -343,8 +339,9 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
 	// ->
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-	// nolint: contextcheck // ignore non-inherited new context
-	podWatch, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Watch(context.Background(), opts)
+	podWatch, err := c.Kubernetes.CoreV1().
+		Pods(c.config.Namespace).
+		Watch(ctx, opts)
 	if err != nil {
 		return err
 	}
