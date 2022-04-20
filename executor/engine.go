@@ -125,3 +125,22 @@ type StreamRequest struct {
 	// Container is the container for the service or step to stream logs for.
 	Container *pipeline.Container
 }
+
+// MockStreamRequestsWithCancel discards all requests until you call the cancel function.
+func MockStreamRequestsWithCancel(ctx context.Context) (chan<- StreamRequest, context.CancelFunc) {
+	cancelCtx, done := context.WithCancel(ctx)
+	streamRequests := make(chan StreamRequest)
+
+	// discard all stream requests
+	go func() {
+		for {
+			select {
+			case <-streamRequests:
+			case <-cancelCtx.Done():
+				return
+			}
+		}
+	}()
+
+	return streamRequests, done
+}
