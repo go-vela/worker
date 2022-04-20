@@ -45,10 +45,9 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 
 	if c.PipelinePodTemplate == nil {
 		if len(c.config.PipelinePodsTemplateName) > 0 {
-			// nolint: contextcheck // ignore non-inherited new context
-			podsTemplateResponse, err := c.VelaKubernetes.VelaV1alpha1().PipelinePodsTemplates(c.config.Namespace).Get(
-				context.Background(), c.config.PipelinePodsTemplateName, metav1.GetOptions{},
-			)
+			podsTemplateResponse, err := c.VelaKubernetes.VelaV1alpha1().
+				PipelinePodsTemplates(c.config.Namespace).
+				Get(ctx, c.config.PipelinePodsTemplateName, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
@@ -192,10 +191,9 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	// send API call to create the pod
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// nolint: contextcheck // ignore non-inherited new context
 	_, err = c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).
-		Create(context.Background(), c.Pod, metav1.CreateOptions{})
+		Create(ctx, c.Pod, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -233,10 +231,9 @@ func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
 
 	c.Logger.Infof("removing pod %s", c.Pod.ObjectMeta.Name)
 	// send API call to delete the pod
-	// nolint: contextcheck // ignore non-inherited new context
 	err := c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).
-		Delete(context.Background(), c.Pod.ObjectMeta.Name, opts)
+		Delete(ctx, c.Pod.ObjectMeta.Name, opts)
 	if err != nil {
 		return err
 	}
