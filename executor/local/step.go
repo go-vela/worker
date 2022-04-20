@@ -14,6 +14,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -78,7 +79,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 }
 
 // ExecStep runs a step.
-func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container, streamRequests chan<- executor.StreamRequest) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
 		return nil
@@ -103,14 +104,12 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		return err
 	}
 
-	go func() {
-		// stream logs from container
-		err := c.StreamStep(context.Background(), ctn)
-		if err != nil {
-			// TODO: Should this be changed or removed?
-			fmt.Println(err)
-		}
-	}()
+	// trigger StreamStep goroutine with logging context
+	streamRequests <- executor.StreamRequest{
+		Key:       "step",
+		Stream:    c.StreamStep,
+		Container: ctn,
+	}
 
 	// do not wait for detached containers
 	if ctn.Detach {

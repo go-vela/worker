@@ -16,8 +16,8 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/internal/step"
-	"golang.org/x/sync/errgroup"
 )
 
 // CreateStep configures the step for execution.
@@ -124,7 +124,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 }
 
 // ExecStep runs a step.
-func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container, streamRequests chan<- executor.StreamRequest) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
 		return nil
@@ -155,21 +155,12 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		return err
 	}
 
-	// create an error group with the parent context
-	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
-	logs, logCtx := errgroup.WithContext(ctx)
-
-	logs.Go(func() error {
-		logger.Debug("streaming logs for container")
-		// stream logs from container
-		err := c.StreamStep(logCtx, ctn)
-		if err != nil {
-			logger.Error(err)
-		}
-
-		return nil
-	})
+	// trigger StreamStep goroutine with logging context
+	streamRequests <- executor.StreamRequest{
+		Key:       "step",
+		Stream:    c.StreamStep,
+		Container: ctn,
+	}
 
 	// do not wait for detached containers
 	if ctn.Detach {

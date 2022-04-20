@@ -52,7 +52,10 @@ type Engine interface {
 	AssembleBuild(context.Context) error
 	// ExecBuild defines a function that
 	// runs a pipeline for a build.
-	ExecBuild(context.Context) error
+	ExecBuild(context.Context, chan<- StreamRequest) error
+	// StreamBuild defines a function that receives a StreamRequest
+	// and then runs StreamService or StreamStep in a goroutine.
+	StreamBuild(context.Context, <-chan StreamRequest) error
 	// DestroyBuild defines a function that
 	// cleans up the build after execution.
 	DestroyBuild(context.Context) error
@@ -67,7 +70,7 @@ type Engine interface {
 	PlanService(context.Context, *pipeline.Container) error
 	// ExecService defines a function that
 	// runs a service.
-	ExecService(context.Context, *pipeline.Container) error
+	ExecService(context.Context, *pipeline.Container, chan<- StreamRequest) error
 	// StreamService defines a function that
 	// tails the output for a service.
 	StreamService(context.Context, *pipeline.Container) error
@@ -85,7 +88,7 @@ type Engine interface {
 	PlanStage(context.Context, *pipeline.Stage, *sync.Map) error
 	// ExecStage defines a function that
 	// runs a stage.
-	ExecStage(context.Context, *pipeline.Stage, *sync.Map) error
+	ExecStage(context.Context, *pipeline.Stage, *sync.Map, chan<- StreamRequest) error
 	// DestroyStage defines a function that
 	// cleans up the stage after execution.
 	DestroyStage(context.Context, *pipeline.Stage) error
@@ -100,11 +103,25 @@ type Engine interface {
 	PlanStep(context.Context, *pipeline.Container) error
 	// ExecStep defines a function that
 	// runs a step.
-	ExecStep(context.Context, *pipeline.Container) error
+	ExecStep(context.Context, *pipeline.Container, chan<- StreamRequest) error
 	// StreamStep defines a function that
 	// tails the output for a step.
 	StreamStep(context.Context, *pipeline.Container) error
 	// DestroyStep defines a function that
 	// cleans up the step after execution.
 	DestroyStep(context.Context, *pipeline.Container) error
+}
+
+// StreamFunc is either Engine.StreamService or Engine.StreamStep.
+type StreamFunc = func(context.Context, *pipeline.Container) error
+
+// StreamRequest is the message used to begin streaming for a container
+// (requests goes from Engine.ExecService / Engine.ExecStep to Engine.StreamBuild).
+type StreamRequest struct {
+	// Key is either "service" or "step".
+	Key string
+	// Stream is either Engine.StreamService or Engine.StreamStep.
+	Stream StreamFunc
+	// Container is the container for the service or step to stream logs for.
+	Container *pipeline.Container
 }

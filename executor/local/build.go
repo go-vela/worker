@@ -14,6 +14,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/internal/build"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -245,7 +246,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 }
 
 // ExecBuild runs a pipeline for a build.
-func (c *client) ExecBuild(ctx context.Context) error {
+func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- executor.StreamRequest) error {
 	// defer an upload of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
@@ -260,7 +261,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 
 		// execute the service
-		c.err = c.ExecService(ctx, _service)
+		c.err = c.ExecService(ctx, _service, streamRequests)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute service: %w", c.err)
 		}
@@ -287,7 +288,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 
 		// execute the step
-		c.err = c.ExecStep(ctx, _step)
+		c.err = c.ExecStep(ctx, _step, streamRequests)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute step: %w", c.err)
 		}
@@ -324,7 +325,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 
 			// execute the stage
-			c.err = c.ExecStage(stageCtx, stage, stageMap)
+			c.err = c.ExecStage(stageCtx, stage, stageMap, streamRequests)
 			if c.err != nil {
 				return fmt.Errorf("unable to execute stage: %w", c.err)
 			}
@@ -342,6 +343,45 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	}
 
 	return c.err
+}
+
+// StreamBuild receives a StreamRequest and then
+// runs StreamService or StreamStep in a goroutine.
+func (c *client) StreamBuild(ctx context.Context, streamRequests <-chan executor.StreamRequest) error {
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	logs, logCtx := errgroup.WithContext(ctx)
+
+	defer func() {
+		fmt.Fprintln(os.Stdout, "waiting for stream functions to return")
+
+		err := logs.Wait()
+		if err != nil {
+			fmt.Fprintln(os.Stdout, "error in a stream request:", err)
+		}
+
+		fmt.Fprintln(os.Stdout, "all stream functions have returned")
+	}()
+
+	for {
+		select {
+		case req := <-streamRequests:
+			logs.Go(func() error {
+				fmt.Fprintf(os.Stdout, "streaming logs for %s container %s", req.Key, req.Container.ID)
+				// stream logs from container
+				err := req.Stream(logCtx, req.Container)
+				if err != nil {
+					fmt.Fprintln(os.Stdout, "error streaming logs:", err)
+				}
+
+				return nil
+			})
+		case <-ctx.Done():
+			// build done or cancelled
+			return nil
+		}
+	}
 }
 
 // DestroyBuild cleans up the build after execution.

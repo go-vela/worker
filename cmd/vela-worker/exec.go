@@ -94,11 +94,12 @@ func (w *Worker) exec(index int) error {
 	}
 
 	// create a background context
-	ctx := context.Background()
+	buildCtx, done := context.WithCancel(context.Background())
+	defer done()
 
 	// add to the background context with a timeout
 	// built in for ensuring a build doesn't run forever
-	ctx, timeout := context.WithTimeout(ctx, t)
+	ctx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
 
 	defer func() {
@@ -136,9 +137,21 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
+	streamRequests := make(chan executor.StreamRequest)
+
+	// log streaming uses buildCtx so that it is not subject to the timeout.
+	go func() {
+		logger.Info("streaming build logs")
+		// execute the build with the executor
+		err = _executor.StreamBuild(buildCtx, streamRequests)
+		if err != nil {
+			logger.Errorf("unable to stream build logs: %v", err)
+		}
+	}()
+
 	logger.Info("executing build")
 	// execute the build with the executor
-	err = _executor.ExecBuild(ctx)
+	err = _executor.ExecBuild(ctx, streamRequests)
 	if err != nil {
 		logger.Errorf("unable to execute build: %v", err)
 		return nil
