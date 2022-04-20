@@ -76,7 +76,7 @@ func TestKubernetes_InspectContainer(t *testing.T) {
 					t.Errorf("InspectContainer should have returned err")
 				}
 
-				return // effectively "continue" to next test
+				return // continue to next test
 			}
 
 			if err != nil {
@@ -95,10 +95,12 @@ func TestKubernetes_RemoveContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "build container",
 			failure:   false,
 			container: _container,
 		},
@@ -106,19 +108,21 @@ func TestKubernetes_RemoveContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.RemoveContainer(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.RemoveContainer(context.Background(), test.container)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("RemoveContainer should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("RemoveContainer should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("RemoveContainer returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("RemoveContainer returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -126,6 +130,7 @@ func TestKubernetes_RunContainer(t *testing.T) {
 	// TODO: include VolumeMounts?
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		pipeline  *pipeline.Build
@@ -133,12 +138,14 @@ func TestKubernetes_RunContainer(t *testing.T) {
 		volumes   []string
 	}{
 		{
+			name:      "stages",
 			failure:   false,
 			container: _container,
 			pipeline:  _stages,
 			pod:       _pod,
 		},
 		{
+			name:      "steps",
 			failure:   false,
 			container: _container,
 			pipeline:  _steps,
@@ -148,34 +155,37 @@ func TestKubernetes_RunContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock(test.pod)
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		if len(test.volumes) > 0 {
-			_engine.config.Volumes = test.volumes
-		}
-
-		err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("RunContainer should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock(test.pod)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			if len(test.volumes) > 0 {
+				_engine.config.Volumes = test.volumes
+			}
 
-		if err != nil {
-			t.Errorf("RunContainer returned err: %v", err)
-		}
+			err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("RunContainer should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("RunContainer returned err: %v", err)
+			}
+		})
 	}
 }
 
 func TestKubernetes_SetupContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name             string
 		failure          bool
 		container        *pipeline.Container
 		opts             []ClientOpt
@@ -183,13 +193,15 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 		wantFromTemplate interface{}
 	}{
 		{
+			name:             "step-clone",
 			failure:          false,
-			container:        _container,
+			container:        _container, // clone step
 			opts:             nil,
 			wantPrivileged:   false,
 			wantFromTemplate: nil,
 		},
 		{
+			name:    "step-echo",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -207,6 +219,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			wantFromTemplate: nil,
 		},
 		{
+			name:    "privileged",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -224,6 +237,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			wantFromTemplate: nil,
 		},
 		{
+			name:           "PipelinePodsTemplate",
 			failure:        false,
 			container:      _container,
 			opts:           []ClientOpt{WithPodsTemplate("", "testdata/pipeline-pods-template-security-context.yaml")},
@@ -239,58 +253,65 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// setup types
-		_engine, err := NewMock(_pod.DeepCopy(), test.opts...)
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-		// actually run the test
-		err = _engine.SetupContainer(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_engine, err := NewMock(_pod.DeepCopy(), test.opts...)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
+			}
+			// actually run the test
+			err = _engine.SetupContainer(context.Background(), test.container)
 
-		// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
+			// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("SetupContainer should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("SetupContainer should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("SetupContainer returned err: %v", err)
-		}
-
-		// SetupContainer added the last pod so get it for inspection
-		i := len(_engine.Pod.Spec.Containers) - 1
-		ctn := _engine.Pod.Spec.Containers[i]
-
-		// Make sure Container has Privileged configured correctly
-		if test.wantPrivileged {
-			if ctn.SecurityContext == nil {
-				t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
-			} else if *ctn.SecurityContext.Privileged != test.wantPrivileged {
-				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+			if err != nil {
+				t.Errorf("SetupContainer returned err: %v", err)
 			}
-		} else {
-			if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
-				t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+
+			// SetupContainer added the last pod so get it for inspection
+			i := len(_engine.Pod.Spec.Containers) - 1
+			ctn := _engine.Pod.Spec.Containers[i]
+
+			// make sure the lookup map is working as expected
+			if j := _engine.containersLookup[ctn.Name]; i != j {
+				t.Errorf("expected containersLookup[ctn.Name] to be %d, got %d", i, j)
 			}
-		}
 
-		switch test.wantFromTemplate.(type) {
-		case velav1alpha1.PipelineContainerSecurityContext:
-			want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
-
-			// PipelinePodsTemplate defined SecurityContext.Capabilities
-			if want.Capabilities != nil {
+			// Make sure Container has Privileged configured correctly
+			if test.wantPrivileged {
 				if ctn.SecurityContext == nil {
 					t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
-				} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
-					t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
+				} else if *ctn.SecurityContext.Privileged != test.wantPrivileged {
+					t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
+				}
+			} else {
+				if ctn.SecurityContext != nil && ctn.SecurityContext.Privileged != nil && *ctn.SecurityContext.Privileged != test.wantPrivileged {
+					t.Errorf("Pod.Containers[%v].SecurityContext.Privileged is %v, want %v", i, *ctn.SecurityContext.Privileged, test.wantPrivileged)
 				}
 			}
-		}
+
+			switch test.wantFromTemplate.(type) {
+			case velav1alpha1.PipelineContainerSecurityContext:
+				want := test.wantFromTemplate.(velav1alpha1.PipelineContainerSecurityContext)
+
+				// PipelinePodsTemplate defined SecurityContext.Capabilities
+				if want.Capabilities != nil {
+					if ctn.SecurityContext == nil {
+						t.Errorf("Pod.Containers[%v].SecurityContext is nil", i)
+					} else if !reflect.DeepEqual(ctn.SecurityContext.Capabilities, want.Capabilities) {
+						t.Errorf("Pod.Containers[%v].SecurityContext.Capabilities is %v, want %v", i, ctn.SecurityContext.Capabilities, want.Capabilities)
+					}
+				}
+			}
+		})
 	}
 }
 
@@ -311,16 +332,19 @@ func TestKubernetes_TailContainer(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:      "got logs",
 			failure:   false,
 			container: _container,
 		},
 		// We cannot test failures, because the mock GetLogs() always
 		// returns a successful response with logs body: "fake logs"
 		//{
+		//	name:      "empty build container",
 		//	failure:   true,
 		//	container: new(pipeline.Container),
 		//},
@@ -328,35 +352,40 @@ func TestKubernetes_TailContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err = _engine.TailContainer(context.Background(), test.container)
+		t.Run(test.name, func(t *testing.T) {
+			_, err = _engine.TailContainer(context.Background(), test.container)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("TailContainer should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("TailContainer should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("TailContainer returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("TailContainer returned err: %v", err)
+			}
+		})
 	}
 }
 
 func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		object    runtime.Object
 	}{
 		{
+			name:      "default order in ContainerStatuses",
 			failure:   false,
 			container: _container,
 			object:    _pod,
 		},
 		{
+			name:      "inverted order in ContainerStatuses",
 			failure:   false,
 			container: _container,
 			object: &v1.Pod{
@@ -397,6 +426,7 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			},
 		},
 		{
+			name:      "watch returns invalid type",
 			failure:   true,
 			container: _container,
 			object:    new(v1.PodTemplate),
@@ -405,29 +435,31 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		// setup types
-		_engine, _watch, err := newMockWithWatch(_pod, "pods")
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		go func() {
-			// simulate adding a pod to the watcher
-			_watch.Add(test.object)
-		}()
-
-		err = _engine.WaitContainer(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("WaitContainer should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_engine, _watch, err := newMockWithWatch(_pod, "pods")
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			go func() {
+				// simulate adding a pod to the watcher
+				_watch.Add(test.object)
+			}()
 
-		if err != nil {
-			t.Errorf("WaitContainer returned err: %v", err)
-		}
+			err = _engine.WaitContainer(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WaitContainer should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WaitContainer returned err: %v", err)
+			}
+		})
 	}
 }

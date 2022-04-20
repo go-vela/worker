@@ -56,8 +56,9 @@ func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]b
 	}
 
 	// marshal the image information from the container
-	// (-1 to convert to 0-based index, -1 for init which isn't a container)
-	image, err := json.MarshalIndent(c.Pod.Spec.Containers[ctn.Number-2].Image, "", " ")
+	image, err := json.MarshalIndent(
+		c.Pod.Spec.Containers[c.containersLookup[ctn.ID]].Image, "", " ",
+	)
 	if err != nil {
 		return output, err
 	}
