@@ -13,8 +13,6 @@ on:
 jobs:
   diff-review:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.17
     steps:
     - name: clone
       uses: actions/checkout@v3
@@ -31,8 +29,6 @@ jobs:
 
   full-review:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.17
     steps:
     - name: clone
       uses: actions/checkout@v3
