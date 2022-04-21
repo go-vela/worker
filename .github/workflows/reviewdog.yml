@@ -23,7 +23,7 @@ jobs:
       uses: reviewdog/action-golangci-lint@v2
       with:
         github_token: ${{ secrets.github_token }}
-        go_version: 1.17
+        go_version: 1.17.9
         golangci_lint_flags: "--config=.golangci.yml"
         fail_on_error: true
         filter_mode: diff_context
@@ -41,7 +41,7 @@ jobs:
       uses: reviewdog/action-golangci-lint@v2
       with:
         github_token: ${{ secrets.github_token }}
-        go_version: 1.17
+        go_version: 1.17.9
         golangci_lint_flags: "--config=.golangci.yml"
         fail_on_error: false
         filter_mode: nofilter
