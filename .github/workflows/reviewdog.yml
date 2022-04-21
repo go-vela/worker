@@ -5,6 +5,10 @@ name: reviewdog
 on:
   pull_request:
 
+# NOTE: We have to specify `go_version: 1.17` because the action was installing 1.18.
+# 1.18, in turn, is not fully supported by golangci-lint yet, and it can fail silently:
+# see: https://github.com/reviewdog/action-golangci-lint/issues/249
+
 # pipeline to execute
 jobs:
   diff-review:
@@ -19,6 +23,7 @@ jobs:
       uses: reviewdog/action-golangci-lint@v2
       with:
         github_token: ${{ secrets.github_token }}
+        go_version: 1.17
         golangci_lint_flags: "--config=.golangci.yml"
         fail_on_error: true
         filter_mode: diff_context
@@ -36,6 +41,7 @@ jobs:
       uses: reviewdog/action-golangci-lint@v2
       with:
         github_token: ${{ secrets.github_token }}
+        go_version: 1.17
         golangci_lint_flags: "--config=.golangci.yml"
         fail_on_error: false
         filter_mode: nofilter
