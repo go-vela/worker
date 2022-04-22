@@ -120,6 +120,7 @@ func TestService_Upload(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
@@ -127,6 +128,7 @@ func TestService_Upload(t *testing.T) {
 		service   *library.Service
 	}{
 		{
+			name:      "running service",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -134,6 +136,7 @@ func TestService_Upload(t *testing.T) {
 			service:   _service,
 		},
 		{
+			name:      "canceled service",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -141,6 +144,7 @@ func TestService_Upload(t *testing.T) {
 			service:   &_canceled,
 		},
 		{
+			name:      "errored service",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -148,6 +152,7 @@ func TestService_Upload(t *testing.T) {
 			service:   &_error,
 		},
 		{
+			name:      "pending service",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -155,6 +160,7 @@ func TestService_Upload(t *testing.T) {
 			service:   &_pending,
 		},
 		{
+			name:      "exited service",
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
@@ -165,6 +171,8 @@ func TestService_Upload(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		Upload(test.container, test.build, test.client, nil, test.repo, test.service)
+		t.Run(test.name, func(t *testing.T) {
+			Upload(test.container, test.build, test.client, nil, test.repo, test.service)
+		})
 	}
 }
