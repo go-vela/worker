@@ -349,7 +349,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				t.Errorf("unable to create build: %v", err)
 			}
 
-			err = _engine.AssembleBuild(context.Background(), streamRequests)
+			_engine.streamRequests = streamRequests
+
+			err = _engine.AssembleBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
@@ -454,6 +456,8 @@ func TestLinux_ExecBuild(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
+			_engine.streamRequests = streamRequests
+
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
@@ -494,7 +498,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// go-vela/server has logic to set it to an expected state.
 			_engine.build.SetStatus("running")
 
-			err = _engine.ExecBuild(context.Background(), streamRequests)
+			err = _engine.ExecBuild(context.Background())
 
 			if test.failure {
 				if err == nil {

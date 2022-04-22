@@ -77,7 +77,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 }
 
 // ExecService runs a service.
-func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container, streamRequests chan<- message.StreamRequest) error {
+func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error {
 	// load the service from the client
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Load
@@ -98,7 +98,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container, strea
 	}
 
 	// trigger StreamService goroutine with logging context
-	streamRequests <- message.StreamRequest{
+	c.streamRequests <- message.StreamRequest{
 		Key:       "service",
 		Stream:    c.StreamService,
 		Container: ctn,

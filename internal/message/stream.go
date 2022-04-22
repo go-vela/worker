@@ -25,7 +25,7 @@ type StreamRequest struct {
 }
 
 // MockStreamRequestsWithCancel discards all requests until you call the cancel function.
-func MockStreamRequestsWithCancel(ctx context.Context) (chan<- StreamRequest, context.CancelFunc) {
+func MockStreamRequestsWithCancel(ctx context.Context) (chan StreamRequest, context.CancelFunc) {
 	cancelCtx, done := context.WithCancel(ctx)
 	streamRequests := make(chan StreamRequest)
 

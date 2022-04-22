@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"github.com/go-vela/types/pipeline"
-	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -98,7 +97,7 @@ func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 }
 
 // ExecStage runs a stage.
-func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, streamRequests chan<- message.StreamRequest) error {
+func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
 	// update engine logger with stage metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
@@ -137,7 +136,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, 
 
 		logger.Infof("executing %s step", _step.Name)
 		// execute the step
-		err = c.ExecStep(ctx, _step, streamRequests)
+		err = c.ExecStep(ctx, _step)
 		if err != nil {
 			return fmt.Errorf("unable to exec step %s: %w", _step.Name, err)
 		}

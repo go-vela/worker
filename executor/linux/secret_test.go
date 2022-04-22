@@ -311,12 +311,14 @@ func TestLinux_Secret_exec(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
+			_engine.streamRequests = streamRequests
+
 			_engine.build.SetStatus(constants.StatusSuccess)
 
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
 
-			err = _engine.secret.exec(context.Background(), &p.Secrets, streamRequests)
+			err = _engine.secret.exec(context.Background(), &p.Secrets)
 
 			if test.failure {
 				if err == nil {

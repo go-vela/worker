@@ -293,12 +293,14 @@ func TestLinux_ExecService(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
+			_engine.streamRequests = streamRequests
+
 			if !test.container.Empty() {
 				_engine.services.Store(test.container.ID, new(library.Service))
 				_engine.serviceLogs.Store(test.container.ID, new(library.Log))
 			}
 
-			err = _engine.ExecService(context.Background(), test.container, streamRequests)
+			err = _engine.ExecService(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {

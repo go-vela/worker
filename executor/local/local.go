@@ -10,6 +10,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 )
 
@@ -22,14 +23,15 @@ type (
 		Version  string
 
 		// private fields
-		init     *pipeline.Container
-		build    *library.Build
-		pipeline *pipeline.Build
-		repo     *library.Repo
-		services sync.Map
-		steps    sync.Map
-		user     *library.User
-		err      error
+		init           *pipeline.Container
+		build          *library.Build
+		pipeline       *pipeline.Build
+		repo           *library.Repo
+		services       sync.Map
+		steps          sync.Map
+		user           *library.User
+		err            error
+		streamRequests chan message.StreamRequest
 	}
 )
 
@@ -47,6 +49,9 @@ func New(opts ...Opt) (*client, error) {
 			return nil, err
 		}
 	}
+
+	// instantiate streamRequests channel
+	c.streamRequests = make(chan message.StreamRequest)
 
 	return c, nil
 }

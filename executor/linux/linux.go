@@ -10,6 +10,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/sirupsen/logrus"
 )
@@ -41,6 +42,8 @@ type (
 		serviceLogs sync.Map
 		steps       sync.Map
 		stepLogs    sync.Map
+
+		streamRequests chan message.StreamRequest
 
 		user *library.User
 		err  error
@@ -82,6 +85,9 @@ func New(opts ...Opt) (*client, error) {
 
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}
+
+	// instantiate streamRequests channel
+	c.streamRequests = make(chan message.StreamRequest)
 
 	return c, nil
 }

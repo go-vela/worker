@@ -97,7 +97,7 @@ func (s *secretSvc) destroy(ctx context.Context, ctn *pipeline.Container) error 
 }
 
 // exec runs a secret plugins for a pipeline.
-func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice, streamRequests chan<- message.StreamRequest) error {
+func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 	// stream all the logs to the init step
 	_init, err := step.Load(s.client.init, &s.client.steps)
 	if err != nil {
@@ -137,7 +137,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice, streamReq
 		}
 
 		// trigger StreamStep goroutine with logging context
-		streamRequests <- message.StreamRequest{
+		s.client.streamRequests <- message.StreamRequest{
 			Key:       "secret",
 			Stream:    s.stream,
 			Container: _secret.Origin,

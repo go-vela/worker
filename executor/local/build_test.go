@@ -266,13 +266,15 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
+			_engine.streamRequests = streamRequests
+
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
 
-			err = _engine.AssembleBuild(context.Background(), streamRequests)
+			err = _engine.AssembleBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
@@ -366,13 +368,15 @@ func TestLocal_ExecBuild(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
+			_engine.streamRequests = streamRequests
+
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
 
-			err = _engine.ExecBuild(context.Background(), streamRequests)
+			err = _engine.ExecBuild(context.Background())
 
 			if test.failure {
 				if err == nil {

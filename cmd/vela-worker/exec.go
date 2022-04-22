@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-vela/worker/executor"
-	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
 
@@ -130,13 +129,11 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
-	streamRequests := make(chan message.StreamRequest)
-
 	// log streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
 		logger.Info("streaming build logs")
 		// execute the build with the executor
-		err = _executor.StreamBuild(buildCtx, streamRequests)
+		err = _executor.StreamBuild(buildCtx)
 		if err != nil {
 			logger.Errorf("unable to stream build logs: %v", err)
 		}
@@ -144,7 +141,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("assembling build")
 	// assemble the build with the executor
-	err = _executor.AssembleBuild(ctx, streamRequests)
+	err = _executor.AssembleBuild(ctx)
 	if err != nil {
 		logger.Errorf("unable to assemble build: %v", err)
 		return nil
@@ -152,7 +149,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("executing build")
 	// execute the build with the executor
-	err = _executor.ExecBuild(ctx, streamRequests)
+	err = _executor.ExecBuild(ctx)
 	if err != nil {
 		logger.Errorf("unable to execute build: %v", err)
 		return nil

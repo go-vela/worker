@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-	"github.com/go-vela/worker/internal/message"
 )
 
 // Engine represents the interface for Vela integrating
@@ -50,13 +49,13 @@ type Engine interface {
 	// AssembleBuild defines a function that
 	// prepares the containers within a build
 	// for execution.
-	AssembleBuild(context.Context, chan<- message.StreamRequest) error
+	AssembleBuild(context.Context) error
 	// ExecBuild defines a function that
 	// runs a pipeline for a build.
-	ExecBuild(context.Context, chan<- message.StreamRequest) error
+	ExecBuild(context.Context) error
 	// StreamBuild defines a function that receives a StreamRequest
 	// and then runs StreamService or StreamStep in a goroutine.
-	StreamBuild(context.Context, <-chan message.StreamRequest) error
+	StreamBuild(context.Context) error
 	// DestroyBuild defines a function that
 	// cleans up the build after execution.
 	DestroyBuild(context.Context) error
@@ -71,7 +70,7 @@ type Engine interface {
 	PlanService(context.Context, *pipeline.Container) error
 	// ExecService defines a function that
 	// runs a service.
-	ExecService(context.Context, *pipeline.Container, chan<- message.StreamRequest) error
+	ExecService(context.Context, *pipeline.Container) error
 	// StreamService defines a function that
 	// tails the output for a service.
 	StreamService(context.Context, *pipeline.Container) error
@@ -89,7 +88,7 @@ type Engine interface {
 	PlanStage(context.Context, *pipeline.Stage, *sync.Map) error
 	// ExecStage defines a function that
 	// runs a stage.
-	ExecStage(context.Context, *pipeline.Stage, *sync.Map, chan<- message.StreamRequest) error
+	ExecStage(context.Context, *pipeline.Stage, *sync.Map) error
 	// DestroyStage defines a function that
 	// cleans up the stage after execution.
 	DestroyStage(context.Context, *pipeline.Stage) error
@@ -104,7 +103,7 @@ type Engine interface {
 	PlanStep(context.Context, *pipeline.Container) error
 	// ExecStep defines a function that
 	// runs a step.
-	ExecStep(context.Context, *pipeline.Container, chan<- message.StreamRequest) error
+	ExecStep(context.Context, *pipeline.Container) error
 	// StreamStep defines a function that
 	// tails the output for a step.
 	StreamStep(context.Context, *pipeline.Container) error

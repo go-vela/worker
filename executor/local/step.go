@@ -79,7 +79,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 }
 
 // ExecStep runs a step.
-func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container, streamRequests chan<- message.StreamRequest) error {
+func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
 		return nil
@@ -105,7 +105,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container, streamRe
 	}
 
 	// trigger StreamStep goroutine with logging context
-	streamRequests <- message.StreamRequest{
+	c.streamRequests <- message.StreamRequest{
 		Key:       "step",
 		Stream:    c.StreamStep,
 		Container: ctn,

@@ -325,7 +325,9 @@ func TestLocal_ExecStage(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			err = _engine.ExecStage(context.Background(), test.stage, stageMap, streamRequests)
+			_engine.streamRequests = streamRequests
+
+			err = _engine.ExecStage(context.Background(), test.stage, stageMap)
 
 			if test.failure {
 				if err == nil {

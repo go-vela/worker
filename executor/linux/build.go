@@ -15,7 +15,6 @@ import (
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
-	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -191,7 +190,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 // AssembleBuild prepares the containers within a build for execution.
 //
 // nolint: funlen // ignore function length due to comments and logging messages
-func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- message.StreamRequest) error {
+func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
@@ -376,7 +375,7 @@ func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- messag
 
 	c.Logger.Info("executing secret images")
 	// execute the secret
-	c.err = c.secret.exec(ctx, &c.pipeline.Secrets, streamRequests)
+	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
 	if c.err != nil {
 		return fmt.Errorf("unable to execute secret: %w", c.err)
 	}
@@ -385,7 +384,7 @@ func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- messag
 }
 
 // ExecBuild runs a pipeline for a build.
-func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- message.StreamRequest) error {
+func (c *client) ExecBuild(ctx context.Context) error {
 	// defer an upload of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
@@ -402,7 +401,7 @@ func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- message.St
 
 		c.Logger.Infof("executing %s service", _service.Name)
 		// execute the service
-		c.err = c.ExecService(ctx, _service, streamRequests)
+		c.err = c.ExecService(ctx, _service)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute service: %w", c.err)
 		}
@@ -431,7 +430,7 @@ func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- message.St
 
 		c.Logger.Infof("executing %s step", _step.Name)
 		// execute the step
-		c.err = c.ExecStep(ctx, _step, streamRequests)
+		c.err = c.ExecStep(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute step: %w", c.err)
 		}
@@ -471,7 +470,7 @@ func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- message.St
 
 			c.Logger.Infof("executing %s stage", stage.Name)
 			// execute the stage
-			c.err = c.ExecStage(stageCtx, stage, stageMap, streamRequests)
+			c.err = c.ExecStage(stageCtx, stage, stageMap)
 			if c.err != nil {
 				return fmt.Errorf("unable to execute stage: %w", c.err)
 			}
@@ -494,7 +493,7 @@ func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- message.St
 
 // StreamBuild receives a StreamRequest and then
 // runs StreamService or StreamStep in a goroutine.
-func (c *client) StreamBuild(ctx context.Context, streamRequests <-chan message.StreamRequest) error {
+func (c *client) StreamBuild(ctx context.Context) error {
 	// create an error group with the parent context
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
@@ -513,7 +512,7 @@ func (c *client) StreamBuild(ctx context.Context, streamRequests <-chan message.
 
 	for {
 		select {
-		case req := <-streamRequests:
+		case req := <-c.streamRequests:
 			logs.Go(func() error {
 				// update engine logger with step metadata
 				//

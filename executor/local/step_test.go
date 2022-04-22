@@ -271,11 +271,13 @@ func TestLocal_ExecStep(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
+			_engine.streamRequests = streamRequests
+
 			if !test.container.Empty() {
 				_engine.steps.Store(test.container.ID, new(library.Step))
 			}
 
-			err = _engine.ExecStep(context.Background(), test.container, streamRequests)
+			err = _engine.ExecStep(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
