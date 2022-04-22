@@ -14,8 +14,8 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/internal/build"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -134,7 +134,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 }
 
 // AssembleBuild prepares the containers within a build for execution.
-func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- executor.StreamRequest) error {
+func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- message.StreamRequest) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
@@ -246,7 +246,7 @@ func (c *client) AssembleBuild(ctx context.Context, streamRequests chan<- execut
 }
 
 // ExecBuild runs a pipeline for a build.
-func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- executor.StreamRequest) error {
+func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- message.StreamRequest) error {
 	// defer an upload of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
@@ -347,7 +347,7 @@ func (c *client) ExecBuild(ctx context.Context, streamRequests chan<- executor.S
 
 // StreamBuild receives a StreamRequest and then
 // runs StreamService or StreamStep in a goroutine.
-func (c *client) StreamBuild(ctx context.Context, streamRequests <-chan executor.StreamRequest) error {
+func (c *client) StreamBuild(ctx context.Context, streamRequests <-chan message.StreamRequest) error {
 	// create an error group with the parent context
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
@@ -378,7 +378,7 @@ func (c *client) StreamBuild(ctx context.Context, streamRequests <-chan executor
 				return nil
 			})
 		case <-ctx.Done():
-			// build done or cancelled
+			// build done or canceled
 			return nil
 		}
 	}

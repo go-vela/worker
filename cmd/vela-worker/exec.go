@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
 
@@ -129,7 +130,7 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
-	streamRequests := make(chan executor.StreamRequest)
+	streamRequests := make(chan message.StreamRequest)
 
 	// log streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
 )
 
 // Engine represents the interface for Vela integrating
@@ -49,13 +50,13 @@ type Engine interface {
 	// AssembleBuild defines a function that
 	// prepares the containers within a build
 	// for execution.
-	AssembleBuild(context.Context, chan<- StreamRequest) error
+	AssembleBuild(context.Context, chan<- message.StreamRequest) error
 	// ExecBuild defines a function that
 	// runs a pipeline for a build.
-	ExecBuild(context.Context, chan<- StreamRequest) error
+	ExecBuild(context.Context, chan<- message.StreamRequest) error
 	// StreamBuild defines a function that receives a StreamRequest
 	// and then runs StreamService or StreamStep in a goroutine.
-	StreamBuild(context.Context, <-chan StreamRequest) error
+	StreamBuild(context.Context, <-chan message.StreamRequest) error
 	// DestroyBuild defines a function that
 	// cleans up the build after execution.
 	DestroyBuild(context.Context) error
@@ -70,7 +71,7 @@ type Engine interface {
 	PlanService(context.Context, *pipeline.Container) error
 	// ExecService defines a function that
 	// runs a service.
-	ExecService(context.Context, *pipeline.Container, chan<- StreamRequest) error
+	ExecService(context.Context, *pipeline.Container, chan<- message.StreamRequest) error
 	// StreamService defines a function that
 	// tails the output for a service.
 	StreamService(context.Context, *pipeline.Container) error
@@ -88,7 +89,7 @@ type Engine interface {
 	PlanStage(context.Context, *pipeline.Stage, *sync.Map) error
 	// ExecStage defines a function that
 	// runs a stage.
-	ExecStage(context.Context, *pipeline.Stage, *sync.Map, chan<- StreamRequest) error
+	ExecStage(context.Context, *pipeline.Stage, *sync.Map, chan<- message.StreamRequest) error
 	// DestroyStage defines a function that
 	// cleans up the stage after execution.
 	DestroyStage(context.Context, *pipeline.Stage) error
@@ -103,44 +104,11 @@ type Engine interface {
 	PlanStep(context.Context, *pipeline.Container) error
 	// ExecStep defines a function that
 	// runs a step.
-	ExecStep(context.Context, *pipeline.Container, chan<- StreamRequest) error
+	ExecStep(context.Context, *pipeline.Container, chan<- message.StreamRequest) error
 	// StreamStep defines a function that
 	// tails the output for a step.
 	StreamStep(context.Context, *pipeline.Container) error
 	// DestroyStep defines a function that
 	// cleans up the step after execution.
 	DestroyStep(context.Context, *pipeline.Container) error
-}
-
-// StreamFunc is either Engine.StreamService or Engine.StreamStep.
-type StreamFunc = func(context.Context, *pipeline.Container) error
-
-// StreamRequest is the message used to begin streaming for a container
-// (requests goes from Engine.ExecService / Engine.ExecStep to Engine.StreamBuild).
-type StreamRequest struct {
-	// Key is either "service" or "step".
-	Key string
-	// Stream is either Engine.StreamService or Engine.StreamStep.
-	Stream StreamFunc
-	// Container is the container for the service or step to stream logs for.
-	Container *pipeline.Container
-}
-
-// MockStreamRequestsWithCancel discards all requests until you call the cancel function.
-func MockStreamRequestsWithCancel(ctx context.Context) (chan<- StreamRequest, context.CancelFunc) {
-	cancelCtx, done := context.WithCancel(ctx)
-	streamRequests := make(chan StreamRequest)
-
-	// discard all stream requests
-	go func() {
-		for {
-			select {
-			case <-streamRequests:
-			case <-cancelCtx.Done():
-				return
-			}
-		}
-	}()
-
-	return streamRequests, done
 }

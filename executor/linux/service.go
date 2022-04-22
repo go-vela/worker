@@ -15,7 +15,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
 )
 
@@ -117,7 +117,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 }
 
 // ExecService runs a service.
-func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container, streamRequests chan<- executor.StreamRequest) error {
+func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container, streamRequests chan<- message.StreamRequest) error {
 	// update engine logger with service metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
@@ -144,7 +144,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container, strea
 	}
 
 	// trigger StreamService goroutine with logging context
-	streamRequests <- executor.StreamRequest{
+	streamRequests <- message.StreamRequest{
 		Key:       "service",
 		Stream:    c.StreamService,
 		Container: ctn,

@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-vela/server/mock/server"
 
-	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -232,7 +232,7 @@ func TestLinux_ExecService(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	streamRequests, done := executor.MockStreamRequestsWithCancel(context.Background())
+	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
 	// setup tests
