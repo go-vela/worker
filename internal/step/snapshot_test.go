@@ -111,6 +111,7 @@ func TestStep_Snapshot(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
@@ -118,6 +119,7 @@ func TestStep_Snapshot(t *testing.T) {
 		step      *library.Step
 	}{
 		{
+			name:      "running step",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -125,6 +127,7 @@ func TestStep_Snapshot(t *testing.T) {
 			step:      _step,
 		},
 		{
+			name:      "exited step",
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
@@ -135,7 +138,9 @@ func TestStep_Snapshot(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		Snapshot(test.container, test.build, test.client, nil, test.repo, test.step)
+		t.Run(test.name, func(t *testing.T) {
+			Snapshot(test.container, test.build, test.client, nil, test.repo, test.step)
+		})
 	}
 }
 
@@ -235,6 +240,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
@@ -243,6 +249,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		step      *library.Step
 	}{
 		{
+			name:      "running step",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -251,6 +258,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 			step:      _step,
 		},
 		{
+			name:      "exited step",
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
@@ -262,6 +270,8 @@ func TestStep_SnapshotInit(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		SnapshotInit(test.container, test.build, test.client, nil, test.repo, test.step, test.log)
+		t.Run(test.name, func(t *testing.T) {
+			SnapshotInit(test.container, test.build, test.client, nil, test.repo, test.step, test.log)
+		})
 	}
 }
