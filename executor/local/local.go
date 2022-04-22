@@ -38,7 +38,12 @@ type (
 
 // equal returns true if the other client is the equivalent.
 func Equal(a, b *client) bool {
-	if reflect.DeepEqual(a.Vela, b.Vela) &&
+	// handle any nil comparisons
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+
+	return reflect.DeepEqual(a.Vela, b.Vela) &&
 		reflect.DeepEqual(a.Runtime, b.Runtime) &&
 		a.Hostname == b.Hostname &&
 		a.Version == b.Version &&
@@ -49,11 +54,7 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(&a.services, &b.services) &&
 		reflect.DeepEqual(&a.steps, &b.steps) &&
 		reflect.DeepEqual(a.user, b.user) &&
-		reflect.DeepEqual(a.err, b.err) {
-		return true
-	}
-
-	return false
+		reflect.DeepEqual(a.err, b.err)
 }
 
 // New returns an Executor implementation that integrates with the local system.

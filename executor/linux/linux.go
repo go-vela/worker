@@ -57,7 +57,12 @@ type (
 
 // Equal returns true if the other client is the equivalent.
 func Equal(a, b *client) bool {
-	if reflect.DeepEqual(a.Logger, b.Logger) &&
+	// handle any nil comparisons
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+
+	return reflect.DeepEqual(a.Logger, b.Logger) &&
 		reflect.DeepEqual(a.Vela, b.Vela) &&
 		reflect.DeepEqual(a.Runtime, b.Runtime) &&
 		reflect.DeepEqual(a.Secrets, b.Secrets) &&
@@ -76,11 +81,7 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(&a.stepLogs, &b.stepLogs) &&
 		// do not compare streamRequests channel
 		reflect.DeepEqual(a.user, b.user) &&
-		reflect.DeepEqual(a.err, b.err) {
-		return true
-	}
-
-	return false
+		reflect.DeepEqual(a.err, b.err)
 }
 
 // New returns an Executor implementation that integrates with a Linux instance.
