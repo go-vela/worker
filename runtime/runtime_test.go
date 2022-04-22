@@ -13,16 +13,19 @@ import (
 func TestRuntime_New(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		setup   *Setup
 	}{
 		{
+			name:    "docker driver",
 			failure: false,
 			setup: &Setup{
 				Driver: constants.DriverDocker,
 			},
 		},
 		{
+			name:    "kubernetes driver",
 			failure: false,
 			setup: &Setup{
 				Driver:     constants.DriverKubernetes,
@@ -31,12 +34,14 @@ func TestRuntime_New(t *testing.T) {
 			},
 		},
 		{
+			name:    "invalid driver fails",
 			failure: true,
 			setup: &Setup{
 				Driver: "invalid",
 			},
 		},
 		{
+			name:    "empty driver fails",
 			failure: true,
 			setup: &Setup{
 				Driver: "",
@@ -46,18 +51,20 @@ func TestRuntime_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err := New(test.setup)
+		t.Run(test.name, func(t *testing.T) {
+			_, err := New(test.setup)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
+			}
+		})
 	}
 }

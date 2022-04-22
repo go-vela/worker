@@ -42,6 +42,8 @@ type client struct {
 	Logger *logrus.Entry
 	// https://pkg.go.dev/k8s.io/api/core/v1#Pod
 	Pod *v1.Pod
+	// containersLookup maps the container name to its index in Containers
+	containersLookup map[string]int
 	// PipelinePodTemplate has default values to be used in Setup* methods
 	PipelinePodTemplate *velav1alpha1.PipelinePodTemplate
 	// commonVolumeMounts includes workspace mount and any global host mounts (VELA_RUNTIME_VOLUMES)
@@ -61,6 +63,7 @@ func New(opts ...ClientOpt) (*client, error) {
 	// create new fields
 	c.config = new(config)
 	c.Pod = new(v1.Pod)
+	c.containersLookup = map[string]int{}
 
 	// create new logger for the client
 	//
@@ -140,6 +143,11 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	// create new fields
 	c.config = new(config)
 	c.Pod = new(v1.Pod)
+
+	c.containersLookup = map[string]int{}
+	for i, ctn := range _pod.Spec.Containers {
+		c.containersLookup[ctn.Name] = i
+	}
 
 	// create new logger for the client
 	//

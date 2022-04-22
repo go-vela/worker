@@ -22,14 +22,17 @@ func TestKubernetes_CreateVolume(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},
@@ -37,35 +40,40 @@ func TestKubernetes_CreateVolume(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.CreateVolume(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.CreateVolume(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateVolume should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateVolume should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("CreateVolume returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("CreateVolume returned err: %v", err)
+			}
+		})
 	}
 }
 
 func TestKubernetes_InspectVolume(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 		pod      *v1.Pod
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 			pod:      _pod,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 			pod:      _pod,
@@ -74,24 +82,26 @@ func TestKubernetes_InspectVolume(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := NewMock(test.pod)
-		if err != nil {
-			t.Errorf("unable to create runtime engine: %v", err)
-		}
-
-		_, err = _engine.InspectVolume(context.Background(), test.pipeline)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("InspectVolume should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock(test.pod)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			continue
-		}
+			_, err = _engine.InspectVolume(context.Background(), test.pipeline)
 
-		if err != nil {
-			t.Errorf("InspectVolume returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("InspectVolume should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("InspectVolume returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -104,14 +114,17 @@ func TestKubernetes_RemoveVolume(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "stages",
 			failure:  false,
 			pipeline: _stages,
 		},
 		{
+			name:     "steps",
 			failure:  false,
 			pipeline: _steps,
 		},
@@ -119,18 +132,20 @@ func TestKubernetes_RemoveVolume(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = _engine.RemoveVolume(context.Background(), test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			err = _engine.RemoveVolume(context.Background(), test.pipeline)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("RemoveVolume should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("RemoveVolume should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("RemoveVolume returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("RemoveVolume returned err: %v", err)
+			}
+		})
 	}
 }
