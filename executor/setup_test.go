@@ -223,10 +223,12 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		setup   *Setup
 		failure bool
 	}{
 		{
+			name: "complete",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -241,6 +243,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: false,
 		},
 		{
+			name: "nil build",
 			setup: &Setup{
 				Build:      nil,
 				Client:     _client,
@@ -255,6 +258,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil client",
 			setup: &Setup{
 				Build:      _build,
 				Client:     nil,
@@ -269,6 +273,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "empty driver",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -283,6 +288,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil pipeline",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -297,6 +303,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil repo",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -311,6 +318,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil runtime",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -325,6 +333,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil user",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -339,6 +348,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "empty log-method",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -353,6 +363,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "invalid log-method",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -370,18 +381,20 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = test.setup.Validate()
+		t.Run(test.name, func(t *testing.T) {
+			err = test.setup.Validate()
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("Validate should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("Validate should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("Validate returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("Validate returned err: %v", err)
+			}
+		})
 	}
 }

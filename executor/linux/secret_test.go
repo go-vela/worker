@@ -51,10 +51,12 @@ func TestLinux_Secret_create(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
 		{
+			name:    "good image tag",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -67,6 +69,7 @@ func TestLinux_Secret_create(t *testing.T) {
 			},
 		},
 		{
+			name:    "notfound image tag",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -82,31 +85,33 @@ func TestLinux_Secret_create(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_steps),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.secret.create(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("create should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_steps),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.secret.create(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("create returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("create should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("create returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -138,11 +143,13 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		step      *library.Step
 	}{
 		{
+			name:    "running container-empty step",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -156,6 +163,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: new(library.Step),
 		},
 		{
+			name:    "running container-pending step",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -169,6 +177,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: _step,
 		},
 		{
+			name:    "inspecting container failure due to invalid container id",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
@@ -182,6 +191,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: new(library.Step),
 		},
 		{
+			name:    "removing container failure",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_ignorenotfound",
@@ -198,35 +208,37 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_steps),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		_ = _engine.CreateBuild(context.Background())
-
-		_engine.steps.Store(test.container.ID, test.step)
-
-		err = _engine.secret.destroy(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("destroy should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_steps),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			_ = _engine.CreateBuild(context.Background())
 
-		if err != nil {
-			t.Errorf("destroy returned err: %v", err)
-		}
+			_engine.steps.Store(test.container.ID, test.step)
+
+			err = _engine.secret.destroy(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("destroy should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("destroy returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -255,14 +267,17 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline string
 	}{
-		{ // basic secrets pipeline
+		{
+			name:     "basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
-		{ // pipeline with secret name not found
+		{
+			name:     "pipeline with secret name not found",
 			failure:  true,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
@@ -270,45 +285,47 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		file, _ := ioutil.ReadFile(test.pipeline)
+		t.Run(test.name, func(t *testing.T) {
+			file, _ := ioutil.ReadFile(test.pipeline)
 
-		p, _ := compiler.
-			WithBuild(_build).
-			WithRepo(_repo).
-			WithUser(_user).
-			WithMetadata(_metadata).
-			Compile(file)
+			p, _ := compiler.
+				WithBuild(_build).
+				WithRepo(_repo).
+				WithUser(_user).
+				WithMetadata(_metadata).
+				Compile(file)
 
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(p),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		_engine.build.SetStatus(constants.StatusSuccess)
-
-		// add init container info to client
-		_ = _engine.CreateBuild(context.Background())
-
-		err = _engine.secret.exec(context.Background(), &p.Secrets)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("exec should have returned err")
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(p),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			_engine.build.SetStatus(constants.StatusSuccess)
 
-		if err != nil {
-			t.Errorf("exec returned err: %v", err)
-		}
+			// add init container info to client
+			_ = _engine.CreateBuild(context.Background())
+
+			err = _engine.secret.exec(context.Background(), &p.Secrets)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("exec should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("exec returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -334,10 +351,12 @@ func TestLinux_Secret_pull(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		secret  *pipeline.Secret
 	}{
-		{ // success with org secret
+		{
+			name:    "success with org secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -348,7 +367,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with invalid org secret
+		{
+			name:    "failure with invalid org secret",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -359,7 +379,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with org secret key not found
+		{
+			name:    "failure with org secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -370,7 +391,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // success with repo secret
+		{
+			name:    "success with repo secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -381,7 +403,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with invalid repo secret
+		{
+			name:    "failure with invalid repo secret",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -392,7 +415,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with repo secret key not found
+		{
+			name:    "failure with repo secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -403,7 +427,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // success with shared secret
+		{
+			name:    "success with shared secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -414,7 +439,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with shared secret key not found
+		{
+			name:    "failure with shared secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -425,7 +451,8 @@ func TestLinux_Secret_pull(t *testing.T) {
 				Origin: &pipeline.Container{},
 			},
 		},
-		{ // failure with invalid type
+		{
+			name:    "failure with invalid type",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -440,31 +467,33 @@ func TestLinux_Secret_pull(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(testSteps()),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		_, err = _engine.secret.pull(test.secret)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("pull should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(testSteps()),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			_, err = _engine.secret.pull(test.secret)
 
-		if err != nil {
-			t.Errorf("pull returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("pull should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("pull returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -491,11 +520,13 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		logs      *library.Log
 		container *pipeline.Container
 	}{
-		{ // container step succeeds
+		{
+			name:    "container step succeeds",
 			failure: false,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
@@ -508,7 +539,8 @@ func TestLinux_Secret_stream(t *testing.T) {
 				Pull:        "always",
 			},
 		},
-		{ // container step fails because of invalid container id
+		{
+			name:    "container step fails because of invalid container id",
 			failure: true,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
@@ -525,34 +557,36 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_steps),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-			WithVelaClient(_client),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// add init container info to client
-		_ = _engine.CreateBuild(context.Background())
-
-		err = _engine.secret.stream(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("stream should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_steps),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			// add init container info to client
+			_ = _engine.CreateBuild(context.Background())
 
-		if err != nil {
-			t.Errorf("stream returned err: %v", err)
-		}
+			err = _engine.secret.stream(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("stream should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("stream returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -562,12 +596,14 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 
 	// setup types
 	tests := []struct {
+		name string
 		step *pipeline.Container
 		msec map[string]*library.Secret
 		want *pipeline.Container
 	}{
 		// Tests for secrets with image ACLs
 		{
+			name: "secret with empty image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -580,6 +616,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with matching image ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -592,6 +629,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with matching image:tag ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -604,6 +642,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: make(map[string]string),
@@ -618,6 +657,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 
 		// Tests for secrets with event ACLs
 		{ // push event checks
+			name: "secret with matching push event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -630,6 +670,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching push event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -642,6 +683,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{ // pull_request event checks
+			name: "secret with matching pull_request event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
@@ -654,6 +696,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching pull_request event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
@@ -666,6 +709,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{ // tag event checks
+			name: "secret with matching tag event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "tag"},
@@ -678,6 +722,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching tag event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "tag"},
@@ -690,6 +735,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{ // deployment event checks
+			name: "secret with matching deployment event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "deployment"},
@@ -702,6 +748,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching deployment event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "deployment"},
@@ -716,6 +763,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 
 		// Tests for secrets with event and image ACLs
 		{
+			name: "secret with matching event ACL and non-matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -728,6 +776,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with non-matching event ACL and matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "centos:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -740,6 +789,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 		},
 		{
+			name: "secret with matching event ACL and matching image ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"BUILD_EVENT": "push"},
@@ -755,15 +805,17 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		_ = injectSecrets(test.step, test.msec)
-		got := test.step
+		t.Run(test.name, func(t *testing.T) {
+			_ = injectSecrets(test.step, test.msec)
+			got := test.step
 
-		// Preferred use of reflect.DeepEqual(x, y interface) is giving false positives.
-		// Switching to a Google library for increased clarity.
-		// https://github.com/google/go-cmp
-		if diff := cmp.Diff(test.want.Environment, got.Environment); diff != "" {
-			t.Errorf("injectSecrets mismatch (-want +got):\n%s", diff)
-		}
+			// Preferred use of reflect.DeepEqual(x, y interface) is giving false positives.
+			// Switching to a Google library for increased clarity.
+			// https://github.com/google/go-cmp
+			if diff := cmp.Diff(test.want.Environment, got.Environment); diff != "" {
+				t.Errorf("injectSecrets mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -778,15 +830,17 @@ func TestLinux_Secret_escapeNewlineSecrets(t *testing.T) {
 
 	// setup types
 	tests := []struct {
+		name      string
 		secretMap map[string]*library.Secret
 		want      map[string]*library.Secret
 	}{
-
 		{
+			name:      "not escaped",
 			secretMap: map[string]*library.Secret{"FOO": {Name: &n, Value: &v}},
 			want:      map[string]*library.Secret{"FOO": {Name: &n, Value: &w}},
 		},
 		{
+			name:      "already escaped",
 			secretMap: map[string]*library.Secret{"FOO": {Name: &n, Value: &vEscaped}},
 			want:      map[string]*library.Secret{"FOO": {Name: &n, Value: &w}},
 		},
@@ -794,14 +848,16 @@ func TestLinux_Secret_escapeNewlineSecrets(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		escapeNewlineSecrets(test.secretMap)
-		got := test.secretMap
+		t.Run(test.name, func(t *testing.T) {
+			escapeNewlineSecrets(test.secretMap)
+			got := test.secretMap
 
-		// Preferred use of reflect.DeepEqual(x, y interface) is giving false positives.
-		// Switching to a Google library for increased clarity.
-		// https://github.com/google/go-cmp
-		if diff := cmp.Diff(test.want, got); diff != "" {
-			t.Errorf("escapeNewlineSecrets mismatch (-want +got):\n%s", diff)
-		}
+			// Preferred use of reflect.DeepEqual(x, y interface) is giving false positives.
+			// Switching to a Google library for increased clarity.
+			// https://github.com/google/go-cmp
+			if diff := cmp.Diff(test.want, got); diff != "" {
+				t.Errorf("escapeNewlineSecrets mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
 }

@@ -28,40 +28,47 @@ func TestLocal_Opt_WithBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name  string
 		build *library.Build
 	}{
 		{
+			name:  "build",
 			build: _build,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(test.build),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(test.build),
+			)
 
-		if err != nil {
-			t.Errorf("WithBuild returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithBuild returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.build, _build) {
-			t.Errorf("WithBuild is %v, want %v", _engine.build, _build)
-		}
+			if !reflect.DeepEqual(_engine.build, _build) {
+				t.Errorf("WithBuild is %v, want %v", _engine.build, _build)
+			}
+		})
 	}
 }
 
 func TestLocal_Opt_WithHostname(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name     string
 		hostname string
 		want     string
 	}{
 		{
+			name:     "dns hostname",
 			hostname: "vela.worker.localhost",
 			want:     "vela.worker.localhost",
 		},
 		{
+			name:     "empty hostname is localhost",
 			hostname: "",
 			want:     "localhost",
 		},
@@ -69,16 +76,18 @@ func TestLocal_Opt_WithHostname(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithHostname(test.hostname),
-		)
-		if err != nil {
-			t.Errorf("unable to create local engine: %v", err)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithHostname(test.hostname),
+			)
+			if err != nil {
+				t.Errorf("unable to create local engine: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.Hostname, test.want) {
-			t.Errorf("WithHostname is %v, want %v", _engine.Hostname, test.want)
-		}
+			if !reflect.DeepEqual(_engine.Hostname, test.want) {
+				t.Errorf("WithHostname is %v, want %v", _engine.Hostname, test.want)
+			}
+		})
 	}
 }
 
@@ -88,14 +97,17 @@ func TestLocal_Opt_WithPipeline(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		pipeline *pipeline.Build
 	}{
 		{
+			name:     "steps pipeline",
 			failure:  false,
 			pipeline: _steps,
 		},
 		{
+			name:     "nil pipeline",
 			failure:  true,
 			pipeline: nil,
 		},
@@ -103,25 +115,27 @@ func TestLocal_Opt_WithPipeline(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithPipeline(test.pipeline),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithPipeline(test.pipeline),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithPipeline should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithPipeline should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithPipeline returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithPipeline returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.pipeline, _steps) {
-			t.Errorf("WithPipeline is %v, want %v", _engine.pipeline, _steps)
-		}
+			if !reflect.DeepEqual(_engine.pipeline, _steps) {
+				t.Errorf("WithPipeline is %v, want %v", _engine.pipeline, _steps)
+			}
+		})
 	}
 }
 
@@ -131,26 +145,30 @@ func TestLocal_Opt_WithRepo(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name string
 		repo *library.Repo
 	}{
 		{
+			name: "repo",
 			repo: _repo,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithRepo(test.repo),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithRepo(test.repo),
+			)
 
-		if err != nil {
-			t.Errorf("WithRepo returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithRepo returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.repo, _repo) {
-			t.Errorf("WithRepo is %v, want %v", _engine.repo, _repo)
-		}
+			if !reflect.DeepEqual(_engine.repo, _repo) {
+				t.Errorf("WithRepo is %v, want %v", _engine.repo, _repo)
+			}
+		})
 	}
 }
 
@@ -163,14 +181,17 @@ func TestLocal_Opt_WithRuntime(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		runtime runtime.Engine
 	}{
 		{
+			name:    "docker runtime",
 			failure: false,
 			runtime: _runtime,
 		},
 		{
+			name:    "nil runtime",
 			failure: true,
 			runtime: nil,
 		},
@@ -178,25 +199,27 @@ func TestLocal_Opt_WithRuntime(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithRuntime(test.runtime),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithRuntime(test.runtime),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("WithRuntime should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithRuntime should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("WithRuntime returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("WithRuntime returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(_engine.Runtime, _runtime) {
-			t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, _runtime)
-		}
+			if !reflect.DeepEqual(_engine.Runtime, _runtime) {
+				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, _runtime)
+			}
+		})
 	}
 }
 
@@ -206,26 +229,30 @@ func TestLocal_Opt_WithUser(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name string
 		user *library.User
 	}{
 		{
+			name: "user",
 			user: _user,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithUser(test.user),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithUser(test.user),
+			)
 
-		if err != nil {
-			t.Errorf("WithUser returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithUser returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.user, _user) {
-			t.Errorf("WithUser is %v, want %v", _engine.user, _user)
-		}
+			if !reflect.DeepEqual(_engine.user, _user) {
+				t.Errorf("WithUser is %v, want %v", _engine.user, _user)
+			}
+		})
 	}
 }
 
@@ -242,40 +269,47 @@ func TestLocal_Opt_WithVelaClient(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name   string
 		client *vela.Client
 	}{
 		{
+			name:   "vela client",
 			client: _client,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithVelaClient(test.client),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithVelaClient(test.client),
+			)
 
-		if err != nil {
-			t.Errorf("WithVelaClient returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("WithVelaClient returned err: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.Vela, _client) {
-			t.Errorf("WithVelaClient is %v, want %v", _engine.Vela, _client)
-		}
+			if !reflect.DeepEqual(_engine.Vela, _client) {
+				t.Errorf("WithVelaClient is %v, want %v", _engine.Vela, _client)
+			}
+		})
 	}
 }
 
 func TestLocal_Opt_WithVersion(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name    string
 		version string
 		want    string
 	}{
 		{
+			name:    "version",
 			version: "v1.0.0",
 			want:    "v1.0.0",
 		},
 		{
+			name:    "empty version",
 			version: "",
 			want:    "v0.0.0",
 		},
@@ -283,15 +317,17 @@ func TestLocal_Opt_WithVersion(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithVersion(test.version),
-		)
-		if err != nil {
-			t.Errorf("unable to create local engine: %v", err)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithVersion(test.version),
+			)
+			if err != nil {
+				t.Errorf("unable to create local engine: %v", err)
+			}
 
-		if !reflect.DeepEqual(_engine.Version, test.want) {
-			t.Errorf("WithVersion is %v, want %v", _engine.Version, test.want)
-		}
+			if !reflect.DeepEqual(_engine.Version, test.want) {
+				t.Errorf("WithVersion is %v, want %v", _engine.Version, test.want)
+			}
+		})
 	}
 }
