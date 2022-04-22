@@ -261,12 +261,11 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithUser(_user),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())
@@ -363,12 +362,11 @@ func TestLocal_ExecBuild(t *testing.T) {
 				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithUser(_user),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())

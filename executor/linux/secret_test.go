@@ -306,12 +306,11 @@ func TestLinux_Secret_exec(t *testing.T) {
 				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			_engine.build.SetStatus(constants.StatusSuccess)
 

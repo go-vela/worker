@@ -236,12 +236,11 @@ func TestLocal_ExecService(t *testing.T) {
 				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithUser(_user),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			if !test.container.Empty() {
 				_engine.services.Store(test.container.ID, new(library.Service))

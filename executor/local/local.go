@@ -63,6 +63,9 @@ func New(opts ...Opt) (*client, error) {
 	// create new local client
 	c := new(client)
 
+	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
+	c.streamRequests = make(chan message.StreamRequest)
+
 	// apply all provided configuration options
 	for _, opt := range opts {
 		err := opt(c)
@@ -70,9 +73,6 @@ func New(opts ...Opt) (*client, error) {
 			return nil, err
 		}
 	}
-
-	// instantiate streamRequests channel
-	c.streamRequests = make(chan message.StreamRequest)
 
 	return c, nil
 }

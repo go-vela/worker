@@ -338,6 +338,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -348,8 +349,6 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			err = _engine.AssembleBuild(context.Background())
 
@@ -451,12 +450,11 @@ func TestLinux_ExecBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())

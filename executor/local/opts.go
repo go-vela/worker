@@ -7,6 +7,7 @@ package local
 import (
 	"fmt"
 
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -115,6 +116,22 @@ func WithVersion(version string) Opt {
 
 		// set the version in the client
 		c.Version = version
+
+		return nil
+	}
+}
+
+// withStreamRequests sets the streamRequests channel in the executor client for Linux
+// (primarily used for tests).
+func withStreamRequests(s chan message.StreamRequest) Opt {
+	return func(c *client) error {
+		// check if the channel provided is nil
+		if s == nil {
+			s = make(chan message.StreamRequest)
+		}
+
+		// set the streamRequests channel in the client
+		c.streamRequests = s
 
 		return nil
 	}

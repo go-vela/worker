@@ -288,12 +288,11 @@ func TestLinux_ExecService(t *testing.T) {
 				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			if !test.container.Empty() {
 				_engine.services.Store(test.container.ID, new(library.Service))

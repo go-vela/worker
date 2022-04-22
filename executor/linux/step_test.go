@@ -318,12 +318,11 @@ func TestLinux_ExecStep(t *testing.T) {
 				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			if !test.container.Empty() {
 				_engine.steps.Store(test.container.ID, new(library.Step))

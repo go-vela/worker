@@ -381,12 +381,11 @@ func TestLinux_ExecStage(t *testing.T) {
 				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
-
-			_engine.streamRequests = streamRequests
 
 			err = _engine.ExecStage(context.Background(), test.stage, stageMap)
 
