@@ -5,6 +5,7 @@
 package local
 
 import (
+	"reflect"
 	"sync"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -34,6 +35,26 @@ type (
 		streamRequests chan message.StreamRequest
 	}
 )
+
+// equal returns true if the other client is the equivalent.
+func Equal(a, b *client) bool {
+	if reflect.DeepEqual(a.Vela, b.Vela) &&
+		reflect.DeepEqual(a.Runtime, b.Runtime) &&
+		a.Hostname == b.Hostname &&
+		a.Version == b.Version &&
+		reflect.DeepEqual(a.init, b.init) &&
+		reflect.DeepEqual(a.build, b.build) &&
+		reflect.DeepEqual(a.pipeline, b.pipeline) &&
+		reflect.DeepEqual(a.repo, b.repo) &&
+		reflect.DeepEqual(&a.services, &b.services) &&
+		reflect.DeepEqual(&a.steps, &b.steps) &&
+		reflect.DeepEqual(a.user, b.user) &&
+		reflect.DeepEqual(a.err, b.err) {
+		return true
+	}
+
+	return false
+}
 
 // New returns an Executor implementation that integrates with the local system.
 //

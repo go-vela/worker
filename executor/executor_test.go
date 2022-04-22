@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/go-vela/server/mock/server"
 
@@ -77,6 +78,7 @@ func TestExecutor_New(t *testing.T) {
 		failure bool
 		setup   *Setup
 		want    Engine
+		equal   interface{}
 	}{
 		{
 			name:    "driver-darwin",
@@ -91,7 +93,8 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 		{
 			name:    "driver-linux",
@@ -108,7 +111,8 @@ func TestExecutor_New(t *testing.T) {
 				User:       _user,
 				Version:    "v1.0.0",
 			},
-			want: _linux,
+			want:  _linux,
+			equal: linux.Equal,
 		},
 		{
 			name:    "driver-local",
@@ -123,7 +127,8 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: _local,
+			want:  _local,
+			equal: local.Equal,
 		},
 		{
 			name:    "driver-windows",
@@ -138,7 +143,8 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 		{
 			name:    "driver-invalid",
@@ -153,7 +159,8 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 		{
 			name:    "driver-empty",
@@ -168,7 +175,8 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 	}
 
@@ -193,8 +201,10 @@ func TestExecutor_New(t *testing.T) {
 				t.Errorf("New returned err: %v", err)
 			}
 
-			if !reflect.DeepEqual(got, test.want) {
-				t.Errorf("New is %v, want %v", got, test.want)
+			// Comparing with reflect.DeepEqual(x, y interface) panics due to the
+			// unexported streamRequests channel.
+			if diff := cmp.Diff(test.want, got, cmp.Comparer(test.equal)); diff != "" {
+				t.Errorf("engine mismatch (-want +got):\n%v", diff)
 			}
 		})
 	}

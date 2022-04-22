@@ -5,6 +5,7 @@
 package linux
 
 import (
+	"reflect"
 	"sync"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -30,13 +31,12 @@ type (
 		secret *secretSvc
 
 		// private fields
-		init       *pipeline.Container
-		logMethod  string
-		maxLogSize uint
-		build      *library.Build
-		pipeline   *pipeline.Build
-		repo       *library.Repo
-		// nolint: structcheck,unused // ignore false positives
+		init        *pipeline.Container
+		logMethod   string
+		maxLogSize  uint
+		build       *library.Build
+		pipeline    *pipeline.Build
+		repo        *library.Repo
 		secrets     sync.Map
 		services    sync.Map
 		serviceLogs sync.Map
@@ -54,6 +54,34 @@ type (
 		client *client
 	}
 )
+
+// Equal returns true if the other client is the equivalent.
+func Equal(a, b *client) bool {
+	if reflect.DeepEqual(a.Logger, b.Logger) &&
+		reflect.DeepEqual(a.Vela, b.Vela) &&
+		reflect.DeepEqual(a.Runtime, b.Runtime) &&
+		reflect.DeepEqual(a.Secrets, b.Secrets) &&
+		a.Hostname == b.Hostname &&
+		a.Version == b.Version &&
+		reflect.DeepEqual(a.init, b.init) &&
+		a.logMethod == b.logMethod &&
+		a.maxLogSize == b.maxLogSize &&
+		reflect.DeepEqual(a.build, b.build) &&
+		reflect.DeepEqual(a.pipeline, b.pipeline) &&
+		reflect.DeepEqual(a.repo, b.repo) &&
+		reflect.DeepEqual(&a.secrets, &b.secrets) &&
+		reflect.DeepEqual(&a.services, &b.services) &&
+		reflect.DeepEqual(&a.serviceLogs, &b.serviceLogs) &&
+		reflect.DeepEqual(&a.steps, &b.steps) &&
+		reflect.DeepEqual(&a.stepLogs, &b.stepLogs) &&
+		// do not compare streamRequests channel
+		reflect.DeepEqual(a.user, b.user) &&
+		reflect.DeepEqual(a.err, b.err) {
+		return true
+	}
+
+	return false
+}
 
 // New returns an Executor implementation that integrates with a Linux instance.
 //
