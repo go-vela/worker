@@ -39,14 +39,17 @@ func TestLinux_New(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		build   *library.Build
 	}{
 		{
+			name:    "with build",
 			failure: false,
 			build:   testBuild(),
 		},
 		{
+			name:    "nil build",
 			failure: true,
 			build:   nil,
 		},
@@ -54,27 +57,29 @@ func TestLinux_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err := New(
-			WithBuild(test.build),
-			WithHostname("localhost"),
-			WithPipeline(testSteps()),
-			WithRepo(testRepo()),
-			WithRuntime(_runtime),
-			WithUser(testUser()),
-			WithVelaClient(_client),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_, err := New(
+				WithBuild(test.build),
+				WithHostname("localhost"),
+				WithPipeline(testSteps()),
+				WithRepo(testRepo()),
+				WithRuntime(_runtime),
+				WithUser(testUser()),
+				WithVelaClient(_client),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
+			}
+		})
 	}
 }
 
