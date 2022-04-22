@@ -46,10 +46,12 @@ func TestLocal_CreateStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		stage   *pipeline.Stage
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -66,7 +68,8 @@ func TestLocal_CreateStage(t *testing.T) {
 				},
 			},
 		},
-		{ // stage with step container with image not found
+		{
+			name:    "stage with step container with image not found",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -87,36 +90,38 @@ func TestLocal_CreateStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(_pipeline),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		// run create to init steps to be created properly
-		err = _engine.CreateBuild(context.Background())
-		if err != nil {
-			t.Errorf("unable to create build: %v", err)
-		}
-
-		err = _engine.CreateStage(context.Background(), test.stage)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateStage should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(_pipeline),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			// run create to init steps to be created properly
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("unable to create build: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("CreateStage returned err: %v", err)
-		}
+			err = _engine.CreateStage(context.Background(), test.stage)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateStage should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateStage returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -147,11 +152,13 @@ func TestLocal_PlanStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name     string
 		failure  bool
 		stage    *pipeline.Stage
 		stageMap *sync.Map
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -169,7 +176,8 @@ func TestLocal_PlanStage(t *testing.T) {
 			},
 			stageMap: new(sync.Map),
 		},
-		{ // basic stage with nil stage map
+		{
+			name:    "basic stage with nil stage map",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name:  "echo",
@@ -188,7 +196,8 @@ func TestLocal_PlanStage(t *testing.T) {
 			},
 			stageMap: testMap,
 		},
-		{ // basic stage with error stage map
+		{
+			name:    "basic stage with error stage map",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name:  "echo",
@@ -211,30 +220,32 @@ func TestLocal_PlanStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.PlanStage(context.Background(), test.stage, test.stageMap)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("PlanStage should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.PlanStage(context.Background(), test.stage, test.stageMap)
 
-		if err != nil {
-			t.Errorf("PlanStage returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("PlanStage should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PlanStage returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -251,10 +262,12 @@ func TestLocal_ExecStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		stage   *pipeline.Stage
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -271,7 +284,8 @@ func TestLocal_ExecStage(t *testing.T) {
 				},
 			},
 		},
-		{ // stage with step container with image not found
+		{
+			name:    "stage with step container with image not found",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -292,33 +306,35 @@ func TestLocal_ExecStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		stageMap := new(sync.Map)
-		stageMap.Store("echo", make(chan error))
+		t.Run(test.name, func(t *testing.T) {
+			stageMap := new(sync.Map)
+			stageMap.Store("echo", make(chan error))
 
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.ExecStage(context.Background(), test.stage, stageMap)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("ExecStage should have returned err")
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.ExecStage(context.Background(), test.stage, stageMap)
 
-		if err != nil {
-			t.Errorf("ExecStage returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("ExecStage should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ExecStage returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -335,10 +351,12 @@ func TestLocal_DestroyStage(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		stage   *pipeline.Stage
 	}{
-		{ // basic stage
+		{
+			name:    "basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -359,29 +377,31 @@ func TestLocal_DestroyStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.DestroyStage(context.Background(), test.stage)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("DestroyStage should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.DestroyStage(context.Background(), test.stage)
 
-		if err != nil {
-			t.Errorf("DestroyStage returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("DestroyStage should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("DestroyStage returned err: %v", err)
+			}
+		})
 	}
 }

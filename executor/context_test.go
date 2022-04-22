@@ -51,19 +51,23 @@ func TestExecutor_FromContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context context.Context
 		want    Engine
 	}{
 		{
+			name: "valid executor in context",
 			// nolint: staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, _engine),
 			want:    _engine,
 		},
 		{
+			name:    "executor not in context",
 			context: context.Background(),
 			want:    nil,
 		},
 		{
+			name: "invalid executor in context",
 			// nolint: staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, "foo"),
 			want:    nil,
@@ -72,11 +76,13 @@ func TestExecutor_FromContext(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got := FromContext(test.context)
+		t.Run(test.name, func(t *testing.T) {
+			got := FromContext(test.context)
 
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("FromContext is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("FromContext is %v, want %v", got, test.want)
+			}
+		})
 	}
 }
 
@@ -110,21 +116,25 @@ func TestExecutor_FromGinContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context *gin.Context
 		value   interface{}
 		want    Engine
 	}{
 		{
+			name:    "valid executor in context",
 			context: new(gin.Context),
 			value:   _engine,
 			want:    _engine,
 		},
 		{
+			name:    "executor not in context",
 			context: new(gin.Context),
 			value:   nil,
 			want:    nil,
 		},
 		{
+			name:    "invalid executor in context",
 			context: new(gin.Context),
 			value:   "foo",
 			want:    nil,
@@ -133,15 +143,17 @@ func TestExecutor_FromGinContext(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		if test.value != nil {
-			test.context.Set(key, test.value)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			if test.value != nil {
+				test.context.Set(key, test.value)
+			}
 
-		got := FromGinContext(test.context)
+			got := FromGinContext(test.context)
 
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("FromGinContext is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("FromGinContext is %v, want %v", got, test.want)
+			}
+		})
 	}
 }
 
