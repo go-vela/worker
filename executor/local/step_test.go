@@ -27,10 +27,12 @@ func TestLocal_CreateStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -42,7 +44,8 @@ func TestLocal_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -54,7 +57,8 @@ func TestLocal_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with image not found
+		{
+			name:    "step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -66,7 +70,8 @@ func TestLocal_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -74,30 +79,32 @@ func TestLocal_CreateStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.CreateStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.CreateStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("CreateStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -114,10 +121,12 @@ func TestLocal_PlanStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -129,7 +138,8 @@ func TestLocal_PlanStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -137,30 +147,32 @@ func TestLocal_PlanStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.PlanStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("PlanStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.PlanStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("PlanStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("PlanStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PlanStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -177,10 +189,12 @@ func TestLocal_ExecStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -192,7 +206,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -204,7 +219,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // detached step container
+		{
+			name:    "detached step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -217,7 +233,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // step container with image not found
+		{
+			name:    "step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -229,7 +246,8 @@ func TestLocal_ExecStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -237,34 +255,36 @@ func TestLocal_ExecStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		if !test.container.Empty() {
-			_engine.steps.Store(test.container.ID, new(library.Step))
-		}
-
-		err = _engine.ExecStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("ExecStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			if !test.container.Empty() {
+				_engine.steps.Store(test.container.ID, new(library.Step))
+			}
 
-		if err != nil {
-			t.Errorf("ExecStep returned err: %v", err)
-		}
+			err = _engine.ExecStep(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("ExecStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ExecStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -281,10 +301,12 @@ func TestLocal_StreamStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -296,7 +318,8 @@ func TestLocal_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -308,7 +331,8 @@ func TestLocal_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic stage container
+		{
+			name:    "basic stage container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "github_octocat_1_echo_echo",
@@ -320,7 +344,8 @@ func TestLocal_StreamStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty step container
+		{
+			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -328,30 +353,32 @@ func TestLocal_StreamStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.StreamStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("StreamStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.StreamStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("StreamStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("StreamStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("StreamStep returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -368,10 +395,12 @@ func TestLocal_DestroyStep(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // init step container
+		{
+			name:    "init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -383,7 +412,8 @@ func TestLocal_DestroyStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // basic step container
+		{
+			name:    "basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -399,29 +429,31 @@ func TestLocal_DestroyStep(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.DestroyStep(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("DestroyStep should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.DestroyStep(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("DestroyStep returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("DestroyStep should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("DestroyStep returned err: %v", err)
+			}
+		})
 	}
 }
