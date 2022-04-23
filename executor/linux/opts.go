@@ -206,11 +206,6 @@ func withStreamRequests(s chan message.StreamRequest) Opt {
 	return func(c *client) error {
 		c.Logger.Trace("configuring stream requests in linux executor client")
 
-		// check if the channel provided is nil
-		if s == nil {
-			s = make(chan message.StreamRequest)
-		}
-
 		// set the streamRequests channel in the client
 		c.streamRequests = s
 
