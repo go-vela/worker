@@ -324,6 +324,8 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 		}
 	}
 
+	logger.Info("finished streaming logs")
+
 	return scanner.Err()
 }
 
