@@ -53,17 +53,9 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 
 		// avoid a panic if the build ends without terminating all containers
 		if cst.State.Terminated == nil {
-			for _, container := range pod.Spec.Containers {
-				if cst.Name != container.Name {
-					continue
-				}
-
-				// steps that were not executed will still be "running" the pause image as expected.
-				if container.Image == pauseImage {
-					return nil
-				}
-
-				break
+			// steps that were not executed will still be "running" the pause image as expected.
+			if cst.Image == pauseImage || cst.Image == image.Parse(pauseImage) {
+				return nil
 			}
 
 			return fmt.Errorf("expected container %s to be terminated, got %v", ctn.ID, cst.State)
