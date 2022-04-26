@@ -138,6 +138,25 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	return nil
 }
 
+// StreamBuild initializes log/event streaming for build.
+func (c *client) StreamBuild(ctx context.Context, b *pipeline.Build) error {
+	c.Logger.Tracef("streaming build %s", b.ID)
+
+	select {
+	case <-ctx.Done():
+		// bail out, as build timed out or was canceled.
+		return nil
+	case <-c.PodTracker.Ready:
+		// AssembleBuild signaled that the PodTracker is ready.
+		break
+	}
+
+	// Populate the PodTracker caches before creating the pipeline pod
+	c.PodTracker.Start(ctx)
+
+	return nil
+}
+
 // AssembleBuild finalizes the pipeline build setup.
 // This creates the pod in kubernetes for the pipeline build.
 // After creation, image is the only container field we can edit in kubernetes.
@@ -196,9 +215,10 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	// setup containerTeachers now that all containers are defined.
 	c.PodTracker.TrackContainers(c.Pod.Spec.Containers)
 
-	// Populate the PodTracker caches before creating the pipeline pod
-	c.PodTracker.Start(ctx)
+	// send signal to StreamBuild now that PodTracker is ready to be started.
+	close(c.PodTracker.Ready)
 
+	// wait for the PodTracker caches to populate before creating the pipeline pod.
 	if ok := cache.WaitForCacheSync(ctx.Done(), c.PodTracker.PodSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}

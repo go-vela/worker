@@ -58,6 +58,9 @@ type podTracker struct {
 
 	// Containers maps the container name to a containerTracker
 	Containers map[string]*containerTracker
+
+	// Ready signals when the PodTracker is done with setup and ready to Start.
+	Ready chan struct{}
 }
 
 // HandlePodAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Pods.
@@ -219,6 +222,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		podInformer:     podInformer,
 		PodLister:       podInformer.Lister(),
 		PodSynced:       podInformer.Informer().HasSynced,
+		Ready:           make(chan struct{}),
 	}
 
 	// register event handler funcs in podInformer
