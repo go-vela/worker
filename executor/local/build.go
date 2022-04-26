@@ -350,12 +350,12 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	// create an error group with the parent context
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
-	logs, logCtx := errgroup.WithContext(ctx)
+	streams, streamCtx := errgroup.WithContext(ctx)
 
 	defer func() {
 		fmt.Fprintln(os.Stdout, "waiting for stream functions to return")
 
-		err := logs.Wait()
+		err := streams.Wait()
 		if err != nil {
 			fmt.Fprintln(os.Stdout, "error in a stream request:", err)
 		}
@@ -366,12 +366,12 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	for {
 		select {
 		case req := <-c.streamRequests:
-			logs.Go(func() error {
-				fmt.Fprintf(os.Stdout, "streaming logs for %s container %s", req.Key, req.Container.ID)
-				// stream logs from container
-				err := req.Stream(logCtx, req.Container)
+			streams.Go(func() error {
+				fmt.Fprintf(os.Stdout, "streaming %s container %s", req.Key, req.Container.ID)
+
+				err := req.Stream(streamCtx, req.Container)
 				if err != nil {
-					fmt.Fprintln(os.Stdout, "error streaming logs:", err)
+					fmt.Fprintln(os.Stdout, "error streaming:", err)
 				}
 
 				return nil
