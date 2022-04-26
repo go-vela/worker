@@ -346,6 +346,10 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 			continue
 		}
 
+		// cst.State has details about the cst.Image's exit.
+		// cst.LastTerminationState has details about the kubernetes/pause image's exit.
+		// cst.RestartCount is 1 at exit due to switch from kubernetes/pause to final image.
+
 		// check if the container is in a terminated state
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
