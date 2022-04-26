@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-vela/sdk-go v0.13.0
 	github.com/go-vela/server v0.13.1
-	github.com/go-vela/types v0.13.0
+	github.com/go-vela/types v0.13.1-0.20220426202924-efda5bc01281
 	github.com/google/go-cmp v0.5.7
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
@@ -32,7 +32,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
-	github.com/alicebob/miniredis/v2 v2.19.0 // indirect
+	github.com/alicebob/miniredis/v2 v2.20.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/buildkite/yaml v0.0.0-20181016232759-0caa5f0796e3 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
@@ -87,11 +87,11 @@ require (
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ugorji/go/codec v1.1.11 // indirect
-	github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da // indirect
-	go.starlark.net v0.0.0-20220302181546-5411bad688d1 // indirect
+	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
+	go.starlark.net v0.0.0-20220328144851-d1966c6b9fcd // indirect
 	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
+	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect

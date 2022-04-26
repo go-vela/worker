@@ -21,12 +21,20 @@ func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
 		return true
 	}
 
+	event := b.GetEvent()
+	action := b.GetEventAction()
+
+	// if the build has an event action, concatenate event and event action for matching
+	if !strings.EqualFold(action, "") {
+		event = event + ":" + action
+	}
+
 	// create ruledata from build and repository information
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/pipeline#RuleData
 	ruledata := &pipeline.RuleData{
 		Branch: b.GetBranch(),
-		Event:  b.GetEvent(),
+		Event:  event,
 		Repo:   r.GetFullName(),
 		Status: b.GetStatus(),
 	}
