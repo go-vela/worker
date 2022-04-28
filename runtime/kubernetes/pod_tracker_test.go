@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -336,6 +337,43 @@ func Test_podTracker_HandlePodDelete(t *testing.T) {
 
 			// just make sure this doesn't panic
 			p.HandlePodDelete(test.obj)
+		})
+	}
+}
+
+func Test_podTracker_Stop(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+	clientset := fake.NewSimpleClientset()
+
+	tests := []struct {
+		name    string
+		pod     *v1.Pod
+		started bool
+	}{
+		{
+			name:    "started",
+			pod:     _pod,
+			started: true,
+		},
+		{
+			name:    "not started",
+			pod:     _pod,
+			started: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tracker, err := newPodTracker(logger, clientset, test.pod, 0*time.Second)
+			if err != nil {
+				t.Errorf("newPodTracker() error = %v", err)
+				return
+			}
+
+			if test.started {
+				tracker.Start(context.Background())
+			}
+			tracker.Stop()
 		})
 	}
 }
