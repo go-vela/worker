@@ -16,6 +16,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 
 	"github.com/sirupsen/logrus"
@@ -135,14 +136,12 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 			return err
 		}
 
-		go func() {
-			logger.Debug("stream logs for container")
-			// stream logs from container
-			err = s.client.secret.stream(ctx, _secret.Origin)
-			if err != nil {
-				logger.Error(err)
-			}
-		}()
+		// trigger StreamStep goroutine with logging context
+		s.client.streamRequests <- message.StreamRequest{
+			Key:       "secret",
+			Stream:    s.stream,
+			Container: _secret.Origin,
+		}
 
 		logger.Debug("waiting for container")
 		// wait for the runtime container
@@ -324,6 +323,8 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 			logs.Reset()
 		}
 	}
+
+	logger.Info("finished streaming logs")
 
 	return scanner.Err()
 }

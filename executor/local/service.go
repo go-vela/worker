@@ -11,6 +11,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
 
 	"github.com/go-vela/types/constants"
@@ -96,13 +97,12 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 		return err
 	}
 
-	go func() {
-		// stream logs from container
-		err := c.StreamService(context.Background(), ctn)
-		if err != nil {
-			fmt.Fprintln(os.Stdout, "unable to stream logs for service:", err)
-		}
-	}()
+	// trigger StreamService goroutine with logging context
+	c.streamRequests <- message.StreamRequest{
+		Key:       "service",
+		Stream:    c.StreamService,
+		Container: ctn,
+	}
 
 	return nil
 }
