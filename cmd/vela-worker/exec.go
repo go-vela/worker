@@ -104,9 +104,10 @@ func (w *Worker) exec(ctx context.Context, index int) error {
 
 	defer func() {
 		logger.Info("destroying build")
-		// destroy the build with the executor
-		// using buildCtx instead of timeoutCtx so that it happens after the timeout
-		err = _executor.DestroyBuild(buildCtx)
+
+		// destroy the build with the executor (pass a background
+		// context to guarantee all build resources are destroyed).
+		err = _executor.DestroyBuild(context.Background())
 		if err != nil {
 			logger.Errorf("unable to destroy build: %v", err)
 		}
