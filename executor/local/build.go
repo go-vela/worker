@@ -367,12 +367,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	streams.Go(func() error {
 		// If needed, the runtime should handle synchronizing with
 		// AssembleBuild which runs concurrently with StreamBuild.
-		err := c.Runtime.StreamBuild(streamCtx, c.pipeline)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return c.Runtime.StreamBuild(streamCtx, c.pipeline)
 	})
 
 	for {
