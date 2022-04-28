@@ -154,16 +154,71 @@ func (p *podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 // HandleEventAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Events.
 func (p *podTracker) HandleEventAdd(newObj interface{}) {
 	// TODO: do something with the (possible) event
+	newEvent := p.getTrackedPodEvent(newObj)
+	if newEvent == nil {
+		// not valid or not for our tracked pod
+		return
+	}
+
+	//if event.InvolvedObject.FieldPath == "spec.container{%s}" {
+	//
+	//}
+
+	p.Logger.Tracef("handling event add event for %s: %v", p.TrackedPod, newEvent)
 }
 
 // HandleEventUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Events.
 func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
 	// TODO: do something with the (possible) event(s)
+	oldEvent := p.getTrackedPodEvent(oldObj)
+	newEvent := p.getTrackedPodEvent(newObj)
+
+	if oldEvent == nil || newEvent == nil {
+		// not valid or not for our tracked pod
+		return
+	}
+
+	p.Logger.Tracef("handling event update event for %s: %v; %v", p.TrackedPod, oldEvent, newEvent)
 }
 
 // HandleEventDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Events.
 //func (p *podTracker) HandleEventDelete(oldObj interface{}) {
+//	oldEvent := p.getTrackedPodEvent(oldObj)
+//	if newEvent == nil {
+//		// not valid or not for our tracked pod
+//		return
+//	}
+//
+//	p.Logger.Tracef("handling event delete event for %s", p.TrackedPod)
 //}
+
+// getTrackedPodEvent tries to convert the obj into an Event and makes sure it is for the tracked Pod.
+// This should only be used by the funcs of cache.ResourceEventHandlerFuncs.
+func (p *podTracker) getTrackedPodEvent(obj interface{}) *v1.Event {
+	var (
+		event *v1.Event
+		ok    bool
+	)
+
+	if event, ok = obj.(*v1.Event); !ok {
+		p.Logger.Errorf("error decoding event, invalid type")
+		return nil
+	}
+
+	eventObjectName := event.InvolvedObject.Namespace + "/" + event.InvolvedObject.Name
+	if event.InvolvedObject.Kind != "Pod" || eventObjectName != p.TrackedPod {
+		p.Logger.Errorf(
+			"unexpected event for %s (%s), expected %s (Pod)",
+			eventObjectName,
+			event.InvolvedObject.Kind,
+			p.TrackedPod,
+		)
+
+		return nil
+	}
+
+	return event
+}
 
 // Start kicks off the API calls to start populating the cache.
 // There is no need to run this in a separate goroutine (ie go podTracker.Start(ctx)).
