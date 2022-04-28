@@ -106,6 +106,7 @@ var (
 							ExitCode: 0,
 						},
 					},
+					Image: "target/vela-git:v0.4.0",
 				},
 				{
 					Name: "step-github-octocat-1-echo",
@@ -115,6 +116,7 @@ var (
 							ExitCode: 0,
 						},
 					},
+					Image: "alpine:latest",
 				},
 			},
 		},
