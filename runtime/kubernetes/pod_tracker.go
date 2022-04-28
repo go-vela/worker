@@ -49,12 +49,20 @@ type podTracker struct {
 	informerDone context.CancelFunc
 	// podInformer watches the given pod, caches the results, and makes them available in podLister
 	podInformer informers.PodInformer
+	// eventInformer watches events for the given pod, caches the results, and makes them available in eventLister
+	eventInformer informers.EventInformer
 
 	// PodLister helps list Pods. All objects returned here must be treated as read-only.
 	PodLister listers.PodLister
 	// PodSynced is a function that can be used to determine if an informer has synced.
 	// This is useful for determining if caches have synced.
 	PodSynced cache.InformerSynced
+
+	// EventLister helps list Events. All objects returned here must be treated as read-only.
+	EventLister listers.EventLister
+	// EventSynced is a function that can be used to determine if an informer has synced.
+	// This is useful for determining if caches have synced.
+	EventSynced cache.InformerSynced
 
 	// Containers maps the container name to a containerTracker
 	Containers map[string]*containerTracker
@@ -143,6 +151,21 @@ func (p *podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 	return pod
 }
 
+// HandleEventAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Events.
+func (p *podTracker) HandleEventAdd(newObj interface{}) {
+	// TODO: do something with the (possible) event
+}
+
+// HandleEventUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Events.
+func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
+	// TODO: do something with the (possible) event(s)
+}
+
+// HandleEventDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Events.
+func (p *podTracker) HandleEventDelete(oldObj interface{}) {
+	// TODO: do something with the (possible) event
+}
+
 // Start kicks off the API calls to start populating the cache.
 // There is no need to run this in a separate goroutine (ie go podTracker.Start(ctx)).
 func (p *podTracker) Start(ctx context.Context) {
@@ -213,6 +236,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		}),
 	)
 	podInformer := informerFactory.Core().V1().Pods()
+	eventInformer := informerFactory.Core().V1().Events()
 
 	// initialize podTracker
 	tracker := podTracker{
@@ -222,6 +246,9 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		podInformer:     podInformer,
 		PodLister:       podInformer.Lister(),
 		PodSynced:       podInformer.Informer().HasSynced,
+		eventInformer:   eventInformer,
+		EventLister:     eventInformer.Lister(),
+		EventSynced:     eventInformer.Informer().HasSynced,
 		Ready:           make(chan struct{}),
 	}
 
@@ -230,6 +257,12 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		AddFunc:    tracker.HandlePodAdd,
 		UpdateFunc: tracker.HandlePodUpdate,
 		DeleteFunc: tracker.HandlePodDelete,
+	})
+
+	eventInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    tracker.HandleEventAdd,
+		UpdateFunc: tracker.HandleEventUpdate,
+		DeleteFunc: tracker.HandleEventDelete,
 	})
 
 	return &tracker, nil

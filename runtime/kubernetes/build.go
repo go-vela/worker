@@ -219,7 +219,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	close(c.PodTracker.Ready)
 
 	// wait for the PodTracker caches to populate before creating the pipeline pod.
-	if ok := cache.WaitForCacheSync(ctx.Done(), c.PodTracker.PodSynced); !ok {
+	if ok := cache.WaitForCacheSync(ctx.Done(), c.PodTracker.PodSynced, c.PodTracker.EventSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
