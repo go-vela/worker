@@ -8,6 +8,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/types/library"
@@ -187,6 +188,9 @@ func TestLocal_ExecStep(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
+	defer done()
+
 	// setup tests
 	tests := []struct {
 		name      string
@@ -262,6 +266,7 @@ func TestLocal_ExecStep(t *testing.T) {
 				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithUser(_user),
+				withStreamRequests(streamRequests),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

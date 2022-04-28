@@ -53,6 +53,9 @@ type Engine interface {
 	// ExecBuild defines a function that
 	// runs a pipeline for a build.
 	ExecBuild(context.Context) error
+	// StreamBuild defines a function that receives a StreamRequest
+	// and then runs StreamService or StreamStep in a goroutine.
+	StreamBuild(context.Context) error
 	// DestroyBuild defines a function that
 	// cleans up the build after execution.
 	DestroyBuild(context.Context) error

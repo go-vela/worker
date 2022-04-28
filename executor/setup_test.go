@@ -6,10 +6,10 @@ package executor
 
 import (
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/go-vela/server/mock/server"
 
@@ -111,8 +111,10 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		t.Errorf("Linux returned err: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Linux is %v, want %v", got, want)
+	// Comparing with reflect.DeepEqual(x, y interface) panics due to the
+	// unexported streamRequests channel.
+	if diff := cmp.Diff(want, got, cmp.Comparer(linux.Equal)); diff != "" {
+		t.Errorf("linux Engine mismatch (-want +got):\n%v", diff)
 	}
 }
 
@@ -164,8 +166,10 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		t.Errorf("Local returned err: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Local is %v, want %v", got, want)
+	// Comparing with reflect.DeepEqual(x, y interface) panics due to the
+	// unexported streamRequests channel.
+	if diff := cmp.Diff(want, got, cmp.Comparer(local.Equal)); diff != "" {
+		t.Errorf("local Engine mismatch (-want +got):\n%v", diff)
 	}
 }
 
