@@ -162,9 +162,8 @@ func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
 }
 
 // HandleEventDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Events.
-func (p *podTracker) HandleEventDelete(oldObj interface{}) {
-	// TODO: do something with the (possible) event
-}
+//func (p *podTracker) HandleEventDelete(oldObj interface{}) {
+//}
 
 // Start kicks off the API calls to start populating the cache.
 // There is no need to run this in a separate goroutine (ie go podTracker.Start(ctx)).
@@ -262,7 +261,8 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	eventInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    tracker.HandleEventAdd,
 		UpdateFunc: tracker.HandleEventUpdate,
-		DeleteFunc: tracker.HandleEventDelete,
+		// events get deleted after some time, which we ignore.
+		//DeleteFunc: tracker.HandleEventDelete,
 	})
 
 	return &tracker, nil
