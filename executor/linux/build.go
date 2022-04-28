@@ -507,7 +507,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 			c.Logger.Errorf("error in a stream request, %v", err)
 		}
 
-		c.Logger.Trace("all stream functions have returned")
+		c.Logger.Info("all stream functions have returned")
 	}()
 
 	for {
