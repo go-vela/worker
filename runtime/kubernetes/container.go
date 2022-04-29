@@ -322,7 +322,14 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	}
 
 	// wait for the container terminated signal
-	<-tracker.Terminated
+	select {
+	case <-tracker.Terminated:
+		// container is terminated
+		break
+	case <-ctx.Done():
+		// build was canceled
+		break
+	}
 
 	return nil
 }
