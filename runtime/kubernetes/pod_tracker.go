@@ -40,6 +40,10 @@ type containerTracker struct {
 	// Terminated will be closed once the container reaches a terminal state.
 	Terminated chan struct{}
 	// TODO: collect streaming logs here before TailContainer is called
+
+	// Events is a function that returns a list of kubernetes events
+	// related to the tracked container.
+	Events func() ([]*v1.Event, error)
 }
 
 // podTracker contains Informers used to watch and synchronize local k8s caches.
@@ -47,6 +51,9 @@ type containerTracker struct {
 type podTracker struct {
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry
+
+	// Namespace is the Namespace of the tracked pod
+	Namespace string
 	// TrackedPod is the Namespace/Name of the tracked pod
 	TrackedPod string
 
@@ -275,6 +282,34 @@ func (p *podTracker) TrackContainers(containers []v1.Container) {
 			Image:      ctn.Image,
 			Running:    make(chan struct{}),
 			Terminated: make(chan struct{}),
+			Events: func() ([]*v1.Event, error) {
+				// EventLister only offers a labelSelector,
+				// but we need a fieldSelector for events,
+				// so filter all pod events to get just the events
+				// for this container.
+				var ctnEvents []*v1.Event
+
+				// get all tracked pod events.
+				allEvents, err := p.EventLister.
+					Events(p.Namespace).
+					List(labels.Set{}.AsSelector())
+				if err != nil {
+					return ctnEvents, err
+				}
+
+				ctnFieldPath := fmt.Sprintf("spec.containers{%s}", ctn.Name)
+
+				for _, event := range allEvents {
+					// skip events for other containers
+					if event.InvolvedObject.FieldPath != ctnFieldPath {
+						continue
+					}
+
+					ctnEvents = append(ctnEvents, event)
+				}
+
+				return ctnEvents, nil
+			},
 		}
 	}
 }
@@ -332,6 +367,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	// initialize podTracker
 	tracker := podTracker{
 		Logger:               log,
+		Namespace:            pod.ObjectMeta.Namespace,
 		TrackedPod:           trackedPod,
 		informerFactory:      informerFactory,
 		podInformer:          podInformer,

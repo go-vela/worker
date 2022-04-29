@@ -639,6 +639,9 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				Image:      test.ctnImage,
 				Running:    make(chan struct{}),
 				Terminated: make(chan struct{}),
+				Events: func() ([]*v1.Event, error) {
+					return nil, nil
+				},
 			}
 			podTracker := podTracker{
 				Logger:     logger,
