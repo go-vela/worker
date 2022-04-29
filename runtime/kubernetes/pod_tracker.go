@@ -58,6 +58,8 @@ type podTracker struct {
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry
 
+	// Name is the Name of the tracked pod
+	Name string
 	// Namespace is the Namespace of the tracked pod
 	Namespace string
 	// TrackedPod is the Namespace/Name of the tracked pod
@@ -373,6 +375,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	// initialize podTracker
 	tracker := podTracker{
 		Logger:               log,
+		Name:                 pod.ObjectMeta.Name,
 		Namespace:            pod.ObjectMeta.Namespace,
 		TrackedPod:           trackedPod,
 		informerFactory:      informerFactory,
