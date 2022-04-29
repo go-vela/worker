@@ -18,14 +18,14 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 // nolint: nilerr // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(ctx context.Context, index int) error {
+func (w *Worker) exec(index int) error {
 	var err error
 
 	// setup the version
 	v := version.New()
 
 	// capture an item from the queue
-	item, err := w.Queue.Pop(ctx)
+	item, err := w.Queue.Pop(context.Background())
 	if err != nil {
 		return err
 	}
@@ -93,8 +93,9 @@ func (w *Worker) exec(ctx context.Context, index int) error {
 		t = time.Duration(item.Repo.GetTimeout()) * time.Minute
 	}
 
-	// create a build context
-	buildCtx, done := context.WithCancel(ctx)
+	// create a build context (from a background context
+	// so that other builds can't inadvertently cancel this build)
+	buildCtx, done := context.WithCancel(context.Background())
 	defer done()
 
 	// add to the background context with a timeout
