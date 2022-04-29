@@ -81,6 +81,12 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		return err
 	}
 
+	// get the containerTracker for this container
+	ctnTracker, ok := c.PodTracker.Containers[ctn.ID]
+	if !ok {
+		return fmt.Errorf("containerTracker missing for %s", ctn.ID)
+	}
+
 	// set the pod container image to the parsed step image
 	c.Pod.Spec.Containers[c.containersLookup[ctn.ID]].Image = _image
 
@@ -96,6 +102,70 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	)
 	if err != nil {
 		return err
+	}
+
+	var (
+		events      []*v1.Event
+		imagePulled bool
+	)
+
+	// make sure the container starts (watch for image pull errors or similar)
+	for {
+		select {
+		case <-ctx.Done():
+			// build was canceled. give up
+			return nil
+		case <-ctnTracker.Running:
+			// hooray it is running
+			return nil
+		default:
+		}
+
+		// no need to search for image pull events
+		if imagePulled {
+			continue
+		}
+
+		events, err = ctnTracker.Events()
+		if err != nil {
+			return err
+		}
+
+		for _, event := range events {
+			// check if the event mentions the target image
+			if !(strings.Contains(event.Message, ctn.Image) || strings.Contains(event.Message, _image)) {
+				// if the relevant messages does not include our image
+				// it is probably for "kubernetes/pause:latest"
+				// or it is a generic message that is basically useless like:
+				//   event.Reason => event.Message
+				//   Failed => Error: ErrImagePull
+				//   BackOff => Error: ImagePullBackOff
+				continue
+			}
+
+			switch event.Reason {
+			// examples: event.Reason => event.Message
+			case "Failed", "BackOff":
+				// Failed => Failed to pull image "image:tag": <containerd message>
+				// BackOff => Back-off pulling image "image:tag"
+				return fmt.Errorf("failed to run container %s in %s: %s", ctn.ID, c.Pod.ObjectMeta.Name, event.Message)
+			case "Pulled":
+				// Pulled => Successfully pulled image "image:tag" in <time>
+				imagePulled = true
+			case "Pulling":
+				// Pulling => Pulling image "image:tag"
+				continue
+			default:
+				continue
+			}
+
+			if imagePulled {
+				// found the event we care about, stop checking.
+				break
+			}
+		}
+
+		break
 	}
 
 	return nil
