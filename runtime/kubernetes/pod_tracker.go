@@ -28,6 +28,9 @@ import (
 type containerTracker struct {
 	// Name is the name of the container
 	Name string
+	// Image is the final image of the container
+	Image string
+
 	// runningOnce ensures that the Terminated channel only gets closed once.
 	runningOnce sync.Once
 	// Running will be closed once the container reaches a terminal state.
@@ -269,6 +272,7 @@ func (p *podTracker) TrackContainers(containers []v1.Container) {
 	for _, ctn := range containers {
 		p.Containers[ctn.Name] = &containerTracker{
 			Name:       ctn.Name,
+			Image:      ctn.Image,
 			Running:    make(chan struct{}),
 			Terminated: make(chan struct{}),
 		}

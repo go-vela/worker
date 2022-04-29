@@ -549,6 +549,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 		name       string
 		trackedPod string
 		ctnName    string
+		ctnImage   string
 		terminated bool
 		pod        *v1.Pod
 	}{
@@ -556,6 +557,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			name:       "container is terminated",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: true,
 			pod:        _pod,
 		},
@@ -563,6 +565,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			name:       "pod is pending",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
@@ -577,6 +580,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			name:       "container is running",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
@@ -599,6 +603,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			name:       "pod has an untracked container",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: true,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
@@ -631,6 +636,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			ctnTracker := containerTracker{
 				Name:       test.ctnName,
+				Image:      test.ctnImage,
 				Running:    make(chan struct{}),
 				Terminated: make(chan struct{}),
 			}

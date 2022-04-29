@@ -354,6 +354,12 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 		// cst.LastTerminationState has details about the kubernetes/pause image's exit.
 		// cst.RestartCount is 1 at exit due to switch from kubernetes/pause to final image.
 
+		if cst.Image != tracker.Image {
+			// we don't care if the pause image has terminated or is running
+			p.Logger.Tracef("container %s expected image %s, got %s", cst.Name, tracker.Image, cst.Image)
+			continue
+		}
+
 		// check if the container is in a terminated state
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
