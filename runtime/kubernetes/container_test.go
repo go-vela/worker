@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/image"
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
@@ -52,6 +53,53 @@ func TestKubernetes_InspectContainer(t *testing.T) {
 							State: v1.ContainerState{
 								Running: &v1.ContainerStateRunning{},
 							},
+							Image: _container.Image,
+						},
+					},
+				},
+			},
+			container: _container,
+		},
+		{
+			name:    "build stops before container execution with raw pauseImage",
+			failure: false,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name: "step-github-octocat-1-clone",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+							// container not patched yet with correct image
+							Image: pauseImage,
+						},
+					},
+				},
+			},
+			container: _container,
+		},
+		{
+			name:    "build stops before container execution with canonical pauseImage",
+			failure: false,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name: "step-github-octocat-1-clone",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+							// container not patched yet with correct image
+							Image: image.Parse(pauseImage),
 						},
 					},
 				},
@@ -411,6 +459,7 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 									ExitCode: 0,
 								},
 							},
+							Image: "alpine:latest",
 						},
 						{
 							Name: "step-github-octocat-1-clone",
@@ -420,6 +469,7 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 									ExitCode: 0,
 								},
 							},
+							Image: "target/vela-git:v0.4.0",
 						},
 					},
 				},
