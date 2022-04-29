@@ -23,12 +23,36 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+// These are known kubernetes event Reasons.
 const (
-	// kubernetes event reasons.
-	reasonBackOff = "BackOff"
-	reasonFailed  = "Failed"
-	reasonPulled  = "Pulled"
-	reasonPulling = "Pulling"
+	// nolint: godot // commented code is not a sentence
+	// known scheduler event reasons can be found here:
+	// https://github.com/kubernetes/kubernetes/blob/v1.23.6/pkg/scheduler/schedule_one.go
+	//reasonFailedScheduling = "FailedScheduling"
+	//reasonScheduled        = "Scheduled"
+
+	// known kubelet event reasons are listed here:
+	// https://github.com/kubernetes/kubernetes/blob/v1.23.6/pkg/kubelet/events/event.go
+
+	// kubelet image event reasons.
+	reasonPulling           = "Pulling"
+	reasonPulled            = "Pulled"
+	reasonFailed            = "Failed"            // Warning: image, container, pod
+	reasonInspectFailed     = "InspectFailed"     // Warning
+	reasonErrImageNeverPull = "ErrImageNeverPull" // Warning
+	reasonBackOff           = "BackOff"           // Normal: image, container
+
+	// nolint: godot // commented code is not a sentence
+	// kubelet container event reasons.
+	//reasonCreated             = "Created"
+	//reasonStarted             = "Started"
+	//reasonKilling             = "Killing"
+	//reasonPreempting          = "Preempting"
+	//reasonExceededGracePeriod = "ExceededGracePeriod"
+	// kubelet pod event reasons.
+	//reasonFailedKillPod            = "FailedKillPod"
+	//reasonFailedCreatePodContainer = "FailedCreatePodContainer"
+	//reasonNetworkNotReady          = "NetworkNotReady"
 )
 
 // InspectContainer inspects the pipeline container.
@@ -468,23 +492,31 @@ func (p *podTracker) inspectContainerEvent(event *v1.Event) {
 
 	p.Logger.Tracef("container event for %s: [%s] %s", tracker.Name, event.Reason, event.Message)
 
-	// check if the event mentions the target image
-	// if the relevant messages does not include our image
-	// it is probably for "kubernetes/pause:latest"
+	// check if the event mentions the target image.
+	// If the relevant messages does not include our image, then
+	// either it is for "kubernetes/pause:latest", which we don't care about,
 	// or it is a generic message that is basically useless like:
 	//   event.Reason => event.Message
 	//   Failed => Error: ErrImagePull
 	//   BackOff => Error: ImagePullBackOff
+	// Many of these generic messages come from this part of kubelet:
+	// https://github.com/kubernetes/kubernetes/blob/v1.23.6/pkg/kubelet/kuberuntime/kuberuntime_container.go
 	if strings.Contains(event.Message, tracker.Image) {
 		switch event.Reason {
 		// examples: event.Reason => event.Message
-		case reasonFailed, reasonBackOff:
+		// The image related messages come from the image manager in kubelet:
+		// https://github.com/kubernetes/kubernetes/blob/v1.23.6/pkg/kubelet/images/image_manager.go
+		case reasonFailed, reasonBackOff, reasonInspectFailed, reasonErrImageNeverPull:
 			// Failed => Failed to pull image "image:tag": <containerd message>
 			// BackOff => Back-off pulling image "image:tag"
+			// InspectFailed => Failed to apply default image tag "<image>": couldn't parse image reference "<image>": <docker error>
+			// InspectFailed => Failed to inspect image "<image>": <docker error>
+			// ErrImageNeverPull => Container image "image:tag" is not present with pull policy of Never
 			tracker.ImagePullErrors <- event
 			return
 		case reasonPulled:
 			// Pulled => Successfully pulled image "image:tag" in <time>
+			// Pulled => Container image "image:tag" already present on machine
 			tracker.imagePulledOnce.Do(func() {
 				p.Logger.Debugf("container image pulled: %s in pod %s, %v", tracker.Name, p.TrackedPod, event.Message)
 
