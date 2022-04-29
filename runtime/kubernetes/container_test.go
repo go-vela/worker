@@ -590,7 +590,56 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 					Phase: v1.PodRunning,
 					ContainerStatuses: []v1.ContainerStatus{
 						{
-							Name: "step-github-octocat-1-clone",
+							Name:  "step-github-octocat-1-clone",
+							Image: "target/vela-git:v0.4.0",
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:       "container is still running pause image",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
+			terminated: false,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name:  "step-github-octocat-1-clone",
+							Image: pauseImage,
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:       "container is still running pause image",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
+			terminated: false,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name:  "step-github-octocat-1-clone",
+							Image: image.Parse(pauseImage),
 							State: v1.ContainerState{
 								Running: &v1.ContainerStateRunning{},
 							},
@@ -613,7 +662,8 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 					Phase: v1.PodRunning,
 					ContainerStatuses: []v1.ContainerStatus{
 						{
-							Name: "step-github-octocat-1-clone",
+							Name:  "step-github-octocat-1-clone",
+							Image: "target/vela-git:v0.4.0",
 							State: v1.ContainerState{
 								Terminated: &v1.ContainerStateTerminated{
 									Reason:   "Completed",
@@ -622,7 +672,8 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 							},
 						},
 						{
-							Name: "injected-by-admissions-controller",
+							Name:  "injected-by-admissions-controller",
+							Image: "target/vela-git:v0.4.0",
 							State: v1.ContainerState{
 								Running: &v1.ContainerStateRunning{},
 							},
