@@ -45,7 +45,9 @@ type podTracker struct {
 
 	// informerFactory is used to create Informers and Listers
 	informerFactory kubeinformers.SharedInformerFactory
-	// informerDone is a function used to stop the informerFactory
+	// eventInformerFactory is used to create Informers and Listers for events
+	eventInformerFactory kubeinformers.SharedInformerFactory
+	// informerDone is a function used to stop informerFactory and eventInformerFactory
 	informerDone context.CancelFunc
 	// podInformer watches the given pod, caches the results, and makes them available in podLister
 	podInformer informers.PodInformer
@@ -230,6 +232,7 @@ func (p *podTracker) Start(ctx context.Context) {
 
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
 	p.informerFactory.Start(informerCtx.Done())
+	p.eventInformerFactory.Start(informerCtx.Done())
 }
 
 // Stop shuts down any informers (e.g. stop watching APIs).
@@ -309,16 +312,17 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 
 	// initialize podTracker
 	tracker := podTracker{
-		Logger:          log,
-		TrackedPod:      trackedPod,
-		informerFactory: informerFactory,
-		podInformer:     podInformer,
-		PodLister:       podInformer.Lister(),
-		PodSynced:       podInformer.Informer().HasSynced,
-		eventInformer:   eventInformer,
-		EventLister:     eventInformer.Lister(),
-		EventSynced:     eventInformer.Informer().HasSynced,
-		Ready:           make(chan struct{}),
+		Logger:               log,
+		TrackedPod:           trackedPod,
+		informerFactory:      informerFactory,
+		podInformer:          podInformer,
+		PodLister:            podInformer.Lister(),
+		PodSynced:            podInformer.Informer().HasSynced,
+		eventInformerFactory: eventInformerFactory,
+		eventInformer:        eventInformer,
+		EventLister:          eventInformer.Lister(),
+		EventSynced:          eventInformer.Informer().HasSynced,
+		Ready:                make(chan struct{}),
 	}
 
 	// register event handler funcs in podInformer
