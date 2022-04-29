@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/mock/server"
 
@@ -159,6 +160,7 @@ func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 		})
 	}
 }
+
 func TestLinux_Opt_WithHostname(t *testing.T) {
 	// setup tests
 	tests := []struct {
@@ -190,6 +192,55 @@ func TestLinux_Opt_WithHostname(t *testing.T) {
 
 			if !reflect.DeepEqual(_engine.Hostname, test.want) {
 				t.Errorf("WithHostname is %v, want %v", _engine.Hostname, test.want)
+			}
+		})
+	}
+}
+
+func TestLinux_Opt_WithLogger(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name    string
+		failure bool
+		logger  *logrus.Entry
+	}{
+		{
+			name:    "provided logger",
+			failure: false,
+			logger:  &logrus.Entry{},
+		},
+		{
+			name:    "nil logger",
+			failure: false,
+			logger:  nil,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithLogger(test.logger),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithLogger should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithLogger returned err: %v", err)
+			}
+
+			if test.logger == nil && _engine.Logger == nil {
+				t.Errorf("_engine.Logger should not be nil even if nil is passed to WithLogger")
+			}
+
+			if test.logger != nil && !reflect.DeepEqual(_engine.Logger, test.logger) {
+				t.Errorf("WithLogger set %v, want %v", _engine.Logger, test.logger)
 			}
 		})
 	}
