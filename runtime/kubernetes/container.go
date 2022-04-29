@@ -413,7 +413,7 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 			tracker.runningOnce.Do(func() {
 				p.Logger.Debugf("container running: %s in pod %s, %v", cst.Name, p.TrackedPod, cst)
 
-				// let WaitContainer know the container is terminated
+				// let RunContainer know the container is running
 				close(tracker.Running)
 			})
 		}

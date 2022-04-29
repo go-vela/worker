@@ -37,9 +37,9 @@ type containerTracker struct {
 	ImagePulled chan struct{}
 	// ImagePullErrors collects any image pull errors.
 	ImagePullErrors chan *v1.Event
-	// runningOnce ensures that the Terminated channel only gets closed once.
+	// runningOnce ensures that the Running channel only gets closed once.
 	runningOnce sync.Once
-	// Running will be closed once the container reaches a terminal state.
+	// Running will be closed once the container reaches a running state.
 	Running chan struct{}
 	// terminatedOnce ensures that the Terminated channel only gets closed once.
 	terminatedOnce sync.Once
