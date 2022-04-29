@@ -367,3 +367,38 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 		}
 	}
 }
+
+// inspectContainerEvent gathers container info from an event.
+func (p *podTracker) inspectContainerEvent(event *v1.Event) {
+	if !strings.HasPrefix(event.InvolvedObject.FieldPath, "spec.containers") {
+		// event is not for a container
+		return
+	}
+
+	// the FieldPath format is "spec.containers{container-name}" for named containers
+	containerName := strings.TrimPrefix(event.InvolvedObject.FieldPath, "spec.containers{")
+	containerName = strings.TrimSuffix(containerName, "}")
+
+	if containerName == event.InvolvedObject.FieldPath {
+		// the FieldPath is probably the indexed "spec.containers[2]" format,
+		// which is only used for unnamed containers,
+		// but all of our containers are named.
+		p.Logger.Debugf("ignoring unnamed container, got pod fieldPath %s", event.InvolvedObject.FieldPath)
+
+		return
+	}
+
+	// get the containerTracker for this container
+	tracker, ok := p.Containers[containerName]
+	if !ok {
+		// unknown container (probably a sidecar injected by an admissions controller)
+		p.Logger.Debugf("ignoring untracked container %s from pod %s", containerName, p.TrackedPod)
+
+		return
+	}
+
+	// TODO: save the event on the tracker somehow,
+	//       or send a signal that triggers reloading the events
+	//       for this container
+	p.Logger.Tracef("container event for %s: [%s] %s", tracker.Name, event.Reason, event.Message)
+}

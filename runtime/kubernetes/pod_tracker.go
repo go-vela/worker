@@ -162,11 +162,14 @@ func (p *podTracker) HandleEventAdd(newObj interface{}) {
 		return
 	}
 
-	//if event.InvolvedObject.FieldPath == "spec.container{%s}" {
-	//
-	//}
+	p.Logger.Tracef(
+		"handling %s event add event for %s: fieldPath=%v",
+		newEvent.Type, // Normal, Warning
+		p.TrackedPod,
+		newEvent.InvolvedObject.FieldPath,
+	)
 
-	p.Logger.Tracef("handling event add event for %s: %v", p.TrackedPod, newEvent)
+	p.inspectContainerEvent(newEvent)
 }
 
 // HandleEventUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Events.
@@ -180,7 +183,14 @@ func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
 		return
 	}
 
-	p.Logger.Tracef("handling event update event for %s: %v; %v", p.TrackedPod, oldEvent, newEvent)
+	p.Logger.Tracef(
+		"handling %s event update event for %s: fieldPath=%v",
+		newEvent.Type, // Normal, Warning
+		p.TrackedPod,
+		newEvent.InvolvedObject.FieldPath,
+	)
+
+	p.inspectContainerEvent(newEvent)
 }
 
 // HandleEventDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Events.
