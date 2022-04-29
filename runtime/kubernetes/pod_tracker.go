@@ -280,6 +280,11 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		return nil, err
 	}
 
+	// create fieldSelector for watching the pod events
+	fieldSelector := fields.Set{
+		"involvedObject.name": fields.EscapeValue(pod.ObjectMeta.Name),
+	}.AsSelector()
+
 	// create filtered Informer factory which is commonly used for k8s controllers
 	informerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(
 		clientset,
@@ -290,7 +295,17 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		}),
 	)
 	podInformer := informerFactory.Core().V1().Pods()
-	eventInformer := informerFactory.Core().V1().Events()
+
+	// events do not have labels like the pods do, so we need a separate Informer
+	eventInformerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(
+		clientset,
+		defaultResync,
+		kubeinformers.WithNamespace(pod.ObjectMeta.Namespace),
+		kubeinformers.WithTweakListOptions(func(listOptions *metav1.ListOptions) {
+			listOptions.FieldSelector = fieldSelector.String()
+		}),
+	)
+	eventInformer := eventInformerFactory.Core().V1().Events()
 
 	// initialize podTracker
 	tracker := podTracker{
