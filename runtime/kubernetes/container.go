@@ -23,6 +23,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+const (
+	// kubernetes event reasons.
+	reasonBackOff = "BackOff"
+	reasonFailed  = "Failed"
+	reasonPulled  = "Pulled"
+	reasonPulling = "Pulling"
+)
+
 // InspectContainer inspects the pipeline container.
 func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("inspecting container %s", ctn.ID)
@@ -104,11 +112,6 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		return err
 	}
 
-	var (
-		events      []*v1.Event
-		imagePulled bool
-	)
-
 	// make sure the container starts (watch for image pull errors or similar)
 	for {
 		select {
@@ -118,57 +121,16 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		case <-ctnTracker.Running:
 			// hooray it is running
 			return nil
-		default:
+		case event := <-ctnTracker.ImagePullErrors:
+			return fmt.Errorf(
+				"failed to run container %s in %s: [%s] %s",
+				ctn.ID,
+				c.Pod.ObjectMeta.Name,
+				event.Reason,
+				event.Message,
+			)
 		}
-
-		// no need to search for image pull events
-		if imagePulled {
-			continue
-		}
-
-		events, err = ctnTracker.Events()
-		if err != nil {
-			return err
-		}
-
-		for _, event := range events {
-			// check if the event mentions the target image
-			if !(strings.Contains(event.Message, ctn.Image) || strings.Contains(event.Message, _image)) {
-				// if the relevant messages does not include our image
-				// it is probably for "kubernetes/pause:latest"
-				// or it is a generic message that is basically useless like:
-				//   event.Reason => event.Message
-				//   Failed => Error: ErrImagePull
-				//   BackOff => Error: ImagePullBackOff
-				continue
-			}
-
-			switch event.Reason {
-			// examples: event.Reason => event.Message
-			case "Failed", "BackOff":
-				// Failed => Failed to pull image "image:tag": <containerd message>
-				// BackOff => Back-off pulling image "image:tag"
-				return fmt.Errorf("failed to run container %s in %s: %s", ctn.ID, c.Pod.ObjectMeta.Name, event.Message)
-			case "Pulled":
-				// Pulled => Successfully pulled image "image:tag" in <time>
-				imagePulled = true
-			case "Pulling":
-				// Pulling => Pulling image "image:tag"
-				continue
-			default:
-				continue
-			}
-
-			if imagePulled {
-				// found the event we care about, stop checking.
-				break
-			}
-		}
-
-		break
 	}
-
-	return nil
 }
 
 // SetupContainer prepares the image for the pipeline container.
@@ -487,8 +449,36 @@ func (p *podTracker) inspectContainerEvent(event *v1.Event) {
 		return
 	}
 
-	// TODO: save the event on the tracker somehow,
-	//       or send a signal that triggers reloading the events
-	//       for this container
 	p.Logger.Tracef("container event for %s: [%s] %s", tracker.Name, event.Reason, event.Message)
+
+	// check if the event mentions the target image
+	// if the relevant messages does not include our image
+	// it is probably for "kubernetes/pause:latest"
+	// or it is a generic message that is basically useless like:
+	//   event.Reason => event.Message
+	//   Failed => Error: ErrImagePull
+	//   BackOff => Error: ImagePullBackOff
+	if strings.Contains(event.Message, tracker.Image) {
+		switch event.Reason {
+		// examples: event.Reason => event.Message
+		case reasonFailed, reasonBackOff:
+			// Failed => Failed to pull image "image:tag": <containerd message>
+			// BackOff => Back-off pulling image "image:tag"
+			tracker.ImagePullErrors <- event
+			return
+		case reasonPulled:
+			// Pulled => Successfully pulled image "image:tag" in <time>
+			tracker.imagePulledOnce.Do(func() {
+				p.Logger.Debugf("container image pulled: %s in pod %s, %v", tracker.Name, p.TrackedPod, event.Message)
+
+				// let RunContainer know the container image was pulled
+				close(tracker.ImagePulled)
+			})
+		case reasonPulling:
+			// Pulling => Pulling image "image:tag"
+			return
+		default:
+			return
+		}
+	}
 }
