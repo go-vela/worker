@@ -270,8 +270,8 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 
 	log.Tracef("creating PodTracker for pod %s", trackedPod)
 
-	// create label selector for watching the pod
-	selector, err := labels.NewRequirement(
+	// create labelSelector for watching the pod
+	labelSelector, err := labels.NewRequirement(
 		"pipeline",
 		selection.Equals,
 		[]string{fields.EscapeValue(pod.ObjectMeta.Name)},
@@ -291,7 +291,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		defaultResync,
 		kubeinformers.WithNamespace(pod.ObjectMeta.Namespace),
 		kubeinformers.WithTweakListOptions(func(listOptions *metav1.ListOptions) {
-			listOptions.LabelSelector = selector.String()
+			listOptions.LabelSelector = labelSelector.String()
 		}),
 	)
 	podInformer := informerFactory.Core().V1().Pods()
