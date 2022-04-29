@@ -631,6 +631,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			ctnTracker := containerTracker{
 				Name:       test.ctnName,
+				Running:    make(chan struct{}),
 				Terminated: make(chan struct{}),
 			}
 			podTracker := podTracker{
