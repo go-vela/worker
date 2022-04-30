@@ -11,12 +11,12 @@ require (
 	github.com/go-vela/sdk-go v0.13.0
 	github.com/go-vela/server v0.13.1
 	github.com/go-vela/types v0.13.0
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.8
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/urfave/cli/v2 v2.4.8
+	github.com/urfave/cli/v2 v2.5.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gotest.tools/v3 v3.2.0
 	k8s.io/api v0.23.6
