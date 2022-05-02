@@ -8,10 +8,10 @@ require (
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.7.7
-	github.com/go-vela/sdk-go v0.13.0
+	github.com/go-vela/sdk-go v0.13.1
 	github.com/go-vela/server v0.13.1
 	github.com/go-vela/types v0.13.1-0.20220426202924-efda5bc01281
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.8
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.12.1
