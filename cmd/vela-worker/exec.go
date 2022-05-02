@@ -93,18 +93,21 @@ func (w *Worker) exec(index int) error {
 		t = time.Duration(item.Repo.GetTimeout()) * time.Minute
 	}
 
-	// create a background context
+	// create a build context (from a background context
+	// so that other builds can't inadvertently cancel this build)
 	buildCtx, done := context.WithCancel(context.Background())
 	defer done()
 
 	// add to the background context with a timeout
 	// built in for ensuring a build doesn't run forever
-	ctx, timeout := context.WithTimeout(buildCtx, t)
+	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
 
 	defer func() {
 		logger.Info("destroying build")
-		// destroy the build with the executor
+
+		// destroy the build with the executor (pass a background
+		// context to guarantee all build resources are destroyed).
 		err = _executor.DestroyBuild(context.Background())
 		if err != nil {
 			logger.Errorf("unable to destroy build: %v", err)
@@ -115,7 +118,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("creating build")
 	// create the build with the executor
-	err = _executor.CreateBuild(ctx)
+	err = _executor.CreateBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to create build: %v", err)
 		return nil
@@ -123,7 +126,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("planning build")
 	// plan the build with the executor
-	err = _executor.PlanBuild(ctx)
+	err = _executor.PlanBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to plan build: %v", err)
 		return nil
@@ -141,7 +144,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("assembling build")
 	// assemble the build with the executor
-	err = _executor.AssembleBuild(ctx)
+	err = _executor.AssembleBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to assemble build: %v", err)
 		return nil
@@ -149,7 +152,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("executing build")
 	// execute the build with the executor
-	err = _executor.ExecBuild(ctx)
+	err = _executor.ExecBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to execute build: %v", err)
 		return nil
