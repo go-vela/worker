@@ -132,7 +132,7 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
-	// log streaming uses buildCtx so that it is not subject to the timeout.
+	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
 		logger.Info("streaming build logs")
 		// execute the build with the executor

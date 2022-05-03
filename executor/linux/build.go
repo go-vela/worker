@@ -510,6 +510,13 @@ func (c *client) StreamBuild(ctx context.Context) error {
 		c.Logger.Info("all stream functions have returned")
 	}()
 
+	// allow the runtime to do log/event streaming setup at build-level
+	streams.Go(func() error {
+		// If needed, the runtime should handle synchronizing with
+		// AssembleBuild which runs concurrently with StreamBuild.
+		return c.Runtime.StreamBuild(streamCtx, c.pipeline)
+	})
+
 	for {
 		select {
 		case req := <-c.streamRequests:
