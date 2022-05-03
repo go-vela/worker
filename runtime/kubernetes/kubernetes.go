@@ -44,6 +44,8 @@ type client struct {
 	Pod *v1.Pod
 	// containersLookup maps the container name to its index in Containers
 	containersLookup map[string]int
+	// PodTracker wraps the Kubernetes client to simplify watching the pod for changes
+	PodTracker *podTracker
 	// PipelinePodTemplate has default values to be used in Setup* methods
 	PipelinePodTemplate *velav1alpha1.PipelinePodTemplate
 	// commonVolumeMounts includes workspace mount and any global host mounts (VELA_RUNTIME_VOLUMES)
@@ -163,7 +165,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	c.config.Namespace = "test"
 
 	// set the Kubernetes pod in the runtime client
-	c.Pod = _pod
+	c.Pod = _pod.DeepCopy()
+	c.Pod.SetResourceVersion("0")
 
 	// apply all provided configuration options
 	for _, opt := range opts {
@@ -187,6 +190,16 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 			},
 		},
 	)
+
+	// set the PodTracker (normally populated in SetupBuild)
+	tracker, err := mockPodTracker(c.Logger, c.Kubernetes, c.Pod)
+	if err != nil {
+		return c, err
+	}
+
+	c.PodTracker = tracker
+
+	// The test is responsible for calling c.PodTracker.Start() if needed
 
 	return c, nil
 }

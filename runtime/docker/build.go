@@ -26,6 +26,14 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	return nil
 }
 
+// StreamBuild initializes log/event streaming for build.
+// This is a no-op for docker.
+func (c *client) StreamBuild(ctx context.Context, b *pipeline.Build) error {
+	c.Logger.Tracef("no-op: streaming build %s", b.ID)
+
+	return nil
+}
+
 // AssembleBuild finalizes pipeline build setup.
 // This is a no-op for docker.
 func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {

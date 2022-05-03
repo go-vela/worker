@@ -91,6 +91,41 @@ func TestDocker_SetupBuild(t *testing.T) {
 	}
 }
 
+func TestKubernetes_StreamBuild(t *testing.T) {
+	tests := []struct {
+		name     string
+		failure  bool
+		pipeline *pipeline.Build
+	}{
+		{
+			name:     "steps",
+			failure:  false,
+			pipeline: _pipeline,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := NewMock()
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
+			}
+
+			err = _engine.StreamBuild(context.Background(), test.pipeline)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("StreamBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("StreamBuild returned err: %v", err)
+			}
+		})
+	}
+}
 func TestDocker_AssembleBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
