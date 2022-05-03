@@ -30,7 +30,8 @@ func TestLocal_CreateStage(t *testing.T) {
 
 	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
 
-	_pipeline, err := compiler.
+	_pipeline, _, err := compiler.
+		Duplicate().
 		WithBuild(_build).
 		WithRepo(_repo).
 		WithLocal(true).
