@@ -177,253 +177,48 @@ func TestKubernetes_RunContainer(t *testing.T) {
 	// TODO: include VolumeMounts?
 	// setup tests
 	tests := []struct {
-		name      string
-		failure   bool
-		container *pipeline.Container
-		pipeline  *pipeline.Build
-		oldPod    *v1.Pod
-		newPod    *v1.Pod
-		volumes   []string
+		name        string
+		failure     bool
+		cancelBuild bool
+		container   *pipeline.Container
+		pipeline    *pipeline.Build
+		oldPod      *v1.Pod
+		newPod      *v1.Pod
+		volumes     []string
 	}{
 		{
 			name:      "stages-step starts running",
 			failure:   false,
-			container: _container,
+			container: _stagesContainer,
 			pipeline:  _stages,
-			oldPod: &v1.Pod{
-				ObjectMeta: _pod.ObjectMeta,
-				TypeMeta:   _pod.TypeMeta,
-				Status: v1.PodStatus{
-					Phase: v1.PodRunning,
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name:  "step-github-octocat-1-clone-clone",
-							Image: pauseImage, // stage+step is not running yet
-							State: v1.ContainerState{
-								// pause is running, not the step image
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "step-github-octocat-1-echo-echo",
-							Image: pauseImage, // stage+step is not running yet
-							State: v1.ContainerState{
-								// pause is running, not the step image
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "service-github-octocat-1-postgres",
-							Image: "postgres:12-alpine",
-							State: v1.ContainerState{
-								// service is running
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-					},
-				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name:            "step-github-octocat-1-clone-clone",
-							Image:           pauseImage, // not running yet
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "step-github-octocat-1-echo-echo",
-							Image:           pauseImage, // not running yet
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "service-github-octocat-1-postgres",
-							Image:           "postgres:12-alpine",
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-					},
-					HostAliases: _pod.Spec.HostAliases,
-					Volumes:     _pod.Spec.Volumes,
-				},
-			},
-			newPod: &v1.Pod{
-				ObjectMeta: _pod.ObjectMeta,
-				TypeMeta:   _pod.TypeMeta,
-				Status: v1.PodStatus{
-					Phase: v1.PodRunning,
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name:  "step-github-octocat-1-clone",
-							Image: "target/vela-git:v0.4.0",
-							State: v1.ContainerState{
-								// stage+step is running
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "step-github-octocat-1-echo",
-							Image: pauseImage,
-							State: v1.ContainerState{
-								// pause is running, not the step image
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "service-github-octocat-1-postgres",
-							Image: "postgres:12-alpine",
-							State: v1.ContainerState{
-								// service is running
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-					},
-				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name:            "step-github-octocat-1-clone",
-							Image:           "target/vela-git:v0.4.0", // running
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "step-github-octocat-1-echo",
-							Image:           pauseImage, // not running yet
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "service-github-octocat-1-postgres",
-							Image:           "postgres:12-alpine",
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-					},
-					HostAliases: _pod.Spec.HostAliases,
-					Volumes:     _pod.Spec.Volumes,
-				},
-			},
+			oldPod:    _stagesPodBeforeRunStep,
+			newPod:    _stagesPodWithRunningStep,
 		},
 		{
 			name:      "steps-step starts running",
 			failure:   false,
 			container: _container,
 			pipeline:  _steps,
-			oldPod: &v1.Pod{
-				ObjectMeta: _pod.ObjectMeta,
-				TypeMeta:   _pod.TypeMeta,
-				Status: v1.PodStatus{
-					Phase: v1.PodRunning,
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name:  "step-github-octocat-1-clone",
-							Image: pauseImage, // step is not running yet
-							State: v1.ContainerState{
-								// pause is running, not the step image
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "step-github-octocat-1-echo",
-							Image: pauseImage, // step is not running yet
-							State: v1.ContainerState{
-								// pause is running, not the step image
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "service-github-octocat-1-postgres",
-							Image: "postgres:12-alpine",
-							State: v1.ContainerState{
-								// service is running
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-					},
-				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name:            "step-github-octocat-1-clone",
-							Image:           pauseImage, // not running yet
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "step-github-octocat-1-echo",
-							Image:           pauseImage, // not running yet
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "service-github-octocat-1-postgres",
-							Image:           "postgres:12-alpine",
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-					},
-					HostAliases: _pod.Spec.HostAliases,
-					Volumes:     _pod.Spec.Volumes,
-				},
-			},
-			newPod: &v1.Pod{
-				ObjectMeta: _pod.ObjectMeta,
-				TypeMeta:   _pod.TypeMeta,
-				Status: v1.PodStatus{
-					Phase: v1.PodRunning,
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name:  "step-github-octocat-1-clone",
-							Image: "target/vela-git:v0.4.0",
-							State: v1.ContainerState{
-								// step is running
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "step-github-octocat-1-echo",
-							Image: pauseImage,
-							State: v1.ContainerState{
-								// pause is running, not the step image
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-						{
-							Name:  "service-github-octocat-1-postgres",
-							Image: "postgres:12-alpine",
-							State: v1.ContainerState{
-								// service is running
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-					},
-				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name:            "step-github-octocat-1-clone",
-							Image:           "target/vela-git:v0.4.0", // running
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "step-github-octocat-1-echo",
-							Image:           pauseImage, // not running yet
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-						{
-							Name:            "service-github-octocat-1-postgres",
-							Image:           "postgres:12-alpine",
-							WorkingDir:      "/vela/src/github.com/octocat/helloworld",
-							ImagePullPolicy: v1.PullAlways,
-						},
-					},
-					HostAliases: _pod.Spec.HostAliases,
-					Volumes:     _pod.Spec.Volumes,
-				},
-			},
+			oldPod:    _stepsPodBeforeRunStep,
+			newPod:    _stepsPodWithRunningStep,
+		},
+		{
+			name:        "stages-build canceled",
+			failure:     false,
+			cancelBuild: true,
+			container:   _stagesContainer,
+			pipeline:    _stages,
+			oldPod:      _stagesPodBeforeRunStep,
+			newPod:      _stagesPodWithRunningStep,
+		},
+		{
+			name:        "steps-build canceled",
+			failure:     false,
+			cancelBuild: true,
+			container:   _container,
+			pipeline:    _steps,
+			oldPod:      _stepsPodBeforeRunStep,
+			newPod:      _stepsPodWithRunningStep,
 		},
 	}
 
@@ -440,16 +235,25 @@ func TestKubernetes_RunContainer(t *testing.T) {
 				_engine.config.Volumes = test.volumes
 			}
 
+			// setup test context
+			ctx, done := context.WithCancel(context.Background())
+			defer done()
+
 			// RunContainer waits for the container to be running before returning
 			go func() {
 				oldPod := test.oldPod.DeepCopy()
 				oldPod.SetResourceVersion("older")
 
-				// simulate a re-sync/PodUpdate event
-				_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				if test.cancelBuild {
+					// simulate a build timeout
+					done()
+				} else {
+					// simulate a re-sync/PodUpdate event
+					_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				}
 			}()
 
-			err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
+			err = _engine.RunContainer(ctx, test.container, test.pipeline)
 
 			if test.failure {
 				if err == nil {
@@ -657,11 +461,13 @@ func TestKubernetes_TailContainer(t *testing.T) {
 func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
-		name      string
-		failure   bool
-		container *pipeline.Container
-		oldPod    *v1.Pod
-		newPod    *v1.Pod
+		name        string
+		failure     bool
+		cancelBuild bool
+		ctx         context.Context
+		container   *pipeline.Container
+		oldPod      *v1.Pod
+		newPod      *v1.Pod
 	}{
 		{
 			name:      "default order in ContainerStatuses",
@@ -711,23 +517,16 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			name:      "container goes from running to terminated",
 			failure:   false,
 			container: _container,
-			oldPod: &v1.Pod{
-				ObjectMeta: _pod.ObjectMeta,
-				TypeMeta:   _pod.TypeMeta,
-				Spec:       _pod.Spec,
-				Status: v1.PodStatus{
-					Phase: v1.PodRunning,
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name: "step-github-octocat-1-clone",
-							State: v1.ContainerState{
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-					},
-				},
-			},
-			newPod: _pod,
+			oldPod:    _stepsPodWithRunningStep,
+			newPod:    _pod,
+		},
+		{
+			name:        "canceled build",
+			failure:     false,
+			cancelBuild: true,
+			container:   _container,
+			oldPod:      _stepsPodWithRunningStep,
+			newPod:      _pod,
 		},
 		{
 			name:      "if client.Pod.Spec is empty podTracker fails",
@@ -753,15 +552,24 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
+			// setup test context
+			ctx, done := context.WithCancel(context.Background())
+			defer done()
+
 			go func() {
 				oldPod := test.oldPod.DeepCopy()
 				oldPod.SetResourceVersion("older")
 
-				// simulate a re-sync/PodUpdate event
-				_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				if test.cancelBuild {
+					// simulate a build timeout
+					done()
+				} else {
+					// simulate a re-sync/PodUpdate event
+					_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				}
 			}()
 
-			err = _engine.WaitContainer(context.Background(), test.container)
+			err = _engine.WaitContainer(ctx, test.container)
 
 			if test.failure {
 				if err == nil {
