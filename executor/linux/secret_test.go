@@ -292,12 +292,16 @@ func TestLinux_Secret_exec(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			file, _ := ioutil.ReadFile(test.pipeline)
 
-			p, _ := compiler.
+			p, _, err := compiler.
+				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithUser(_user).
 				WithMetadata(_metadata).
 				Compile(file)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+			}
 
 			_engine, err := New(
 				WithBuild(_build),
