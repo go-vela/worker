@@ -90,7 +90,8 @@ func TestLinux_CreateBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_pipeline, err := compiler.
+			_pipeline, _, err := compiler.
+				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithMetadata(_metadata).
@@ -182,7 +183,8 @@ func TestLinux_PlanBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_pipeline, err := compiler.
+			_pipeline, _, err := compiler.
+				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithMetadata(_metadata).
@@ -323,7 +325,8 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_pipeline, err := compiler.
+			_pipeline, _, err := compiler.
+				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithMetadata(_metadata).
@@ -435,7 +438,8 @@ func TestLinux_ExecBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_pipeline, err := compiler.
+			_pipeline, _, err := compiler.
+				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithMetadata(_metadata).
@@ -695,7 +699,8 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 			streamRequests := make(chan message.StreamRequest)
 
-			_pipeline, err := compiler.
+			_pipeline, _, err := compiler.
+				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithMetadata(_metadata).
@@ -834,7 +839,8 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_pipeline, err := compiler.
+			_pipeline, _, err := compiler.
+				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithMetadata(_metadata).
