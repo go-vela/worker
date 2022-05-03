@@ -344,6 +344,52 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	return c.err
 }
 
+// StreamBuild receives a StreamRequest and then
+// runs StreamService or StreamStep in a goroutine.
+func (c *client) StreamBuild(ctx context.Context) error {
+	// create an error group with the parent context
+	//
+	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	streams, streamCtx := errgroup.WithContext(ctx)
+
+	defer func() {
+		fmt.Fprintln(os.Stdout, "waiting for stream functions to return")
+
+		err := streams.Wait()
+		if err != nil {
+			fmt.Fprintln(os.Stdout, "error in a stream request:", err)
+		}
+
+		fmt.Fprintln(os.Stdout, "all stream functions have returned")
+	}()
+
+	// allow the runtime to do log/event streaming setup at build-level
+	streams.Go(func() error {
+		// If needed, the runtime should handle synchronizing with
+		// AssembleBuild which runs concurrently with StreamBuild.
+		return c.Runtime.StreamBuild(streamCtx, c.pipeline)
+	})
+
+	for {
+		select {
+		case req := <-c.streamRequests:
+			streams.Go(func() error {
+				fmt.Fprintf(os.Stdout, "streaming %s container %s", req.Key, req.Container.ID)
+
+				err := req.Stream(streamCtx, req.Container)
+				if err != nil {
+					fmt.Fprintln(os.Stdout, "error streaming:", err)
+				}
+
+				return nil
+			})
+		case <-ctx.Done():
+			// build done or canceled
+			return nil
+		}
+	}
+}
+
 // DestroyBuild cleans up the build after execution.
 func (c *client) DestroyBuild(ctx context.Context) error {
 	var err error

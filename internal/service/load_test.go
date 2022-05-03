@@ -34,30 +34,35 @@ func TestService_Load(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		_map      *sync.Map
 		want      *library.Service
 	}{
 		{
+			name:      "good map",
 			failure:   false,
 			container: c,
 			want:      new(library.Service),
 			_map:      goodMap,
 		},
 		{
+			name:      "bad map",
 			failure:   true,
 			container: c,
 			want:      nil,
 			_map:      badMap,
 		},
 		{
+			name:      "empty map",
 			failure:   true,
 			container: new(pipeline.Container),
 			want:      nil,
 			_map:      new(sync.Map),
 		},
 		{
+			name:      "nil map",
 			failure:   true,
 			container: nil,
 			want:      nil,
@@ -67,23 +72,25 @@ func TestService_Load(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := Load(test.container, test._map)
+		t.Run(test.name, func(t *testing.T) {
+			got, err := Load(test.container, test._map)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("Load should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("Load should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("Load returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("Load returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("Load is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("Load is %v, want %v", got, test.want)
+			}
+		})
 	}
 }
 
@@ -108,30 +115,35 @@ func TestStep_LoadLogs(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 		_map      *sync.Map
 		want      *library.Log
 	}{
 		{
+			name:      "good map",
 			failure:   false,
 			container: c,
 			want:      new(library.Log),
 			_map:      goodMap,
 		},
 		{
+			name:      "bad map",
 			failure:   true,
 			container: c,
 			want:      nil,
 			_map:      badMap,
 		},
 		{
+			name:      "empty map",
 			failure:   true,
 			container: new(pipeline.Container),
 			want:      nil,
 			_map:      new(sync.Map),
 		},
 		{
+			name:      "nil map",
 			failure:   true,
 			container: nil,
 			want:      nil,
@@ -141,22 +153,24 @@ func TestStep_LoadLogs(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := LoadLogs(test.container, test._map)
+		t.Run(test.name, func(t *testing.T) {
+			got, err := LoadLogs(test.container, test._map)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("LoadLogs should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("LoadLogs should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("LoadLogs returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("LoadLogs returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("LoadLogs is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("LoadLogs is %v, want %v", got, test.want)
+			}
+		})
 	}
 }

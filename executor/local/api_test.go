@@ -22,14 +22,17 @@ func TestLocal_GetBuild(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		engine  *client
 	}{
 		{
+			name:    "with build",
 			failure: false,
 			engine:  _engine,
 		},
 		{
+			name:    "missing build",
 			failure: true,
 			engine:  new(client),
 		},
@@ -37,23 +40,25 @@ func TestLocal_GetBuild(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := test.engine.GetBuild()
+		t.Run(test.name, func(t *testing.T) {
+			got, err := test.engine.GetBuild()
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("GetBuild should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("GetBuild should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("GetBuild returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("GetBuild returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, _build) {
-			t.Errorf("GetBuild is %v, want %v", got, _build)
-		}
+			if !reflect.DeepEqual(got, _build) {
+				t.Errorf("GetBuild is %v, want %v", got, _build)
+			}
+		})
 	}
 }
 
@@ -70,14 +75,17 @@ func TestLocal_GetPipeline(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		engine  *client
 	}{
 		{
+			name:    "with pipeline",
 			failure: false,
 			engine:  _engine,
 		},
 		{
+			name:    "missing pipeline",
 			failure: true,
 			engine:  new(client),
 		},
@@ -85,23 +93,25 @@ func TestLocal_GetPipeline(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := test.engine.GetPipeline()
+		t.Run(test.name, func(t *testing.T) {
+			got, err := test.engine.GetPipeline()
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("GetPipeline should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("GetPipeline should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("GetPipeline returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("GetPipeline returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, _steps) {
-			t.Errorf("GetPipeline is %v, want %v", got, _steps)
-		}
+			if !reflect.DeepEqual(got, _steps) {
+				t.Errorf("GetPipeline is %v, want %v", got, _steps)
+			}
+		})
 	}
 }
 
@@ -118,14 +128,17 @@ func TestLocal_GetRepo(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		engine  *client
 	}{
 		{
+			name:    "with repo",
 			failure: false,
 			engine:  _engine,
 		},
 		{
+			name:    "missing repo",
 			failure: true,
 			engine:  new(client),
 		},
@@ -133,22 +146,24 @@ func TestLocal_GetRepo(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got, err := test.engine.GetRepo()
+		t.Run(test.name, func(t *testing.T) {
+			got, err := test.engine.GetRepo()
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("GetRepo should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("GetRepo should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
+			if err != nil {
+				t.Errorf("GetRepo returned err: %v", err)
+			}
 
-		if err != nil {
-			t.Errorf("GetRepo returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, _repo) {
-			t.Errorf("GetRepo is %v, want %v", got, _repo)
-		}
+			if !reflect.DeepEqual(got, _repo) {
+				t.Errorf("GetRepo is %v, want %v", got, _repo)
+			}
+		})
 	}
 }

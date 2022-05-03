@@ -6,10 +6,10 @@ package executor
 
 import (
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/go-vela/server/mock/server"
 
@@ -111,8 +111,10 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		t.Errorf("Linux returned err: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Linux is %v, want %v", got, want)
+	// Comparing with reflect.DeepEqual(x, y interface) panics due to the
+	// unexported streamRequests channel.
+	if diff := cmp.Diff(want, got, cmp.Comparer(linux.Equal)); diff != "" {
+		t.Errorf("linux Engine mismatch (-want +got):\n%v", diff)
 	}
 }
 
@@ -164,8 +166,10 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		t.Errorf("Local returned err: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Local is %v, want %v", got, want)
+	// Comparing with reflect.DeepEqual(x, y interface) panics due to the
+	// unexported streamRequests channel.
+	if diff := cmp.Diff(want, got, cmp.Comparer(local.Equal)); diff != "" {
+		t.Errorf("local Engine mismatch (-want +got):\n%v", diff)
 	}
 }
 
@@ -223,10 +227,12 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		setup   *Setup
 		failure bool
 	}{
 		{
+			name: "complete",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -241,6 +247,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: false,
 		},
 		{
+			name: "nil build",
 			setup: &Setup{
 				Build:      nil,
 				Client:     _client,
@@ -255,6 +262,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil client",
 			setup: &Setup{
 				Build:      _build,
 				Client:     nil,
@@ -269,6 +277,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "empty driver",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -283,6 +292,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil pipeline",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -297,6 +307,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil repo",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -311,6 +322,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil runtime",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -325,6 +337,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "nil user",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -339,6 +352,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "empty log-method",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -353,6 +367,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 			failure: true,
 		},
 		{
+			name: "invalid log-method",
 			setup: &Setup{
 				Build:      _build,
 				Client:     _client,
@@ -370,18 +385,20 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err = test.setup.Validate()
+		t.Run(test.name, func(t *testing.T) {
+			err = test.setup.Validate()
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("Validate should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("Validate should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("Validate returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("Validate returned err: %v", err)
+			}
+		})
 	}
 }

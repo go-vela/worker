@@ -19,7 +19,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -28,18 +27,10 @@ import (
 func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("inspecting container %s", ctn.ID)
 
-	// create options for getting the container
-	opts := metav1.GetOptions{}
-
-	// send API call to capture the container
-	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// nolint: contextcheck // ignore non-inherited new context
-	pod, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Get(
-		context.Background(),
-		c.Pod.ObjectMeta.Name,
-		opts,
-	)
+	// get the pod from the local cache, which the Informer keeps up-to-date
+	pod, err := c.PodTracker.PodLister.
+		Pods(c.config.Namespace).
+		Get(c.Pod.ObjectMeta.Name)
 	if err != nil {
 		return err
 	}
@@ -52,6 +43,16 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 		if !strings.EqualFold(cst.Name, ctn.ID) {
 			// skip container if it's not a matching ID
 			continue
+		}
+
+		// avoid a panic if the build ends without terminating all containers
+		if cst.State.Terminated == nil {
+			// steps that were not executed will still be "running" the pause image as expected.
+			if cst.Image == pauseImage || cst.Image == image.Parse(pauseImage) {
+				return nil
+			}
+
+			return fmt.Errorf("expected container %s to be terminated, got %v", ctn.ID, cst.State)
 		}
 
 		// set the step exit code
@@ -81,15 +82,13 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	}
 
 	// set the pod container image to the parsed step image
-	// (-1 to convert to 0-based index, -1 for init which isn't a container)
-	c.Pod.Spec.Containers[ctn.Number-2].Image = _image
+	c.Pod.Spec.Containers[c.containersLookup[ctn.ID]].Image = _image
 
 	// send API call to patch the pod with the new container image
 	//
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// nolint: contextcheck // ignore non-inherited new context
 	_, err = c.Kubernetes.CoreV1().Pods(c.config.Namespace).Patch(
-		context.Background(),
+		ctx,
 		c.Pod.ObjectMeta.Name,
 		types.StrategicMergePatchType,
 		[]byte(fmt.Sprintf(imagePatch, ctn.ID, _image)),
@@ -122,7 +121,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		// the containers with the proper image.
 		//
 		// https://hub.docker.com/r/kubernetes/pause
-		Image:           image.Parse("kubernetes/pause:latest"),
+		Image:           image.Parse(pauseImage),
 		Env:             []v1.EnvVar{},
 		Stdin:           false,
 		StdinOnce:       false,
@@ -195,6 +194,9 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		container.Args = append(container.Args, ctn.Commands...)
 	}
 
+	// record the index for this container
+	c.containersLookup[ctn.ID] = len(c.Pod.Spec.Containers)
+
 	// add the container definition to the pod spec
 	//
 	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
@@ -209,8 +211,7 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 	c.Logger.Tracef("setting up environment for container %s", ctn.ID)
 
 	// get the matching container spec
-	// (-1 to convert to 0-based index, -1 for injected init container)
-	container := &c.Pod.Spec.Containers[ctn.Number-2]
+	container := &c.Pod.Spec.Containers[c.containersLookup[ctn.ID]]
 	if !strings.EqualFold(container.Name, ctn.ID) {
 		return fmt.Errorf("wrong container! got %s instead of %s", container.Name, ctn.ID)
 	}
@@ -231,6 +232,10 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
+	// create a logsContext that will be canceled at the end of this
+	logsContext, logsDone := context.WithCancel(ctx)
+	defer logsDone()
+
 	// create object to store container logs
 	var logs io.ReadCloser
 
@@ -241,15 +246,8 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodLogOptions
 		opts := &v1.PodLogOptions{
-			Container: ctn.ID,
-			Follow:    true,
-			// steps can exit quickly, and might be gone before
-			// log tailing has started, so we need to request
-			// logs for previously exited containers as well.
-			// Pods get deleted after job completion, and names for
-			// pod+container don't get reused. So, previous
-			// should only retrieve logs for the current build step.
-			Previous:   true,
+			Container:  ctn.ID,
+			Follow:     true,
 			Timestamps: false,
 		}
 
@@ -261,7 +259,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		stream, err := c.Kubernetes.CoreV1().
 			Pods(c.config.Namespace).
 			GetLogs(c.Pod.ObjectMeta.Name, opts).
-			Stream(context.Background())
+			Stream(logsContext)
 		if err != nil {
 			c.Logger.Errorf("%v", err)
 			return false, nil
@@ -305,7 +303,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// perform the function to capture logs with periodic backoff
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
-	err := wait.ExponentialBackoff(backoff, logsFunc)
+	err := wait.ExponentialBackoffWithContext(logsContext, backoff, logsFunc)
 	if err != nil {
 		return nil, err
 	}
@@ -317,73 +315,55 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
-	// create label selector for watching the pod
-	selector := fmt.Sprintf("pipeline=%s", fields.EscapeValue(c.Pod.ObjectMeta.Name))
-
-	// create options for watching the container
-	opts := metav1.ListOptions{
-		LabelSelector: selector,
-		Watch:         true,
+	// get the containerTracker for this container
+	tracker, ok := c.PodTracker.Containers[ctn.ID]
+	if !ok {
+		return fmt.Errorf("containerTracker is missing for %s", ctn.ID)
 	}
 
-	// send API call to capture channel for watching the container
+	// wait for the container terminated signal
+	<-tracker.Terminated
+
+	return nil
+}
+
+// inspectContainerStatuses signals when a container reaches a terminal state.
+func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
+	// check if the pod is in a pending state
 	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
-	// ->
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-	// nolint: contextcheck // ignore non-inherited new context
-	podWatch, err := c.Kubernetes.CoreV1().Pods(c.config.Namespace).Watch(context.Background(), opts)
-	if err != nil {
-		return err
+	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodStatus
+	if pod.Status.Phase == v1.PodPending {
+		p.Logger.Debugf("skipping container status inspection as pod %s is pending", p.TrackedPod)
+
+		// nothing to inspect if pod is in a pending state
+		return
 	}
 
-	defer podWatch.Stop()
-
-	for {
-		// capture new result from the channel
-		//
-		// https://pkg.go.dev/k8s.io/apimachinery/pkg/watch?tab=doc#Interface
-		result := <-podWatch.ResultChan()
-
-		// convert the object from the result to a pod
-		pod, ok := result.Object.(*v1.Pod)
+	// iterate through each container in the pod
+	for _, cst := range pod.Status.ContainerStatuses {
+		// get the containerTracker for this container
+		tracker, ok := p.Containers[cst.Name]
 		if !ok {
-			return fmt.Errorf("unable to watch pod %s", c.Pod.ObjectMeta.Name)
-		}
+			// unknown container (probably a sidecar injected by an admissions controller)
+			p.Logger.Debugf("ignoring untracked container %s from pod %s", cst.Name, p.TrackedPod)
 
-		// check if the pod is in a pending state
-		//
-		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodStatus
-		if pod.Status.Phase == v1.PodPending {
-			// skip pod if it's in a pending state
 			continue
 		}
 
-		// iterate through each container in the pod
-		for _, cst := range pod.Status.ContainerStatuses {
-			// check if the container has a matching ID
-			//
-			// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerStatus
-			if !strings.EqualFold(cst.Name, ctn.ID) {
-				// skip container if it's not a matching ID
-				continue
-			}
+		// cst.State has details about the cst.Image's exit.
+		// cst.LastTerminationState has details about the kubernetes/pause image's exit.
+		// cst.RestartCount is 1 at exit due to switch from kubernetes/pause to final image.
 
-			// check if the container is in a terminated state
-			//
-			// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
-			if cst.State.Terminated == nil {
-				// skip container if it's not in a terminated state
-				break
-			}
+		// check if the container is in a terminated state
+		//
+		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
+		if cst.State.Terminated != nil {
+			tracker.terminatedOnce.Do(func() {
+				p.Logger.Debugf("container completed: %s in pod %s, %v", cst.Name, p.TrackedPod, cst)
 
-			// check if the container has a terminated state reason
-			//
-			// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerStateTerminated
-			if len(cst.State.Terminated.Reason) > 0 {
-				// break watching the container as it's complete
-				return nil
-			}
+				// let WaitContainer know the container is terminated
+				close(tracker.Terminated)
+			})
 		}
 	}
 }

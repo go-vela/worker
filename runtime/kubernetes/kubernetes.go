@@ -42,6 +42,10 @@ type client struct {
 	Logger *logrus.Entry
 	// https://pkg.go.dev/k8s.io/api/core/v1#Pod
 	Pod *v1.Pod
+	// containersLookup maps the container name to its index in Containers
+	containersLookup map[string]int
+	// PodTracker wraps the Kubernetes client to simplify watching the pod for changes
+	PodTracker *podTracker
 	// PipelinePodTemplate has default values to be used in Setup* methods
 	PipelinePodTemplate *velav1alpha1.PipelinePodTemplate
 	// commonVolumeMounts includes workspace mount and any global host mounts (VELA_RUNTIME_VOLUMES)
@@ -61,6 +65,7 @@ func New(opts ...ClientOpt) (*client, error) {
 	// create new fields
 	c.config = new(config)
 	c.Pod = new(v1.Pod)
+	c.containersLookup = map[string]int{}
 
 	// create new logger for the client
 	//
@@ -141,6 +146,11 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	c.config = new(config)
 	c.Pod = new(v1.Pod)
 
+	c.containersLookup = map[string]int{}
+	for i, ctn := range _pod.Spec.Containers {
+		c.containersLookup[ctn.Name] = i
+	}
+
 	// create new logger for the client
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
@@ -155,7 +165,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	c.config.Namespace = "test"
 
 	// set the Kubernetes pod in the runtime client
-	c.Pod = _pod
+	c.Pod = _pod.DeepCopy()
+	c.Pod.SetResourceVersion("0")
 
 	// apply all provided configuration options
 	for _, opt := range opts {
@@ -179,6 +190,16 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 			},
 		},
 	)
+
+	// set the PodTracker (normally populated in SetupBuild)
+	tracker, err := mockPodTracker(c.Logger, c.Kubernetes, c.Pod)
+	if err != nil {
+		return c, err
+	}
+
+	c.PodTracker = tracker
+
+	// The test is responsible for calling c.PodTracker.Start() if needed
 
 	return c, nil
 }

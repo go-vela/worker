@@ -21,6 +21,94 @@ import (
 	"github.com/go-vela/types/pipeline"
 )
 
+func TestEqual(t *testing.T) {
+	// setup types
+	gin.SetMode(gin.TestMode)
+
+	s := httptest.NewServer(server.FakeHandler())
+
+	_client, err := vela.NewClient(s.URL, "", nil)
+	if err != nil {
+		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_runtime, err := docker.NewMock()
+	if err != nil {
+		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	_linux, err := New(
+		WithBuild(testBuild()),
+		WithHostname("localhost"),
+		WithPipeline(testSteps()),
+		WithRepo(testRepo()),
+		WithRuntime(_runtime),
+		WithUser(testUser()),
+		WithVelaClient(_client),
+	)
+	if err != nil {
+		t.Errorf("unable to create linux executor: %v", err)
+	}
+
+	_alternate, err := New(
+		WithBuild(testBuild()),
+		WithHostname("a.different.host"),
+		WithPipeline(testSteps()),
+		WithRepo(testRepo()),
+		WithRuntime(_runtime),
+		WithUser(testUser()),
+		WithVelaClient(_client),
+	)
+	if err != nil {
+		t.Errorf("unable to create alternate local executor: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		a    *client
+		b    *client
+		want bool
+	}{
+		{
+			name: "both nil",
+			a:    nil,
+			b:    nil,
+			want: true,
+		},
+		{
+			name: "left nil",
+			a:    nil,
+			b:    _linux,
+			want: false,
+		},
+		{
+			name: "right nil",
+			a:    _linux,
+			b:    nil,
+			want: false,
+		},
+		{
+			name: "equal",
+			a:    _linux,
+			b:    _linux,
+			want: true,
+		},
+		{
+			name: "not equal",
+			a:    _linux,
+			b:    _alternate,
+			want: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := Equal(test.a, test.b); got != test.want {
+				t.Errorf("Equal() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
 func TestLinux_New(t *testing.T) {
 	// setup types
 	gin.SetMode(gin.TestMode)
@@ -39,14 +127,17 @@ func TestLinux_New(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		build   *library.Build
 	}{
 		{
+			name:    "with build",
 			failure: false,
 			build:   testBuild(),
 		},
 		{
+			name:    "nil build",
 			failure: true,
 			build:   nil,
 		},
@@ -54,27 +145,29 @@ func TestLinux_New(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_, err := New(
-			WithBuild(test.build),
-			WithHostname("localhost"),
-			WithPipeline(testSteps()),
-			WithRepo(testRepo()),
-			WithRuntime(_runtime),
-			WithUser(testUser()),
-			WithVelaClient(_client),
-		)
+		t.Run(test.name, func(t *testing.T) {
+			_, err := New(
+				WithBuild(test.build),
+				WithHostname("localhost"),
+				WithPipeline(testSteps()),
+				WithRepo(testRepo()),
+				WithRuntime(_runtime),
+				WithUser(testUser()),
+				WithVelaClient(_client),
+			)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
+			}
+		})
 	}
 }
 

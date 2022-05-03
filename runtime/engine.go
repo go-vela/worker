@@ -29,6 +29,10 @@ type Engine interface {
 	// SetupBuild defines a function that
 	// prepares the pipeline build.
 	SetupBuild(context.Context, *pipeline.Build) error
+	// StreamBuild defines a function that initializes
+	// log/event streaming if the runtime needs it.
+	// StreamBuild and AssembleBuild run concurrently.
+	StreamBuild(context.Context, *pipeline.Build) error
 	// AssembleBuild defines a function that
 	// finalizes pipeline build setup.
 	AssembleBuild(context.Context, *pipeline.Build) error

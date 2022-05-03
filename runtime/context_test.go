@@ -25,20 +25,24 @@ func TestRuntime_FromContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context context.Context
 		want    Engine
 	}{
 		{
-			// nolint: staticcheck // ignore using string with context value
+			name: "valid runtime in context",
+			// nolint: staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, _engine),
 			want:    _engine,
 		},
 		{
+			name:    "runtime not in context",
 			context: context.Background(),
 			want:    nil,
 		},
 		{
-			// nolint: staticcheck // ignore using string with context value
+			name: "invalid runtime in context",
+			// nolint: staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, "foo"),
 			want:    nil,
 		},
@@ -46,11 +50,13 @@ func TestRuntime_FromContext(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		got := FromContext(test.context)
+		t.Run(test.name, func(t *testing.T) {
+			got := FromContext(test.context)
 
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("FromContext is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("FromContext is %v, want %v", got, test.want)
+			}
+		})
 	}
 }
 
@@ -65,21 +71,25 @@ func TestRuntime_FromGinContext(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		context *gin.Context
 		value   interface{}
 		want    Engine
 	}{
 		{
+			name:    "valid runtime in context",
 			context: new(gin.Context),
 			value:   _engine,
 			want:    _engine,
 		},
 		{
+			name:    "runtime not in context",
 			context: new(gin.Context),
 			value:   nil,
 			want:    nil,
 		},
 		{
+			name:    "invalid runtime in context",
 			context: new(gin.Context),
 			value:   "foo",
 			want:    nil,
@@ -88,15 +98,17 @@ func TestRuntime_FromGinContext(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		if test.value != nil {
-			test.context.Set(key, test.value)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			if test.value != nil {
+				test.context.Set(key, test.value)
+			}
 
-		got := FromGinContext(test.context)
+			got := FromGinContext(test.context)
 
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("FromGinContext is %v, want %v", got, test.want)
-		}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("FromGinContext is %v, want %v", got, test.want)
+			}
+		})
 	}
 }
 
@@ -109,7 +121,7 @@ func TestRuntime_WithContext(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	// nolint: staticcheck // ignore using string with context value
+	// nolint: staticcheck,revive // ignore using string with context value
 	want := context.WithValue(context.Background(), key, _engine)
 
 	// run test
