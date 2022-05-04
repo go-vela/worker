@@ -6,6 +6,7 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -178,14 +180,15 @@ func TestKubernetes_RunContainer(t *testing.T) {
 	// TODO: include VolumeMounts?
 	// setup tests
 	tests := []struct {
-		name        string
-		failure     bool
-		cancelBuild bool
-		container   *pipeline.Container
-		pipeline    *pipeline.Build
-		oldPod      *v1.Pod
-		newPod      *v1.Pod
-		volumes     []string
+		name           string
+		failure        bool
+		cancelBuild    bool
+		imagePullError bool
+		container      *pipeline.Container
+		pipeline       *pipeline.Build
+		oldPod         *v1.Pod
+		newPod         *v1.Pod
+		volumes        []string
 	}{
 		{
 			name:      "stages-step starts running",
@@ -234,6 +237,15 @@ func TestKubernetes_RunContainer(t *testing.T) {
 				//Spec:       _pod.Spec,
 			},
 		},
+		{
+			name:           "steps-image pull error",
+			failure:        true,
+			imagePullError: true,
+			container:      _container,
+			pipeline:       _steps,
+			oldPod:         _stepsPodBeforeRunStep,
+			newPod:         _stepsPodWithRunningStep,
+		},
 	}
 
 	// run tests
@@ -253,20 +265,49 @@ func TestKubernetes_RunContainer(t *testing.T) {
 			ctx, done := context.WithCancel(context.Background())
 			defer done()
 
-			// RunContainer waits for the container to be running before returning
-			go func() {
+			// use an errgroup to make sure the test goroutine finishes
+			grp, _ := errgroup.WithContext(ctx)
+			defer func() {
+				err := grp.Wait()
+				if err != nil {
+					t.Error("waitgroup got an error")
+				}
+			}()
+
+			grp.Go(func() error {
 				oldPod := test.oldPod.DeepCopy()
 				oldPod.SetResourceVersion("older")
 
 				if test.cancelBuild {
 					// simulate a build timeout
 					done()
+				} else if test.imagePullError {
+					ctnTracker, ok := _engine.PodTracker.Containers[test.container.ID]
+					if !ok {
+						t.Error("containerTracker is missing")
+					}
+
+					ctnTracker.ImagePullErrors <- &v1.Event{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: oldPod.ObjectMeta.Namespace,
+						},
+						InvolvedObject: v1.ObjectReference{
+							Kind:      oldPod.TypeMeta.Kind,
+							Name:      oldPod.ObjectMeta.Name,
+							Namespace: oldPod.ObjectMeta.Namespace,
+							FieldPath: fmt.Sprintf("spec.containers{%s}", test.container.ID),
+						},
+						Reason:  reasonFailed,
+						Message: fmt.Sprintf("Failed to pull image \"%s\": containerd message foobar", test.container.Image),
+					}
 				} else {
 					// simulate a re-sync/PodUpdate event
 					_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
 				}
-			}()
+				return nil
+			})
 
+			// before returning RunContainer waits for: running container, canceled build, or image pull error
 			err = _engine.RunContainer(ctx, test.container, test.pipeline)
 
 			if test.failure {
@@ -789,7 +830,15 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				ctx, done := context.WithCancel(context.Background())
 				defer done()
 
+				// use an errgroup to make sure the test goroutine finishes
 				grp, grpCtx := errgroup.WithContext(ctx)
+				defer func() {
+					err := grp.Wait()
+					if err != nil {
+						t.Error("waitgroup got an error")
+					}
+				}()
+
 				grp.Go(func() error {
 					select {
 					case <-ctnTracker.ImagePullErrors:
@@ -799,13 +848,6 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 						return nil
 					}
 				})
-
-				defer func() {
-					err := grp.Wait()
-					if err != nil {
-						t.Error("waitgroup got an error")
-					}
-				}()
 			}
 
 			podTracker.inspectContainerStatuses(test.pod)
