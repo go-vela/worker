@@ -871,3 +871,191 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 		})
 	}
 }
+
+func Test_podTracker_inspectContainerEvent(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	tests := []struct {
+		name           string
+		trackedPod     string
+		ctnName        string
+		ctnImage       string
+		imagePulled    bool
+		imagePullError bool
+		event          *v1.Event
+	}{
+		{
+			name:           "image pull failed",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonFailed,
+				"Failed to pull image \"target/vela-git:v0.4.0\": containerd message",
+			),
+		},
+		{
+			name:           "image pull back-off",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonBackOff,
+				"Back-off pulling image \"target/vela-git:v0.4.0\"",
+			),
+		},
+		{
+			name:           "image inspect failed",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonInspectFailed,
+				"Failed to inspect image \"target/vela-git:v0.4.0\": docker error",
+			),
+		},
+		{
+			name:           "image pull policy is never",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonErrImageNeverPull,
+				"Container image \"target/vela-git:v0.4.0\" is not present with pull policy of Never",
+			),
+		},
+		{
+			name:           "image pulled",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    true,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonPulled,
+				"Successfully pulled image \"target/vela-git:v0.4.0\" in 5s",
+			),
+		},
+		{
+			name:           "image already present",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    true,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonPulled,
+				"Container image \"target/vela-git:v0.4.0\" already present on machine",
+			),
+		},
+		{
+			name:           "image pulling",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonPulling,
+				"Pulling image \"target/vela-git:v0.4.0\"",
+			),
+		},
+		{
+			name:           "unrecognized event reason",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"foobar",
+				"Pulling image \"target/vela-git:v0.4.0\"",
+			),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctnTracker := containerTracker{
+				Name:            test.ctnName,
+				Image:           test.ctnImage,
+				ImagePulled:     make(chan struct{}),
+				ImagePullErrors: make(chan *v1.Event),
+				Running:         make(chan struct{}),
+				Terminated:      make(chan struct{}),
+			}
+			podTracker := podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				Containers: map[string]*containerTracker{},
+				// other fields not used by inspectContainerEvent
+				// if they're needed, use newPodTracker
+			}
+			podTracker.Containers[test.ctnName] = &ctnTracker
+
+			if test.imagePullError {
+				ctx, done := context.WithCancel(context.Background())
+				defer done()
+
+				// use an errgroup to make sure the test goroutine finishes
+				grp, grpCtx := errgroup.WithContext(ctx)
+				defer func() {
+					err := grp.Wait()
+					if err != nil {
+						t.Error("waitgroup got an error")
+					}
+				}()
+
+				grp.Go(func() error {
+					select {
+					case <-ctnTracker.ImagePullErrors:
+						return nil // success
+					case <-grpCtx.Done():
+						t.Error("inspectContainerEvent should have sent an imagePullError")
+						return nil
+					}
+				})
+			}
+
+			podTracker.inspectContainerEvent(test.event)
+
+			func() {
+				defer func() {
+					// nolint: errcheck // repeat close() panics (otherwise it won't)
+					recover()
+				}()
+
+				close(ctnTracker.ImagePulled)
+
+				// this will only run if close() did not panic
+				if test.imagePulled {
+					t.Error("inspectContainerEvent should have signaled termination")
+				}
+			}()
+		})
+	}
+}
