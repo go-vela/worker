@@ -45,7 +45,6 @@ type containerTracker struct {
 	terminatedOnce sync.Once
 	// Terminated will be closed once the container reaches a terminal state.
 	Terminated chan struct{}
-	// TODO: collect streaming logs here before TailContainer is called
 
 	// Events is a function that returns a list of kubernetes events
 	// related to the tracked container.
@@ -286,10 +285,12 @@ func (p *podTracker) TrackContainers(containers []v1.Container) {
 
 	for _, ctn := range containers {
 		p.Containers[ctn.Name] = &containerTracker{
-			Name:       ctn.Name,
-			Image:      ctn.Image,
-			Running:    make(chan struct{}),
-			Terminated: make(chan struct{}),
+			Name:            ctn.Name,
+			Image:           ctn.Image,
+			ImagePulled:     make(chan struct{}),
+			ImagePullErrors: make(chan *v1.Event),
+			Running:         make(chan struct{}),
+			Terminated:      make(chan struct{}),
 			Events: func() ([]*v1.Event, error) {
 				// EventLister only offers a labelSelector,
 				// but we need a fieldSelector for events,

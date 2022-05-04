@@ -604,12 +604,14 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
 	tests := []struct {
-		name       string
-		trackedPod string
-		ctnName    string
-		ctnImage   string
-		terminated bool
-		pod        *v1.Pod
+		name           string
+		trackedPod     string
+		ctnName        string
+		ctnImage       string
+		terminated     bool
+		running        bool
+		imagePullError bool
+		pod            *v1.Pod
 	}{
 		{
 			name:       "container is terminated",
@@ -617,6 +619,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			ctnName:    "step-github-octocat-1-clone",
 			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: true,
+			running:    false,
 			pod:        _pod,
 		},
 		{
@@ -625,6 +628,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			ctnName:    "step-github-octocat-1-clone",
 			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
+			running:    false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
@@ -640,23 +644,8 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			ctnName:    "step-github-octocat-1-clone",
 			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
-			pod: &v1.Pod{
-				ObjectMeta: _pod.ObjectMeta,
-				TypeMeta:   _pod.TypeMeta,
-				Spec:       _pod.Spec,
-				Status: v1.PodStatus{
-					Phase: v1.PodRunning,
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name:  "step-github-octocat-1-clone",
-							Image: "target/vela-git:v0.4.0",
-							State: v1.ContainerState{
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-					},
-				},
-			},
+			running:    true,
+			pod:        _stepsPodWithRunningStep,
 		},
 		{
 			name:       "container is still running pause image",
@@ -664,6 +653,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			ctnName:    "step-github-octocat-1-clone",
 			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
+			running:    false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
@@ -688,6 +678,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			ctnName:    "step-github-octocat-1-clone",
 			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
+			running:    false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
@@ -712,6 +703,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			ctnName:    "step-github-octocat-1-clone",
 			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: true,
+			running:    false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
@@ -740,14 +732,45 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:           "image pull failure reported in ContainerStatus",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			terminated:     false,
+			running:        false,
+			imagePullError: true,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name:  "step-github-octocat-1-clone",
+							Image: "target/vela-git:v0.4.0",
+							State: v1.ContainerState{
+								Waiting: &v1.ContainerStateWaiting{
+									Reason:  reasonFailed,
+									Message: "Failed to pull image \"target/vela-git:v0.4.0\": containerd message foobar",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ctnTracker := containerTracker{
-				Name:       test.ctnName,
-				Image:      test.ctnImage,
-				Running:    make(chan struct{}),
-				Terminated: make(chan struct{}),
+				Name:            test.ctnName,
+				Image:           test.ctnImage,
+				ImagePulled:     make(chan struct{}),
+				ImagePullErrors: make(chan *v1.Event),
+				Running:         make(chan struct{}),
+				Terminated:      make(chan struct{}),
 				Events: func() ([]*v1.Event, error) {
 					return nil, nil
 				},
@@ -760,6 +783,20 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				// if they're needed, use newPodTracker
 			}
 			podTracker.Containers[test.ctnName] = &ctnTracker
+
+			if test.imagePullError {
+				ctx, done := context.WithCancel(context.Background())
+				defer done()
+
+				go func() {
+					select {
+					case <-ctnTracker.ImagePullErrors:
+						return // success
+					case <-ctx.Done():
+						t.Error("inspectContainerStatuses should have sent an imagePullError")
+					}
+				}()
+			}
 
 			podTracker.inspectContainerStatuses(test.pod)
 
@@ -774,6 +811,20 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				// this will only run if close() did not panic
 				if test.terminated {
 					t.Error("inspectContainerStatuses should have signaled termination")
+				}
+			}()
+
+			func() {
+				defer func() {
+					// nolint: errcheck // repeat close() panics (otherwise it won't)
+					recover()
+				}()
+
+				close(ctnTracker.Running)
+
+				// this will only run if close() did not panic
+				if test.running {
+					t.Error("inspectContainerStatuses should have signaled running")
 				}
 			}()
 		})

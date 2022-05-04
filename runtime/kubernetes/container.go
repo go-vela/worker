@@ -443,20 +443,25 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 		} else if cst.State.Waiting != nil &&
 			(cst.State.Waiting.Reason == reasonBackOff || cst.State.Waiting.Reason == reasonFailed) &&
 			strings.Contains(cst.State.Waiting.Message, tracker.Image) {
-			// imitate an event to make sure we catch it.
-			tracker.ImagePullErrors <- &v1.Event{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: p.Namespace,
-				},
-				InvolvedObject: v1.ObjectReference{
-					Kind:      "Pod",
-					Name:      p.Name,
-					Namespace: p.Namespace,
-					FieldPath: fmt.Sprintf("spec.containers{%s}", tracker.Name),
-				},
-				Reason:  cst.State.Waiting.Reason,
-				Message: cst.State.Waiting.Message,
-			}
+			// inspectContainerStatuses should return as quickly as possible
+			// writing to the channel can block when nothing is receiving,
+			// so fire it off in a goroutine.
+			go func() {
+				// imitate an event to make sure we catch it.
+				tracker.ImagePullErrors <- &v1.Event{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: p.Namespace,
+					},
+					InvolvedObject: v1.ObjectReference{
+						Kind:      "Pod",
+						Name:      p.Name,
+						Namespace: p.Namespace,
+						FieldPath: fmt.Sprintf("spec.containers{%s}", tracker.Name),
+					},
+					Reason:  cst.State.Waiting.Reason,
+					Message: cst.State.Waiting.Message,
+				}
+			}()
 		}
 	}
 }
