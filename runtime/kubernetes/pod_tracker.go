@@ -176,7 +176,6 @@ func (p *podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 
 // HandleEventAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Events.
 func (p *podTracker) HandleEventAdd(newObj interface{}) {
-	// TODO: do something with the (possible) event
 	newEvent := p.getTrackedPodEvent(newObj)
 	if newEvent == nil {
 		// not valid or not for our tracked pod
@@ -195,7 +194,6 @@ func (p *podTracker) HandleEventAdd(newObj interface{}) {
 
 // HandleEventUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Events.
 func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
-	// TODO: do something with the (possible) event(s)
 	oldEvent := p.getTrackedPodEvent(oldObj)
 	newEvent := p.getTrackedPodEvent(newObj)
 
@@ -217,7 +215,7 @@ func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
 // HandleEventDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Events.
 //func (p *podTracker) HandleEventDelete(oldObj interface{}) {
 //	oldEvent := p.getTrackedPodEvent(oldObj)
-//	if newEvent == nil {
+//	if oldEvent == nil {
 //		// not valid or not for our tracked pod
 //		return
 //	}
