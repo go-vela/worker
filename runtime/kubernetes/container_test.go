@@ -14,6 +14,7 @@ import (
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -788,12 +789,21 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				ctx, done := context.WithCancel(context.Background())
 				defer done()
 
-				go func() {
+				grp, grpCtx := errgroup.WithContext(ctx)
+				grp.Go(func() error {
 					select {
 					case <-ctnTracker.ImagePullErrors:
-						return // success
-					case <-ctx.Done():
+						return nil // success
+					case <-grpCtx.Done():
 						t.Error("inspectContainerStatuses should have sent an imagePullError")
+						return nil
+					}
+				})
+
+				defer func() {
+					err := grp.Wait()
+					if err != nil {
+						t.Error("waitgroup got an error")
 					}
 				}()
 			}
