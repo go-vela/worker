@@ -220,6 +220,19 @@ func TestKubernetes_RunContainer(t *testing.T) {
 			oldPod:      _stepsPodBeforeRunStep,
 			newPod:      _stepsPodWithRunningStep,
 		},
+		{
+			name:      "if client.Pod.Spec is empty podTracker fails",
+			failure:   true,
+			container: _container,
+			oldPod:    _pod,
+			newPod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Status:     _pod.Status,
+				// if client.Pod.Spec is empty, podTracker will fail
+				//Spec:       _pod.Spec,
+			},
+		},
 	}
 
 	// run tests
