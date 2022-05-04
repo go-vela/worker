@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
@@ -337,7 +338,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			wantFromTemplate: nil,
 		},
 		{
-			name:    "step-echo",
+			name:    "step-echo-pull always",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -348,7 +349,79 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Image:       "alpine:latest",
 				Name:        "echo",
 				Number:      2,
-				Pull:        "always",
+				Pull:        constants.PullAlways,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull never",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        constants.PullNever,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull on start",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        constants.PullOnStart,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull not present",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        constants.PullNotPresent,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull default",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        "",
 			},
 			opts:             nil,
 			wantPrivileged:   false,
