@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -885,6 +886,124 @@ func Test_podTracker_inspectContainerEvent(t *testing.T) {
 		imagePullError bool
 		event          *v1.Event
 	}{
+		{
+			name:           "pod scheduled event ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: &v1.Event{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      _pod.ObjectMeta.Name + ".16ea333d810392b7",
+					Namespace: _pod.ObjectMeta.Namespace,
+				},
+				Action:              "Binding",
+				Reason:              "Scheduled", // reasonScheduled,
+				Message:             "Successfully assigned test/github-octocat-1 to k8s-worker",
+				ReportingController: "default-scheduler",
+				ReportingInstance:   "default-scheduler-k8s-master",
+				Source:              v1.EventSource{}, // empty
+			},
+		},
+		{
+			name:           "container created event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"Created", // reasonCreated,
+				"Created container step-github-octocat-1-clone",
+			),
+		},
+		{
+			name:           "container started event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"Started", // reasonStarted,
+				"Started container step-github-octocat-1-clone",
+			),
+		},
+		{
+			name:           "container killing event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"Killing", //reasonKilling,
+				"Container step-github-octocat-1-clone definition changed, will be restarted",
+			),
+		},
+		{
+			name:           "generic image pull failed event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonFailed,
+				"ErrImagePull",
+			),
+		},
+		{
+			name:           "generic image pull back-off is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonBackOff,
+				"ImagePullBackOff",
+			),
+		},
+		{
+			name:           "event for unnamed container ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"",
+				reasonFailed,
+				"Failed to pull image \"target/vela-git:v0.4.0\": containerd message",
+			),
+		},
+		{
+			name:           "event for unknown container ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"admissions-controller-injected-container",
+				reasonFailed,
+				"Failed to pull image \"target/vela-git:v0.4.0\": containerd message",
+			),
+		},
 		{
 			name:           "image pull failed",
 			trackedPod:     "test/github-octocat-1",

@@ -567,15 +567,29 @@ var (
 )
 
 func mockContainerEvent(pod *v1.Pod, ctnName, reason, message string) *v1.Event {
+	var fieldPath string
+	if ctnName != "" {
+		fieldPath = fmt.Sprintf("spec.containers{%s}", ctnName)
+	} else {
+		fieldPath = "spec.containers[2]"
+	}
+
 	return &v1.Event{
 		ObjectMeta: metav1.ObjectMeta{
+			Name:      _pod.ObjectMeta.Name + ".16ea333d810392b7",
 			Namespace: pod.ObjectMeta.Namespace,
 		},
 		InvolvedObject: v1.ObjectReference{
 			Kind:      pod.TypeMeta.Kind,
 			Name:      pod.ObjectMeta.Name,
 			Namespace: pod.ObjectMeta.Namespace,
-			FieldPath: fmt.Sprintf("spec.containers{%s}", ctnName),
+			FieldPath: fieldPath,
+		},
+		ReportingController: "",
+		ReportingInstance:   "",
+		Source: v1.EventSource{
+			Component: "kubelet",
+			Host:      "k8s-worker",
 		},
 		Reason:  reason,
 		Message: message,
