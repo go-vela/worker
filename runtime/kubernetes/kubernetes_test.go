@@ -5,6 +5,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/go-vela/types/pipeline"
@@ -564,3 +565,19 @@ var (
 		},
 	}
 )
+
+func mockContainerEvent(pod *v1.Pod, ctnName, reason, message string) *v1.Event {
+	return &v1.Event{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: pod.ObjectMeta.Namespace,
+		},
+		InvolvedObject: v1.ObjectReference{
+			Kind:      pod.TypeMeta.Kind,
+			Name:      pod.ObjectMeta.Name,
+			Namespace: pod.ObjectMeta.Namespace,
+			FieldPath: fmt.Sprintf("spec.containers{%s}", ctnName),
+		},
+		Reason:  reason,
+		Message: message,
+	}
+}

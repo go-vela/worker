@@ -17,7 +17,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -287,19 +286,12 @@ func TestKubernetes_RunContainer(t *testing.T) {
 						t.Error("containerTracker is missing")
 					}
 
-					ctnTracker.ImagePullErrors <- &v1.Event{
-						ObjectMeta: metav1.ObjectMeta{
-							Namespace: oldPod.ObjectMeta.Namespace,
-						},
-						InvolvedObject: v1.ObjectReference{
-							Kind:      oldPod.TypeMeta.Kind,
-							Name:      oldPod.ObjectMeta.Name,
-							Namespace: oldPod.ObjectMeta.Namespace,
-							FieldPath: fmt.Sprintf("spec.containers{%s}", test.container.ID),
-						},
-						Reason:  reasonFailed,
-						Message: fmt.Sprintf("Failed to pull image \"%s\": containerd message foobar", test.container.Image),
-					}
+					ctnTracker.ImagePullErrors <- mockContainerEvent(
+						oldPod,
+						test.container.ID,
+						reasonFailed,
+						fmt.Sprintf("Failed to pull image \"%s\": containerd message foobar", test.container.Image),
+					)
 				} else {
 					// simulate a re-sync/PodUpdate event
 					_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
