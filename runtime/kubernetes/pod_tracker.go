@@ -45,10 +45,6 @@ type containerTracker struct {
 	terminatedOnce sync.Once
 	// Terminated will be closed once the container reaches a terminal state.
 	Terminated chan struct{}
-
-	// Events is a function that returns a list of kubernetes events
-	// related to the tracked container.
-	Events func() ([]*v1.Event, error)
 }
 
 // podTracker contains Informers used to watch and synchronize local k8s caches.
@@ -289,34 +285,6 @@ func (p *podTracker) TrackContainers(containers []v1.Container) {
 			ImagePullErrors: make(chan *v1.Event),
 			Running:         make(chan struct{}),
 			Terminated:      make(chan struct{}),
-			Events: func() ([]*v1.Event, error) {
-				// EventLister only offers a labelSelector,
-				// but we need a fieldSelector for events,
-				// so filter all pod events to get just the events
-				// for this container.
-				var ctnEvents []*v1.Event
-
-				// get all tracked pod events.
-				allEvents, err := p.EventLister.
-					Events(p.Namespace).
-					List(labels.Set{}.AsSelector())
-				if err != nil {
-					return ctnEvents, err
-				}
-
-				ctnFieldPath := fmt.Sprintf("spec.containers{%s}", ctn.Name)
-
-				for _, event := range allEvents {
-					// skip events for other containers
-					if event.InvolvedObject.FieldPath != ctnFieldPath {
-						continue
-					}
-
-					ctnEvents = append(ctnEvents, event)
-				}
-
-				return ctnEvents, nil
-			},
 		}
 	}
 }
