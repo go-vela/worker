@@ -455,9 +455,10 @@ func TestKubernetes_StreamBuild(t *testing.T) {
 func TestKubernetes_AssembleBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
-		name     string
-		failure  bool
-		pipeline *pipeline.Build
+		name        string
+		failure     bool
+		cancelBuild bool
+		pipeline    *pipeline.Build
 		// k8sPod is the pod that the mock Kubernetes client will return
 		k8sPod *v1.Pod
 		// enginePod is the pod under construction in the Runtime Engine
@@ -491,6 +492,22 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 			k8sPod:    _pod,
 			enginePod: _pod,
 		},
+		{
+			name:        "stages-build canceled",
+			failure:     true,
+			cancelBuild: true,
+			pipeline:    _stages,
+			k8sPod:      &v1.Pod{},
+			enginePod:   _stagesPod,
+		},
+		{
+			name:        "steps-build canceled",
+			failure:     true,
+			cancelBuild: true,
+			pipeline:    _steps,
+			k8sPod:      &v1.Pod{},
+			enginePod:   _pod,
+		},
 	}
 
 	// run tests
@@ -508,16 +525,25 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 				_engine.containersLookup[ctn.Name] = i
 			}
 
+			// setup test context
+			ctx, done := context.WithCancel(context.Background())
+			defer done()
+
 			// StreamBuild and AssembleBuild coordinate their work, so, emulate
 			// executor.StreamBuild which calls runtime.StreamBuild concurrently.
 			go func() {
-				err := _engine.StreamBuild(context.Background(), test.pipeline)
-				if err != nil {
-					t.Errorf("unable to start PodTracker via StreamBuild")
+				if test.cancelBuild {
+					// simulate a build timeout
+					done()
+				} else {
+					err := _engine.StreamBuild(context.Background(), test.pipeline)
+					if err != nil {
+						t.Errorf("unable to start PodTracker via StreamBuild")
+					}
 				}
 			}()
 
-			err = _engine.AssembleBuild(context.Background(), test.pipeline)
+			err = _engine.AssembleBuild(ctx, test.pipeline)
 
 			if test.failure {
 				if err == nil {
