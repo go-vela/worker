@@ -208,17 +208,6 @@ func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
 	p.inspectContainerEvent(newEvent)
 }
 
-// HandleEventDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Events.
-//func (p *podTracker) HandleEventDelete(oldObj interface{}) {
-//	oldEvent := p.getTrackedPodEvent(oldObj)
-//	if oldEvent == nil {
-//		// not valid or not for our tracked pod
-//		return
-//	}
-//
-//	p.Logger.Tracef("handling event delete event for %s", p.TrackedPod)
-//}
-
 // getTrackedPodEvent tries to convert the obj into an Event and makes sure it is for the tracked Pod.
 // This should only be used by the funcs of cache.ResourceEventHandlerFuncs.
 func (p *podTracker) getTrackedPodEvent(obj interface{}) *v1.Event {
@@ -366,8 +355,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	eventInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    tracker.HandleEventAdd,
 		UpdateFunc: tracker.HandleEventUpdate,
-		// events get deleted after some time, which we ignore.
-		//DeleteFunc: tracker.HandleEventDelete,
+		// No DeleteFunc as events get deleted after some time, which we ignore.
 	})
 
 	return &tracker, nil
