@@ -52,6 +52,7 @@ func (w *Worker) exec(index int) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
 	w.Runtime, err = runtime.New(&runtime.Setup{
 		Logger:           logger,
+		Mock:             w.Config.Mock,
 		Driver:           w.Config.Runtime.Driver,
 		ConfigFile:       w.Config.Runtime.ConfigFile,
 		HostVolumes:      w.Config.Runtime.HostVolumes,
