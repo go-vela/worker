@@ -52,14 +52,24 @@ func TestWorker_exec(t *testing.T) {
 	}
 	executors := []workerTestConfig{
 		{
-			name:           constants.DriverLinux,
-			executorDriver: constants.DriverLinux,
-			//executorLogMethod:
+			name:              constants.DriverLinux + "_log_byte_chunks",
+			executorDriver:    constants.DriverLinux,
+			executorLogMethod: "byte-chunks",
 		},
 		{
-			name:           constants.DriverLocal,
-			executorDriver: constants.DriverLocal,
-			//executorLogMethod:
+			name:              constants.DriverLocal + "_log_byte_chunks",
+			executorDriver:    constants.DriverLocal,
+			executorLogMethod: "byte-chunks",
+		},
+		{
+			name:              constants.DriverLinux + "_log_time_chunks",
+			executorDriver:    constants.DriverLinux,
+			executorLogMethod: "time-chunks",
+		},
+		{
+			name:              constants.DriverLocal + "_log_time_chunks",
+			executorDriver:    constants.DriverLocal,
+			executorLogMethod: "time-chunks",
 		},
 	}
 	runtimes := []workerTestConfig{
