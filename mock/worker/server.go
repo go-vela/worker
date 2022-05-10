@@ -17,12 +17,6 @@ func FakeHandler() http.Handler {
 
 	e := gin.New()
 
-	// mock endpoints for utility calls
-	//e.GET("/health", getHealth)
-	//e.GET("/metrics", getMetrics)
-	//e.GET("/version", getVersion)
-	//e.POST("/api/v1/shutdown", postShutdown)
-
 	// mock endpoints for executor calls
 	e.GET("/api/v1/executors", getExecutors)
 	e.GET("/api/v1/executors/:executor", getExecutor)
