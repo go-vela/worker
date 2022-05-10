@@ -232,10 +232,6 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io.ReadCloser, error) {
 	c.Logger.Tracef("tailing output for container %s", ctn.ID)
 
-	// create a logsContext that will be canceled at the end of this
-	logsContext, logsDone := context.WithCancel(ctx)
-	defer logsDone()
-
 	// create object to store container logs
 	var logs io.ReadCloser
 
@@ -259,7 +255,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		stream, err := c.Kubernetes.CoreV1().
 			Pods(c.config.Namespace).
 			GetLogs(c.Pod.ObjectMeta.Name, opts).
-			Stream(logsContext)
+			Stream(ctx)
 		if err != nil {
 			c.Logger.Errorf("%v", err)
 			return false, nil
@@ -303,7 +299,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// perform the function to capture logs with periodic backoff
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
-	err := wait.ExponentialBackoffWithContext(logsContext, backoff, logsFunc)
+	err := wait.ExponentialBackoffWithContext(ctx, backoff, logsFunc)
 	if err != nil {
 		return nil, err
 	}
