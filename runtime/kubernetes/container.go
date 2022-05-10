@@ -257,7 +257,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 			GetLogs(c.Pod.ObjectMeta.Name, opts).
 			Stream(ctx)
 		if err != nil {
-			c.Logger.Errorf("%v", err)
+			c.Logger.Errorf("error while requesting pod/logs stream for container %s: %v", ctn.ID, err)
 			return false, nil
 		}
 
@@ -301,6 +301,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
 	err := wait.ExponentialBackoffWithContext(ctx, backoff, logsFunc)
 	if err != nil {
+		c.Logger.Errorf("exponential backoff error while tailing container %s: %v", ctn.ID, err)
 		return nil, err
 	}
 
