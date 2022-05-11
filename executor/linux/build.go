@@ -536,6 +536,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 				return nil
 			})
 		case <-ctx.Done():
+			c.Logger.Debug("streaming context canceled")
 			// build done or canceled
 			return nil
 		}
