@@ -7,7 +7,6 @@ package local
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -97,7 +96,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Inspecting runtime network...")
+	fmt.Fprintln(c.stdout, _pattern, "> Inspecting runtime network...")
 
 	// inspect the runtime network for the pipeline
 	network, err := c.Runtime.InspectNetwork(ctx, c.pipeline)
@@ -107,7 +106,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// output the network information to stdout
-	fmt.Fprintln(os.Stdout, _pattern, string(network))
+	fmt.Fprintln(c.stdout, _pattern, string(network))
 
 	// create the runtime volume for the pipeline
 	err = c.Runtime.CreateVolume(ctx, c.pipeline)
@@ -117,7 +116,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Inspecting runtime volume...")
+	fmt.Fprintln(c.stdout, _pattern, "> Inspecting runtime volume...")
 
 	// inspect the runtime volume for the pipeline
 	volume, err := c.Runtime.InspectVolume(ctx, c.pipeline)
@@ -127,7 +126,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// output the volume information to stdout
-	fmt.Fprintln(os.Stdout, _pattern, string(volume))
+	fmt.Fprintln(c.stdout, _pattern, string(volume))
 
 	return c.err
 }
@@ -162,7 +161,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Preparing service images...")
+	fmt.Fprintln(c.stdout, _pattern, "> Preparing service images...")
 
 	// create the services for the pipeline
 	for _, _service := range c.pipeline.Services {
@@ -183,11 +182,11 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		}
 
 		// output the image information to stdout
-		fmt.Fprintln(os.Stdout, _pattern, string(image))
+		fmt.Fprintln(c.stdout, _pattern, string(image))
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Preparing stage images...")
+	fmt.Fprintln(c.stdout, _pattern, "> Preparing stage images...")
 
 	// create the stages for the pipeline
 	for _, _stage := range c.pipeline.Stages {
@@ -206,7 +205,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// output init progress to stdout
-	fmt.Fprintln(os.Stdout, _pattern, "> Preparing step images...")
+	fmt.Fprintln(c.stdout, _pattern, "> Preparing step images...")
 
 	// create the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {
@@ -229,11 +228,11 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		}
 
 		// output the image information to stdout
-		fmt.Fprintln(os.Stdout, _pattern, string(image))
+		fmt.Fprintln(c.stdout, _pattern, string(image))
 	}
 
 	// output a new line for readability to stdout
-	fmt.Fprintln(os.Stdout, "")
+	fmt.Fprintln(c.stdout, "")
 
 	// assemble runtime build just before any containers execute
 	c.err = c.Runtime.AssembleBuild(ctx, c.pipeline)
@@ -353,14 +352,14 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	streams, streamCtx := errgroup.WithContext(ctx)
 
 	defer func() {
-		fmt.Fprintln(os.Stdout, "waiting for stream functions to return")
+		fmt.Fprintln(c.stdout, "waiting for stream functions to return")
 
 		err := streams.Wait()
 		if err != nil {
-			fmt.Fprintln(os.Stdout, "error in a stream request:", err)
+			fmt.Fprintln(c.stdout, "error in a stream request:", err)
 		}
 
-		fmt.Fprintln(os.Stdout, "all stream functions have returned")
+		fmt.Fprintln(c.stdout, "all stream functions have returned")
 	}()
 
 	// allow the runtime to do log/event streaming setup at build-level
@@ -374,11 +373,11 @@ func (c *client) StreamBuild(ctx context.Context) error {
 		select {
 		case req := <-c.streamRequests:
 			streams.Go(func() error {
-				fmt.Fprintf(os.Stdout, "[%s: %s] > Streaming container '%s'...\n", req.Key, req.Container.Name, req.Container.ID)
+				fmt.Fprintf(c.stdout, "[%s: %s] > Streaming container '%s'...\n", req.Key, req.Container.Name, req.Container.ID)
 
 				err := req.Stream(streamCtx, req.Container)
 				if err != nil {
-					fmt.Fprintln(os.Stdout, "error streaming:", err)
+					fmt.Fprintln(c.stdout, "error streaming:", err)
 				}
 
 				return nil
@@ -399,7 +398,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		err = c.Runtime.RemoveBuild(ctx, c.pipeline)
 		if err != nil {
 			// output the error information to stdout
-			fmt.Fprintln(os.Stdout, "unable to destroy runtime build:", err)
+			fmt.Fprintln(c.stdout, "unable to destroy runtime build:", err)
 		}
 	}()
 
@@ -414,7 +413,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		err = c.DestroyStep(ctx, _step)
 		if err != nil {
 			// output the error information to stdout
-			fmt.Fprintln(os.Stdout, "unable to destroy step:", err)
+			fmt.Fprintln(c.stdout, "unable to destroy step:", err)
 		}
 	}
 
@@ -429,7 +428,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		err = c.DestroyStage(ctx, _stage)
 		if err != nil {
 			// output the error information to stdout
-			fmt.Fprintln(os.Stdout, "unable to destroy stage:", err)
+			fmt.Fprintln(c.stdout, "unable to destroy stage:", err)
 		}
 	}
 
@@ -439,7 +438,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		err = c.DestroyService(ctx, _service)
 		if err != nil {
 			// output the error information to stdout
-			fmt.Fprintln(os.Stdout, "unable to destroy service:", err)
+			fmt.Fprintln(c.stdout, "unable to destroy service:", err)
 		}
 	}
 
@@ -447,14 +446,14 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 	err = c.Runtime.RemoveVolume(ctx, c.pipeline)
 	if err != nil {
 		// output the error information to stdout
-		fmt.Fprintln(os.Stdout, "unable to destroy runtime volume:", err)
+		fmt.Fprintln(c.stdout, "unable to destroy runtime volume:", err)
 	}
 
 	// remove the runtime network for the pipeline
 	err = c.Runtime.RemoveNetwork(ctx, c.pipeline)
 	if err != nil {
 		// output the error information to stdout
-		fmt.Fprintln(os.Stdout, "unable to destroy runtime network:", err)
+		fmt.Fprintln(c.stdout, "unable to destroy runtime network:", err)
 	}
 
 	return err

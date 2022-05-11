@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/go-vela/worker/internal/message"
@@ -125,7 +124,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 	// scan entire container output
 	for scanner.Scan() {
 		// ensure we output to stdout
-		fmt.Fprintln(os.Stdout, _pattern, scanner.Text())
+		fmt.Fprintln(c.stdout, _pattern, scanner.Text())
 	}
 
 	return scanner.Err()
