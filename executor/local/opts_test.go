@@ -331,3 +331,39 @@ func TestLocal_Opt_WithVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestLocal_Opt_WithMockStdout(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name    string
+		mock    bool
+		wantNil bool
+	}{
+		{
+			name:    "standard",
+			mock:    false,
+			wantNil: true,
+		},
+		{
+			name:    "mocked",
+			mock:    true,
+			wantNil: false,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithMockStdout(test.mock),
+			)
+			if err != nil {
+				t.Errorf("unable to create local engine: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.MockStdout() == nil, test.wantNil) {
+				t.Errorf("WithMockStdout is %v, wantNil = %v", _engine.MockStdout() == nil, test.wantNil)
+			}
+		})
+	}
+}
