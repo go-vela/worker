@@ -19,9 +19,9 @@ require (
 	github.com/urfave/cli/v2 v2.8.1
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
 	gotest.tools/v3 v3.2.0
-	k8s.io/api v0.24.0
-	k8s.io/apimachinery v0.24.0
-	k8s.io/client-go v0.24.0
+	k8s.io/api v0.24.1
+	k8s.io/apimachinery v0.24.1
+	k8s.io/client-go v0.24.1
 	sigs.k8s.io/yaml v1.3.0
 )
 
