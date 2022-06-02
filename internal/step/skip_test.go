@@ -98,6 +98,34 @@ func TestStep_Skip(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
+	_deployFromTag := &library.Build{
+		ID:           vela.Int64(1),
+		Number:       vela.Int(1),
+		Parent:       vela.Int(1),
+		Event:        vela.String("deployment"),
+		EventAction:  vela.String(""),
+		Status:       vela.String("success"),
+		Error:        vela.String(""),
+		Enqueued:     vela.Int64(1563474077),
+		Created:      vela.Int64(1563474076),
+		Started:      vela.Int64(1563474077),
+		Finished:     vela.Int64(0),
+		Deploy:       vela.String(""),
+		Clone:        vela.String("https://github.com/github/octocat.git"),
+		Source:       vela.String("https://github.com/github/octocat/abcdefghi123456789"),
+		Title:        vela.String("push received from https://github.com/github/octocat"),
+		Message:      vela.String("First commit..."),
+		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
+		Sender:       vela.String("OctoKitty"),
+		Author:       vela.String("OctoKitty"),
+		Branch:       vela.String("master"),
+		Ref:          vela.String("refs/tags/v1.0.0"),
+		BaseRef:      vela.String(""),
+		Host:         vela.String("example.company.com"),
+		Runtime:      vela.String("docker"),
+		Distribution: vela.String("linux"),
+	}
+
 	_tag := &library.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
@@ -179,6 +207,13 @@ func TestStep_Skip(t *testing.T) {
 		{
 			name:      "deploy",
 			build:     _deploy,
+			container: _container,
+			repo:      _repo,
+			want:      false,
+		},
+		{
+			name:      "deployFromTag",
+			build:     _deployFromTag,
 			container: _container,
 			repo:      _repo,
 			want:      false,
