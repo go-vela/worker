@@ -7,7 +7,7 @@ require (
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/docker/go-units v0.4.0
-	github.com/gin-gonic/gin v1.8.0
+	github.com/gin-gonic/gin v1.8.1
 	github.com/go-vela/sdk-go v0.14.0-rc3
 	github.com/go-vela/server v0.14.0-rc2
 	github.com/go-vela/types v0.14.0-rc2
