@@ -18,7 +18,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli/v2 v2.8.1
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
-	gotest.tools/v3 v3.2.0
+	gotest.tools/v3 v3.3.0
 	k8s.io/api v0.24.1
 	k8s.io/apimachinery v0.24.1
 	k8s.io/client-go v0.24.1
