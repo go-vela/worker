@@ -8,9 +8,9 @@ require (
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/go-vela/sdk-go v0.14.0-rc4
-	github.com/go-vela/server v0.14.0-rc3
-	github.com/go-vela/types v0.14.0-rc3
+	github.com/go-vela/sdk-go v0.14.0
+	github.com/go-vela/server v0.14.0
+	github.com/go-vela/types v0.14.0
 	github.com/google/go-cmp v0.5.8
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
