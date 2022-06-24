@@ -7,21 +7,21 @@ require (
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/docker/go-units v0.4.0
-	github.com/gin-gonic/gin v1.8.0
-	github.com/go-vela/sdk-go v0.14.0-rc2
-	github.com/go-vela/server v0.14.0-rc1
-	github.com/go-vela/types v0.14.0-rc1
+	github.com/gin-gonic/gin v1.8.1
+	github.com/go-vela/sdk-go v0.14.0
+	github.com/go-vela/server v0.14.0
+	github.com/go-vela/types v0.14.0
 	github.com/google/go-cmp v0.5.8
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli/v2 v2.8.1
-	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
-	gotest.tools/v3 v3.2.0
-	k8s.io/api v0.24.1
-	k8s.io/apimachinery v0.24.1
-	k8s.io/client-go v0.24.1
+	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
+	gotest.tools/v3 v3.3.0
+	k8s.io/api v0.24.2
+	k8s.io/apimachinery v0.24.2
+	k8s.io/client-go v0.24.2
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -32,7 +32,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
-	github.com/alicebob/miniredis/v2 v2.20.0 // indirect
+	github.com/alicebob/miniredis/v2 v2.21.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/buildkite/yaml v0.0.0-20181016232759-0caa5f0796e3 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
@@ -60,7 +60,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-github/v44 v44.0.0 // indirect
+	github.com/google/go-github/v44 v44.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -101,7 +101,7 @@ require (
 	go.starlark.net v0.0.0-20220328144851-d1966c6b9fcd // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
+	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401 // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
