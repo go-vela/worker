@@ -374,7 +374,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 		select {
 		case req := <-c.streamRequests:
 			streams.Go(func() error {
-				fmt.Fprintf(os.Stdout, "streaming %s container %s", req.Key, req.Container.ID)
+				fmt.Fprintf(os.Stdout, "[%s: %s] > Streaming container '%s'...\n", req.Key, req.Container.Name, req.Container.ID)
 
 				err := req.Stream(streamCtx, req.Container)
 				if err != nil {
