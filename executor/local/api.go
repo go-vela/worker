@@ -7,7 +7,6 @@ package local
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/go-vela/types/constants"
@@ -193,7 +192,7 @@ func (c *client) CancelBuild() (*library.Build, error) {
 
 	err = c.DestroyBuild(context.Background())
 	if err != nil {
-		fmt.Fprintln(os.Stdout, "unable to destroy build:", err)
+		fmt.Fprintln(c.stdout, "unable to destroy build:", err)
 	}
 
 	return b, nil

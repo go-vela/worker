@@ -46,6 +46,7 @@ type (
 
 	// Config represents the worker configuration.
 	Config struct {
+		Mock        bool // Mock should only be true for tests
 		API         *API
 		Build       *Build
 		CheckIn     time.Duration

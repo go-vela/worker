@@ -6,6 +6,7 @@ package local
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
@@ -116,6 +117,28 @@ func WithVersion(version string) Opt {
 
 		// set the version in the client
 		c.Version = version
+
+		return nil
+	}
+}
+
+// WithMockStdout adds a mock stdout writer to the client if mock is true.
+// If mock is true, then you must use a goroutine to read from
+// MockStdout as quickly as possible, or writing to stdout will hang.
+func WithMockStdout(mock bool) Opt {
+	return func(c *client) error {
+		if !mock {
+			return nil
+		}
+
+		// New() sets c.stdout = os.stdout, replace it if a mock is required.
+		reader, writer, err := os.Pipe()
+		if err != nil {
+			return err
+		}
+
+		c.mockStdoutReader = reader
+		c.stdout = writer
 
 		return nil
 	}

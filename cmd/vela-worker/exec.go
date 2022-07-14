@@ -69,6 +69,7 @@ func (w *Worker) exec(index int) error {
 	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
 		Logger:     logger,
+		Mock:       w.Config.Mock,
 		Driver:     w.Config.Executor.Driver,
 		LogMethod:  w.Config.Executor.LogMethod,
 		MaxLogSize: w.Config.Executor.MaxLogSize,
