@@ -5,6 +5,7 @@
 package local
 
 import (
+	"os"
 	"reflect"
 	"sync"
 
@@ -33,8 +34,23 @@ type (
 		user           *library.User
 		err            error
 		streamRequests chan message.StreamRequest
+
+		// internal field partially exported for tests
+		stdout           *os.File
+		mockStdoutReader *os.File
+	}
+
+	// MockedClient is for internal use to facilitate testing the local executor.
+	MockedClient interface {
+		MockStdout() *os.File
 	}
 )
+
+// MockStdout is for internal use to facilitate testing the local executor.
+// MockStdout returns a reader over a mocked Stdout.
+func (c *client) MockStdout() *os.File {
+	return c.mockStdoutReader
+}
 
 // equal returns true if the other client is the equivalent.
 func Equal(a, b *client) bool {
@@ -63,6 +79,9 @@ func Equal(a, b *client) bool {
 func New(opts ...Opt) (*client, error) {
 	// create new local client
 	c := new(client)
+
+	// Add stdout by default
+	c.stdout = os.Stdout
 
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
 	c.streamRequests = make(chan message.StreamRequest)

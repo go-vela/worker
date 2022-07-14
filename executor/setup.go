@@ -31,6 +31,9 @@ type Setup struct {
 
 	// Executor Configuration
 
+	// Mock should only be true for tests.
+	Mock bool
+
 	// specifies the executor driver to use
 	Driver string
 	// specifies the executor method used to publish logs
@@ -106,6 +109,7 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithUser(s.User),
 		local.WithVelaClient(s.Client),
 		local.WithVersion(s.Version),
+		local.WithMockStdout(s.Mock),
 	)
 }
 
