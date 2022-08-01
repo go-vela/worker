@@ -82,6 +82,13 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
+	if ctn.Privileged && !c.repo.GetTrusted() {
+		logger.Errorf("attempted privileged container from untrusted repo: %s/%s", c.repo.GetFullName(), ctn.Name)
+		retErr := fmt.Errorf("unable to plan step %s: privileged field specified in untrusted repo", ctn.Name)
+
+		return retErr
+	}
+
 	// create the library step object
 	_step := library.StepFromBuildContainer(c.build, ctn)
 	_step.SetStatus(constants.StatusRunning)
