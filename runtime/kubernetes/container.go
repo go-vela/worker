@@ -184,14 +184,14 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 
 	// check if the entrypoint is provided
 	if len(ctn.Entrypoint) > 0 {
-		// add entrypoint to container config
-		container.Args = ctn.Entrypoint
+		// add docker ENTRYPOINT (aka k8s Command) to container config
+		container.Command = ctn.Entrypoint
 	}
 
 	// check if the commands are provided
 	if len(ctn.Commands) > 0 {
-		// add commands to container config
-		container.Args = append(container.Args, ctn.Commands...)
+		// add docker CMD (aka k8s Args) to container config
+		container.Args = ctn.Commands
 	}
 
 	// record the index for this container
