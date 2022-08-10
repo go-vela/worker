@@ -13,6 +13,7 @@ import (
 	"github.com/go-vela/types/constants"
 
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
 )
 
 // Setup represents the configuration necessary for
@@ -23,6 +24,9 @@ type Setup struct {
 	Logger *logrus.Entry
 
 	// Runtime Configuration
+
+	// Mock should only be true for tests.
+	Mock bool
 
 	// specifies the driver to use for the runtime client
 	Driver string
@@ -45,14 +49,23 @@ type Setup struct {
 func (s *Setup) Docker() (Engine, error) {
 	logrus.Trace("creating docker runtime client from setup")
 
-	// create new Docker runtime engine
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime/docker?tab=doc#New
-	return docker.New(
+	opts := []docker.ClientOpt{
 		docker.WithHostVolumes(s.HostVolumes),
 		docker.WithPrivilegedImages(s.PrivilegedImages),
 		docker.WithLogger(s.Logger),
-	)
+	}
+
+	if s.Mock {
+		// create new mock Docker runtime engine
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/runtime/docker?tab=doc#NewMock
+		return docker.NewMock(opts...)
+	}
+
+	// create new Docker runtime engine
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime/docker?tab=doc#New
+	return docker.New(opts...)
 }
 
 // Kubernetes creates and returns a Vela engine capable of
@@ -60,17 +73,26 @@ func (s *Setup) Docker() (Engine, error) {
 func (s *Setup) Kubernetes() (Engine, error) {
 	logrus.Trace("creating kubernetes runtime client from setup")
 
-	// create new Kubernetes runtime engine
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime/kubernetes?tab=doc#New
-	return kubernetes.New(
+	opts := []kubernetes.ClientOpt{
 		kubernetes.WithConfigFile(s.ConfigFile),
 		kubernetes.WithHostVolumes(s.HostVolumes),
 		kubernetes.WithNamespace(s.Namespace),
 		kubernetes.WithPodsTemplate(s.PodsTemplateName, s.PodsTemplateFile),
 		kubernetes.WithPrivilegedImages(s.PrivilegedImages),
 		kubernetes.WithLogger(s.Logger),
-	)
+	}
+
+	if s.Mock {
+		// create new mock Kubernetes runtime engine
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/runtime/kubernetes?tab=doc#NewMock
+		return kubernetes.NewMock(&v1.Pod{}, opts...)
+	}
+
+	// create new Kubernetes runtime engine
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime/kubernetes?tab=doc#New
+	return kubernetes.New(opts...)
 }
 
 // Validate verifies the necessary fields for the

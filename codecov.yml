@@ -55,3 +55,17 @@ comment:
   layout: "reach, diff, flags, files"
   behavior: default
   require_changes: no
+
+# This section tells codecov to ignore certain paths
+# that match this list of path globs.
+#
+# https://docs.codecov.com/docs/codecovyml-reference#ignore
+ignore:
+  # ignore all but client.go and exec.go
+  - "cmd/vela-worker/flags.go"
+  - "cmd/vela-worker/main.go"
+  - "cmd/vela-worker/operate.go"
+  - "cmd/vela-worker/r*.go"
+  - "cmd/vela-worker/s*.go"
+  - "cmd/vela-worker/validate.go"
+  - "cmd/vela-worker/worker.go"
