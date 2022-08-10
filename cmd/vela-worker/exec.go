@@ -71,7 +71,6 @@ func (w *Worker) exec(index int) error {
 		Logger:     logger,
 		Mock:       w.Config.Mock,
 		Driver:     w.Config.Executor.Driver,
-		LogMethod:  w.Config.Executor.LogMethod,
 		MaxLogSize: w.Config.Executor.MaxLogSize,
 		Client:     w.VelaClient,
 		Hostname:   w.Config.API.Address.Hostname(),

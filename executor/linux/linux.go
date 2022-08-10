@@ -32,7 +32,6 @@ type (
 
 		// private fields
 		init        *pipeline.Container
-		logMethod   string
 		maxLogSize  uint
 		build       *library.Build
 		pipeline    *pipeline.Build
@@ -69,7 +68,6 @@ func Equal(a, b *client) bool {
 		a.Hostname == b.Hostname &&
 		a.Version == b.Version &&
 		reflect.DeepEqual(a.init, b.init) &&
-		a.logMethod == b.logMethod &&
 		a.maxLogSize == b.maxLogSize &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
