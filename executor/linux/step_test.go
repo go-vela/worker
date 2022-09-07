@@ -132,10 +132,7 @@ func TestLinux_PlanStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_trustedRepo := testRepo()
 	_user := testUser()
-
-	_trustedRepo.SetTrusted(true)
 
 	gin.SetMode(gin.TestMode)
 
@@ -156,7 +153,6 @@ func TestLinux_PlanStep(t *testing.T) {
 		name      string
 		failure   bool
 		container *pipeline.Container
-		repo      *library.Repo
 	}{
 		{
 			name:    "basic step container",
@@ -170,7 +166,6 @@ func TestLinux_PlanStep(t *testing.T) {
 				Number:      1,
 				Pull:        "not_present",
 			},
-			repo: _repo,
 		},
 		{
 			name:    "step container with nil environment",
@@ -184,43 +179,11 @@ func TestLinux_PlanStep(t *testing.T) {
 				Number:      1,
 				Pull:        "not_present",
 			},
-			repo: _repo,
 		},
 		{
 			name:      "empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
-			repo:      _repo,
-		},
-		{
-			name:    "privileged step from untrusted repo",
-			failure: true,
-			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
-				Directory:   "/vela/src/github.com/github/octocat",
-				Environment: map[string]string{"FOO": "bar"},
-				Image:       "alpine:latest",
-				Name:        "echo",
-				Number:      1,
-				Pull:        "not_present",
-				Privileged:  true,
-			},
-			repo: _repo,
-		},
-		{
-			name:    "privileged step from trusted repo",
-			failure: false,
-			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
-				Directory:   "/vela/src/github.com/github/octocat",
-				Environment: map[string]string{"FOO": "bar"},
-				Image:       "alpine:latest",
-				Name:        "echo",
-				Number:      1,
-				Pull:        "not_present",
-				Privileged:  true,
-			},
-			repo: _trustedRepo,
 		},
 	}
 
@@ -230,7 +193,7 @@ func TestLinux_PlanStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(test.repo),
+				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
