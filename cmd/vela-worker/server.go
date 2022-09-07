@@ -5,6 +5,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 	"os"
 	"strings"
@@ -18,7 +19,7 @@ import (
 
 // server is a helper function to listen and serve
 // traffic for web and API requests for the Worker.
-func (w *Worker) server() (http.Handler, bool) {
+func (w *Worker) server() (http.Handler, *tls.Config) {
 	// log a message indicating the setup of the server handlers
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Trace
@@ -56,10 +57,35 @@ func (w *Worker) server() (http.Handler, bool) {
 			logrus.Fatal("unable to run with TLS: No certificate provided")
 		}
 
-		return _server, true
+		// define TLS config struct for server start up
+		tlsCfg := &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+
+		// if a TLS minimum version is supplied, set that in the config
+		if len(w.Config.TLSMinVersion) > 0 {
+			var tlsVersion uint16
+
+			switch w.Config.TLSMinVersion {
+			case "1.0":
+				tlsVersion = tls.VersionTLS10
+			case "1.1":
+				tlsVersion = tls.VersionTLS11
+			case "1.2":
+				tlsVersion = tls.VersionTLS12
+			case "1.3":
+				tlsVersion = tls.VersionTLS13
+			default:
+				logrus.Fatal("invalid TLS minimum version supplied")
+			}
+
+			tlsCfg.MinVersion = tlsVersion
+		}
+
+		return _server, tlsCfg
 	}
 
 	// else serve over http
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
-	return _server, false
+	return _server, nil
 }
