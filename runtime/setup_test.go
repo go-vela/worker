@@ -11,30 +11,56 @@ import (
 )
 
 func TestRuntime_Setup_Docker(t *testing.T) {
-	// setup types
-	_setup := &Setup{
-		Driver: constants.DriverDocker,
+	tests := []struct {
+		name string
+		mock bool
+	}{
+		{name: "standard", mock: false},
+		{name: "mocked", mock: true},
 	}
 
-	// run test
-	_, err := _setup.Docker()
-	if err != nil {
-		t.Errorf("Docker returned err: %v", err)
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_setup := &Setup{
+				Mock:   test.mock,
+				Driver: constants.DriverDocker,
+			}
+
+			_, err := _setup.Docker()
+			if err != nil {
+				t.Errorf("Docker returned err: %v", err)
+			}
+		})
 	}
 }
 
 func TestRuntime_Setup_Kubernetes(t *testing.T) {
-	// setup types
-	_setup := &Setup{
-		Driver:     constants.DriverKubernetes,
-		ConfigFile: "testdata/config",
-		Namespace:  "docker",
+	tests := []struct {
+		name string
+		mock bool
+	}{
+		{name: "standard", mock: false},
+		{name: "mocked", mock: true},
 	}
 
-	// run test
-	_, err := _setup.Kubernetes()
-	if err != nil {
-		t.Errorf("Kubernetes returned err: %v", err)
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// setup types
+			_setup := &Setup{
+				Mock:       test.mock,
+				Driver:     constants.DriverKubernetes,
+				ConfigFile: "testdata/config",
+				Namespace:  "docker",
+			}
+
+			_, err := _setup.Kubernetes()
+			if err != nil {
+				t.Errorf("Kubernetes returned err: %v", err)
+			}
+		})
 	}
 }
 
