@@ -89,6 +89,7 @@ func flags() []cli.Flag {
 			EnvVars: []string{"WORKER_SERVER_TLS_MIN_VERSION", "VELA_SERVER_TLS_MIN_VERSION", "SERVER_TLS_MIN_VERSION"},
 			Name:    "server.tls-min-version",
 			Usage:   "optional TLS minimum version requirement",
+			Value:   "1.2",
 		},
 	}
 
