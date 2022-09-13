@@ -58,9 +58,7 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 		}
 
 		// define TLS config struct for server start up
-		tlsCfg := &tls.Config{
-			MinVersion: tls.VersionTLS12,
-		}
+		tlsCfg := new(tls.Config)
 
 		// if a TLS minimum version is supplied, set that in the config
 		if len(w.Config.TLSMinVersion) > 0 {
