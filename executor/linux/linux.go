@@ -49,7 +49,6 @@ type (
 		err  error
 	}
 
-	//nolint:structcheck // ignore false positive
 	svc struct {
 		client *client
 	}
