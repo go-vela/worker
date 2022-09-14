@@ -7,6 +7,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-vela/types/pipeline"
@@ -80,8 +81,8 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1?tab=doc#ObjectMeta
 	c.Pod.ObjectMeta = metav1.ObjectMeta{
-		Name:        b.ID,
-		Namespace:   c.config.Namespace, // this is used by the podTracker
+		Name:        strings.ToLower(b.ID), // must be lowercase, see https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+		Namespace:   c.config.Namespace,    // this is used by the podTracker
 		Labels:      labels,
 		Annotations: c.PipelinePodTemplate.Metadata.Annotations,
 	}

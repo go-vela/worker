@@ -160,7 +160,7 @@ var (
 
 	_stages = &pipeline.Build{
 		Version: "1",
-		ID:      "github-octocat-1",
+		ID:      "github-Octocat-1",
 		Services: pipeline.ContainerSlice{
 			{
 				ID:          "service-github-octocat-1-postgres",
@@ -224,7 +224,7 @@ var (
 
 	_steps = &pipeline.Build{
 		Version: "1",
-		ID:      "github-octocat-1",
+		ID:      "github-Octocat-1",
 		Services: pipeline.ContainerSlice{
 			{
 				ID:          "service-github-octocat-1-postgres",

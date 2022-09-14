@@ -319,6 +319,11 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 				t.Errorf("Pod's pipeline label is %v, want %v", pipelineLabel, test.pipeline.ID)
 			}
 
+			// make sure that worker-defined name is lowercase for the Pod
+			if !reflect.DeepEqual(_engine.Pod.ObjectMeta.Name, "github-octocat-1") {
+				t.Errorf("Pod's ObjectMeta.Name is %v, want github-octocat-1", _engine.Pod.ObjectMeta.Name)
+			}
+
 			switch test.wantFromTemplate.(type) {
 			case velav1alpha1.PipelinePodTemplateMeta:
 				want := test.wantFromTemplate.(velav1alpha1.PipelinePodTemplateMeta)
