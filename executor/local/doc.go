@@ -7,5 +7,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/executor/local"
+//	import "github.com/go-vela/worker/executor/local"
 package local

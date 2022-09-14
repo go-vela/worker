@@ -7,5 +7,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/internal/message"
+//	import "github.com/go-vela/worker/internal/message"
 package message

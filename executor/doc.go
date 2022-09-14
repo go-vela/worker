@@ -8,5 +8,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/executor"
+//	import "github.com/go-vela/worker/executor"
 package executor
