@@ -7,10 +7,10 @@
 //
 // More information:
 //
-//   * https://golang.org/doc/go1.4#internalpackages
-//   * https://docs.google.com/document/d/1e8kOo3r51b2BWtTs_1uADIA5djfXhPT36s6eHVRIvaU/edit
+//   - https://golang.org/doc/go1.4#internalpackages
+//   - https://docs.google.com/document/d/1e8kOo3r51b2BWtTs_1uADIA5djfXhPT36s6eHVRIvaU/edit
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/internal"
+//	import "github.com/go-vela/worker/internal"
 package internal

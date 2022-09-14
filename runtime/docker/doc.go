@@ -7,5 +7,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/runtime/docker"
+//	import "github.com/go-vela/worker/runtime/docker"
 package docker

@@ -7,5 +7,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/internal/build"
+//	import "github.com/go-vela/worker/internal/build"
 package build
