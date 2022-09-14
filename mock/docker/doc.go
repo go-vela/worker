@@ -8,5 +8,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/mock/docker"
+//	import "github.com/go-vela/worker/mock/docker"
 package docker

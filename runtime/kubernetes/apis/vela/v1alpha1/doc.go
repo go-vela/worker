@@ -11,5 +11,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/runtime/kubernetes/apis/v1alpha1"
+//	import "github.com/go-vela/worker/runtime/kubernetes/apis/v1alpha1"
 package v1alpha1

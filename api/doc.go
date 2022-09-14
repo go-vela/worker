@@ -6,5 +6,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/api"
+//	import "github.com/go-vela/worker/api"
 package api

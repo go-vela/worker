@@ -7,5 +7,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/internal/image"
+//	import "github.com/go-vela/worker/internal/image"
 package image

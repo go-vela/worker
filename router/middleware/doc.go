@@ -7,5 +7,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/router/middleware"
+//	import "github.com/go-vela/worker/router/middleware"
 package middleware
