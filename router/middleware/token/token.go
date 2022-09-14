@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-// nolint: godot // ignore comment ending in period
-//
 // Retrieve gets the token from the provided request http.Request
 // to be parsed and validated. This is called on every request
 // to enable capturing the user making the request and validating
@@ -19,6 +17,7 @@ import (
 // authentication to Vela are supported:
 //
 // * Bearer token in `Authorization` header
+// .
 func Retrieve(r *http.Request) (string, error) {
 	// get the token from the `Authorization` header
 	token := r.Header.Get("Authorization")

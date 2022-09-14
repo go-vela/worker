@@ -7,5 +7,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/internal/volume"
+//	import "github.com/go-vela/worker/internal/volume"
 package volume

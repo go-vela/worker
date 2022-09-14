@@ -12,8 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// nolint: godot // ignore period at end for comment ending in a list
-//
 // New creates and returns a Vela engine capable of
 // integrating with the configured executor.
 //
@@ -21,6 +19,7 @@ import (
 //
 // * linux
 // * local
+// .
 func New(s *Setup) (Engine, error) {
 	// validate the setup being provided
 	//

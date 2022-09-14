@@ -6,5 +6,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/mock/worker"
+//	import "github.com/go-vela/worker/mock/worker"
 package worker

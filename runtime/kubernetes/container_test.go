@@ -646,7 +646,7 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 
 			func() {
 				defer func() {
-					// nolint: errcheck // repeat close() panics (otherwise it won't)
+					//nolint:errcheck // repeat close() panics (otherwise it won't)
 					recover()
 				}()
 

@@ -6,8 +6,8 @@ package linux
 
 import (
 	"context"
-	"io/ioutil"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 
@@ -566,7 +566,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 }
 
 func TestLinux_getSecretValues(t *testing.T) {
-	fileSecret, err := ioutil.ReadFile("./testdata/step/secret_text.txt")
+	fileSecret, err := os.ReadFile("./testdata/step/secret_text.txt")
 	if err != nil {
 		t.Errorf("unable to read from test data file secret. Err: %v", err)
 	}

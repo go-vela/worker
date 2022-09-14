@@ -49,7 +49,7 @@ type (
 		err  error
 	}
 
-	// nolint: structcheck // ignore false positive
+	//nolint:structcheck // ignore false positive
 	svc struct {
 		client *client
 	}
@@ -86,7 +86,7 @@ func Equal(a, b *client) bool {
 
 // New returns an Executor implementation that integrates with a Linux instance.
 //
-// nolint: revive // ignore unexported type as it is intentional
+//nolint:revive // ignore unexported type as it is intentional
 func New(opts ...Opt) (*client, error) {
 	// create new Linux client
 	c := new(client)
