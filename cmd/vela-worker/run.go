@@ -130,6 +130,8 @@ func run(c *cli.Context) error {
 				Cert: c.String("server.cert"),
 				Key:  c.String("server.cert-key"),
 			},
+			// TLS minimum version enforced
+			TLSMinVersion: c.String("server.tls-min-version"),
 		},
 		Executors: make(map[int]executor.Engine),
 	}

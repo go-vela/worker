@@ -46,16 +46,17 @@ type (
 
 	// Config represents the worker configuration.
 	Config struct {
-		Mock        bool // Mock should only be true for tests
-		API         *API
-		Build       *Build
-		CheckIn     time.Duration
-		Executor    *executor.Setup
-		Logger      *Logger
-		Queue       *queue.Setup
-		Runtime     *runtime.Setup
-		Server      *Server
-		Certificate *Certificate
+		Mock          bool // Mock should only be true for tests
+		API           *API
+		Build         *Build
+		CheckIn       time.Duration
+		Executor      *executor.Setup
+		Logger        *Logger
+		Queue         *queue.Setup
+		Runtime       *runtime.Setup
+		Server        *Server
+		Certificate   *Certificate
+		TLSMinVersion string
 	}
 
 	// Worker represents all configuration and
