@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -54,7 +53,7 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 		}
 	} else {
 		// discard output from image pull
-		_, err = io.Copy(ioutil.Discard, reader)
+		_, err = io.Copy(io.Discard, reader)
 		if err != nil {
 			return err
 		}

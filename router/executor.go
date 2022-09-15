@@ -10,8 +10,6 @@ import (
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 
-// nolint: godot // ignore comment ending in period
-//
 // ExecutorHandlers extends the provided base router group
 // by adding a collection of endpoints for handling
 // executor related requests.
@@ -22,6 +20,7 @@ import (
 // DELETE  /api/v1/executors/:executor/build/cancel
 // GET     /api/v1/executors/:executor/pipeline
 // GET     /api/v1/executors/:executor/repo
+// .
 func ExecutorHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling executors related requests
 	//

@@ -192,7 +192,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	for _, _stage := range c.pipeline.Stages {
 		// TODO: remove hardcoded reference
 		//
-		// nolint: goconst // ignore making a constant for now
+		//nolint:goconst // ignore making a constant for now
 		if _stage.Name == "init" {
 			continue
 		}

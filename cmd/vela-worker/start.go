@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -34,8 +35,9 @@ func (w *Worker) Start() error {
 	httpHandler, tls := w.server()
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", w.Config.API.Address.Port()),
-		Handler: httpHandler,
+		Addr:              fmt.Sprintf(":%s", w.Config.API.Address.Port()),
+		Handler:           httpHandler,
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 
 	// goroutine to check for signals to gracefully finish all functions

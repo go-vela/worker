@@ -36,6 +36,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// send API call to update the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
+	//nolint:contextcheck // ignore passing context
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
@@ -162,6 +163,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 		c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
 
+		//nolint:contextcheck // ignore passing context
 		s, err := c.secret.pull(secret)
 		if err != nil {
 			c.err = err
@@ -189,7 +191,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 // AssembleBuild prepares the containers within a build for execution.
 //
-// nolint: funlen // ignore function length due to comments and logging messages
+//nolint:funlen // ignore function length due to comments and logging messages
 func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -268,7 +270,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	for _, s := range c.pipeline.Stages {
 		// TODO: remove hardcoded reference
 		//
-		// nolint: goconst // ignore making a constant for now
+		//nolint:goconst // ignore making a constant for now
 		if s.Name == "init" {
 			continue
 		}

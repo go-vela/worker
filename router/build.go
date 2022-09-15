@@ -10,14 +10,13 @@ import (
 	"github.com/go-vela/worker/api"
 )
 
-// nolint: godot // ignore comment ending in period
-//
 // BuildHandlers extends the provided base router group
 // by adding a collection of endpoints for handling
 // build related requests.
 //
 // GET     /api/v1/executors/:executor/build
 // DELETE  /api/v1/executors/:executor/build/cancel
+// .
 func BuildHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling build related requests
 	//

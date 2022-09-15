@@ -75,7 +75,7 @@ func Equal(a, b *client) bool {
 
 // New returns an Executor implementation that integrates with the local system.
 //
-// nolint: revive // ignore unexported type as it is intentional
+//nolint:revive // ignore unexported type as it is intentional
 func New(opts ...Opt) (*client, error) {
 	// create new local client
 	c := new(client)

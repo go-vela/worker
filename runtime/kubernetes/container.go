@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -267,7 +266,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		// peek at container logs from the stream
 		bytes, err := reader.Peek(5)
 		if err != nil {
-			// nolint: nilerr // ignore nil return
+			//nolint:nilerr // ignore nil return
 			// skip so we resend API call to capture stream
 			return false, nil
 		}
@@ -275,7 +274,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 		// check if we have container logs from the stream
 		if len(bytes) > 0 {
 			// set the logs to the reader
-			logs = ioutil.NopCloser(reader)
+			logs = io.NopCloser(reader)
 			return true, nil
 		}
 
