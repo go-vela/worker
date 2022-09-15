@@ -4,8 +4,6 @@
 
 package docker
 
-// nolint: godot // ignore comment ending in a list
-//
 // Version represents the supported Docker API version for the mock.
 //
 // The Docker API version is pinned to ensure compatibility between the
@@ -19,11 +17,13 @@ package docker
 //
 // * the Docker version of v20.10 has a maximum API version of v1.41
 // * to maintain n-1, the API version is pinned to v1.40
+// .
 const Version = "v1.40"
 
 // New returns a client that is capable of handling
 // Docker client calls and returning stub responses.
-// nolint:revive // ignore unexported type as it is intentional
+//
+//nolint:revive // ignore unexported type as it is intentional
 func New() (*mock, error) {
 	return &mock{
 		ConfigService:       ConfigService{},

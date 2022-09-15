@@ -7,8 +7,8 @@ package linux
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -290,7 +290,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			file, _ := ioutil.ReadFile(test.pipeline)
+			file, _ := os.ReadFile(test.pipeline)
 
 			p, _, err := compiler.
 				Duplicate().

@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -90,7 +89,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, image string) (t
 		return types.ImageInspect{},
 			nil,
 			errdefs.NotFound(
-				// nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:stylecheck // messsage is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
 			)
 	}
@@ -165,7 +164,7 @@ func (i *ImageService) ImagePull(ctx context.Context, image string, options type
 		!strings.Contains(image, "ignorenotfound") {
 		return nil,
 			errdefs.NotFound(
-				// nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:stylecheck // messsage is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
 			)
 	}
@@ -176,13 +175,13 @@ func (i *ImageService) ImagePull(ctx context.Context, image string, options type
 		!strings.Contains(image, "ignore-not-found") {
 		return nil,
 			errdefs.NotFound(
-				// nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:stylecheck // messsage is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
 			)
 	}
 
 	// create response object to return
-	response := ioutil.NopCloser(
+	response := io.NopCloser(
 		bytes.NewReader(
 			[]byte(
 				fmt.Sprintf("%s\n%s\n%s\n%s\n",

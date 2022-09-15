@@ -57,7 +57,7 @@ func TestExecutor_FromContext(t *testing.T) {
 	}{
 		{
 			name: "valid executor in context",
-			// nolint: staticcheck,revive // ignore using string with context value
+			//nolint:staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, _engine),
 			want:    _engine,
 		},
@@ -68,7 +68,7 @@ func TestExecutor_FromContext(t *testing.T) {
 		},
 		{
 			name: "invalid executor in context",
-			// nolint: staticcheck,revive // ignore using string with context value
+			//nolint:staticcheck,revive // ignore using string with context value
 			context: context.WithValue(context.Background(), key, "foo"),
 			want:    nil,
 		},
@@ -185,7 +185,7 @@ func TestExecutor_WithContext(t *testing.T) {
 		t.Errorf("unable to create linux engine: %v", err)
 	}
 
-	// nolint: staticcheck,revive // ignore using string with context value
+	//nolint:staticcheck,revive // ignore using string with context value
 	want := context.WithValue(context.Background(), key, _engine)
 
 	// run test

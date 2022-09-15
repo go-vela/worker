@@ -55,6 +55,7 @@ func (w *Worker) operate(ctx context.Context) error {
 				registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 
 				// register or update the worker
+				//nolint:contextcheck // ignore passing context
 				err = w.checkIn(registryWorker)
 				if err != nil {
 					logrus.Error(err)
@@ -74,6 +75,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	// setup the queue
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
+	//nolint:contextcheck // ignore passing context
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		return err
@@ -107,7 +109,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					// exec operator subprocess to poll and execute builds
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
-					// nolint: contextcheck // ignore passing context
+					//nolint:contextcheck // ignore passing context
 					err = w.exec(id)
 					if err != nil {
 						// log the error received from the executor
