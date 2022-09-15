@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/docker/distribution v2.8.1+incompatible
-	github.com/docker/docker v20.10.10+incompatible
+	github.com/docker/docker v20.10.18+incompatible+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-vela/sdk-go v0.14.0
