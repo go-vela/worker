@@ -36,6 +36,8 @@ func init() {
 }
 
 func main() {
+	fmt.Fprintf(os.Stdout, "%s\n", "running custom worker :::002")
+
 	// capture application version information
 	v := version.New()
 

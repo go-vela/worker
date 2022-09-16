@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -73,12 +74,14 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 
 // RunContainer creates and starts the pipeline container.
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
-	c.Logger.Tracef("running container %s", ctn.ID)
+	c.Logger.Tracef("running container %s with image %s", ctn.ID, ctn.Image)
 	// parse image from step
 	_image, err := image.ParseWithError(ctn.Image)
 	if err != nil {
 		return err
 	}
+
+	c.Logger.Tracef("dlv starting container DOCKER_DEFAULT_PLATFORM: %s", os.Getenv("DOCKER_DEFAULT_PLATFORM"))
 
 	// set the pod container image to the parsed step image
 	c.Pod.Spec.Containers[c.containersLookup[ctn.ID]].Image = _image
@@ -94,6 +97,8 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		metav1.PatchOptions{},
 	)
 	if err != nil {
+
+		c.Logger.Tracef("dlv error occurred in RunContainer Corev1.Pods %s", err.Error())
 		return err
 	}
 
@@ -103,6 +108,10 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 // SetupContainer prepares the image for the pipeline container.
 func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("setting up for container %s", ctn.ID)
+
+	if os.Getenv("VELA_K8S_PAUSE_IMAGE") != "" {
+		pauseImage = os.Getenv("VELA_K8S_PAUSE_IMAGE")
+	}
 
 	// create the container object for the pod
 	//
@@ -129,6 +138,8 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		SecurityContext: &v1.SecurityContext{},
 	}
 
+	c.Logger.Tracef("setting pull policy for container %s", ctn.ID)
+
 	// handle the container pull policy (This cannot be updated like the image can)
 	switch ctn.Pull {
 	case constants.PullAlways:
@@ -151,6 +162,8 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		container.ImagePullPolicy = v1.PullIfNotPresent
 	}
 
+	c.Logger.Tracef("setting volume mounts for container %s", ctn.ID)
+
 	// fill in the VolumeMounts including workspaceMount
 	volumeMounts, err := c.setupVolumeMounts(ctx, ctn)
 	if err != nil {
@@ -170,10 +183,16 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	}
 
 	if c.PipelinePodTemplate != nil && c.PipelinePodTemplate.Spec.Container != nil {
+
+		c.Logger.Tracef("setting security context for container %s", ctn.ID)
+
 		securityContext := c.PipelinePodTemplate.Spec.Container.SecurityContext
 
 		// TODO: add more SecurityContext options (runAsUser, runAsNonRoot, sysctls)
 		if securityContext != nil && securityContext.Capabilities != nil {
+
+			c.Logger.Tracef("setting capabilities for container %s", ctn.ID)
+
 			container.SecurityContext.Capabilities = securityContext.Capabilities
 		}
 	}
@@ -195,6 +214,8 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 
 	// record the index for this container
 	c.containersLookup[ctn.ID] = len(c.Pod.Spec.Containers)
+
+	c.Logger.Tracef("appending container to pod spec %s", ctn.ID)
 
 	// add the container definition to the pod spec
 	//
@@ -357,7 +378,6 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 			tracker.terminatedOnce.Do(func() {
 				p.Logger.Debugf("container completed: %s in pod %s, %v", cst.Name, p.TrackedPod, cst)
 
-				// let WaitContainer know the container is terminated
 				close(tracker.Terminated)
 			})
 		}

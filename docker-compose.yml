@@ -17,6 +17,11 @@ services:
       dockerfile: Dockerfile
     container_name: worker
     image: worker:local
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
     networks:
       - vela
     environment:

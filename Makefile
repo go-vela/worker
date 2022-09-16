@@ -137,6 +137,50 @@ build:
 		-o release/vela-worker \
 		github.com/go-vela/worker/cmd/vela-worker
 
+# The `build-linux` target is intended to compile the
+# Go source code into a linux compatible (MacOS) binary.
+#
+# Usage: `make build-linux`
+.PHONY: build-linux
+build-linux:
+	@echo
+	@echo "### Building release/linux/amd64/vela-worker binary"
+	GOOS=linux CGO_ENABLED=0 GOARCH=amd64 \
+		go build -a \
+		-ldflags '${LD_FLAGS}' \
+		-o release/linux/amd64/vela-worker \
+		github.com/go-vela/worker/cmd/vela-worker
+	@echo
+	@echo "### Building release/linux/arm64/vela-worker binary"
+	GOOS=linux CGO_ENABLED=0 GOARCH=arm64 \
+		go build -a \
+		-ldflags '${LD_FLAGS}' \
+		-o release/linux/arm64/vela-worker \
+		github.com/go-vela/worker/cmd/vela-worker
+
+
+# The `build-darwin` target is intended to compile the
+# Go source code into a darwin compatible (MacOS) binary.
+#
+# Usage: `make build-darwin`
+.PHONY: build-darwin
+build-darwin:
+	@echo
+	@echo "### Building release/darwin/amd64/vela-worker binary"
+	GOOS=darwin CGO_ENABLED=0 GOARCH=amd64 \
+		go build -a \
+		-ldflags '${LD_FLAGS}' \
+		-o release/darwin/amd64/vela-worker \
+		github.com/go-vela/worker/cmd/vela-worker
+	@echo
+	@echo "### Building release/darwin/arm64/vela-worker binary"
+	GOOS=darwin CGO_ENABLED=0 GOARCH=arm64 \
+		go build -a \
+		-ldflags '${LD_FLAGS}' \
+		-o release/darwin/arm64/vela-worker \
+		github.com/go-vela/worker/cmd/vela-worker
+
+
 # The `build-static` target is intended to compile
 # the Go source code into a statically linked binary.
 #

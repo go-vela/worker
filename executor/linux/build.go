@@ -409,8 +409,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 	}
 
+	c.Logger.Trace("executing steps")
+
 	// execute the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {
+
+		c.Logger.Tracef("executing step %s", _step.Name)
+
 		// TODO: remove hardcoded reference
 		if _step.Name == "init" {
 			continue
@@ -420,6 +425,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
 		if step.Skip(_step, c.build, c.repo) {
+
+			c.Logger.Tracef("skipping step %s", _step.Name)
+
 			continue
 		}
 
@@ -437,6 +445,8 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to execute step: %w", c.err)
 		}
 	}
+
+	c.Logger.Trace("done executing steps")
 
 	// create an error group with the context for each stage
 	//

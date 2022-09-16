@@ -15,5 +15,7 @@ EXPOSE 8080
 ENV GODEBUG=netdns=go
 
 ADD release/vela-worker /bin/
+# ADD release/darwin/arm64/vela-worker /bin/
+# ADD release/linux/arm64/vela-worker /bin/
 
 CMD ["/bin/vela-worker"]

@@ -14,8 +14,13 @@ import (
 	"github.com/go-vela/types/pipeline"
 )
 
+var (
+	// pauseImage = "kubernetes/pause:latest"
+	// pauseImage = "registry.k8s.io/pause:3.6"
+	pauseImage = "docker.target.com/app/davidvader/kubernetes:pause-1"
+)
+
 const (
-	pauseImage = "kubernetes/pause:latest"
 	imagePatch = `
 {
   "spec": {
