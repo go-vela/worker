@@ -110,7 +110,14 @@ func (w *Worker) operate(ctx context.Context) error {
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
 					//nolint:contextcheck // ignore passing context
-					err = w.exec(id)
+
+					// capture an item from the queue
+					item, err := w.Queue.Pop(context.Background())
+					if err != nil {
+						return err
+					}
+
+					err = w.exec(id, item)
 					if err != nil {
 						// log the error received from the executor
 						//

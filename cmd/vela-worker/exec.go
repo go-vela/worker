@@ -8,6 +8,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/go-vela/types"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -19,21 +20,16 @@ import (
 // and execute Vela pipelines for the Worker.
 //
 //nolint:nilerr // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int) error {
+func (w *Worker) exec(index int, item *types.Item) error {
+	// invalid item
+	if item == nil {
+		return nil
+	}
+
 	var err error
 
 	// setup the version
 	v := version.New()
-
-	// capture an item from the queue
-	item, err := w.Queue.Pop(context.Background())
-	if err != nil {
-		return err
-	}
-
-	if item == nil {
-		return nil
-	}
 
 	// create logger with extra metadata
 	//
