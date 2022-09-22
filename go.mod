@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-vela/sdk-go v0.14.0
 	github.com/go-vela/server v0.14.3
-	github.com/go-vela/types v0.14.0
+	github.com/go-vela/types v0.14.1-0.20220916144841-30b9459c7a53
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
@@ -99,7 +99,7 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
 	go.starlark.net v0.0.0-20220817180228-f738f5508c12 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
