@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-vela/types"
-	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/worker/router/middleware/executor"
@@ -99,22 +98,4 @@ func CancelBuild(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, build)
-}
-
-// ExecuteBuild represents the API handler to execute a
-// build on an executor.
-func ExecuteBuild(c *gin.Context) {
-	logrus.Info("executing build")
-	// e := executor.Retrieve(c)
-
-	// build, err := e.CancelBuild()
-	// if err != nil {
-	// 	msg := fmt.Errorf("unable to cancel build: %w", err).Error()
-
-	// 	c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
-
-	// 	return
-	// }
-
-	// c.JSON(http.StatusOK, build)
 }
