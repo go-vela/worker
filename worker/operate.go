@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
-package main
+package worker
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 // operate is a helper function to initiate all
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
-func (w *Worker) operate(ctx context.Context) error {
+func (w *types.Worker) operate(ctx context.Context) error {
 	var err error
 
 	// setup the client
@@ -106,17 +106,16 @@ func (w *Worker) operate(ctx context.Context) error {
 					}).Info("Completed looping on worker executor")
 					return nil
 				default:
-					// exec operator subprocess to poll and execute builds
-					// (do not pass the context to avoid errors in one
-					// executor+build inadvertently canceling other builds)
-					//nolint:contextcheck // ignore passing context
-
 					// capture an item from the queue
 					item, err := w.Queue.Pop(context.Background())
 					if err != nil {
 						return err
 					}
 
+					// exec operator subprocess execute build from the queue
+					// (do not pass the context to avoid errors in one
+					// executor+build inadvertently canceling other builds)
+					//nolint:contextcheck // ignore passing context
 					err = w.exec(id, item)
 					if err != nil {
 						// log the error received from the executor

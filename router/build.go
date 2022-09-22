@@ -32,10 +32,5 @@ func BuildHandlers(base *gin.RouterGroup) {
 		//
 		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.DELETE
 		build.DELETE("/cancel", api.CancelBuild)
-
-		// add an endpoint for executing a build
-		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.DELETE
-		build.POST("/execute", api.ExecuteBuild)
 	}
 }
