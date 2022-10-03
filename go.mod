@@ -8,9 +8,9 @@ require (
 	github.com/docker/docker v20.10.18+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/go-vela/sdk-go v0.15.0-rc1
-	github.com/go-vela/server v0.15.0-rc1
-	github.com/go-vela/types v0.15.0-rc1
+	github.com/go-vela/sdk-go v0.15.0-rc2
+	github.com/go-vela/server v0.15.0-rc2
+	github.com/go-vela/types v0.15.0-rc2
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
@@ -97,9 +97,9 @@ require (
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
-	go.starlark.net v0.0.0-20220926145019-14b050677505 // indirect
-	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
-	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
+	go.starlark.net v0.0.0-20220928063852-5fccb4daaf6d // indirect
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/net v0.0.0-20221002022538-bcab6841153b // indirect
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
