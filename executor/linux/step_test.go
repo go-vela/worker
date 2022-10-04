@@ -145,7 +145,7 @@ func TestLinux_PlanStep(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -154,11 +154,13 @@ func TestLinux_PlanStep(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-basic step container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -172,6 +174,7 @@ func TestLinux_PlanStep(t *testing.T) {
 		{
 			name:    "docker-step container with nil environment",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -185,6 +188,7 @@ func TestLinux_PlanStep(t *testing.T) {
 		{
 			name:      "docker-empty step container",
 			failure:   true,
+			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 	}
@@ -196,7 +200,7 @@ func TestLinux_PlanStep(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -236,7 +240,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -248,11 +252,13 @@ func TestLinux_ExecStep(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-init step container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -266,6 +272,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		{
 			name:    "docker-basic step container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -279,6 +286,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		{
 			name:    "docker-detached step container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Detach:      true,
@@ -293,6 +301,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		{
 			name:    "docker-step container with image not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -306,6 +315,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		{
 			name:      "docker-empty step container",
 			failure:   true,
+			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 	}
@@ -317,7 +327,7 @@ func TestLinux_ExecStep(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -367,8 +377,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
-
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -377,12 +386,14 @@ func TestLinux_StreamStep(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		logs      *library.Log
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-init step container",
 			failure: false,
+			runtime: _docker,
 			logs:    _logs,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -397,6 +408,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		{
 			name:    "docker-basic step container",
 			failure: false,
+			runtime: _docker,
 			logs:    _logs,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -411,6 +423,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		{
 			name:    "docker-step container with name not found",
 			failure: true,
+			runtime: _docker,
 			logs:    _logs,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_notfound",
@@ -425,6 +438,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		{
 			name:      "docker-empty step container",
 			failure:   true,
+			runtime:   _docker,
 			logs:      _logs,
 			container: new(pipeline.Container),
 		},
@@ -438,7 +452,7 @@ func TestLinux_StreamStep(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithMaxLogSize(10),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -483,7 +497,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -492,11 +506,13 @@ func TestLinux_DestroyStep(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-init step container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -510,6 +526,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 		{
 			name:    "docker-basic step container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -523,6 +540,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 		{
 			name:    "docker-step container with ignoring name not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_ignorenotfound",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -542,7 +560,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
