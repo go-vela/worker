@@ -9,7 +9,6 @@ import (
 	"errors"
 	"flag"
 	"net/http/httptest"
-	"path/filepath"
 	"sync"
 	"testing"
 
@@ -164,9 +163,7 @@ func TestLinux_CreateStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		name := filepath.Join(test.runtime.Driver(), test.name)
-
-		t.Run(name, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
@@ -176,14 +173,14 @@ func TestLinux_CreateStage(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create %s executor engine: %v", name, err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if len(test.stage.Name) > 0 {
 				// run create to init steps to be created properly
 				err = _engine.CreateBuild(context.Background())
 				if err != nil {
-					t.Errorf("unable to create %s build: %v", name, err)
+					t.Errorf("unable to create %s build: %v", test.name, err)
 				}
 			}
 
@@ -191,14 +188,14 @@ func TestLinux_CreateStage(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("%s CreateStage should have returned err", name)
+					t.Errorf("%s CreateStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("%s CreateStage returned err: %v", name, err)
+				t.Errorf("%s CreateStage returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -393,9 +390,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		name := filepath.Join(test.runtime.Driver(), test.name)
-
-		t.Run(name, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
@@ -405,21 +400,21 @@ func TestLinux_PlanStage(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create %s executor engine: %v", name, err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.PlanStage(context.Background(), test.stage, test.stageMap)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("%s PlanStage should have returned err", name)
+					t.Errorf("%s PlanStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("%s PlanStage returned err: %v", name, err)
+				t.Errorf("%s PlanStage returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -579,9 +574,7 @@ func TestLinux_ExecStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		name := filepath.Join(test.runtime.Driver(), test.name)
-
-		t.Run(name, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			stageMap := new(sync.Map)
 			stageMap.Store("echo", make(chan error, 1))
 
@@ -595,21 +588,21 @@ func TestLinux_ExecStage(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create %s executor engine: %v", name, err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.ExecStage(context.Background(), test.stage, stageMap)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("%s ExecStage should have returned err", name)
+					t.Errorf("%s ExecStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("%s ExecStage returned err: %v", name, err)
+				t.Errorf("%s ExecStage returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -689,9 +682,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		name := filepath.Join(test.runtime.Driver(), test.name)
-
-		t.Run(name, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
@@ -701,21 +692,21 @@ func TestLinux_DestroyStage(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create %s executor engine: %v", name, err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.DestroyStage(context.Background(), test.stage)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("%s DestroyStage should have returned err", name)
+					t.Errorf("%s DestroyStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("%s DestroyStage returned err: %v", name, err)
+				t.Errorf("%s DestroyStage returned err: %v", test.name, err)
 			}
 		})
 	}
