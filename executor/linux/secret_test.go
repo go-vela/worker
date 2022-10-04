@@ -402,11 +402,23 @@ func TestLinux_Secret_exec(t *testing.T) {
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic secrets pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/secrets/basic.yml",
+		},
+		{
 			name:     "docker-pipeline with secret name not found",
 			failure:  true,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
+		//{
+		//	name:     "kubernetes-pipeline with secret name not found",
+		//	failure:  true, // FIXME:  make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime:  constants.DriverKubernetes,
+		//	pipeline: "testdata/build/secrets/name_notfound.yml",
+		//},
 	}
 
 	// run tests
