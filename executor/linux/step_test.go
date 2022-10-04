@@ -8,21 +8,102 @@ import (
 	"context"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/sdk-go/vela"
-
+	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
+
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// https://github.com/go-vela/worker/blob/main/runtime/kubernetes/kubernetes_test.go#L83
+var _pod = &v1.Pod{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "github-octocat-1",
+		Namespace: "test",
+		Labels: map[string]string{
+			"pipeline": "github-octocat-1",
+		},
+	},
+	TypeMeta: metav1.TypeMeta{
+		APIVersion: "v1",
+		Kind:       "Pod",
+	},
+	Status: v1.PodStatus{
+		Phase: v1.PodRunning,
+		ContainerStatuses: []v1.ContainerStatus{
+			{
+				Name: "step-github-octocat-1-clone",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "target/vela-git:v0.6.0",
+			},
+			{
+				Name: "step-github-octocat-1-echo",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "alpine:latest",
+			},
+		},
+	},
+	Spec: v1.PodSpec{
+		Containers: []v1.Container{
+			{
+				Name:            "step-github-octocat-1-clone",
+				Image:           "target/vela-git:v0.6.0",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "step-github-octocat-1-echo",
+				Image:           "alpine:latest",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "service-github-octocat-1-postgres",
+				Image:           "postgres:12-alpine",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+		},
+		HostAliases: []v1.HostAlias{
+			{
+				IP: "127.0.0.1",
+				Hostnames: []string{
+					"postgres.local",
+					"echo.local",
+				},
+			},
+		},
+		Volumes: []v1.Volume{
+			{
+				Name: "github-octocat-1",
+				VolumeSource: v1.VolumeSource{
+					EmptyDir: &v1.EmptyDirVolumeSource{},
+				},
+			},
+		},
+	},
+}
 
 func TestLinux_CreateStep(t *testing.T) {
 	// setup types
@@ -39,20 +120,27 @@ func TestLinux_CreateStep(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
-			name:    "init step container",
+			name:    "docker init step container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -64,8 +152,23 @@ func TestLinux_CreateStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "basic step container",
+			name:    "kubernetes init step container",
 			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_init",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "#init",
+				Name:        "init",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker basic step container",
+			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -77,8 +180,23 @@ func TestLinux_CreateStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "step container with image not found",
+			name:    "kubernetes basic step container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker step container with image not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
 				Directory:   "/vela/src/github.com/github/octocat",
@@ -90,39 +208,62 @@ func TestLinux_CreateStep(t *testing.T) {
 			},
 		},
 		{
-			name:      "empty step container",
+			name:    "kubernetes step container with image not found",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:notfound",
+				Name:        "echo",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:      "docker empty step container",
 			failure:   true,
+			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes empty step container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		name := filepath.Join(test.runtime.Driver(), test.name)
+
+		t.Run(name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", name, err)
 			}
 
 			err = _engine.CreateStep(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateStep should have returned err")
+					t.Errorf("%s CreateStep should have returned err", name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateStep returned err: %v", err)
+				t.Errorf("%s CreateStep returned err: %v", name, err)
 			}
 		})
 	}
