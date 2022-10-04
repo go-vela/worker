@@ -13,17 +13,14 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/urfave/cli/v2"
-
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_CreateStage(t *testing.T) {
@@ -56,7 +53,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -65,11 +62,13 @@ func TestLinux_CreateStage(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		stage   *pipeline.Stage
 	}{
 		{
 			name:    "docker-basic stage",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -88,6 +87,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		{
 			name:    "docker-stage with step container with image not found",
 			failure: true,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -106,6 +106,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		{
 			name:    "docker-empty stage",
 			failure: true,
+			runtime: _docker,
 			stage:   new(pipeline.Stage),
 		},
 	}
@@ -117,7 +118,7 @@ func TestLinux_CreateStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
