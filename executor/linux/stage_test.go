@@ -223,6 +223,11 @@ func TestLinux_PlanStage(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(true))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	dockerTestMap := new(sync.Map)
 	dockerTestMap.Store("foo", make(chan error, 1))
 
@@ -230,12 +235,26 @@ func TestLinux_PlanStage(t *testing.T) {
 	dtm.(chan error) <- nil
 	close(dtm.(chan error))
 
+	kubernetesTestMap := new(sync.Map)
+	kubernetesTestMap.Store("foo", make(chan error, 1))
+
+	ktm, _ := kubernetesTestMap.Load("foo")
+	ktm.(chan error) <- nil
+	close(ktm.(chan error))
+
 	dockerErrMap := new(sync.Map)
 	dockerErrMap.Store("foo", make(chan error, 1))
 
 	dem, _ := dockerErrMap.Load("foo")
 	dem.(chan error) <- errors.New("bar")
 	close(dem.(chan error))
+
+	kubernetesErrMap := new(sync.Map)
+	kubernetesErrMap.Store("foo", make(chan error, 1))
+
+	kem, _ := kubernetesErrMap.Load("foo")
+	kem.(chan error) <- errors.New("bar")
+	close(kem.(chan error))
 
 	// setup tests
 	tests := []struct {
@@ -249,6 +268,26 @@ func TestLinux_PlanStage(t *testing.T) {
 			name:    "docker-basic stage",
 			failure: false,
 			runtime: _docker,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+			stageMap: new(sync.Map),
+		},
+		{
+			name:    "kubernetes-basic stage",
+			failure: false,
+			runtime: _kubernetes,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -287,6 +326,27 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: dockerTestMap,
 		},
 		{
+			name:    "kubernetes-basic stage with nil stage map",
+			failure: false,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name:  "echo",
+				Needs: []string{"foo"},
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+			stageMap: kubernetesTestMap,
+		},
+		{
 			name:    "docker-basic stage with error stage map",
 			failure: true,
 			runtime: _docker,
@@ -306,6 +366,27 @@ func TestLinux_PlanStage(t *testing.T) {
 				},
 			},
 			stageMap: dockerErrMap,
+		},
+		{
+			name:    "kubernetes-basic stage with error stage map",
+			failure: true,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name:  "echo",
+				Needs: []string{"foo"},
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+			stageMap: kubernetesErrMap,
 		},
 	}
 
@@ -361,6 +442,13 @@ func TestLinux_ExecStage(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(true))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
+	_kubernetes.PodTracker.Start(context.Background())
+
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
@@ -392,6 +480,25 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
+			name:    "kubernetes-basic stage",
+			failure: false,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github-octocat-1-echo-echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
 			name:    "docker-stage with step container with image not found",
 			failure: true,
 			runtime: _docker,
@@ -411,6 +518,25 @@ func TestLinux_ExecStage(t *testing.T) {
 				},
 			},
 		},
+		//{
+		//	name:    "kubernetes-stage with step container with image not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	stage: &pipeline.Stage{
+		//		Name: "echo",
+		//		Steps: pipeline.ContainerSlice{
+		//			{
+		//				ID:          "github-octocat-1-echo-echo",
+		//				Directory:   "/vela/src/github.com/github/octocat",
+		//				Environment: map[string]string{"FOO": "bar"},
+		//				Image:       "alpine:notfound",
+		//				Name:        "echo",
+		//				Number:      1,
+		//				Pull:        "not_present",
+		//			},
+		//		},
+		//	},
+		//},
 		{
 			name:    "docker-stage with step container with bad number",
 			failure: true,
@@ -421,6 +547,25 @@ func TestLinux_ExecStage(t *testing.T) {
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      0,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "kubernetes-stage with step container with bad number",
+			failure: true,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github-octocat-1-echo-echo",
 						Directory:   "/vela/src/github.com/github/octocat",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "alpine:latest",
@@ -489,6 +634,11 @@ func TestLinux_DestroyStage(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(true))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name    string
@@ -500,6 +650,25 @@ func TestLinux_DestroyStage(t *testing.T) {
 			name:    "docker-basic stage",
 			failure: false,
 			runtime: _docker,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "kubernetes-basic stage",
+			failure: false,
+			runtime: _kubernetes,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
