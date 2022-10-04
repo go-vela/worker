@@ -9,21 +9,20 @@ import (
 	"errors"
 	"flag"
 	"net/http/httptest"
+	"path/filepath"
 	"sync"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/urfave/cli/v2"
-
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
+	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_CreateStage(t *testing.T) {
@@ -56,20 +55,27 @@ func TestLinux_CreateStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker basic stage",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -86,8 +92,28 @@ func TestLinux_CreateStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "stage with step container with image not found",
+			name:    "kubernetes basic stage",
+			failure: false,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "docker stage with step container with image not found",
 			failure: true,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -104,32 +130,60 @@ func TestLinux_CreateStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "empty stage",
+			name:    "kubernetes stage with step container with image not found",
+			failure: false,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:notfound",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "docker empty stage",
 			failure: true,
+			runtime: _docker,
+			stage:   new(pipeline.Stage),
+		},
+		{
+			name:    "kubernetes empty stage",
+			failure: true,
+			runtime: _kubernetes,
 			stage:   new(pipeline.Stage),
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		name := filepath.Join(test.runtime.Driver(), test.name)
+
+		t.Run(name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", name, err)
 			}
 
 			if len(test.stage.Name) > 0 {
 				// run create to init steps to be created properly
 				err = _engine.CreateBuild(context.Background())
 				if err != nil {
-					t.Errorf("unable to create build: %v", err)
+					t.Errorf("unable to create %s build: %v", name, err)
 				}
 			}
 
@@ -137,14 +191,14 @@ func TestLinux_CreateStage(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateStage should have returned err")
+					t.Errorf("%s CreateStage should have returned err", name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateStage returned err: %v", err)
+				t.Errorf("%s CreateStage returned err: %v", name, err)
 			}
 		})
 	}

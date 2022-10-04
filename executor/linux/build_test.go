@@ -8,22 +8,21 @@ import (
 	"context"
 	"flag"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
-	"github.com/urfave/cli/v2"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-
-	"github.com/gin-gonic/gin"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
+	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_CreateBuild(t *testing.T) {
@@ -44,44 +43,90 @@ func TestLinux_CreateBuild(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  runtime.Engine
 		build    *library.Build
 		pipeline string
 	}{
 		{
-			name:     "basic secrets pipeline",
+			name:     "docker basic secrets pipeline",
 			failure:  false,
+			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "basic services pipeline",
+			name:     "kubernetes basic secrets pipeline",
 			failure:  false,
+			runtime:  _kubernetes,
+			build:    _build,
+			pipeline: "testdata/build/secrets/basic.yml",
+		},
+		{
+			name:     "docker basic services pipeline",
+			failure:  false,
+			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "basic steps pipeline",
+			name:     "kubernetes basic services pipeline",
 			failure:  false,
+			runtime:  _kubernetes,
+			build:    _build,
+			pipeline: "testdata/build/services/basic.yml",
+		},
+		{
+			name:     "docker basic steps pipeline",
+			failure:  false,
+			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "basic stages pipeline",
+			name:     "kubernetes basic steps pipeline",
 			failure:  false,
+			runtime:  _kubernetes,
+			build:    _build,
+			pipeline: "testdata/build/steps/basic.yml",
+		},
+		{
+			name:     "docker basic stages pipeline",
+			failure:  false,
+			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
-			name:     "steps pipeline with empty build",
+			name:     "kubernetes basic stages pipeline",
+			failure:  false,
+			runtime:  _kubernetes,
+			build:    _build,
+			pipeline: "testdata/build/stages/basic.yml",
+		},
+		{
+			name:     "docker steps pipeline with empty build",
 			failure:  true,
+			runtime:  _docker,
+			build:    new(library.Build),
+			pipeline: "testdata/build/steps/basic.yml",
+		},
+		{
+			name:     "kubernetes steps pipeline with empty build",
+			failure:  true,
+			runtime:  _kubernetes,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
@@ -89,7 +134,9 @@ func TestLinux_CreateBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		name := filepath.Join(test.runtime.Driver(), test.name)
+
+		t.Run(name, func(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -98,33 +145,33 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", name, test.pipeline, err)
 			}
 
 			_engine, err := New(
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", name, err)
 			}
 
 			err = _engine.CreateBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateBuild should have returned err")
+					t.Errorf("%s CreateBuild should have returned err", name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateBuild returned err: %v", err)
+				t.Errorf("%s CreateBuild returned err: %v", name, err)
 			}
 		})
 	}
