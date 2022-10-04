@@ -8,6 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/mock/server"
@@ -335,4 +338,83 @@ func testSteps(runtime string) *pipeline.Build {
 
 	// apply any runtime-specific cleanups
 	return steps.Sanitize(runtime)
+}
+
+// https://github.com/go-vela/worker/blob/main/runtime/kubernetes/kubernetes_test.go#L83
+var _pod = &v1.Pod{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "github-octocat-1",
+		Namespace: "test",
+		Labels: map[string]string{
+			"pipeline": "github-octocat-1",
+		},
+	},
+	TypeMeta: metav1.TypeMeta{
+		APIVersion: "v1",
+		Kind:       "Pod",
+	},
+	Status: v1.PodStatus{
+		Phase: v1.PodRunning,
+		ContainerStatuses: []v1.ContainerStatus{
+			{
+				Name: "step-github-octocat-1-clone",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "target/vela-git:v0.6.0",
+			},
+			{
+				Name: "step-github-octocat-1-echo",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "alpine:latest",
+			},
+		},
+	},
+	Spec: v1.PodSpec{
+		Containers: []v1.Container{
+			{
+				Name:            "step-github-octocat-1-clone",
+				Image:           "target/vela-git:v0.6.0",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "step-github-octocat-1-echo",
+				Image:           "alpine:latest",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "service-github-octocat-1-postgres",
+				Image:           "postgres:12-alpine",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+		},
+		HostAliases: []v1.HostAlias{
+			{
+				IP: "127.0.0.1",
+				Hostnames: []string{
+					"postgres.local",
+					"echo.local",
+				},
+			},
+		},
+		Volumes: []v1.Volume{
+			{
+				Name: "github-octocat-1",
+				VolumeSource: v1.VolumeSource{
+					EmptyDir: &v1.EmptyDirVolumeSource{},
+				},
+			},
+		},
+	},
 }
