@@ -19,6 +19,7 @@ import (
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 )
 
 func TestLinux_CreateStep(t *testing.T) {
@@ -39,6 +40,11 @@ func TestLinux_CreateStep(t *testing.T) {
 	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -63,11 +69,39 @@ func TestLinux_CreateStep(t *testing.T) {
 			},
 		},
 		{
+			name:    "kubernetes-init step container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "step-github-octocat-1-init",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "#init",
+				Name:        "init",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:    "docker-basic step container",
 			failure: false,
 			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "kubernetes-basic step container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "step-github-octocat-1-echo",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
@@ -90,10 +124,30 @@ func TestLinux_CreateStep(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		//{
+		//	name:    "kubernetes-step container with image not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "step-github-octocat-1-echo",
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "alpine:notfound",
+		//		Name:        "echo",
+		//		Number:      1,
+		//		Pull:        "not_present",
+		//	},
+		//},
 		{
 			name:      "docker-empty step container",
 			failure:   true,
 			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty step container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
