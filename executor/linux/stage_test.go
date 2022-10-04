@@ -219,35 +219,56 @@ func TestLinux_PlanStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	testMap := new(sync.Map)
-	testMap.Store("foo", make(chan error, 1))
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
 
-	tm, _ := testMap.Load("foo")
-	tm.(chan error) <- nil
-	close(tm.(chan error))
+	dockerTestMap := new(sync.Map)
+	dockerTestMap.Store("foo", make(chan error, 1))
 
-	errMap := new(sync.Map)
-	errMap.Store("foo", make(chan error, 1))
+	dtm, _ := dockerTestMap.Load("foo")
+	dtm.(chan error) <- nil
+	close(dtm.(chan error))
 
-	em, _ := errMap.Load("foo")
-	em.(chan error) <- errors.New("bar")
-	close(em.(chan error))
+	kubernetesTestMap := new(sync.Map)
+	kubernetesTestMap.Store("foo", make(chan error, 1))
+
+	ktm, _ := kubernetesTestMap.Load("foo")
+	ktm.(chan error) <- nil
+	close(ktm.(chan error))
+
+	dockerErrMap := new(sync.Map)
+	dockerErrMap.Store("foo", make(chan error, 1))
+
+	dem, _ := dockerErrMap.Load("foo")
+	dem.(chan error) <- errors.New("bar")
+	close(dem.(chan error))
+
+	kubernetesErrMap := new(sync.Map)
+	kubernetesErrMap.Store("foo", make(chan error, 1))
+
+	kem, _ := kubernetesErrMap.Load("foo")
+	kem.(chan error) <- errors.New("bar")
+	close(kem.(chan error))
 
 	// setup tests
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  runtime.Engine
 		stage    *pipeline.Stage
 		stageMap *sync.Map
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker basic stage",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -265,11 +286,11 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: new(sync.Map),
 		},
 		{
-			name:    "basic stage with nil stage map",
+			name:    "kubernetes basic stage",
 			failure: false,
+			runtime: _kubernetes,
 			stage: &pipeline.Stage{
-				Name:  "echo",
-				Needs: []string{"foo"},
+				Name: "echo",
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",
@@ -282,11 +303,12 @@ func TestLinux_PlanStage(t *testing.T) {
 					},
 				},
 			},
-			stageMap: testMap,
+			stageMap: new(sync.Map),
 		},
 		{
-			name:    "basic stage with error stage map",
-			failure: true,
+			name:    "docker basic stage with nil stage map",
+			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name:  "echo",
 				Needs: []string{"foo"},
@@ -302,37 +324,102 @@ func TestLinux_PlanStage(t *testing.T) {
 					},
 				},
 			},
-			stageMap: errMap,
+			stageMap: dockerTestMap,
+		},
+		{
+			name:    "kubernetes basic stage with nil stage map",
+			failure: false,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name:  "echo",
+				Needs: []string{"foo"},
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+			stageMap: kubernetesTestMap,
+		},
+		{
+			name:    "docker basic stage with error stage map",
+			failure: true,
+			runtime: _docker,
+			stage: &pipeline.Stage{
+				Name:  "echo",
+				Needs: []string{"foo"},
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+			stageMap: dockerErrMap,
+		},
+		{
+			name:    "kubernetes basic stage with error stage map",
+			failure: true,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name:  "echo",
+				Needs: []string{"foo"},
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+			stageMap: kubernetesErrMap,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		name := filepath.Join(test.runtime.Driver(), test.name)
+
+		t.Run(name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", name, err)
 			}
 
 			err = _engine.PlanStage(context.Background(), test.stage, test.stageMap)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("PlanStage should have returned err")
+					t.Errorf("%s PlanStage should have returned err", name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("PlanStage returned err: %v", err)
+				t.Errorf("%s PlanStage returned err: %v", name, err)
 			}
 		})
 	}
@@ -353,10 +440,16 @@ func TestLinux_ExecStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
+
+	_kubernetes, err := kubernetes.NewMock(_stagePod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+	_kubernetes.PodTracker.Start(context.Background())
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
@@ -365,11 +458,13 @@ func TestLinux_ExecStage(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker basic stage",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -386,8 +481,28 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "stage with step container with image not found",
+			name:    "kubernetes basic stage",
+			failure: false,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github-octocat-1-echo-echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "docker stage with step container with image not found",
 			failure: true,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -404,8 +519,28 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "stage with step container with bad number",
+			name:    "kubernetes stage with step container with image not found",
+			failure: false,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github-octocat-1-echo-echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:notfound",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "docker stage with step container with bad number",
 			failure: true,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -421,11 +556,32 @@ func TestLinux_ExecStage(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "kubernetes stage with step container with bad number",
+			failure: true,
+			runtime: _kubernetes,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github-octocat-1-echo-echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      0,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		name := filepath.Join(test.runtime.Driver(), test.name)
+
+		t.Run(name, func(t *testing.T) {
 			stageMap := new(sync.Map)
 			stageMap.Store("echo", make(chan error, 1))
 
@@ -433,27 +589,27 @@ func TestLinux_ExecStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", name, err)
 			}
 
 			err = _engine.ExecStage(context.Background(), test.stage, stageMap)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("ExecStage should have returned err")
+					t.Errorf("%s ExecStage should have returned err", name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("ExecStage returned err: %v", err)
+				t.Errorf("%s ExecStage returned err: %v", name, err)
 			}
 		})
 	}
@@ -474,20 +630,46 @@ func TestLinux_DestroyStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker basic stage",
 			failure: false,
+			runtime: _docker,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "kubernetes basic stage",
+			failure: false,
+			runtime: _kubernetes,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -507,31 +689,33 @@ func TestLinux_DestroyStage(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		name := filepath.Join(test.runtime.Driver(), test.name)
+
+		t.Run(name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", name, err)
 			}
 
 			err = _engine.DestroyStage(context.Background(), test.stage)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("DestroyStage should have returned err")
+					t.Errorf("%s DestroyStage should have returned err", name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("DestroyStage returned err: %v", err)
+				t.Errorf("%s DestroyStage returned err: %v", name, err)
 			}
 		})
 	}
