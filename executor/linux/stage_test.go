@@ -20,6 +20,7 @@ import (
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 	"github.com/urfave/cli/v2"
 )
 
@@ -60,6 +61,11 @@ func TestLinux_CreateStage(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(true))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name    string
@@ -71,6 +77,25 @@ func TestLinux_CreateStage(t *testing.T) {
 			name:    "docker-basic stage",
 			failure: false,
 			runtime: _docker,
+			stage: &pipeline.Stage{
+				Name: "echo",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:          "github_octocat_1_echo_echo",
+						Directory:   "/vela/src/github.com/github/octocat",
+						Environment: map[string]string{"FOO": "bar"},
+						Image:       "alpine:latest",
+						Name:        "echo",
+						Number:      1,
+						Pull:        "not_present",
+					},
+				},
+			},
+		},
+		{
+			name:    "kubernetes-basic stage",
+			failure: false,
+			runtime: _kubernetes,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -105,10 +130,35 @@ func TestLinux_CreateStage(t *testing.T) {
 				},
 			},
 		},
+		//{
+		//	name:    "kubernetes-stage with step container with image not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	stage: &pipeline.Stage{
+		//		Name: "echo",
+		//		Steps: pipeline.ContainerSlice{
+		//			{
+		//				ID:          "github_octocat_1_echo_echo",
+		//				Directory:   "/vela/src/github.com/github/octocat",
+		//				Environment: map[string]string{"FOO": "bar"},
+		//				Image:       "alpine:notfound",
+		//				Name:        "echo",
+		//				Number:      1,
+		//				Pull:        "not_present",
+		//			},
+		//		},
+		//	},
+		//},
 		{
 			name:    "docker-empty stage",
 			failure: true,
 			runtime: _docker,
+			stage:   new(pipeline.Stage),
+		},
+		{
+			name:    "kubernetes-empty stage",
+			failure: true,
+			runtime: _kubernetes,
 			stage:   new(pipeline.Stage),
 		},
 	}
