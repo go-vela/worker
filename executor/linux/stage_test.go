@@ -166,35 +166,37 @@ func TestLinux_PlanStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	testMap := new(sync.Map)
-	testMap.Store("foo", make(chan error, 1))
+	dockerTestMap := new(sync.Map)
+	dockerTestMap.Store("foo", make(chan error, 1))
 
-	tm, _ := testMap.Load("foo")
-	tm.(chan error) <- nil
-	close(tm.(chan error))
+	dtm, _ := dockerTestMap.Load("foo")
+	dtm.(chan error) <- nil
+	close(dtm.(chan error))
 
-	errMap := new(sync.Map)
-	errMap.Store("foo", make(chan error, 1))
+	dockerErrMap := new(sync.Map)
+	dockerErrMap.Store("foo", make(chan error, 1))
 
-	em, _ := errMap.Load("foo")
-	em.(chan error) <- errors.New("bar")
-	close(em.(chan error))
+	dem, _ := dockerErrMap.Load("foo")
+	dem.(chan error) <- errors.New("bar")
+	close(dem.(chan error))
 
 	// setup tests
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  runtime.Engine
 		stage    *pipeline.Stage
 		stageMap *sync.Map
 	}{
 		{
 			name:    "docker-basic stage",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -214,6 +216,7 @@ func TestLinux_PlanStage(t *testing.T) {
 		{
 			name:    "docker-basic stage with nil stage map",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name:  "echo",
 				Needs: []string{"foo"},
@@ -229,11 +232,12 @@ func TestLinux_PlanStage(t *testing.T) {
 					},
 				},
 			},
-			stageMap: testMap,
+			stageMap: dockerTestMap,
 		},
 		{
 			name:    "docker-basic stage with error stage map",
 			failure: true,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name:  "echo",
 				Needs: []string{"foo"},
@@ -249,7 +253,7 @@ func TestLinux_PlanStage(t *testing.T) {
 					},
 				},
 			},
-			stageMap: errMap,
+			stageMap: dockerErrMap,
 		},
 	}
 
@@ -260,7 +264,7 @@ func TestLinux_PlanStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -300,7 +304,7 @@ func TestLinux_ExecStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -312,11 +316,13 @@ func TestLinux_ExecStage(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		stage   *pipeline.Stage
 	}{
 		{
 			name:    "docker-basic stage",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Independent: true,
 				Name:        "echo",
@@ -336,6 +342,7 @@ func TestLinux_ExecStage(t *testing.T) {
 		{
 			name:    "docker-stage with step container with image not found",
 			failure: true,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name:        "echo",
 				Independent: true,
@@ -355,6 +362,7 @@ func TestLinux_ExecStage(t *testing.T) {
 		{
 			name:    "docker-stage with step container with bad number",
 			failure: true,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name:        "echo",
 				Independent: true,
@@ -383,7 +391,7 @@ func TestLinux_ExecStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -424,7 +432,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -433,11 +441,13 @@ func TestLinux_DestroyStage(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		stage   *pipeline.Stage
 	}{
 		{
 			name:    "docker-basic stage",
 			failure: false,
+			runtime: _docker,
 			stage: &pipeline.Stage{
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
@@ -462,7 +472,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
