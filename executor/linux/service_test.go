@@ -17,6 +17,7 @@ import (
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 )
 
 func TestLinux_CreateService(t *testing.T) {
@@ -39,6 +40,11 @@ func TestLinux_CreateService(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name      string
@@ -50,6 +56,22 @@ func TestLinux_CreateService(t *testing.T) {
 			name:    "docker-basic service container",
 			failure: false,
 			runtime: _docker,
+			container: &pipeline.Container{
+				ID:          "service_github_octocat_1_postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -78,10 +100,32 @@ func TestLinux_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		// {
+		//	name:    "kubernetes-service container with image not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "service_github_octocat_1_postgres",
+		//		Detach:      true,
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "postgres:notfound",
+		//		Name:        "postgres",
+		//		Number:      1,
+		//		Ports:       []string{"5432:5432"},
+		//		Pull:        "not_present",
+		//	},
+		// },
 		{
 			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
