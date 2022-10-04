@@ -7,7 +7,6 @@ package linux
 import (
 	"context"
 	"net/http/httptest"
-	"path/filepath"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -54,7 +53,7 @@ func TestLinux_CreateService(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "docker basic service container",
+			name:    "docker-basic service container",
 			failure: false,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -68,7 +67,7 @@ func TestLinux_CreateService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes basic service container",
+			name:    "kubernetes-basic service container",
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -82,7 +81,7 @@ func TestLinux_CreateService(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker service container with image not found",
+			name:    "docker-service container with image not found",
 			failure: true,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -96,7 +95,7 @@ func TestLinux_CreateService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes service container with image not found",
+			name:    "kubernetes-service container with image not found",
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -110,13 +109,13 @@ func TestLinux_CreateService(t *testing.T) {
 			},
 		},
 		{
-			name:      "docker empty service container",
+			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 		{
-			name:      "kubernetes empty service container",
+			name:      "kubernetes-empty service container",
 			failure:   true,
 			runtime:   _kubernetes,
 			container: new(pipeline.Container),
@@ -125,9 +124,7 @@ func TestLinux_CreateService(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		name := filepath.Join(test.runtime.Driver(), test.name)
-
-		t.Run(name, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
@@ -137,21 +134,21 @@ func TestLinux_CreateService(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create %s executor engine: %v", name, err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.CreateService(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("%s CreateService should have returned err", name)
+					t.Errorf("%s CreateService should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("%s CreateService returned err: %v", name, err)
+				t.Errorf("%s CreateService returned err: %v", test.name, err)
 			}
 		})
 	}
