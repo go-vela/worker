@@ -5,7 +5,6 @@
 package linux
 
 import (
-	"github.com/go-vela/worker/runtime/kubernetes"
 	"net/http/httptest"
 	"reflect"
 	"testing"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 
 	"github.com/go-vela/sdk-go/vela"
 
@@ -249,7 +249,7 @@ func TestLinux_Opt_WithLogger(t *testing.T) {
 
 func TestLinux_Opt_WithPipeline(t *testing.T) {
 	// setup types
-	_steps := testSteps()
+	_steps := testSteps("docker")
 
 	// setup tests
 	tests := []struct {
