@@ -105,7 +105,7 @@ func TestLocal_CreateStage(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}

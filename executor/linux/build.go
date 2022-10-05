@@ -19,7 +19,7 @@ import (
 )
 
 // CreateBuild configures the build for execution.
-func (c *client) CreateBuild(ctx context.Context) error {
+func (c *client) CreateBuild(ctx context.Context, newTracker bool) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
@@ -43,7 +43,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	}
 
 	// setup the runtime build
-	c.err = c.Runtime.SetupBuild(ctx, c.pipeline)
+	c.err = c.Runtime.SetupBuild(ctx, c.pipeline, newTracker)
 	if c.err != nil {
 		return fmt.Errorf("unable to setup build %s: %w", c.pipeline.ID, c.err)
 	}

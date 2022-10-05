@@ -121,7 +121,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("creating build")
 	// create the build with the executor
-	err = _executor.CreateBuild(timeoutCtx)
+	err = _executor.CreateBuild(timeoutCtx, true)
 	if err != nil {
 		logger.Errorf("unable to create build: %v", err)
 		return nil

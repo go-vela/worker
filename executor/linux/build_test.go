@@ -160,7 +160,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", name, err)
 			}
 
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 
 			if test.failure {
 				if err == nil {
@@ -254,7 +254,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -397,7 +397,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -510,7 +510,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -771,7 +771,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(buildCtx)
+			err = _engine.CreateBuild(buildCtx, true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -910,7 +910,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}

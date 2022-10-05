@@ -41,7 +41,7 @@ type Engine interface {
 
 	// CreateBuild defines a function that
 	// configures the build for execution.
-	CreateBuild(context.Context) error
+	CreateBuild(context.Context, bool) error
 	// PlanBuild defines a function that
 	// handles the resource initialization process
 	// for the build.

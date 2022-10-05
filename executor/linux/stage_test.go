@@ -178,7 +178,7 @@ func TestLinux_CreateStage(t *testing.T) {
 
 			if len(test.stage.Name) > 0 {
 				// run create to init steps to be created properly
-				err = _engine.CreateBuild(context.Background())
+				err = _engine.CreateBuild(context.Background(), true)
 				if err != nil {
 					t.Errorf("unable to create %s build: %v", test.name, err)
 				}

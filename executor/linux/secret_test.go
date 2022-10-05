@@ -343,7 +343,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			_ = _engine.CreateBuild(context.Background())
+			_ = _engine.CreateBuild(context.Background(), false)
 
 			_engine.steps.Store(test.container.ID, test.step)
 
@@ -460,7 +460,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 			_engine.build.SetStatus(constants.StatusSuccess)
 
 			// add init container info to client
-			_ = _engine.CreateBuild(context.Background())
+			_ = _engine.CreateBuild(context.Background(), true)
 
 			err = _engine.secret.exec(context.Background(), &p.Secrets)
 
@@ -891,7 +891,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 			}
 
 			// add init container info to client
-			_ = _engine.CreateBuild(context.Background())
+			_ = _engine.CreateBuild(context.Background(), true)
 
 			err = _engine.secret.stream(context.Background(), test.container)
 

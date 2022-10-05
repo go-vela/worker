@@ -78,7 +78,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 
 			if test.failure {
 				if err == nil {
@@ -156,7 +156,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -273,7 +273,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -375,7 +375,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -569,7 +569,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(buildCtx)
+			err = _engine.CreateBuild(buildCtx, true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
@@ -687,7 +687,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 			}
 
 			// run create to init steps to be created properly
-			err = _engine.CreateBuild(context.Background())
+			err = _engine.CreateBuild(context.Background(), true)
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
 			}
