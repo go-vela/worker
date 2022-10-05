@@ -72,7 +72,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "docker basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -91,7 +91,7 @@ func TestLinux_CreateStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes basic stage",
+			name:    "kubernetes-basic stage",
 			failure: false,
 			runtime: _kubernetes,
 			stage: &pipeline.Stage{
@@ -110,7 +110,7 @@ func TestLinux_CreateStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker stage with step container with image not found",
+			name:    "docker-stage with step container with image not found",
 			failure: true,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -128,33 +128,33 @@ func TestLinux_CreateStage(t *testing.T) {
 				},
 			},
 		},
+		//{
+		//	name:    "kubernetes-stage with step container with image not found",
+		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	runtime: _kubernetes,
+		//	stage: &pipeline.Stage{
+		//		Name: "echo",
+		//		Steps: pipeline.ContainerSlice{
+		//			{
+		//				ID:          "github_octocat_1_echo_echo",
+		//				Directory:   "/vela/src/github.com/github/octocat",
+		//				Environment: map[string]string{"FOO": "bar"},
+		//				Image:       "alpine:notfound",
+		//				Name:        "echo",
+		//				Number:      1,
+		//				Pull:        "not_present",
+		//			},
+		//		},
+		//	},
+		//},
 		{
-			name:    "kubernetes stage with step container with image not found",
-			failure: false,
-			runtime: _kubernetes,
-			stage: &pipeline.Stage{
-				Name: "echo",
-				Steps: pipeline.ContainerSlice{
-					{
-						ID:          "github_octocat_1_echo_echo",
-						Directory:   "/vela/src/github.com/github/octocat",
-						Environment: map[string]string{"FOO": "bar"},
-						Image:       "alpine:notfound",
-						Name:        "echo",
-						Number:      1,
-						Pull:        "not_present",
-					},
-				},
-			},
-		},
-		{
-			name:    "docker empty stage",
+			name:    "docker-empty stage",
 			failure: true,
 			runtime: _docker,
 			stage:   new(pipeline.Stage),
 		},
 		{
-			name:    "kubernetes empty stage",
+			name:    "kubernetes-empty stage",
 			failure: true,
 			runtime: _kubernetes,
 			stage:   new(pipeline.Stage),
@@ -263,7 +263,7 @@ func TestLinux_PlanStage(t *testing.T) {
 		stageMap *sync.Map
 	}{
 		{
-			name:    "docker basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -283,7 +283,7 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: new(sync.Map),
 		},
 		{
-			name:    "kubernetes basic stage",
+			name:    "kubernetes-basic stage",
 			failure: false,
 			runtime: _kubernetes,
 			stage: &pipeline.Stage{
@@ -303,7 +303,7 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: new(sync.Map),
 		},
 		{
-			name:    "docker basic stage with nil stage map",
+			name:    "docker-basic stage with nil stage map",
 			failure: false,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -324,7 +324,7 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: dockerTestMap,
 		},
 		{
-			name:    "kubernetes basic stage with nil stage map",
+			name:    "kubernetes-basic stage with nil stage map",
 			failure: false,
 			runtime: _kubernetes,
 			stage: &pipeline.Stage{
@@ -345,7 +345,7 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: kubernetesTestMap,
 		},
 		{
-			name:    "docker basic stage with error stage map",
+			name:    "docker-basic stage with error stage map",
 			failure: true,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -366,7 +366,7 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: dockerErrMap,
 		},
 		{
-			name:    "kubernetes basic stage with error stage map",
+			name:    "kubernetes-basic stage with error stage map",
 			failure: true,
 			runtime: _kubernetes,
 			stage: &pipeline.Stage{
@@ -457,7 +457,7 @@ func TestLinux_ExecStage(t *testing.T) {
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "docker basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -476,7 +476,7 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes basic stage",
+			name:    "kubernetes-basic stage",
 			failure: false,
 			runtime: _kubernetes,
 			stage: &pipeline.Stage{
@@ -495,7 +495,7 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker stage with step container with image not found",
+			name:    "docker-stage with step container with image not found",
 			failure: true,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -513,27 +513,27 @@ func TestLinux_ExecStage(t *testing.T) {
 				},
 			},
 		},
+		//{
+		//	name:    "kubernetes-stage with step container with image not found",
+		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	runtime: _kubernetes,
+		//	stage: &pipeline.Stage{
+		//		Name: "echo",
+		//		Steps: pipeline.ContainerSlice{
+		//			{
+		//				ID:          "github-octocat-1-echo-echo",
+		//				Directory:   "/vela/src/github.com/github/octocat",
+		//				Environment: map[string]string{"FOO": "bar"},
+		//				Image:       "alpine:notfound",
+		//				Name:        "echo",
+		//				Number:      1,
+		//				Pull:        "not_present",
+		//			},
+		//		},
+		//	},
+		//},
 		{
-			name:    "kubernetes stage with step container with image not found",
-			failure: false,
-			runtime: _kubernetes,
-			stage: &pipeline.Stage{
-				Name: "echo",
-				Steps: pipeline.ContainerSlice{
-					{
-						ID:          "github-octocat-1-echo-echo",
-						Directory:   "/vela/src/github.com/github/octocat",
-						Environment: map[string]string{"FOO": "bar"},
-						Image:       "alpine:notfound",
-						Name:        "echo",
-						Number:      1,
-						Pull:        "not_present",
-					},
-				},
-			},
-		},
-		{
-			name:    "docker stage with step container with bad number",
+			name:    "docker-stage with step container with bad number",
 			failure: true,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -552,7 +552,7 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes stage with step container with bad number",
+			name:    "kubernetes-stage with step container with bad number",
 			failure: true,
 			runtime: _kubernetes,
 			stage: &pipeline.Stage{
@@ -641,7 +641,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "docker basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			runtime: _docker,
 			stage: &pipeline.Stage{
@@ -660,7 +660,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes basic stage",
+			name:    "kubernetes-basic stage",
 			failure: false,
 			runtime: _kubernetes,
 			stage: &pipeline.Stage{

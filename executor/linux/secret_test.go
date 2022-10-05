@@ -18,7 +18,9 @@ import (
 	"github.com/go-vela/server/mock/server"
 
 	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 
 	"github.com/go-vela/sdk-go/vela"
 
@@ -45,20 +47,27 @@ func TestLinux_Secret_create(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
-			name:    "good image tag",
+			name:    "docker-good image tag",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -70,8 +79,23 @@ func TestLinux_Secret_create(t *testing.T) {
 			},
 		},
 		{
-			name:    "notfound image tag",
+			name:    "kubernetes-good image tag",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "secret_github_octocat_1_vault",
+				Directory:   "/vela/src/vcs.company.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "target/secret-vault:latest",
+				Name:        "vault",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker-notfound image tag",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -82,6 +106,20 @@ func TestLinux_Secret_create(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		//{
+		//	name:    "kubernetes-notfound image tag",
+		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "secret_github_octocat_1_vault",
+		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "target/secret-vault:notfound",
+		//		Name:        "vault",
+		//		Number:      1,
+		//		Pull:        "not_present",
+		//	},
+		//},
 	}
 
 	// run tests
@@ -91,7 +129,7 @@ func TestLinux_Secret_create(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_steps),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -132,9 +170,14 @@ func TestLinux_Secret_delete(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	_step := new(library.Step)
@@ -146,12 +189,14 @@ func TestLinux_Secret_delete(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 		step      *library.Step
 	}{
 		{
-			name:    "running container-empty step",
+			name:    "docker-running container-empty step",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -163,9 +208,25 @@ func TestLinux_Secret_delete(t *testing.T) {
 			},
 			step: new(library.Step),
 		},
+		//{
+		//	name:    "kubernetes-running container-empty step",
+		//	failure: false, // FIXME: pod "github_octocat_1" not found
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "secret_github_octocat_1_vault",
+		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "target/secret-vault:latest",
+		//		Name:        "vault",
+		//		Number:      1,
+		//		Pull:        "always",
+		//	},
+		//	step: new(library.Step),
+		//},
 		{
-			name:    "running container-pending step",
+			name:    "docker-running container-pending step",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -177,9 +238,25 @@ func TestLinux_Secret_delete(t *testing.T) {
 			},
 			step: _step,
 		},
+		//{
+		//	name:    "kubernetes-running container-pending step",
+		//	failure: false, // FIXME: pod "github_octocat_1" not found
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "secret_github_octocat_1_vault",
+		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "target/secret-vault:latest",
+		//		Name:        "vault",
+		//		Number:      2,
+		//		Pull:        "always",
+		//	},
+		//	step: _step,
+		//},
 		{
-			name:    "inspecting container failure due to invalid container id",
+			name:    "docker-inspecting container failure due to invalid container id",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -192,8 +269,39 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: new(library.Step),
 		},
 		{
-			name:    "removing container failure",
+			name:    "kubernetes-inspecting container failure due to invalid container id",
+			failure: true, // pods "github_octocat_1" not found
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "secret_github_octocat_1_notfound",
+				Directory:   "/vela/src/vcs.company.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "target/secret-vault:latest",
+				Name:        "notfound",
+				Number:      2,
+				Pull:        "always",
+			},
+			step: new(library.Step),
+		},
+		{
+			name:    "docker-removing container failure",
 			failure: true,
+			runtime: _docker,
+			container: &pipeline.Container{
+				ID:          "secret_github_octocat_1_ignorenotfound",
+				Directory:   "/vela/src/vcs.company.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "target/secret-vault:latest",
+				Name:        "ignorenotfound",
+				Number:      2,
+				Pull:        "always",
+			},
+			step: new(library.Step),
+		},
+		{
+			name:    "kubernetes-removing container failure",
+			failure: true, // pods "github_octocat_1" not found
+			runtime: _kubernetes,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_ignorenotfound",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -214,7 +322,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_steps),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -261,9 +369,14 @@ func TestLinux_Secret_exec(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -273,16 +386,31 @@ func TestLinux_Secret_exec(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  runtime.Engine
 		pipeline string
 	}{
 		{
-			name:     "basic secrets pipeline",
+			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			runtime:  _docker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
+		//{
+		//	name:     "kubernetes-basic secrets pipeline",
+		//	failure:  false, // FIXME: pods "github_octocat_1" not found
+		//	runtime:  _kubernetes,
+		//	pipeline: "testdata/build/secrets/basic.yml",
+		//},
 		{
-			name:     "pipeline with secret name not found",
+			name:     "docker-pipeline with secret name not found",
 			failure:  true,
+			runtime:  _docker,
+			pipeline: "testdata/build/secrets/name_notfound.yml",
+		},
+		{
+			name:     "kubernetes-pipeline with secret name not found",
+			failure:  true, // pods "github_octocat_1" not found
+			runtime:  _kubernetes,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 	}
@@ -307,7 +435,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(p),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -353,20 +481,27 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		secret  *pipeline.Secret
 	}{
 		{
-			name:    "success with org secret",
+			name:    "docker-success with org secret",
 			failure: false,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -377,8 +512,22 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with invalid org secret",
+			name:    "kubernetes-success with org secret",
+			failure: false,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "github/foo",
+				Engine: "native",
+				Type:   "org",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-failure with invalid org secret",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -389,8 +538,22 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with org secret key not found",
+			name:    "kubernetes-failure with invalid org secret",
 			failure: true,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "foo/foo/foo",
+				Engine: "native",
+				Type:   "org",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-failure with org secret key not found",
+			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -401,8 +564,22 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "success with repo secret",
+			name:    "kubernetes-failure with org secret key not found",
+			failure: true,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "not-found",
+				Engine: "native",
+				Type:   "org",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-success with repo secret",
 			failure: false,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -413,8 +590,22 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with invalid repo secret",
+			name:    "kubernetes-success with repo secret",
+			failure: false,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "github/octocat/foo",
+				Engine: "native",
+				Type:   "repo",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-failure with invalid repo secret",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -425,8 +616,22 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with repo secret key not found",
+			name:    "kubernetes-failure with invalid repo secret",
 			failure: true,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "foo/foo/foo/foo",
+				Engine: "native",
+				Type:   "repo",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-failure with repo secret key not found",
+			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -437,8 +642,22 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "success with shared secret",
+			name:    "kubernetes-failure with repo secret key not found",
+			failure: true,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "not-found",
+				Engine: "native",
+				Type:   "repo",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-success with shared secret",
 			failure: false,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -449,8 +668,22 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with shared secret key not found",
+			name:    "kubernetes-success with shared secret",
+			failure: false,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "github/octokitties/foo",
+				Engine: "native",
+				Type:   "shared",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-failure with shared secret key not found",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -461,8 +694,35 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with invalid type",
+			name:    "kubernetes-failure with shared secret key not found",
 			failure: true,
+			runtime: _kubernetes,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "not-found",
+				Engine: "native",
+				Type:   "shared",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "docker-failure with invalid type",
+			failure: true,
+			runtime: _docker,
+			secret: &pipeline.Secret{
+				Name:   "foo",
+				Value:  "bar",
+				Key:    "github/octokitties/foo",
+				Engine: "native",
+				Type:   "invalid",
+				Origin: &pipeline.Container{},
+			},
+		},
+		{
+			name:    "kubernetes-failure with invalid type",
+			failure: true,
+			runtime: _kubernetes,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -481,7 +741,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(testSteps()),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -522,21 +782,28 @@ func TestLinux_Secret_stream(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(_pod)
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		logs      *library.Log
 		container *pipeline.Container
 	}{
 		{
-			name:    "container step succeeds",
+			name:    "docker-container step succeeds",
 			failure: false,
+			runtime: _docker,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -549,8 +816,24 @@ func TestLinux_Secret_stream(t *testing.T) {
 			},
 		},
 		{
-			name:    "container step fails because of invalid container id",
+			name:    "kubernetes-container step succeeds",
+			failure: false,
+			runtime: _kubernetes,
+			logs:    new(library.Log),
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_init",
+				Directory:   "/home/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "#init",
+				Name:        "init",
+				Number:      1,
+				Pull:        "always",
+			},
+		},
+		{
+			name:    "docker-container step fails because of invalid container id",
 			failure: true,
+			runtime: _docker,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
@@ -562,6 +845,21 @@ func TestLinux_Secret_stream(t *testing.T) {
 				Pull:        "always",
 			},
 		},
+		//{
+		//	name:    "kubernetes-container step fails because of invalid container id",
+		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	runtime: _kubernetes,
+		//	logs:    new(library.Log),
+		//	container: &pipeline.Container{
+		//		ID:          "secret_github_octocat_1_notfound",
+		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "target/secret-vault:latest",
+		//		Name:        "notfound",
+		//		Number:      2,
+		//		Pull:        "always",
+		//	},
+		//},
 	}
 
 	// run tests
@@ -571,7 +869,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_steps),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
