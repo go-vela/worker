@@ -42,7 +42,9 @@ func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, e
 }
 
 // SetupBuild prepares the pod metadata for the pipeline build.
-func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
+//
+// TODO: remove need for newTracker bool
+func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build, newTracker bool) error {
 	c.Logger.Tracef("setting up for build %s", b.ID)
 
 	if c.PipelinePodTemplate == nil {
@@ -128,7 +130,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 	}
 
 	// initialize the PodTracker now that we have a Pod for it to track
-	if c.PodTracker == nil {
+	if newTracker {
 		tracker, err := newPodTracker(c.Logger, c.Kubernetes, c.Pod, time.Second*30)
 		if err != nil {
 			return err

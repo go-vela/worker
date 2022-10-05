@@ -20,7 +20,7 @@ func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, e
 
 // SetupBuild prepares the pipeline build.
 // This is a no-op for docker.
-func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
+func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build, _ bool) error {
 	c.Logger.Tracef("no-op: setting up for build %s", b.ID)
 
 	return nil

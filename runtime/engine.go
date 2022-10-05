@@ -28,7 +28,7 @@ type Engine interface {
 	InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, error)
 	// SetupBuild defines a function that
 	// prepares the pipeline build.
-	SetupBuild(context.Context, *pipeline.Build) error
+	SetupBuild(context.Context, *pipeline.Build, bool) error
 	// StreamBuild defines a function that initializes
 	// log/event streaming if the runtime needs it.
 	// StreamBuild and AssembleBuild run concurrently.

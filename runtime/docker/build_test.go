@@ -74,7 +74,7 @@ func TestDocker_SetupBuild(t *testing.T) {
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err = _engine.SetupBuild(context.Background(), test.pipeline)
+			err = _engine.SetupBuild(context.Background(), test.pipeline, true)
 
 			if test.failure {
 				if err == nil {

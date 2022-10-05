@@ -296,7 +296,7 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
-			err = _engine.SetupBuild(context.Background(), test.pipeline)
+			err = _engine.SetupBuild(context.Background(), test.pipeline, true)
 
 			// this does not test the resulting pod spec (ie no tests for ObjectMeta, RestartPolicy)
 
