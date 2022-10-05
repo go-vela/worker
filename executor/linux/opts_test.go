@@ -20,6 +20,7 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 )
@@ -249,7 +250,7 @@ func TestLinux_Opt_WithLogger(t *testing.T) {
 
 func TestLinux_Opt_WithPipeline(t *testing.T) {
 	// setup types
-	_steps := testSteps("docker")
+	_steps := testSteps(constants.DriverDocker)
 
 	// setup tests
 	tests := []struct {
