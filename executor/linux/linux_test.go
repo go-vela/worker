@@ -43,7 +43,7 @@ func TestEqual(t *testing.T) {
 	_linux, err := New(
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
-		WithPipeline(testSteps()),
+		WithPipeline(testSteps("docker")),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithUser(testUser()),
@@ -56,7 +56,7 @@ func TestEqual(t *testing.T) {
 	_alternate, err := New(
 		WithBuild(testBuild()),
 		WithHostname("a.different.host"),
-		WithPipeline(testSteps()),
+		WithPipeline(testSteps("docker")),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithUser(testUser()),
@@ -152,7 +152,7 @@ func TestLinux_New(t *testing.T) {
 			_, err := New(
 				WithBuild(test.build),
 				WithHostname("localhost"),
-				WithPipeline(testSteps()),
+				WithPipeline(testSteps("docker")),
 				WithRepo(testRepo()),
 				WithRuntime(_runtime),
 				WithUser(testUser()),
@@ -268,75 +268,147 @@ func testMetadata() *types.Metadata {
 
 // testSteps is a test helper function to create a steps
 // pipeline with fake steps.
-func testSteps() *pipeline.Build {
-	return &pipeline.Build{
-		Version: "1",
-		ID:      "github_octocat_1",
-		Services: pipeline.ContainerSlice{
-			{
-				ID:          "service_github_octocat_1_postgres",
-				Directory:   "/home/github/octocat",
-				Environment: map[string]string{"FOO": "bar"},
-				Image:       "postgres:12-alpine",
-				Name:        "postgres",
-				Number:      1,
-				Ports:       []string{"5432:5432"},
-				Pull:        "not_present",
+func testSteps(runtime string) *pipeline.Build {
+	if runtime == "kubernetes" {
+		return &pipeline.Build{
+			Version: "1",
+			ID:      "github-octocat-1",
+			Services: pipeline.ContainerSlice{
+				{
+					ID:          "service-github-octocat-1-postgres",
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "postgres:12-alpine",
+					Name:        "postgres",
+					Number:      1,
+					Ports:       []string{"5432:5432"},
+					Pull:        "not_present",
+				},
 			},
-		},
-		Steps: pipeline.ContainerSlice{
-			{
-				ID:          "step_github_octocat_1_init",
-				Directory:   "/home/github/octocat",
-				Environment: map[string]string{"FOO": "bar"},
-				Image:       "#init",
-				Name:        "init",
-				Number:      1,
-				Pull:        "always",
+			Steps: pipeline.ContainerSlice{
+				{
+					ID:          "step-github-octocat-1-init",
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "#init",
+					Name:        "init",
+					Number:      1,
+					Pull:        "always",
+				},
+				{
+					ID:          "step-github-octocat-1-clone",
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "target/vela-git:v0.3.0",
+					Name:        "clone",
+					Number:      2,
+					Pull:        "always",
+				},
+				{
+					ID:          "step-github-octocat-1-echo",
+					Commands:    []string{"echo hello"},
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "alpine:latest",
+					Name:        "echo",
+					Number:      3,
+					Pull:        "always",
+				},
 			},
-			{
-				ID:          "step_github_octocat_1_clone",
-				Directory:   "/home/github/octocat",
-				Environment: map[string]string{"FOO": "bar"},
-				Image:       "target/vela-git:v0.3.0",
-				Name:        "clone",
-				Number:      2,
-				Pull:        "always",
+			Secrets: pipeline.SecretSlice{
+				{
+					Name:   "foo",
+					Key:    "github/octocat/foo",
+					Engine: "native",
+					Type:   "repo",
+					Origin: &pipeline.Container{},
+				},
+				{
+					Name:   "foo",
+					Key:    "github/foo",
+					Engine: "native",
+					Type:   "org",
+					Origin: &pipeline.Container{},
+				},
+				{
+					Name:   "foo",
+					Key:    "github/octokitties/foo",
+					Engine: "native",
+					Type:   "shared",
+					Origin: &pipeline.Container{},
+				},
 			},
-			{
-				ID:          "step_github_octocat_1_echo",
-				Commands:    []string{"echo hello"},
-				Directory:   "/home/github/octocat",
-				Environment: map[string]string{"FOO": "bar"},
-				Image:       "alpine:latest",
-				Name:        "echo",
-				Number:      3,
-				Pull:        "always",
+		}
+	} else { // docker
+		return &pipeline.Build{
+			Version: "1",
+			ID:      "github_octocat_1",
+			Services: pipeline.ContainerSlice{
+				{
+					ID:          "service_github_octocat_1_postgres",
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "postgres:12-alpine",
+					Name:        "postgres",
+					Number:      1,
+					Ports:       []string{"5432:5432"},
+					Pull:        "not_present",
+				},
 			},
-		},
-		Secrets: pipeline.SecretSlice{
-			{
-				Name:   "foo",
-				Key:    "github/octocat/foo",
-				Engine: "native",
-				Type:   "repo",
-				Origin: &pipeline.Container{},
+			Steps: pipeline.ContainerSlice{
+				{
+					ID:          "step_github_octocat_1_init",
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "#init",
+					Name:        "init",
+					Number:      1,
+					Pull:        "always",
+				},
+				{
+					ID:          "step_github_octocat_1_clone",
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "target/vela-git:v0.3.0",
+					Name:        "clone",
+					Number:      2,
+					Pull:        "always",
+				},
+				{
+					ID:          "step_github_octocat_1_echo",
+					Commands:    []string{"echo hello"},
+					Directory:   "/home/github/octocat",
+					Environment: map[string]string{"FOO": "bar"},
+					Image:       "alpine:latest",
+					Name:        "echo",
+					Number:      3,
+					Pull:        "always",
+				},
 			},
-			{
-				Name:   "foo",
-				Key:    "github/foo",
-				Engine: "native",
-				Type:   "org",
-				Origin: &pipeline.Container{},
+			Secrets: pipeline.SecretSlice{
+				{
+					Name:   "foo",
+					Key:    "github/octocat/foo",
+					Engine: "native",
+					Type:   "repo",
+					Origin: &pipeline.Container{},
+				},
+				{
+					Name:   "foo",
+					Key:    "github/foo",
+					Engine: "native",
+					Type:   "org",
+					Origin: &pipeline.Container{},
+				},
+				{
+					Name:   "foo",
+					Key:    "github/octokitties/foo",
+					Engine: "native",
+					Type:   "shared",
+					Origin: &pipeline.Container{},
+				},
 			},
-			{
-				Name:   "foo",
-				Key:    "github/octokitties/foo",
-				Engine: "native",
-				Type:   "shared",
-				Origin: &pipeline.Container{},
-			},
-		},
+		}
 	}
 }
 

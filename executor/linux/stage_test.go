@@ -444,6 +444,7 @@ func TestLinux_ExecStage(t *testing.T) {
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
+
 	_kubernetes.PodTracker.Start(context.Background())
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
