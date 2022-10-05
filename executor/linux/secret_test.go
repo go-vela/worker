@@ -35,7 +35,7 @@ func TestLinux_Secret_create(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps("docker")
+	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
@@ -125,7 +125,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_dockerSteps := testSteps("docker")
+	_dockerSteps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
@@ -511,7 +511,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(testSteps("docker")),
+				WithPipeline(testSteps(constants.DriverDocker)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithUser(_user),
@@ -543,7 +543,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps("docker")
+	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
