@@ -319,7 +319,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				// TODO: need pipeline-specific pod
+				_pod := testPod(false) // TODO: need pipeline-specific pod
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
