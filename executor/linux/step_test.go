@@ -126,7 +126,7 @@ func TestLinux_CreateStep(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-step container with image not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
 		//		ID:          "step-github-octocat-1-echo",
@@ -457,7 +457,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-step container with image not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
 		//		ID:          "step-github-octocat-1-echo",
@@ -635,7 +635,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-step container with name not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	logs:    _logs,
 		//	container: &pipeline.Container{
@@ -806,7 +806,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-step container with ignoring name not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
 		//		ID:          "step-github-octocat-1-ignorenotfound",

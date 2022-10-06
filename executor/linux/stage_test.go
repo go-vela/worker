@@ -130,7 +130,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-stage with step container with image not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	stage: &pipeline.Stage{
 		//		Name: "echo",
@@ -516,7 +516,7 @@ func TestLinux_ExecStage(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-stage with step container with image not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	stage: &pipeline.Stage{
 		//		Name: "echo",

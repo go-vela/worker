@@ -96,7 +96,7 @@ func TestLinux_CreateService(t *testing.T) {
 		},
 		// {
 		//	name:    "kubernetes-service container with image not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
 		//		ID:          "service_github_octocat_1_echo",

@@ -108,7 +108,7 @@ func TestLinux_Secret_create(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-notfound image tag",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
 		//		ID:          "secret-github-octocat-1-vault",
@@ -857,7 +857,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-container step fails because of invalid container id",
-		//	failure: true, // FIXME: notfound image w/ k8s mock
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	logs:    new(library.Log),
 		//	container: &pipeline.Container{
