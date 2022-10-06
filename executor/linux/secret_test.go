@@ -52,7 +52,7 @@ func TestLinux_Secret_create(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -176,7 +176,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -457,7 +457,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				// TODO: need pipeline-specific pod
+				_pod := testPod(false) // TODO: need pipeline-specific pod
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -532,7 +532,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -833,7 +833,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}

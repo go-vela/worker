@@ -344,54 +344,38 @@ func testSteps(runtime string) *pipeline.Build {
 	return steps.Sanitize(runtime)
 }
 
-// https://github.com/go-vela/worker/blob/main/runtime/kubernetes/kubernetes_test.go#L83
-var _pod = &v1.Pod{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:      "github-octocat-1",
-		Namespace: "test",
-		Labels: map[string]string{
-			"pipeline": "github-octocat-1",
-		},
-	},
-	TypeMeta: metav1.TypeMeta{
-		APIVersion: "v1",
-		Kind:       "Pod",
-	},
-	Status: v1.PodStatus{
-		Phase: v1.PodRunning,
-		ContainerStatuses: []v1.ContainerStatus{
-			{
-				Name: "step-github-octocat-1-clone",
-				State: v1.ContainerState{
-					Terminated: &v1.ContainerStateTerminated{
-						Reason:   "Completed",
-						ExitCode: 0,
-					},
-				},
-				Image: "target/vela-git:v0.6.0",
-			},
-			{
-				Name: "step-github-octocat-1-echo",
-				State: v1.ContainerState{
-					Terminated: &v1.ContainerStateTerminated{
-						Reason:   "Completed",
-						ExitCode: 0,
-					},
-				},
-				Image: "alpine:latest",
+// testPod is a test helper function to create a Pod
+// type with all fields set to a fake value.
+func testPod(stages bool) *v1.Pod {
+	// https://github.com/go-vela/worker/blob/main/runtime/kubernetes/kubernetes_test.go#L83
+	pod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "github-octocat-1",
+			Namespace: "test",
+			Labels: map[string]string{
+				"pipeline": "github-octocat-1",
 			},
 		},
-	},
-	Spec: v1.PodSpec{
-		Containers: []v1.Container{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Pod",
+		},
+		Status: v1.PodStatus{
+			Phase: v1.PodRunning,
+		},
+		Spec: v1.PodSpec{},
+	}
+
+	if stages {
+		pod.Spec.Containers = []v1.Container{
 			{
-				Name:            "step-github-octocat-1-clone",
+				Name:            "github-octocat-1-clone-clone",
 				Image:           "target/vela-git:v0.6.0",
 				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
 				ImagePullPolicy: v1.PullAlways,
 			},
 			{
-				Name:            "step-github-octocat-1-echo",
+				Name:            "github-octocat-1-echo-echo",
 				Image:           "alpine:latest",
 				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
 				ImagePullPolicy: v1.PullAlways,
@@ -402,42 +386,8 @@ var _pod = &v1.Pod{
 				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
 				ImagePullPolicy: v1.PullAlways,
 			},
-		},
-		HostAliases: []v1.HostAlias{
-			{
-				IP: "127.0.0.1",
-				Hostnames: []string{
-					"postgres.local",
-					"echo.local",
-				},
-			},
-		},
-		Volumes: []v1.Volume{
-			{
-				Name: "github-octocat-1",
-				VolumeSource: v1.VolumeSource{
-					EmptyDir: &v1.EmptyDirVolumeSource{},
-				},
-			},
-		},
-	},
-}
-
-var _stagePod = &v1.Pod{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:      "github-octocat-1",
-		Namespace: "test",
-		Labels: map[string]string{
-			"pipeline": "github-octocat-1",
-		},
-	},
-	TypeMeta: metav1.TypeMeta{
-		APIVersion: "v1",
-		Kind:       "Pod",
-	},
-	Status: v1.PodStatus{
-		Phase: v1.PodRunning,
-		ContainerStatuses: []v1.ContainerStatus{
+		}
+		pod.Status.ContainerStatuses = []v1.ContainerStatus{
 			{
 				Name: "github-octocat-1-clone-clone",
 				State: v1.ContainerState{
@@ -458,18 +408,17 @@ var _stagePod = &v1.Pod{
 				},
 				Image: "alpine:latest",
 			},
-		},
-	},
-	Spec: v1.PodSpec{
-		Containers: []v1.Container{
+		}
+	} else { // step
+		pod.Spec.Containers = []v1.Container{
 			{
-				Name:            "github-octocat-1-clone-clone",
+				Name:            "step-github-octocat-1-clone",
 				Image:           "target/vela-git:v0.6.0",
 				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
 				ImagePullPolicy: v1.PullAlways,
 			},
 			{
-				Name:            "github-octocat-1-echo-echo",
+				Name:            "step-github-octocat-1-echo",
 				Image:           "alpine:latest",
 				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
 				ImagePullPolicy: v1.PullAlways,
@@ -480,23 +429,30 @@ var _stagePod = &v1.Pod{
 				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
 				ImagePullPolicy: v1.PullAlways,
 			},
-		},
-		HostAliases: []v1.HostAlias{
+		}
+		pod.Status.ContainerStatuses = []v1.ContainerStatus{
 			{
-				IP: "127.0.0.1",
-				Hostnames: []string{
-					"postgres.local",
-					"echo.local",
+				Name: "step-github-octocat-1-clone",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
 				},
+				Image: "target/vela-git:v0.6.0",
 			},
-		},
-		Volumes: []v1.Volume{
 			{
-				Name: "github-octocat-1",
-				VolumeSource: v1.VolumeSource{
-					EmptyDir: &v1.EmptyDirVolumeSource{},
+				Name: "step-github-octocat-1-echo",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
 				},
+				Image: "alpine:latest",
 			},
-		},
-	},
+		}
+	}
+
+	return pod
 }

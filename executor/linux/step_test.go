@@ -42,7 +42,7 @@ func TestLinux_CreateStep(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -204,7 +204,7 @@ func TestLinux_PlanStep(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -338,7 +338,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -545,7 +545,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -722,7 +722,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}

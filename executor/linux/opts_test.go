@@ -351,7 +351,7 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
