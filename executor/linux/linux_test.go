@@ -243,7 +243,7 @@ func testUser() *library.User {
 	}
 }
 
-// testUser is a test helper function to create a metadata
+// testMetadata is a test helper function to create a metadata
 // type with all fields set to a fake value.
 func testMetadata() *types.Metadata {
 	return &types.Metadata{
