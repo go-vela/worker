@@ -35,7 +35,7 @@ func TestLinux_Secret_create(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps("docker")
 
 	gin.SetMode(gin.TestMode)
 
@@ -125,7 +125,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_dockerSteps := testSteps("docker")
 
 	gin.SetMode(gin.TestMode)
 
@@ -153,6 +153,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		runtime   runtime.Engine
 		container *pipeline.Container
 		step      *library.Step
+		steps     *pipeline.Build
 	}{
 		{
 			name:    "docker-running container-empty step",
@@ -167,7 +168,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      1,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-running container-pending step",
@@ -182,7 +184,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: _step,
+			step:  _step,
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-inspecting container failure due to invalid container id",
@@ -197,7 +200,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-removing container failure",
@@ -212,7 +216,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 	}
 
@@ -221,7 +226,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(_steps),
+				WithPipeline(test.steps),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithUser(_user),
@@ -506,7 +511,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(testSteps()),
+				WithPipeline(testSteps("docker")),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithUser(_user),
@@ -538,7 +543,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps("docker")
 
 	gin.SetMode(gin.TestMode)
 

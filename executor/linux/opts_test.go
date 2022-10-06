@@ -384,7 +384,7 @@ func TestLinux_Opt_WithLogger(t *testing.T) {
 
 func TestLinux_Opt_WithPipeline(t *testing.T) {
 	// setup types
-	_steps := testSteps()
+	_steps := testSteps("docker")
 
 	// setup tests
 	tests := []struct {

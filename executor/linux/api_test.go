@@ -64,7 +64,7 @@ func TestLinux_GetBuild(t *testing.T) {
 
 func TestLinux_GetPipeline(t *testing.T) {
 	// setup types
-	_steps := testSteps()
+	_steps := testSteps("docker")
 
 	_engine, err := New(
 		WithPipeline(_steps),
