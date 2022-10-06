@@ -210,26 +210,31 @@ func TestLinux_PlanBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 	}
@@ -312,66 +317,79 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-secrets pipeline with image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/img_notfound.yml",
 		},
 		{
 			name:     "docker-secrets pipeline with ignoring image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
 		},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-services pipeline with image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
 		{
 			name:     "docker-services pipeline with ignoring image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
 		{
 			name:     "docker-steps pipeline with ignoring image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-stages pipeline with image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
 		{
 			name:     "docker-stages pipeline with ignoring image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_ignorenotfound.yml",
 		},
 	}
@@ -455,36 +473,43 @@ func TestLinux_ExecBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-services pipeline with image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-stages pipeline with image not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
 	}
@@ -606,6 +631,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 	tests := []struct {
 		name       string
 		failure    bool
+		runtime    string
 		pipeline   string
 		messageKey string
 		ctn        *pipeline.Container
@@ -615,6 +641,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic services pipeline",
 			failure:    false,
+			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/services/basic.yml",
 			messageKey: "service",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -638,6 +665,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic services pipeline with StreamService failure",
 			failure:    false,
+			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/services/basic.yml",
 			messageKey: "service",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -662,6 +690,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic steps pipeline",
 			failure:    false,
+			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/steps/basic.yml",
 			messageKey: "step",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -683,6 +712,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic steps pipeline with StreamStep failure",
 			failure:    false,
+			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/steps/basic.yml",
 			messageKey: "step",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -705,6 +735,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic stages pipeline",
 			failure:    false,
+			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/stages/basic.yml",
 			messageKey: "step",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -726,6 +757,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic secrets pipeline",
 			failure:    false,
+			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/secrets/basic.yml",
 			messageKey: "secret",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -846,46 +878,55 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-secrets pipeline with name not found",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-services pipeline with name not found",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/name_notfound.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with name not found",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/name_notfound.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-stages pipeline with name not found",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/name_notfound.yml",
 		},
 	}
