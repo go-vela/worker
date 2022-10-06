@@ -15,6 +15,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
@@ -42,90 +43,80 @@ func TestLinux_CreateBuild(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_docker, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
-	}
-
-	_kubernetes, err := kubernetes.NewMock(testPod(false))
-	if err != nil {
-		t.Errorf("unable to create kubernetes runtime engine: %v", err)
-	}
-
 	tests := []struct {
 		name     string
 		failure  bool
-		runtime  runtime.Engine
+		runtime  string
 		build    *library.Build
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic secrets pipeline",
 			failure:  false,
-			runtime:  _kubernetes,
+			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic services pipeline",
 			failure:  false,
-			runtime:  _kubernetes,
+			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic steps pipeline",
 			failure:  false,
-			runtime:  _kubernetes,
+			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic stages pipeline",
 			failure:  false,
-			runtime:  _kubernetes,
+			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with empty build",
 			failure:  true,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "kubernetes-steps pipeline with empty build",
 			failure:  true,
-			runtime:  _kubernetes,
+			runtime:  constants.DriverKubernetes,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
@@ -145,11 +136,30 @@ func TestLinux_CreateBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
+			}
+
 			_engine, err := New(
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
-				WithRuntime(test.runtime),
+				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
