@@ -202,11 +202,6 @@ func TestLinux_PlanBuild(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
 	tests := []struct {
 		name     string
 		failure  bool
@@ -251,6 +246,25 @@ func TestLinux_PlanBuild(t *testing.T) {
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
+			}
+
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
 			}
 
 			_engine, err := New(
@@ -304,11 +318,6 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
-	}
-
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -408,6 +417,25 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
+			}
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
@@ -460,11 +488,6 @@ func TestLinux_ExecBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
-	}
-
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -526,6 +549,25 @@ func TestLinux_ExecBuild(t *testing.T) {
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
+			}
+
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
 			}
 
 			_engine, err := New(
@@ -614,11 +656,6 @@ func TestLinux_StreamBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
-	}
-
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	type planFuncType = func(context.Context, *pipeline.Container) error
@@ -796,6 +833,25 @@ func TestLinux_StreamBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
+			}
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
@@ -870,11 +926,6 @@ func TestLinux_DestroyBuild(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
-	}
-
 	tests := []struct {
 		name     string
 		failure  bool
@@ -943,6 +994,25 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
+			}
+
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
 			}
 
 			_engine, err := New(
