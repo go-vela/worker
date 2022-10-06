@@ -20,6 +20,7 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 
@@ -44,44 +45,45 @@ func TestLinux_CreateBuild(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
-	}
-
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  string
 		build    *library.Build
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with empty build",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
@@ -99,6 +101,16 @@ func TestLinux_CreateBuild(t *testing.T) {
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
+			}
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
 			}
 
 			_engine, err := New(
