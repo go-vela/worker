@@ -11,6 +11,8 @@ import (
 	"os"
 	"testing"
 
+	v1 "k8s.io/api/core/v1"
+
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
 
@@ -213,7 +215,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		},
 		{
 			name:    "kubernetes-running container-empty step",
-			failure: false, // FIXME: pod "github_octocat_1" not found
+			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
 				ID:          "secret-github-octocat-1-vault",
@@ -245,7 +247,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		},
 		{
 			name:    "kubernetes-running container-pending step",
-			failure: false, // FIXME: pod "github_octocat_1" not found
+			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
 				ID:          "secret-github-octocat-1-vault",
@@ -340,7 +342,16 @@ func TestLinux_Secret_delete(t *testing.T) {
 				t.Errorf("unable to create executor engine: %v", err)
 			}
 
+			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime.Driver() == constants.DriverKubernetes {
+				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
 
 			_engine.steps.Store(test.container.ID, test.step)
 
@@ -384,7 +395,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_kubernetes, err := kubernetes.NewMock(_pod)
+	_kubernetes, err := kubernetes.NewMock(&v1.Pod{})
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
@@ -405,12 +416,12 @@ func TestLinux_Secret_exec(t *testing.T) {
 			runtime:  _docker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
-		//{
-		//	name:     "kubernetes-basic secrets pipeline",
-		//	failure:  false, // FIXME: pods "github_octocat_1" not found
-		//	runtime:  _kubernetes,
-		//	pipeline: "testdata/build/secrets/basic.yml",
-		//},
+		{
+			name:     "kubernetes-basic secrets pipeline",
+			failure:  false, // FIXME: containerTracker is missing for secret-github-octocat-1-vault
+			runtime:  _kubernetes,
+			pipeline: "testdata/build/secrets/basic.yml",
+		},
 		{
 			name:     "docker-pipeline with secret name not found",
 			failure:  true,
@@ -419,7 +430,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 		},
 		{
 			name:     "kubernetes-pipeline with secret name not found",
-			failure:  true, // pods "github_octocat_1" not found
+			failure:  true, // FIXME: containerTracker is missing for secret-github-octocat-1-notfound
 			runtime:  _kubernetes,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
@@ -441,6 +452,9 @@ func TestLinux_Secret_exec(t *testing.T) {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			p = p.Sanitize(test.runtime.Driver())
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(p),
@@ -458,6 +472,15 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime.Driver() == constants.DriverKubernetes {
+				// TODO: need pipeline-specific pod
+				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
 
 			err = _engine.secret.exec(context.Background(), &p.Secrets)
 
@@ -889,6 +912,14 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime.Driver() == constants.DriverKubernetes {
+				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
 
 			err = _engine.secret.stream(context.Background(), test.container)
 

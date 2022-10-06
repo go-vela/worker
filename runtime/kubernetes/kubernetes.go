@@ -203,3 +203,15 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	return c, nil
 }
+
+// MockKubernetesRuntime makes it possible to use the client mocks in other packages.
+type MockKubernetesRuntime interface {
+	SetupMock() error
+}
+
+// SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
+// Many tests should call this right after they call runtime.SetupBuild (or executor.CreateBuild).
+func (c *client) SetupMock() error {
+	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
+	return c.PodTracker.setupMockFor(c.Pod)
+}
