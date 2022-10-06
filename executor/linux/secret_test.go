@@ -11,8 +11,6 @@ import (
 	"os"
 	"testing"
 
-	v1 "k8s.io/api/core/v1"
-
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
 
@@ -390,15 +388,15 @@ func TestLinux_Secret_exec(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_docker, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
-	}
-
-	_kubernetes, err := kubernetes.NewMock(&v1.Pod{})
-	if err != nil {
-		t.Errorf("unable to create kubernetes runtime engine: %v", err)
-	}
+	//_docker, err := docker.NewMock()
+	//if err != nil {
+	//	t.Errorf("unable to create docker runtime engine: %v", err)
+	//}
+	//
+	//_kubernetes, err := kubernetes.NewMock(&v1.Pod{})
+	//if err != nil {
+	//	t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	//}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
@@ -407,31 +405,31 @@ func TestLinux_Secret_exec(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
-		runtime  runtime.Engine
+		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic secrets pipeline",
 			failure:  false, // FIXME: containerTracker is missing for secret-github-octocat-1-vault
-			runtime:  _kubernetes,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-pipeline with secret name not found",
 			failure:  true,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 		{
 			name:     "kubernetes-pipeline with secret name not found",
 			failure:  true, // FIXME: containerTracker is missing for secret-github-octocat-1-notfound
-			runtime:  _kubernetes,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 	}
@@ -453,13 +451,29 @@ func TestLinux_Secret_exec(t *testing.T) {
 			}
 
 			// Docker uses _ while Kubernetes uses -
-			p = p.Sanitize(test.runtime.Driver())
+			p = p.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				// TODO: need pipeline-specific pod
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
+			}
 
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(p),
 				WithRepo(_repo),
-				WithRuntime(test.runtime),
+				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -474,8 +488,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 			_ = _engine.CreateBuild(context.Background())
 
 			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
-			if test.runtime.Driver() == constants.DriverKubernetes {
-				// TODO: need pipeline-specific pod
+			if test.runtime == constants.DriverKubernetes {
 				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
 				if err != nil {
 					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
