@@ -1090,6 +1090,12 @@ func TestLinux_PlanBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -1288,6 +1294,12 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -1442,6 +1454,12 @@ func TestLinux_ExecBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -1825,6 +1843,12 @@ func TestLinux_StreamBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -2031,6 +2055,12 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
