@@ -457,7 +457,8 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				_pod := testPod(false) // TODO: need pipeline-specific pod
+				//_pod := testPod(false)
+				_pod := testPodFor(p)
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -490,6 +491,8 @@ func TestLinux_Secret_exec(t *testing.T) {
 			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
 			if test.runtime == constants.DriverKubernetes {
 				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				// TODO: add something that mocks the events
+				//       when the pod gets patched, simulate running->termination
 				if err != nil {
 					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 				}
