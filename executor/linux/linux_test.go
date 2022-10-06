@@ -342,7 +342,7 @@ func testSteps(runtime string) *pipeline.Build {
 
 // testPod is a test helper function to create a Pod
 // type with all fields set to a fake value.
-func testPod(stages bool) *v1.Pod {
+func testPod(useStages bool) *v1.Pod {
 	// https://github.com/go-vela/worker/blob/main/runtime/kubernetes/kubernetes_test.go#L83
 	pod := &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -362,7 +362,7 @@ func testPod(stages bool) *v1.Pod {
 		Spec: v1.PodSpec{},
 	}
 
-	if stages {
+	if useStages {
 		pod.Spec.Containers = []v1.Container{
 			{
 				Name:            "github-octocat-1-clone-clone",
@@ -449,6 +449,117 @@ func testPod(stages bool) *v1.Pod {
 			},
 		}
 	}
+
+	return pod
+}
+
+// testPodFor is a test helper function to create a Pod
+// using container names from a test pipeline.
+func testPodFor(build *pipeline.Build) *v1.Pod {
+	var (
+		pod               *v1.Pod
+		containers        []v1.Container
+		containerStatuses []v1.ContainerStatus
+	)
+
+	workingDir := "/vela/src/github.com/octocat/helloworld"
+	useStages := len(build.Stages) > 0
+	pod = testPod(useStages)
+
+	for _, service := range build.Services {
+		containers = append(containers, v1.Container{
+			Name:       service.ID,
+			Image:      service.Image,
+			WorkingDir: workingDir,
+			// service.Pull should be one of: Always, Never, IfNotPresent
+			ImagePullPolicy: v1.PullPolicy(service.Pull),
+		})
+	}
+
+	if useStages {
+		containers = append(containers, v1.Container{
+			Name:            "step-github-octocat-1-clone-clone",
+			Image:           "target/vela-git:v0.6.0",
+			WorkingDir:      workingDir,
+			ImagePullPolicy: v1.PullAlways,
+		})
+
+		containerStatuses = append(containerStatuses, v1.ContainerStatus{
+			Name: "step-github-octocat-1-clone-clone",
+			State: v1.ContainerState{
+				Terminated: &v1.ContainerStateTerminated{
+					Reason:   "Completed",
+					ExitCode: 0,
+				},
+			},
+			Image: "target/vela-git:v0.6.0",
+		})
+	} else { // steps
+		containers = append(containers, v1.Container{
+			Name:            "step-github-octocat-1-clone",
+			Image:           "target/vela-git:v0.6.0",
+			WorkingDir:      workingDir,
+			ImagePullPolicy: v1.PullAlways,
+		})
+
+		containerStatuses = append(containerStatuses, v1.ContainerStatus{
+			Name: "step-github-octocat-1-clone",
+			State: v1.ContainerState{
+				Terminated: &v1.ContainerStateTerminated{
+					Reason:   "Completed",
+					ExitCode: 0,
+				},
+			},
+			Image: "target/vela-git:v0.6.0",
+		})
+	}
+
+	for _, stage := range build.Stages {
+		for _, step := range stage.Steps {
+			if step.Name == "init" {
+				continue
+			}
+
+			containers = append(containers, v1.Container{
+				Name:       step.ID,
+				Image:      step.Image,
+				WorkingDir: workingDir,
+				// step.Pull should be one of: Always, Never, IfNotPresent
+				ImagePullPolicy: v1.PullPolicy(step.Pull),
+			})
+		}
+	}
+
+	for _, step := range build.Steps {
+		if step.Name == "init" {
+			continue
+		}
+
+		containers = append(containers, v1.Container{
+			Name:       step.ID,
+			Image:      step.Image,
+			WorkingDir: workingDir,
+			// step.Pull should be one of: Always, Never, IfNotPresent
+			ImagePullPolicy: v1.PullPolicy(step.Pull),
+		})
+	}
+
+	for _, secret := range build.Secrets {
+		if secret.Origin.Empty() {
+			continue
+		}
+
+		containers = append(containers, v1.Container{
+			Name:       secret.Origin.ID,
+			Image:      secret.Origin.Image,
+			WorkingDir: workingDir,
+			// secret.Origin.Pull should be one of: Always, Never, IfNotPresent
+			ImagePullPolicy: v1.PullPolicy(secret.Origin.Pull),
+		})
+	}
+
+	pod.Spec.Containers = containers
+	pod.Status.ContainerStatuses = containerStatuses
 
 	return pod
 }
