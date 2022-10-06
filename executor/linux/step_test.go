@@ -73,7 +73,7 @@ func TestLinux_CreateStep(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_init",
+				ID:          "step-github-octocat-1-init",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
@@ -101,7 +101,7 @@ func TestLinux_CreateStep(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
+				ID:          "step-github-octocat-1-echo",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
@@ -129,7 +129,7 @@ func TestLinux_CreateStep(t *testing.T) {
 		//	failure: true, // FIXME: notfound image w/ k8s mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
-		//		ID:          "step_github_octocat_1_echo",
+		//		ID:          "step-github-octocat-1-echo",
 		//		Directory:   "/vela/src/github.com/github/octocat",
 		//		Environment: map[string]string{"FOO": "bar"},
 		//		Image:       "alpine:notfound",
@@ -235,7 +235,7 @@ func TestLinux_PlanStep(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
+				ID:          "step-github-octocat-1-echo",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
@@ -263,7 +263,7 @@ func TestLinux_PlanStep(t *testing.T) {
 			failure: true,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
+				ID:          "step-github-octocat-1-echo",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: nil,
 				Image:       "alpine:latest",
@@ -343,6 +343,8 @@ func TestLinux_ExecStep(t *testing.T) {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
+	_kubernetes.PodTracker.Start(context.Background())
+
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
@@ -372,7 +374,7 @@ func TestLinux_ExecStep(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_init",
+				ID:          "step-github-octocat-1-init",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
@@ -397,10 +399,10 @@ func TestLinux_ExecStep(t *testing.T) {
 		},
 		{
 			name:    "kubernetes-basic step container",
-			failure: true, // FIXME: containerTracker is missing for step_github_octocat_1_echo
+			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
+				ID:          "step-github-octocat-1-echo",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
@@ -429,7 +431,7 @@ func TestLinux_ExecStep(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
+				ID:          "step-github-octocat-1-echo",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -455,10 +457,10 @@ func TestLinux_ExecStep(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-step container with image not found",
-		//	failure: true, // FIXME: notfound image w/ k8s mock (wrong failure - actually containerTracker is missing)
+		//	failure: true, // FIXME: notfound image w/ k8s mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
-		//		ID:          "step_github_octocat_1_echo",
+		//		ID:          "step-github-octocat-1-echo",
 		//		Directory:   "/vela/src/github.com/github/octocat",
 		//		Environment: map[string]string{"FOO": "bar"},
 		//		Image:       "alpine:notfound",
@@ -577,7 +579,7 @@ func TestLinux_StreamStep(t *testing.T) {
 			runtime: _kubernetes,
 			logs:    _logs,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_init",
+				ID:          "step-github-octocat-1-init",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
@@ -607,7 +609,7 @@ func TestLinux_StreamStep(t *testing.T) {
 			runtime: _kubernetes,
 			logs:    _logs,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
+				ID:          "step-github-octocat-1-echo",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
@@ -637,7 +639,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		//	runtime: _kubernetes,
 		//	logs:    _logs,
 		//	container: &pipeline.Container{
-		//		ID:          "step_github_octocat_1_notfound",
+		//		ID:          "step-github-octocat-1-notfound",
 		//		Directory:   "/vela/src/github.com/github/octocat",
 		//		Environment: map[string]string{"FOO": "bar"},
 		//		Image:       "alpine:latest",
@@ -751,7 +753,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_init",
+				ID:          "step-github-octocat-1-init",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
@@ -779,7 +781,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_echo",
+				ID:          "step-github-octocat-1-echo",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
@@ -804,10 +806,10 @@ func TestLinux_DestroyStep(t *testing.T) {
 		},
 		//{
 		//	name:    "kubernetes-step container with ignoring name not found",
-		//	failure: true, // FIXME: unexpected pass.
+		//	failure: true, // FIXME: notfound image w/ k8s mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
-		//		ID:          "step_github_octocat_1_ignorenotfound",
+		//		ID:          "step-github-octocat-1-ignorenotfound",
 		//		Directory:   "/vela/src/github.com/github/octocat",
 		//		Environment: map[string]string{"FOO": "bar"},
 		//		Image:       "alpine:latest",
