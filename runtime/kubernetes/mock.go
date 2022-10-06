@@ -90,8 +90,16 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 //
 // This interface is intended for running tests only.
 type MockKubernetesRuntime interface {
+	SetupMock() error
 	MarkPodTrackerReady()
 	SimulateResync(*v1.Pod)
+}
+
+// SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
+// Many tests should call this right after they call runtime.SetupBuild (or executor.CreateBuild).
+func (c *client) SetupMock() error {
+	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
+	return c.PodTracker.setupMockFor(c.Pod)
 }
 
 // MarkPodTrackerReady signals that PodTracker has been setup with ContainerTrackers.
