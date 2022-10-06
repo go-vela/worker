@@ -416,7 +416,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 		},
 		{
 			name:     "kubernetes-basic secrets pipeline",
-			failure:  false, // FIXME: containerTracker is missing for secret-github-octocat-1-vault
+			failure:  false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
@@ -426,12 +426,12 @@ func TestLinux_Secret_exec(t *testing.T) {
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
-		{
-			name:     "kubernetes-pipeline with secret name not found",
-			failure:  true, // FIXME: containerTracker is missing for secret-github-octocat-1-notfound
-			runtime:  constants.DriverKubernetes,
-			pipeline: "testdata/build/secrets/name_notfound.yml",
-		},
+		//{
+		//	name:     "kubernetes-pipeline with secret name not found",
+		//	failure:  true, // FIXME:  make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime:  constants.DriverKubernetes,
+		//	pipeline: "testdata/build/secrets/name_notfound.yml",
+		//},
 	}
 
 	// run tests
@@ -457,7 +457,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				//_pod := testPod(false)
 				_pod := testPodFor(p)
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
@@ -490,12 +489,12 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
 			if test.runtime == constants.DriverKubernetes {
-				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
-				// TODO: add something that mocks the events
-				//       when the pod gets patched, simulate running->termination
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
 				if err != nil {
 					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 				}
+
+				go _runtime.(kubernetes.MockKubernetesRuntime).SimulateUpdate()
 			}
 
 			err = _engine.secret.exec(context.Background(), &p.Secrets)

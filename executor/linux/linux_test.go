@@ -560,6 +560,17 @@ func testPodFor(build *pipeline.Build) *v1.Pod {
 			// secret.Origin.Pull should be one of: Always, Never, IfNotPresent
 			ImagePullPolicy: v1.PullPolicy(secret.Origin.Pull),
 		})
+
+		containerStatuses = append(containerStatuses, v1.ContainerStatus{
+			Name:  secret.Origin.ID,
+			Image: secret.Origin.Image,
+			State: v1.ContainerState{
+				Terminated: &v1.ContainerStateTerminated{
+					Reason:   "Completed",
+					ExitCode: 0,
+				},
+			},
+		})
 	}
 
 	pod.Spec.Containers = containers

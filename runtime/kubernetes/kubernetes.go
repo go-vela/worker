@@ -6,9 +6,9 @@ package kubernetes
 
 import (
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
@@ -207,6 +207,7 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 // MockKubernetesRuntime makes it possible to use the client mocks in other packages.
 type MockKubernetesRuntime interface {
 	SetupMock() error
+	SimulateUpdate()
 }
 
 // SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
@@ -214,4 +215,14 @@ type MockKubernetesRuntime interface {
 func (c *client) SetupMock() error {
 	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
 	return c.PodTracker.setupMockFor(c.Pod)
+}
+
+// SimulateUpdate simulates an update event from the k8s API.
+func (c *client) SimulateUpdate() {
+	// Future: maybe allow passing in either new or old pod
+	oldPod := c.Pod.DeepCopy()
+	oldPod.SetResourceVersion("older")
+
+	// simulate a re-sync/PodUpdate event
+	c.PodTracker.HandlePodUpdate(oldPod, c.Pod)
 }
