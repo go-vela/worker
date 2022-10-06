@@ -36,7 +36,7 @@ func TestLinux_Secret_create(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps("docker")
 
 	gin.SetMode(gin.TestMode)
 
@@ -83,7 +83,7 @@ func TestLinux_Secret_create(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "secret_github_octocat_1_vault",
+				ID:          "secret-github-octocat-1-vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "target/secret-vault:latest",
@@ -111,7 +111,7 @@ func TestLinux_Secret_create(t *testing.T) {
 		//	failure: true, // FIXME: notfound image w/ k8s mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
-		//		ID:          "secret_github_octocat_1_vault",
+		//		ID:          "secret-github-octocat-1-vault",
 		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
 		//		Environment: map[string]string{"FOO": "bar"},
 		//		Image:       "target/secret-vault:notfound",
@@ -159,7 +159,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_dockerSteps := testSteps("docker")
+	_kubernetesSteps := testSteps("kubernetes")
 
 	gin.SetMode(gin.TestMode)
 
@@ -192,6 +193,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		runtime   runtime.Engine
 		container *pipeline.Container
 		step      *library.Step
+		steps     *pipeline.Build
 	}{
 		{
 			name:    "docker-running container-empty step",
@@ -206,23 +208,25 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      1,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
-		//{
-		//	name:    "kubernetes-running container-empty step",
-		//	failure: false, // FIXME: pod "github_octocat_1" not found
-		//	runtime: _kubernetes,
-		//	container: &pipeline.Container{
-		//		ID:          "secret_github_octocat_1_vault",
-		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
-		//		Environment: map[string]string{"FOO": "bar"},
-		//		Image:       "target/secret-vault:latest",
-		//		Name:        "vault",
-		//		Number:      1,
-		//		Pull:        "always",
-		//	},
-		//	step: new(library.Step),
-		//},
+		{
+			name:    "kubernetes-running container-empty step",
+			failure: false, // FIXME: pod "github_octocat_1" not found
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "secret-github-octocat-1-vault",
+				Directory:   "/vela/src/vcs.company.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "target/secret-vault:latest",
+				Name:        "vault",
+				Number:      1,
+				Pull:        "always",
+			},
+			step:  new(library.Step),
+			steps: _kubernetesSteps,
+		},
 		{
 			name:    "docker-running container-pending step",
 			failure: false,
@@ -236,23 +240,25 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: _step,
+			step:  _step,
+			steps: _dockerSteps,
 		},
-		//{
-		//	name:    "kubernetes-running container-pending step",
-		//	failure: false, // FIXME: pod "github_octocat_1" not found
-		//	runtime: _kubernetes,
-		//	container: &pipeline.Container{
-		//		ID:          "secret_github_octocat_1_vault",
-		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
-		//		Environment: map[string]string{"FOO": "bar"},
-		//		Image:       "target/secret-vault:latest",
-		//		Name:        "vault",
-		//		Number:      2,
-		//		Pull:        "always",
-		//	},
-		//	step: _step,
-		//},
+		{
+			name:    "kubernetes-running container-pending step",
+			failure: false, // FIXME: pod "github_octocat_1" not found
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "secret-github-octocat-1-vault",
+				Directory:   "/vela/src/vcs.company.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "target/secret-vault:latest",
+				Name:        "vault",
+				Number:      2,
+				Pull:        "always",
+			},
+			step:  _step,
+			steps: _kubernetesSteps,
+		},
 		{
 			name:    "docker-inspecting container failure due to invalid container id",
 			failure: true,
@@ -266,14 +272,15 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "kubernetes-inspecting container failure due to invalid container id",
 			failure: true, // pods "github_octocat_1" not found
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "secret_github_octocat_1_notfound",
+				ID:          "secret-github-octocat-1-notfound",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "target/secret-vault:latest",
@@ -281,7 +288,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _kubernetesSteps,
 		},
 		{
 			name:    "docker-removing container failure",
@@ -296,14 +304,15 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "kubernetes-removing container failure",
 			failure: true, // pods "github_octocat_1" not found
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "secret_github_octocat_1_ignorenotfound",
+				ID:          "secret-github-octocat-1-ignorenotfound",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "target/secret-vault:latest",
@@ -311,7 +320,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _kubernetesSteps,
 		},
 	}
 
@@ -320,7 +330,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(_steps),
+				WithPipeline(test.steps),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithUser(_user),
@@ -739,7 +749,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(testSteps()),
+				WithPipeline(testSteps("docker")),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithUser(_user),
@@ -771,7 +781,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps("docker")
 
 	gin.SetMode(gin.TestMode)
 
@@ -821,7 +831,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 			runtime: _kubernetes,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
-				ID:          "step_github_octocat_1_init",
+				ID:          "step-github-octocat-1-init",
 				Directory:   "/home/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
@@ -851,7 +861,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		//	runtime: _kubernetes,
 		//	logs:    new(library.Log),
 		//	container: &pipeline.Container{
-		//		ID:          "secret_github_octocat_1_notfound",
+		//		ID:          "secret-github-octocat-1-notfound",
 		//		Directory:   "/vela/src/vcs.company.com/github/octocat",
 		//		Environment: map[string]string{"FOO": "bar"},
 		//		Image:       "target/secret-vault:latest",
