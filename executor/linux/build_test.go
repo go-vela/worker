@@ -115,6 +115,9 @@ func TestLinux_CreateBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
 			var _runtime runtime.Engine
 
 			switch test.runtime {
@@ -1074,6 +1077,9 @@ func TestLinux_PlanBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
 			var _runtime runtime.Engine
 
 			switch test.runtime {
@@ -1269,6 +1275,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
 			var _runtime runtime.Engine
 
 			switch test.runtime {
@@ -1419,6 +1428,9 @@ func TestLinux_ExecBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
+
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
 
 			var _runtime runtime.Engine
 
@@ -1800,6 +1812,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
+
 			var _runtime runtime.Engine
 
 			switch test.runtime {
@@ -2002,6 +2017,9 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
+
+			// Docker uses _ while Kubernetes uses -
+			_pipeline = _pipeline.Sanitize(test.runtime)
 
 			var _runtime runtime.Engine
 
