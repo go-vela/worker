@@ -8,7 +8,6 @@ import (
 	"context"
 	"flag"
 	"net/http/httptest"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -61,70 +60,70 @@ func TestLinux_CreateBuild(t *testing.T) {
 		pipeline string
 	}{
 		{
-			name:     "docker basic secrets pipeline",
+			name:     "docker-basic secrets pipeline",
 			failure:  false,
 			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "kubernetes basic secrets pipeline",
+			name:     "kubernetes-basic secrets pipeline",
 			failure:  false,
 			runtime:  _kubernetes,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "docker basic services pipeline",
+			name:     "docker-basic services pipeline",
 			failure:  false,
 			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "kubernetes basic services pipeline",
+			name:     "kubernetes-basic services pipeline",
 			failure:  false,
 			runtime:  _kubernetes,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "docker basic steps pipeline",
+			name:     "docker-basic steps pipeline",
 			failure:  false,
 			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "kubernetes basic steps pipeline",
+			name:     "kubernetes-basic steps pipeline",
 			failure:  false,
 			runtime:  _kubernetes,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "docker basic stages pipeline",
+			name:     "docker-basic stages pipeline",
 			failure:  false,
 			runtime:  _docker,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
-			name:     "kubernetes basic stages pipeline",
+			name:     "kubernetes-basic stages pipeline",
 			failure:  false,
 			runtime:  _kubernetes,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
-			name:     "docker steps pipeline with empty build",
+			name:     "docker-steps pipeline with empty build",
 			failure:  true,
 			runtime:  _docker,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "kubernetes steps pipeline with empty build",
+			name:     "kubernetes-steps pipeline with empty build",
 			failure:  true,
 			runtime:  _kubernetes,
 			build:    new(library.Build),
@@ -134,9 +133,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		name := filepath.Join(test.runtime.Driver(), test.name)
-
-		t.Run(name, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -145,7 +142,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile %s pipeline %s: %v", name, test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
 			_engine, err := New(
@@ -157,21 +154,21 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create %s executor engine: %v", name, err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.CreateBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("%s CreateBuild should have returned err", name)
+					t.Errorf("%s CreateBuild should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("%s CreateBuild returned err: %v", name, err)
+				t.Errorf("%s CreateBuild returned err: %v", test.name, err)
 			}
 		})
 	}

@@ -388,16 +388,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	//_docker, err := docker.NewMock()
-	//if err != nil {
-	//	t.Errorf("unable to create docker runtime engine: %v", err)
-	//}
-	//
-	//_kubernetes, err := kubernetes.NewMock(&v1.Pod{})
-	//if err != nil {
-	//	t.Errorf("unable to create kubernetes runtime engine: %v", err)
-	//}
-
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
