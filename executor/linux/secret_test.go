@@ -236,6 +236,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
+			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
 
 			_engine.steps.Store(test.container.ID, test.step)
@@ -314,6 +315,9 @@ func TestLinux_Secret_exec(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
+
+			// Docker uses _ while Kubernetes uses -
+			p = p.Sanitize(test.runtime)
 
 			var _runtime runtime.Engine
 
