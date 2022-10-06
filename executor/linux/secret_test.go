@@ -270,11 +270,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_docker, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
-	}
-
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
@@ -282,19 +277,19 @@ func TestLinux_Secret_exec(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
-		runtime  runtime.Engine
+		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-pipeline with secret name not found",
 			failure:  true,
-			runtime:  _docker,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 	}
@@ -315,11 +310,21 @@ func TestLinux_Secret_exec(t *testing.T) {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
+			}
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(p),
 				WithRepo(_repo),
-				WithRuntime(test.runtime),
+				WithRuntime(_runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
