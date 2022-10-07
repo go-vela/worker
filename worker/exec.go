@@ -6,6 +6,8 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/go-vela/types"
@@ -20,12 +22,14 @@ import (
 // and execute Vela pipelines for the Worker.
 //
 //nolint:nilerr // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int, item *types.Item) error {
+func (w *Worker) Exec(index int, item *types.Item) error {
 	// invalid item
 	if item == nil {
 		return nil
 	}
+	m, _ := json.Marshal(*item)
 
+	fmt.Printf("%v\n", []byte(m))
 	var err error
 
 	// setup the version

@@ -102,6 +102,11 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.POST
 		baseAPI.POST("/shutdown", api.Shutdown)
 
+		// add an endpoint for shutting down the worker
+		//
+		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.POST
+		baseAPI.POST("/exec", api.Exec)
+
 		// add a collection of endpoints for handling executor related requests
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#ExecutorHandlers

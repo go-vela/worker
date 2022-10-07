@@ -149,5 +149,5 @@ func run(c *cli.Context) error {
 	}
 
 	// start the worker
-	return w.Start()
+	return Start(w)
 }
