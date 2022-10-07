@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types"
 	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
@@ -16,10 +17,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// operate is a helper function to initiate all
+// Operate is a helper function to initiate all
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
-func (w *types.Worker) operate(ctx context.Context) error {
+func (w *Worker) Operate(ctx context.Context) error {
 	var err error
 
 	// setup the client
@@ -81,6 +82,9 @@ func (w *types.Worker) operate(ctx context.Context) error {
 		return err
 	}
 
+	ch := make(chan *types.Item)
+	w.ItemChannel = ch
+
 	// iterate till the configured build limit
 	for i := 0; i < w.Config.Build.Limit; i++ {
 		// evaluate and capture i at each iteration
@@ -96,6 +100,8 @@ func (w *types.Worker) operate(ctx context.Context) error {
 		// spawn errgroup routine for operator subprocess
 		//
 		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
+
+		// TODO: disable/enable this based on environment config
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
@@ -105,18 +111,12 @@ func (w *types.Worker) operate(ctx context.Context) error {
 						"id": id,
 					}).Info("Completed looping on worker executor")
 					return nil
-				default:
-					// capture an item from the queue
-					item, err := w.Queue.Pop(context.Background())
-					if err != nil {
-						return err
-					}
-
+				case item := <-w.ItemChannel:
 					// exec operator subprocess execute build from the queue
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
 					//nolint:contextcheck // ignore passing context
-					err = w.exec(id, item)
+					err = w.Exec(id, item)
 					if err != nil {
 						// log the error received from the executor
 						//

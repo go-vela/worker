@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -62,10 +63,11 @@ type (
 	// Worker represents all configuration and
 	// system processes for the worker.
 	Worker struct {
-		Config     *Config
-		Executors  map[int]executor.Engine
-		Queue      queue.Service
-		Runtime    runtime.Engine
-		VelaClient *vela.Client
+		Config      *Config
+		Executors   map[int]executor.Engine
+		Queue       queue.Service
+		Runtime     runtime.Engine
+		ItemChannel chan *types.Item
+		VelaClient  *vela.Client
 	}
 )

@@ -1,4 +1,4 @@
-package worker
+package main
 
 import (
 	"crypto/tls"
@@ -10,12 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/worker/router"
 	"github.com/go-vela/worker/router/middleware"
+	"github.com/go-vela/worker/worker"
 	"github.com/sirupsen/logrus"
 )
 
 // server is a helper function to listen and serve
 // traffic for web and API requests for the Worker.
-func (w *Worker) server() (http.Handler, *tls.Config) {
+func server(w *worker.Worker) (http.Handler, *tls.Config) {
 	// log a message indicating the setup of the server handlers
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Trace
@@ -87,9 +88,9 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 
 // Worker is a middleware function that attaches the
 // worker to the context of every http.Request.
-func WorkerMiddleware(w *Worker) gin.HandlerFunc {
+func WorkerMiddleware(w *worker.Worker) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("worker", w)
+		c.Set("worker", *w)
 		c.Next()
 	}
 }
