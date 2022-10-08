@@ -1545,6 +1545,34 @@ func TestLinux_ExecBuild(t *testing.T) {
 				if err != nil {
 					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 				}
+
+				_runtime.(kubernetes.MockKubernetesRuntime).StartPodTracker(context.Background())
+
+				go func() {
+					_runtime.(kubernetes.MockKubernetesRuntime).SimulateResync(nil)
+
+					var stepsRunningCount int
+
+					percents := []int{0, 0, 50, 100}
+					lastIndex := len(percents) - 1
+					for index, stepsCompletedPercent := range percents {
+						if index == 0 || index == lastIndex {
+							stepsRunningCount = 0
+						} else {
+							stepsRunningCount = 1
+						}
+
+						err := _runtime.(kubernetes.MockKubernetesRuntime).SimulateStatusUpdate(_pod,
+							testContainerStatuses(
+								_pipeline, true, stepsRunningCount, stepsCompletedPercent,
+							),
+						)
+						if err != nil {
+							t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
+						}
+						// TODO: maybe add a pause here
+					}
+				}()
 			}
 
 			err = _engine.ExecBuild(context.Background())
