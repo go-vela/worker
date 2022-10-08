@@ -5,6 +5,8 @@
 package kubernetes
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 
 	v1 "k8s.io/api/core/v1"
@@ -199,7 +201,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	c.PodTracker = tracker
 
-	// The test is responsible for calling c.PodTracker.Start() if needed
+	// The test is responsible for calling c.PodTracker.Start(ctx) if needed.
+	// In some cases it is more convenient to call c.(MockKubernetesRuntime).StartPodTracker(ctx)
 
 	return c, nil
 }
@@ -207,7 +210,9 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 // MockKubernetesRuntime makes it possible to use the client mocks in other packages.
 type MockKubernetesRuntime interface {
 	SetupMock() error
+	StartPodTracker(context.Context)
 	SimulateResync()
+	SimulateStatusUpdate(*v1.Pod, []v1.ContainerStatus) error
 }
 
 // SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
@@ -215,6 +220,12 @@ type MockKubernetesRuntime interface {
 func (c *client) SetupMock() error {
 	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
 	return c.PodTracker.setupMockFor(c.Pod)
+}
+
+// StartPodTracker tells the podTracker it can start populating the cache.
+// This is only here for tests.
+func (c *client) StartPodTracker(ctx context.Context) {
+	c.PodTracker.Start(ctx)
 }
 
 // SimulateResync simulates an resync where the PodTracker refreshes its cache.
@@ -226,4 +237,22 @@ func (c *client) SimulateResync() {
 
 	// simulate a re-sync/PodUpdate event
 	c.PodTracker.HandlePodUpdate(oldPod, c.Pod)
+}
+
+// SimulateUpdate simulates an update event from the k8s API.
+// This is only here for tests.
+func (c *client) SimulateStatusUpdate(pod *v1.Pod, containerStatuses []v1.ContainerStatus) error {
+	// We have to have a full copy here because the k8s client Mock
+	// replaces the pod it is storing, it does not just update the status.
+	updatedPod := pod.DeepCopy()
+	updatedPod.Status.ContainerStatuses = containerStatuses
+
+	_, err := c.Kubernetes.CoreV1().Pods(pod.GetNamespace()).
+		UpdateStatus(
+			context.Background(),
+			updatedPod,
+			metav1.UpdateOptions{},
+		)
+
+	return err
 }

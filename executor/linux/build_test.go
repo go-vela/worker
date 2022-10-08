@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
@@ -680,11 +682,14 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
 
-			var _runtime runtime.Engine
+			var (
+				_runtime runtime.Engine
+				_pod     *v1.Pod
+			)
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				_pod := testPodFor(_pipeline)
+				_pod = testPodFor(_pipeline)
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -748,6 +753,42 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// in this state when we call ExecBuild() because the
 			// go-vela/server has logic to set it to an expected state.
 			_engine.build.SetStatus("running")
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+
+				_runtime.(kubernetes.MockKubernetesRuntime).StartPodTracker(context.Background())
+
+				go func() {
+					_runtime.(kubernetes.MockKubernetesRuntime).SimulateResync()
+
+					var stepsRunningCount int
+
+					percents := []int{0, 0, 50, 100}
+					lastIndex := len(percents) - 1
+					for index, stepsCompletedPercent := range percents {
+						if index == 0 || index == lastIndex {
+							stepsRunningCount = 0
+						} else {
+							stepsRunningCount = 1
+						}
+
+						err := _runtime.(kubernetes.MockKubernetesRuntime).SimulateStatusUpdate(_pod,
+							testContainerStatuses(
+								_pipeline, true, stepsRunningCount, stepsCompletedPercent,
+							),
+						)
+						if err != nil {
+							t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
+						}
+						// TODO: maybe add a pause here
+					}
+				}()
+			}
 
 			err = _engine.ExecBuild(context.Background())
 
