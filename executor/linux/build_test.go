@@ -1224,6 +1224,22 @@ func TestLinux_StreamBuild(t *testing.T) {
 				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+
+				// Runtime.StreamBuild calls PodTracker.Start after the PodTracker is marked Ready
+				_runtime.(kubernetes.MockKubernetesRuntime).MarkPodTrackerReady()
+				// FIXME:
+				//		msg="error while requesting pod/logs stream for container service-github-octocat-1-postgres: context canceled"
+				//		msg="exponential backoff error while tailing container service-github-octocat-1-postgres: context canceled"
+				// 		msg="exponential backoff error while tailing container service-github-octocat-1-postgres: context canceled"
+				// 		msg="unable to tail container output for upload: context canceled" service=postgres
+			}
+
 			// simulate ExecBuild() which runs concurrently with StreamBuild()
 			go func() {
 				// ExecBuild calls PlanService()/PlanStep() before ExecService()/ExecStep()

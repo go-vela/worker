@@ -211,6 +211,7 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 // MockKubernetesRuntime makes it possible to use the client mocks in other packages.
 type MockKubernetesRuntime interface {
 	SetupMock() error
+	MarkPodTrackerReady()
 	StartPodTracker(context.Context)
 	WaitForPodTrackerReady()
 	WaitForPodCreate(string, string)
@@ -223,6 +224,12 @@ type MockKubernetesRuntime interface {
 func (c *client) SetupMock() error {
 	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
 	return c.PodTracker.setupMockFor(c.Pod)
+}
+
+// MarkPodTrackerReady signals that PodTracker has been setup with ContainerTrackers.
+// This is only here for tests.
+func (c *client) MarkPodTrackerReady() {
+	close(c.PodTracker.Ready)
 }
 
 // StartPodTracker tells the podTracker it can start populating the cache.
