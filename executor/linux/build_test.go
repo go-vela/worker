@@ -1529,6 +1529,14 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// go-vela/server has logic to set it to an expected state.
 			_engine.build.SetStatus("running")
 
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
+
 			err = _engine.ExecBuild(context.Background())
 
 			if test.failure {
@@ -2090,6 +2098,14 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
 				t.Errorf("%s unable to create build: %v", test.name, err)
+			}
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
 			}
 
 			err = _engine.DestroyBuild(context.Background())
