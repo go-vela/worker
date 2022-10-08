@@ -1305,8 +1305,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				_pod := testPodFor(_pipeline)
-				_runtime, err = kubernetes.NewMock(_pod)
+				_runtime, err = kubernetes.NewMock(&v1.Pod{}) // do not use _pod here! AssembleBuild will load it.
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
 				}
@@ -1335,6 +1334,44 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
+			}
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				go func() {
+					_mockRuntime := _runtime.(kubernetes.MockKubernetesRuntime)
+					// This handles waiting until runtime.AssembleBuild has prepared the PodTracker.
+					_mockRuntime.WaitForPodTrackerReady()
+					// Normally, runtime.StreamBuild (which runs in a goroutine) calls PodTracker.Start.
+					_mockRuntime.StartPodTracker(context.Background())
+
+					_pod := testPodFor(_pipeline)
+
+					// Now wait until the pod is created at the end of runtime.AssembleBuild.
+					_mockRuntime.WaitForPodCreate(_pod.GetNamespace(), _pod.GetName())
+
+					var stepsRunningCount int
+
+					percents := []int{0, 0, 50, 100}
+					lastIndex := len(percents) - 1
+					for index, stepsCompletedPercent := range percents {
+						if index == 0 || index == lastIndex {
+							stepsRunningCount = 0
+						} else {
+							stepsRunningCount = 1
+						}
+
+						err := _mockRuntime.SimulateStatusUpdate(_pod,
+							testContainerStatuses(
+								_pipeline, true, stepsRunningCount, stepsCompletedPercent,
+							),
+						)
+						if err != nil {
+							t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
+						}
+						// TODO: maybe add a pause here
+					}
+				}()
 			}
 
 			err = _engine.AssembleBuild(context.Background())
