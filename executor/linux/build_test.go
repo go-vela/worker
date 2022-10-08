@@ -1369,7 +1369,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 						if err != nil {
 							t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
 						}
-						// TODO: maybe add a pause here
+
+						// simulate exec build duration
+						time.Sleep(100 * time.Microsecond)
 					}
 				}()
 			}
