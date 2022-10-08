@@ -484,7 +484,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 				}
 
-				go _runtime.(kubernetes.MockKubernetesRuntime).SimulateUpdate()
+				go _runtime.(kubernetes.MockKubernetesRuntime).SimulateResync()
 			}
 
 			err = _engine.secret.exec(context.Background(), &p.Secrets)

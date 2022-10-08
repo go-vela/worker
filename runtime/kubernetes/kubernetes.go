@@ -207,7 +207,7 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 // MockKubernetesRuntime makes it possible to use the client mocks in other packages.
 type MockKubernetesRuntime interface {
 	SetupMock() error
-	SimulateUpdate()
+	SimulateResync()
 }
 
 // SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
@@ -217,8 +217,9 @@ func (c *client) SetupMock() error {
 	return c.PodTracker.setupMockFor(c.Pod)
 }
 
-// SimulateUpdate simulates an update event from the k8s API.
-func (c *client) SimulateUpdate() {
+// SimulateResync simulates an resync where the PodTracker refreshes its cache.
+// This is only here for tests.
+func (c *client) SimulateResync() {
 	// Future: maybe allow passing in either new or old pod
 	oldPod := c.Pod.DeepCopy()
 	oldPod.SetResourceVersion("older")
