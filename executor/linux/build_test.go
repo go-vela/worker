@@ -215,9 +215,21 @@ func TestLinux_PlanBuild(t *testing.T) {
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic secrets pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/secrets/basic.yml",
+		},
+		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/services/basic.yml",
+		},
+		{
+			name:     "kubernetes-basic services pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
@@ -227,9 +239,21 @@ func TestLinux_PlanBuild(t *testing.T) {
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic steps pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/steps/basic.yml",
+		},
+		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/stages/basic.yml",
+		},
+		{
+			name:     "kubernetes-basic stages pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 	}
@@ -336,9 +360,21 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic secrets pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/secrets/basic.yml",
+		},
+		{
 			name:     "docker-secrets pipeline with image not found",
 			failure:  true,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/secrets/img_notfound.yml",
+		},
+		{
+			name:     "kubernetes-secrets pipeline with image not found",
+			failure:  true,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/secrets/img_notfound.yml",
 		},
 		{
@@ -348,9 +384,21 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
 		},
 		{
+			name:     "kubernetes-secrets pipeline with ignoring image not found",
+			failure:  true,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
+		},
+		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/services/basic.yml",
+		},
+		{
+			name:     "kubernetes-basic services pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
@@ -360,9 +408,21 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
 		{
+			name:     "kubernetes-services pipeline with image not found",
+			failure:  true,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/services/img_notfound.yml",
+		},
+		{
 			name:     "docker-services pipeline with ignoring image not found",
 			failure:  true,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/services/img_ignorenotfound.yml",
+		},
+		{
+			name:     "kubernetes-services pipeline with ignoring image not found",
+			failure:  true,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		},
 		{
@@ -372,9 +432,21 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic steps pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/steps/basic.yml",
+		},
+		{
 			name:     "docker-steps pipeline with image not found",
 			failure:  true,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/steps/img_notfound.yml",
+		},
+		{
+			name:     "kubernetes-steps pipeline with image not found",
+			failure:  true,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
 		{
@@ -384,15 +456,33 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		},
 		{
+			name:     "kubernetes-steps pipeline with ignoring image not found",
+			failure:  true,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
+		},
+		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic stages pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/stages/basic.yml",
+		},
+		{
 			name:     "docker-stages pipeline with image not found",
 			failure:  true,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/stages/img_notfound.yml",
+		},
+		{
+			name:     "kubernetes-stages pipeline with image not found",
+			failure:  true,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
 		{
@@ -506,15 +596,33 @@ func TestLinux_ExecBuild(t *testing.T) {
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic services pipeline",
+			failure:  false, // fixed
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/services/basic.yml",
+		},
+		{
 			name:     "docker-services pipeline with image not found",
 			failure:  true,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
+		//{
+		//	name:     "kubernetes-services pipeline with image not found",
+		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime:  constants.DriverKubernetes,
+		//	pipeline: "testdata/build/services/img_notfound.yml",
+		//},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/steps/basic.yml",
+		},
+		{
+			name:     "kubernetes-basic steps pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
@@ -523,10 +631,22 @@ func TestLinux_ExecBuild(t *testing.T) {
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
+		//{
+		//	name:     "kubernetes-steps pipeline with image not found",
+		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime:  constants.DriverKubernetes,
+		//	pipeline: "testdata/build/steps/img_notfound.yml",
+		//},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/stages/basic.yml",
+		},
+		{
+			name:     "kubernetes-basic stages pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
@@ -535,6 +655,12 @@ func TestLinux_ExecBuild(t *testing.T) {
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
+		//{
+		//	name:     "kubernetes-stages pipeline with image not found",
+		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime:  constants.DriverKubernetes,
+		//	pipeline: "testdata/build/stages/img_notfound.yml",
+		//},
 	}
 
 	// run test
@@ -700,6 +826,30 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
+			name:       "kubernetes-basic services pipeline",
+			failure:    false,
+			runtime:    constants.DriverKubernetes,
+			pipeline:   "testdata/build/services/basic.yml",
+			messageKey: "service",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamService
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanService
+			},
+			ctn: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:latest",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:       "docker-basic services pipeline with StreamService failure",
 			failure:    false,
 			runtime:    constants.DriverDocker,
@@ -714,6 +864,31 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 			ctn: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:latest",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:       "kubernetes-basic services pipeline with StreamService failure",
+			failure:    false,
+			runtime:    constants.DriverKubernetes,
+			pipeline:   "testdata/build/services/basic.yml",
+			messageKey: "service",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamService
+			},
+			planFunc: func(c *client) planFuncType {
+				// simulate failure to call PlanService
+				return planNothing
+			},
+			ctn: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -747,6 +922,28 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
+			name:       "kubernetes-basic steps pipeline",
+			failure:    false,
+			runtime:    constants.DriverKubernetes,
+			pipeline:   "testdata/build/steps/basic.yml",
+			messageKey: "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step-github-octocat-1-test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:       "docker-basic steps pipeline with StreamStep failure",
 			failure:    false,
 			runtime:    constants.DriverDocker,
@@ -761,6 +958,29 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 			ctn: &pipeline.Container{
 				ID:          "step_github_octocat_1_test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:       "kubernetes-basic steps pipeline with StreamStep failure",
+			failure:    false,
+			runtime:    constants.DriverKubernetes,
+			pipeline:   "testdata/build/steps/basic.yml",
+			messageKey: "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				// simulate failure to call PlanStep
+				return planNothing
+			},
+			ctn: &pipeline.Container{
+				ID:          "step-github-octocat-1-test",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
@@ -792,6 +1012,28 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
+			name:       "kubernetes-basic stages pipeline",
+			failure:    false,
+			runtime:    constants.DriverKubernetes,
+			pipeline:   "testdata/build/stages/basic.yml",
+			messageKey: "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step-github-octocat-1-test-test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:       "docker-basic secrets pipeline",
 			failure:    false,
 			runtime:    constants.DriverDocker,
@@ -806,6 +1048,29 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 			ctn: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
+				Directory:   "/vela/src/vcs.company.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "target/secret-vault:latest",
+				Name:        "vault",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:       "kubernetes-basic secrets pipeline",
+			failure:    false,
+			runtime:    constants.DriverKubernetes,
+			pipeline:   "testdata/build/secrets/basic.yml",
+			messageKey: "secret",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.secret.stream
+			},
+			planFunc: func(c *client) planFuncType {
+				// no plan function equivalent for secret containers
+				return planNothing
+			},
+			ctn: &pipeline.Container{
+				ID:          "secret-github-octocat-1-vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "target/secret-vault:latest",
@@ -939,9 +1204,21 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic secrets pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/secrets/basic.yml",
+		},
+		{
 			name:     "docker-secrets pipeline with name not found",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/secrets/name_notfound.yml",
+		},
+		{
+			name:     "kubernetes-secrets pipeline with name not found",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 		{
@@ -951,9 +1228,21 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic services pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/services/basic.yml",
+		},
+		{
 			name:     "docker-services pipeline with name not found",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/services/name_notfound.yml",
+		},
+		{
+			name:     "kubernetes-services pipeline with name not found",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/services/name_notfound.yml",
 		},
 		{
@@ -963,9 +1252,21 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic steps pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/steps/basic.yml",
+		},
+		{
 			name:     "docker-steps pipeline with name not found",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/steps/name_notfound.yml",
+		},
+		{
+			name:     "kubernetes-steps pipeline with name not found",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/steps/name_notfound.yml",
 		},
 		{
@@ -975,9 +1276,21 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
+			name:     "kubernetes-basic stages pipeline",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/stages/basic.yml",
+		},
+		{
 			name:     "docker-stages pipeline with name not found",
 			failure:  false,
 			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/stages/name_notfound.yml",
+		},
+		{
+			name:     "kubernetes-stages pipeline with name not found",
+			failure:  false,
+			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/name_notfound.yml",
 		},
 	}
