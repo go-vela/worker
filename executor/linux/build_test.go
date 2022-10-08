@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
@@ -1451,11 +1453,14 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
 
-			var _runtime runtime.Engine
+			var (
+				_runtime runtime.Engine
+				_pod     *v1.Pod
+			)
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				_pod := testPodFor(_pipeline)
+				_pod = testPodFor(_pipeline)
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
