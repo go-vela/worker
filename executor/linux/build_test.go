@@ -8,6 +8,7 @@ import (
 	"context"
 	"flag"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -1908,6 +1909,9 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	_user := testUser()
 	_metadata := testMetadata()
 
+	testLogger := logrus.New()
+	loggerHook := logrusTest.NewLocal(testLogger)
+
 	gin.SetMode(gin.TestMode)
 
 	s := httptest.NewServer(server.FakeHandler())
@@ -1920,54 +1924,63 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		logError bool
 		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-secrets pipeline with name not found",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-services pipeline with name not found",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/name_notfound.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with name not found",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/name_notfound.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-stages pipeline with name not found",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/name_notfound.yml",
 		},
@@ -1976,6 +1989,9 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+			defer loggerHook.Reset()
+
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -1998,6 +2014,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			}
 
 			_engine, err := New(
+				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
@@ -2027,6 +2044,35 @@ func TestLinux_DestroyBuild(t *testing.T) {
 
 			if err != nil {
 				t.Errorf("%s DestroyBuild returned err: %v", test.name, err)
+			}
+
+			loggedError := false
+			for _, logEntry := range loggerHook.AllEntries() {
+				// Many errors during StreamBuild get logged and ignored.
+				// So, Make sure there are no errors logged during StreamBuild.
+				if logEntry.Level == logrus.ErrorLevel {
+					// Ignore error from not mocking something in the VelaClient
+					if strings.HasPrefix(logEntry.Message, "unable to upload") ||
+						(strings.HasPrefix(logEntry.Message, "unable to destroy") &&
+							strings.Contains(logEntry.Message, "No such container") &&
+							strings.HasSuffix(logEntry.Message, "_notfound")) {
+						// unable to upload final step state: Step 0 does not exist
+						// unable to upload service snapshot: Service 0 does not exist
+						// unable to destroy secret: Error: No such container: secret_github_octocat_1_notfound
+						// unable to destroy service: Error: No such container: service_github_octocat_1_notfound
+						// unable to destroy step: Error: No such container: github_octocat_1_test_notfound
+						// unable to destroy stage: Error: No such container: github_octocat_1_test_notfound
+						continue
+					}
+
+					loggedError = true
+					if !test.logError {
+						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
+					}
+				}
+			}
+			if test.logError && !loggedError {
+				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
 		})
 	}
