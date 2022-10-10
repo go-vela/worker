@@ -1940,6 +1940,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 					if err != nil {
 						t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 					}
+
+					// Runtime.StreamBuild calls PodTracker.Start after the PodTracker is marked Ready
+					_runtime.(kubernetes.MockKubernetesRuntime).MarkPodTrackerReady()
 				}
 
 				if test.earlyBuildDone {
