@@ -86,7 +86,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	c.PodTracker = tracker
 
-	// The test is responsible for calling c.PodTracker.Start() if needed
+	// The test is responsible for calling c.PodTracker.Start(ctx) if needed.
+	// In some cases it is more convenient to call c.(MockKubernetesRuntime).StartPodTracker(ctx)
 
 	return c, nil
 }
@@ -119,7 +120,8 @@ func (c *client) MarkPodTrackerReady() {
 }
 
 // StartPodTracker tells the podTracker it can start populating the cache.
-// This is only here for tests.
+//
+// This function is intended for running tests only.
 func (c *client) StartPodTracker(ctx context.Context) {
 	c.PodTracker.Start(ctx)
 }
@@ -141,7 +143,8 @@ func (c *client) SimulateResync(oldPod *v1.Pod) {
 }
 
 // SimulateUpdate simulates an update event from the k8s API.
-// This is only here for tests.
+//
+// This function is intended for running tests only.
 func (c *client) SimulateStatusUpdate(pod *v1.Pod, containerStatuses []v1.ContainerStatus) error {
 	// We have to have a full copy here because the k8s client Mock
 	// replaces the pod it is storing, it does not just update the status.
