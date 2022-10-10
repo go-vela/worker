@@ -1890,8 +1890,16 @@ func TestLinux_StreamBuild(t *testing.T) {
 				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
-			// simulate ExecBuild() which runs concurrently with StreamBuild()
+			// simulate AssembleBuild()/ExecBuild() which run concurrently with StreamBuild()
 			go func() {
+				// This Kubernetes setup would normally be called within AssembleBuild()
+				if test.runtime == constants.DriverKubernetes {
+					err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+					if err != nil {
+						t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+					}
+				}
+
 				if test.earlyBuildDone {
 					// imitate build getting canceled or otherwise finishing before ExecBuild gets called.
 					done()
