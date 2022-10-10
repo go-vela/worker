@@ -4,14 +4,17 @@
 
 package kubernetes
 
+// Everything in this file should only be used in test code.
+// It is exported for use in tests of other packages.
+
 import (
-	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 	fakeVelaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/fake"
+	"github.com/sirupsen/logrus"
 )
 
 // NewMock returns an Engine implementation that
@@ -97,6 +100,8 @@ type MockKubernetesRuntime interface {
 
 // SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
 // Many tests should call this right after they call runtime.SetupBuild (or executor.CreateBuild).
+//
+// This function is intended for running tests only.
 func (c *client) SetupMock() error {
 	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
 	return c.PodTracker.setupMockFor(c.Pod)
