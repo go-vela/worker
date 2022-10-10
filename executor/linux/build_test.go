@@ -1210,7 +1210,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithLogStreamingTimeout(1*time.Second),
+				WithLogStreamingTimeout(100*time.Millisecond),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -1225,24 +1225,19 @@ func TestLinux_StreamBuild(t *testing.T) {
 				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
-			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
-			if test.runtime == constants.DriverKubernetes {
-				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
-				if err != nil {
-					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+			// simulate AssembleBuild()/ExecBuild() which run concurrently with StreamBuild()
+			go func() {
+				// This Kubernetes setup would normally be called within AssembleBuild()
+				if test.runtime == constants.DriverKubernetes {
+					err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+					if err != nil {
+						t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+					}
+
+					// Runtime.StreamBuild calls PodTracker.Start after the PodTracker is marked Ready
+					_runtime.(kubernetes.MockKubernetesRuntime).MarkPodTrackerReady()
 				}
 
-				// Runtime.StreamBuild calls PodTracker.Start after the PodTracker is marked Ready
-				_runtime.(kubernetes.MockKubernetesRuntime).MarkPodTrackerReady()
-				// FIXME:
-				//		msg="error while requesting pod/logs stream for container service-github-octocat-1-postgres: context canceled"
-				//		msg="exponential backoff error while tailing container service-github-octocat-1-postgres: context canceled"
-				// 		msg="exponential backoff error while tailing container service-github-octocat-1-postgres: context canceled"
-				// 		msg="unable to tail container output for upload: context canceled" service=postgres
-			}
-
-			// simulate ExecBuild() which runs concurrently with StreamBuild()
-			go func() {
 				// ExecBuild calls PlanService()/PlanStep() before ExecService()/ExecStep()
 				// (ExecStage() calls PlanStep() before ExecStep()).
 				_engine.err = test.planFunc(_engine)(buildCtx, test.ctn)
