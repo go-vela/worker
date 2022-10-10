@@ -7,9 +7,11 @@ package context
 import (
 	"context"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-func WithDelayedCancelPropagation(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+func WithDelayedCancelPropagation(parent context.Context, timeout time.Duration, name string, logger *logrus.Entry) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
@@ -18,17 +20,21 @@ func WithDelayedCancelPropagation(parent context.Context, timeout time.Duration)
 		// start the timer once the parent context is canceled
 		select {
 		case <-parent.Done():
+			logger.Tracef("%s timer for %s started now that parent context is done", name, timeout)
 			timer = time.NewTimer(timeout)
 		case <-ctx.Done():
+			logger.Tracef("%s finished before the parent context", name)
 			return
 		}
 
 		// wait for the timer to elapse or the context to naturally finish.
 		select {
 		case <-timer.C:
+			logger.Tracef("%s timed out, canceling %s", name, name)
 			cancel()
 			return
 		case <-ctx.Done():
+			logger.Tracef("%s finished, stopping timeout timer", name)
 			timer.Stop()
 			return
 		}

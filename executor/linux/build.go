@@ -498,7 +498,8 @@ func (c *client) ExecBuild(ctx context.Context) error {
 // runs StreamService or StreamStep in a goroutine.
 func (c *client) StreamBuild(ctx context.Context) error {
 	// cancel streaming after a timeout once the build has finished
-	delayedCtx, cancelStreaming := context2.WithDelayedCancelPropagation(ctx, c.logStreamingTimeout)
+	delayedCtx, cancelStreaming := context2.
+		WithDelayedCancelPropagation(ctx, c.logStreamingTimeout, "streaming", c.Logger)
 	defer cancelStreaming()
 
 	// create an error group with the parent context
