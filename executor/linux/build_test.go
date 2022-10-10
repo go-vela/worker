@@ -38,6 +38,9 @@ func TestLinux_CreateBuild(t *testing.T) {
 	_user := testUser()
 	_metadata := testMetadata()
 
+	testLogger := logrus.New()
+	loggerHook := logrusTest.NewLocal(testLogger)
+
 	gin.SetMode(gin.TestMode)
 
 	s := httptest.NewServer(server.FakeHandler())
@@ -50,6 +53,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		logError bool
 		runtime  string
 		build    *library.Build
 		pipeline string
@@ -57,6 +61,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
@@ -64,6 +69,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "kubernetes-basic secrets pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
@@ -71,6 +77,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
@@ -78,6 +85,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "kubernetes-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
@@ -85,6 +93,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
@@ -92,6 +101,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "kubernetes-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
@@ -99,6 +109,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
@@ -106,6 +117,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "kubernetes-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
@@ -113,6 +125,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "docker-steps pipeline with empty build",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
@@ -120,6 +133,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		{
 			name:     "kubernetes-steps pipeline with empty build",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
@@ -129,6 +143,9 @@ func TestLinux_CreateBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+			defer loggerHook.Reset()
+
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -160,6 +177,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			}
 
 			_engine, err := New(
+				WithLogger(logger),
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
@@ -184,6 +202,21 @@ func TestLinux_CreateBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("%s CreateBuild returned err: %v", test.name, err)
 			}
+
+			loggedError := false
+			for _, logEntry := range loggerHook.AllEntries() {
+				// Many errors during StreamBuild get logged and ignored.
+				// So, Make sure there are no errors logged during StreamBuild.
+				if logEntry.Level == logrus.ErrorLevel {
+					loggedError = true
+					if !test.logError {
+						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
+					}
+				}
+			}
+			if test.logError && !loggedError {
+				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
+			}
 		})
 	}
 }
@@ -197,6 +230,9 @@ func TestLinux_PlanBuild(t *testing.T) {
 	_user := testUser()
 	_metadata := testMetadata()
 
+	testLogger := logrus.New()
+	loggerHook := logrusTest.NewLocal(testLogger)
+
 	gin.SetMode(gin.TestMode)
 
 	s := httptest.NewServer(server.FakeHandler())
@@ -209,54 +245,63 @@ func TestLinux_PlanBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		logError bool
 		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic secrets pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
@@ -265,6 +310,9 @@ func TestLinux_PlanBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+			defer loggerHook.Reset()
+
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -296,6 +344,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 			}
 
 			_engine, err := New(
+				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
@@ -326,6 +375,21 @@ func TestLinux_PlanBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("%s PlanBuild returned err: %v", test.name, err)
 			}
+
+			loggedError := false
+			for _, logEntry := range loggerHook.AllEntries() {
+				// Many errors during StreamBuild get logged and ignored.
+				// So, Make sure there are no errors logged during StreamBuild.
+				if logEntry.Level == logrus.ErrorLevel {
+					loggedError = true
+					if !test.logError {
+						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
+					}
+				}
+			}
+			if test.logError && !loggedError {
+				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
+			}
 		})
 	}
 }
@@ -338,6 +402,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	_repo := testRepo()
 	_user := testUser()
 	_metadata := testMetadata()
+
+	testLogger := logrus.New()
+	loggerHook := logrusTest.NewLocal(testLogger)
 
 	gin.SetMode(gin.TestMode)
 
@@ -354,150 +421,175 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		logError bool
 		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic secrets pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-secrets pipeline with image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/img_notfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-secrets pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/secrets/img_notfound.yml",
 		//},
 		{
 			name:     "docker-secrets pipeline with ignoring image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-secrets pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
 		//},
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-services pipeline with image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-services pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/services/img_notfound.yml",
 		//},
 		{
 			name:     "docker-services pipeline with ignoring image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-services pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		//},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-steps pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/steps/img_notfound.yml",
 		//},
 		{
 			name:     "docker-steps pipeline with ignoring image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-steps pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		//},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-stages pipeline with image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-stages pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/stages/img_notfound.yml",
 		//},
 		{
 			name:     "docker-stages pipeline with ignoring image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_ignorenotfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-stages pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/stages/img_ignorenotfound.yml",
 		//},
@@ -506,6 +598,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+			defer loggerHook.Reset()
+
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -536,6 +631,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			}
 
 			_engine, err := New(
+				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
@@ -607,6 +703,21 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("%s AssembleBuild returned err: %v", test.name, err)
 			}
+
+			loggedError := false
+			for _, logEntry := range loggerHook.AllEntries() {
+				// Many errors during StreamBuild get logged and ignored.
+				// So, Make sure there are no errors logged during StreamBuild.
+				if logEntry.Level == logrus.ErrorLevel {
+					loggedError = true
+					if !test.logError {
+						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
+					}
+				}
+			}
+			if test.logError && !loggedError {
+				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
+			}
 		})
 	}
 }
@@ -619,6 +730,9 @@ func TestLinux_ExecBuild(t *testing.T) {
 	_repo := testRepo()
 	_user := testUser()
 	_metadata := testMetadata()
+
+	testLogger := logrus.New()
+	loggerHook := logrusTest.NewLocal(testLogger)
 
 	gin.SetMode(gin.TestMode)
 
@@ -635,78 +749,91 @@ func TestLinux_ExecBuild(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		logError bool
 		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic services pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic services pipeline",
 			failure:  false, // fixed
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
 			name:     "docker-services pipeline with image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-services pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/services/img_notfound.yml",
 		//},
 		{
 			name:     "docker-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic steps pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
 			name:     "docker-steps pipeline with image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-steps pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/steps/img_notfound.yml",
 		//},
 		{
 			name:     "docker-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "kubernetes-basic stages pipeline",
 			failure:  false,
+			logError: false,
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
 			name:     "docker-stages pipeline with image not found",
 			failure:  true,
+			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
 		//{
 		//	name:     "kubernetes-stages pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	logError:   false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/stages/img_notfound.yml",
 		//},
@@ -715,6 +842,9 @@ func TestLinux_ExecBuild(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+			defer loggerHook.Reset()
+
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -749,6 +879,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			}
 
 			_engine, err := New(
+				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
@@ -851,6 +982,21 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 			if err != nil {
 				t.Errorf("%s ExecBuild for %s returned err: %v", test.name, test.pipeline, err)
+			}
+
+			loggedError := false
+			for _, logEntry := range loggerHook.AllEntries() {
+				// Many errors during StreamBuild get logged and ignored.
+				// So, Make sure there are no errors logged during StreamBuild.
+				if logEntry.Level == logrus.ErrorLevel {
+					loggedError = true
+					if !test.logError {
+						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
+					}
+				}
+			}
+			if test.logError && !loggedError {
+				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
 		})
 	}
