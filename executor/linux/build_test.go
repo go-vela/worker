@@ -21,6 +21,8 @@ import (
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/sirupsen/logrus"
+	logrusTest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/urfave/cli/v2"
 )
 
@@ -1406,6 +1408,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 	_user := testUser()
 	_metadata := testMetadata()
 
+	testLogger := logrus.New()
+	loggerHook := logrusTest.NewLocal(testLogger)
+
 	gin.SetMode(gin.TestMode)
 
 	s := httptest.NewServer(server.FakeHandler())
@@ -1428,6 +1433,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		runtime        string
 		earlyExecExit  bool
 		earlyBuildDone bool
+		logError       bool
 		pipeline       string
 		msgCount       int
 		messageKey     string
@@ -1438,6 +1444,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic services pipeline",
 			failure:    false,
+			logError:   false,
 			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/services/basic.yml",
 			messageKey: "service",
@@ -1462,6 +1469,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic services pipeline with StreamService failure",
 			failure:    false,
+			logError:   true,
 			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/services/basic.yml",
 			messageKey: "service",
@@ -1487,6 +1495,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic steps pipeline",
 			failure:    false,
+			logError:   false,
 			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/steps/basic.yml",
 			messageKey: "step",
@@ -1509,6 +1518,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic steps pipeline with StreamStep failure",
 			failure:    false,
+			logError:   true,
 			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/steps/basic.yml",
 			messageKey: "step",
@@ -1532,6 +1542,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic stages pipeline",
 			failure:    false,
+			logError:   false,
 			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/stages/basic.yml",
 			messageKey: "step",
@@ -1554,6 +1565,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		{
 			name:       "docker-basic secrets pipeline",
 			failure:    false,
+			logError:   false,
 			runtime:    constants.DriverDocker,
 			pipeline:   "testdata/build/secrets/basic.yml",
 			messageKey: "secret",
@@ -1578,6 +1590,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:          "docker-early exit from ExecBuild",
 			failure:       false,
 			earlyExecExit: true,
+			logError:      false,
 			runtime:       constants.DriverDocker,
 			pipeline:      "testdata/build/steps/basic.yml",
 			messageKey:    "step",
@@ -1601,6 +1614,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:           "docker-build complete before ExecBuild called",
 			failure:        false,
 			earlyBuildDone: true,
+			logError:       false,
 			runtime:        constants.DriverDocker,
 			pipeline:       "testdata/build/steps/basic.yml",
 			messageKey:     "step",
@@ -1624,6 +1638,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:          "docker-early exit from ExecBuild and build complete signaled",
 			failure:       false,
 			earlyExecExit: true,
+			logError:      false,
 			runtime:       constants.DriverDocker,
 			pipeline:      "testdata/build/steps/basic.yml",
 			messageKey:    "step",
@@ -1651,6 +1666,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 			streamRequests := make(chan message.StreamRequest)
 
+			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+			defer loggerHook.Reset()
+
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
@@ -1673,6 +1691,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			}
 
 			_engine, err := New(
+				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
@@ -1741,6 +1760,21 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 			if err != nil {
 				t.Errorf("%s StreamBuild for %s returned err: %v", test.name, test.pipeline, err)
+			}
+
+			loggedError := false
+			for _, logEntry := range loggerHook.AllEntries() {
+				// Many errors during StreamBuild get logged and ignored.
+				// So, Make sure there are no errors logged during StreamBuild.
+				if logEntry.Level == logrus.ErrorLevel {
+					loggedError = true
+					if !test.logError {
+						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
+					}
+				}
+			}
+			if test.logError && !loggedError {
+				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
 		})
 	}
