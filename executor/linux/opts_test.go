@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -158,6 +159,46 @@ func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 
 			if !reflect.DeepEqual(_engine.maxLogSize, test.maxLogSize) {
 				t.Errorf("WithMaxLogSize is %v, want %v", _engine.maxLogSize, test.maxLogSize)
+			}
+		})
+	}
+}
+
+func TestLinux_Opt_WithLogStreamingTimeout(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name                string
+		failure             bool
+		logStreamingTimeout time.Duration
+	}{
+		{
+			name:                "defined",
+			failure:             false,
+			logStreamingTimeout: 1 * time.Second,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithLogStreamingTimeout(test.logStreamingTimeout),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithLogStreamingTimeout should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithLogStreamingTimeout returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.logStreamingTimeout, test.logStreamingTimeout) {
+				t.Errorf("WithLogStreamingTimeout is %v, want %v", _engine.logStreamingTimeout, test.logStreamingTimeout)
 			}
 		})
 	}
