@@ -7,6 +7,7 @@ package linux
 import (
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
@@ -31,17 +32,18 @@ type (
 		secret *secretSvc
 
 		// private fields
-		init        *pipeline.Container
-		logMethod   string
-		maxLogSize  uint
-		build       *library.Build
-		pipeline    *pipeline.Build
-		repo        *library.Repo
-		secrets     sync.Map
-		services    sync.Map
-		serviceLogs sync.Map
-		steps       sync.Map
-		stepLogs    sync.Map
+		init                *pipeline.Container
+		logMethod           string
+		maxLogSize          uint
+		logStreamingTimeout time.Duration
+		build               *library.Build
+		pipeline            *pipeline.Build
+		repo                *library.Repo
+		secrets             sync.Map
+		services            sync.Map
+		serviceLogs         sync.Map
+		steps               sync.Map
+		stepLogs            sync.Map
 
 		streamRequests chan message.StreamRequest
 

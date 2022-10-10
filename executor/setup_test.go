@@ -7,6 +7,7 @@ package executor
 import (
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
@@ -79,6 +80,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithBuild(_build),
 		linux.WithLogMethod("byte-chunks"),
 		linux.WithMaxLogSize(2097152),
+		linux.WithLogStreamingTimeout(1*time.Second),
 		linux.WithHostname("localhost"),
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),

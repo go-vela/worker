@@ -5,6 +5,8 @@
 package executor
 
 import (
+	"time"
+
 	"github.com/go-vela/types/constants"
 
 	"github.com/urfave/cli/v2"
@@ -36,5 +38,11 @@ var Flags = []cli.Flag{
 		FilePath: "/vela/executor/max_log_size",
 		Name:     "executor.max_log_size",
 		Usage:    "maximum log size (in bytes)",
+	},
+	&cli.DurationFlag{
+		EnvVars: []string{"WORKER_LOG_STREAMING_TIMEOUT", "VELA_LOG_STREAMING_TIMEOUT", "LOG_STREAMING_TIMEOUT"},
+		Name:    "executor.log_streaming_timeout",
+		Usage:   "maximum amount of time to wait for log streaming after build completes",
+		Value:   5 * time.Minute,
 	},
 }

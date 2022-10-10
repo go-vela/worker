@@ -7,6 +7,7 @@ package executor
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-vela/sdk-go/vela"
 
@@ -40,6 +41,9 @@ type Setup struct {
 	LogMethod string
 	// specifies the maximum log size
 	MaxLogSize uint
+	// specifies how long to wait after the build finishes
+	// for log streaming to complete
+	LogStreamingTimeout time.Duration
 	// specifies the executor hostname
 	Hostname string
 	// specifies the executor version
@@ -81,6 +85,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithBuild(s.Build),
 		linux.WithLogMethod(s.LogMethod),
 		linux.WithMaxLogSize(s.MaxLogSize),
+		linux.WithLogStreamingTimeout(s.LogStreamingTimeout),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
 		linux.WithRepo(s.Repo),
