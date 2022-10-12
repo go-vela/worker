@@ -8,6 +8,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 )
 
@@ -127,6 +128,7 @@ func TestDocker_RunContainer(t *testing.T) {
 		failure   bool
 		pipeline  *pipeline.Build
 		container *pipeline.Container
+		repo      *library.Repo
 		volumes   []string
 	}{
 		{
@@ -245,7 +247,7 @@ func TestDocker_RunContainer(t *testing.T) {
 				_engine.config.Volumes = test.volumes
 			}
 
-			err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
+			err = _engine.RunContainer(context.Background(), test.container, test.pipeline, test.repo)
 
 			if test.failure {
 				if err == nil {
@@ -274,6 +276,7 @@ func TestDocker_SetupContainer(t *testing.T) {
 		name      string
 		failure   bool
 		container *pipeline.Container
+		repo      *library.Repo
 	}{
 		{
 			name:      "pull-always-tag_exists",
@@ -337,7 +340,7 @@ func TestDocker_SetupContainer(t *testing.T) {
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err = _engine.SetupContainer(context.Background(), test.container)
+			err = _engine.SetupContainer(context.Background(), test.container, test.repo)
 
 			if test.failure {
 				if err == nil {

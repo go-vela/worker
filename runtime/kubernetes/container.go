@@ -7,12 +7,14 @@ package kubernetes
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 	"time"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 
@@ -72,7 +74,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
+func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build, r *library.Repo) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
 	// parse image from step
 	_image, err := image.ParseWithError(ctn.Image)
@@ -101,7 +103,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 }
 
 // SetupContainer prepares the image for the pipeline container.
-func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container, r *library.Repo) error {
 	c.Logger.Tracef("setting up for container %s", ctn.ID)
 
 	// create the container object for the pod
@@ -164,6 +166,11 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		privileged, err := image.IsPrivilegedImage(ctn.Image, pattern)
 		if err != nil {
 			return err
+		}
+
+		// ensure repo is trusted and therefore allowed to run privileged containers
+		if !r.GetTrusted() {
+			return errors.New("cannot use privileged image in a non-trusted repo")
 		}
 
 		container.SecurityContext.Privileged = &privileged
