@@ -31,6 +31,8 @@ type config struct {
 	Images []string
 	// specifies a list of host volumes to use for the Docker client
 	Volumes []string
+	// enable trusted repo restrictions
+	EnableTrusted bool
 }
 
 type client struct {

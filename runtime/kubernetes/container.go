@@ -169,8 +169,8 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container, r 
 		}
 
 		// ensure repo is trusted and therefore allowed to run privileged containers
-		if r != nil && !r.GetTrusted() {
-			return errors.New("cannot use privileged image in a non-trusted repo")
+		if c.config.EnableTrusted && (r == nil || !r.GetTrusted()) {
+			return errors.New("repo must be trusted to run privileged images")
 		}
 
 		container.SecurityContext.Privileged = &privileged

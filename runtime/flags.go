@@ -61,4 +61,13 @@ var Flags = []cli.Flag{
 		Name:     "runtime.volumes",
 		Usage:    "list of host volumes to mount for the runtime",
 	},
+	&cli.BoolFlag{ // overaching feature flag to enable trusted repo column to actually mean something
+		// enabling this will restrict privileged images to not run unless the repo 'trusted' field is 'true'
+		// protect privileged container execution using repo.trusted field
+		EnvVars:  []string{"VELA_RUNTIME_ENABLE_TRUSTED", "RUNTIME_ENABLE_TRUSTED"},
+		FilePath: "/vela/runtime/enable_trusted",
+		Name:     "runtime.enable-trusted",
+		Usage:    "enable trusted repo restrictions for privileged images",
+		Value:    false,
+	},
 }

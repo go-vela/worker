@@ -49,3 +49,15 @@ func WithPrivilegedImages(images []string) ClientOpt {
 		return nil
 	}
 }
+
+// WithEnableTrusted sets FILL ME.
+func WithEnableTrusted(enable bool) ClientOpt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring privileged restrictions in docker runtime client")
+
+		// set the runtime privileged trusted restrictions in the docker client
+		c.config.EnableTrusted = enable
+
+		return nil
+	}
+}

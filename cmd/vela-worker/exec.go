@@ -61,6 +61,7 @@ func (w *Worker) exec(index int) error {
 		PodsTemplateName: w.Config.Runtime.PodsTemplateName,
 		PodsTemplateFile: w.Config.Runtime.PodsTemplateFile,
 		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
+		EnableTrusted:    w.Config.Runtime.EnableTrusted,
 	})
 	if err != nil {
 		return err

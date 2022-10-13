@@ -100,6 +100,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// run the runtime container
 	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline, c.repo)
 	if err != nil {
+		_step.SetStatus(constants.StatusError)
 		return err
 	}
 
