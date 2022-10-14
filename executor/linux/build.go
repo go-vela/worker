@@ -85,7 +85,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			// populate the build error
 			c.build.SetError(errMsg)
 
-			c.Logger.Infof("build containing privileged images denied, repo %s/%s is not trusted", c.repo.FullName, c.build.GetNumber())
+			c.Logger.Infof("build containing privileged images denied, repo %s/%s is not trusted", c.repo.GetFullName(), c.build.GetNumber())
 
 			// update all preconfigured steps to the correct status
 			for _, _s := range c.pipeline.Steps {
