@@ -104,14 +104,14 @@ func run(c *cli.Context) error {
 			},
 			// runtime configuration
 			Runtime: &runtime.Setup{
-				Driver:           c.String("runtime.driver"),
-				ConfigFile:       c.String("runtime.config"),
-				Namespace:        c.String("runtime.namespace"),
-				PodsTemplateName: c.String("runtime.pods-template-name"),
-				PodsTemplateFile: c.Path("runtime.pods-template-file"),
-				HostVolumes:      c.StringSlice("runtime.volumes"),
-				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
-				EnableTrusted:    c.Bool("runtime.enable-trusted"),
+				Driver:              c.String("runtime.driver"),
+				ConfigFile:          c.String("runtime.config"),
+				Namespace:           c.String("runtime.namespace"),
+				PodsTemplateName:    c.String("runtime.pods-template-name"),
+				PodsTemplateFile:    c.Path("runtime.pods-template-file"),
+				HostVolumes:         c.StringSlice("runtime.volumes"),
+				PrivilegedImages:    c.StringSlice("runtime.privileged-images"),
+				EnforceTrustedRepos: c.Bool("runtime.enforce-trusted-repos"),
 			},
 			// queue configuration
 			Queue: &queue.Setup{
@@ -136,8 +136,7 @@ func run(c *cli.Context) error {
 		},
 		Executors: make(map[int]executor.Engine),
 	}
-	logrus.Tracef("runtime setup trusted flag: %v", w.Config.Runtime.EnableTrusted)
-	logrus.Tracef("runtime.enable-trusted flag picked up from CLI config: %v", c.Bool("runtime.enable-trusted"))
+
 	// set the worker address if no flag was provided
 	if len(w.Config.API.Address.String()) == 0 {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))

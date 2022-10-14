@@ -124,13 +124,13 @@ func WithPrivilegedImages(images []string) ClientOpt {
 	}
 }
 
-// WithEnableTrusted sets  FILL ME.
-func WithEnableTrusted(enable bool) ClientOpt {
+// WithEnforceTrustedRepos sets whether to enforce trusted repo restrictions on privileged images in the runtime client for Kubernetes.
+func WithEnforceTrustedRepos(enable bool) ClientOpt {
 	return func(c *client) error {
 		c.Logger.Trace("configuring FILLME in kubernetes runtime client")
 
 		// set the runtime FILLME in the kubernetes client
-		c.config.EnableTrusted = enable
+		c.config.EnforceTrustedRepos = enable
 
 		return nil
 	}

@@ -52,16 +52,16 @@ func (w *Worker) exec(index int) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
 	w.Runtime, err = runtime.New(&runtime.Setup{
-		Logger:           logger,
-		Mock:             w.Config.Mock,
-		Driver:           w.Config.Runtime.Driver,
-		ConfigFile:       w.Config.Runtime.ConfigFile,
-		HostVolumes:      w.Config.Runtime.HostVolumes,
-		Namespace:        w.Config.Runtime.Namespace,
-		PodsTemplateName: w.Config.Runtime.PodsTemplateName,
-		PodsTemplateFile: w.Config.Runtime.PodsTemplateFile,
-		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
-		EnableTrusted:    w.Config.Runtime.EnableTrusted,
+		Logger:              logger,
+		Mock:                w.Config.Mock,
+		Driver:              w.Config.Runtime.Driver,
+		ConfigFile:          w.Config.Runtime.ConfigFile,
+		HostVolumes:         w.Config.Runtime.HostVolumes,
+		Namespace:           w.Config.Runtime.Namespace,
+		PodsTemplateName:    w.Config.Runtime.PodsTemplateName,
+		PodsTemplateFile:    w.Config.Runtime.PodsTemplateFile,
+		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
+		EnforceTrustedRepos: w.Config.Runtime.EnforceTrustedRepos,
 	})
 	if err != nil {
 		return err

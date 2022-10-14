@@ -29,10 +29,10 @@ const Version = "v1.40"
 type config struct {
 	// specifies a list of privileged images to use for the Docker client
 	Images []string
+	// EnforceTrustedRepos sets whether to enforce trusted repo restrictions on privileged images for the Docker client
+	EnforceTrustedRepos bool
 	// specifies a list of host volumes to use for the Docker client
 	Volumes []string
-	// enable trusted repo restrictions
-	EnableTrusted bool
 }
 
 type client struct {

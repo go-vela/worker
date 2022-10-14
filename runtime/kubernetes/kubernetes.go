@@ -26,8 +26,8 @@ type config struct {
 	Namespace string
 	// specifies a list of privileged images to use for the Kubernetes client
 	Images []string
-	// EnableTrusted FILL ME
-	EnableTrusted bool
+	// EnforceTrustedRepos sets whether to enforce trusted repo restrictions on privileged images for the Kubernetes client
+	EnforceTrustedRepos bool
 	// specifies a list of host volumes to use for the Kubernetes client
 	Volumes []string
 	// PipelinePodsTemplateName has the name of the PipelinePodTemplate to retrieve from the Namespace

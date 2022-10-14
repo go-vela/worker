@@ -42,8 +42,8 @@ type Setup struct {
 	PodsTemplateFile string
 	// specifies a list of privileged images to use for the runtime client
 	PrivilegedImages []string
-	// specifies settings for restrictions on trusted repos
-	EnableTrusted bool
+	// EnforceTrustedRepos sets whether to enforce trusted repo restrictions on privileged images for the runtime client
+	EnforceTrustedRepos bool
 }
 
 // Docker creates and returns a Vela engine capable of
@@ -51,12 +51,10 @@ type Setup struct {
 func (s *Setup) Docker() (Engine, error) {
 	logrus.Trace("creating docker runtime client from setup")
 
-	logrus.Trace("creating docker runtime using enable trusted %v", s.EnableTrusted)
-
 	opts := []docker.ClientOpt{
 		docker.WithHostVolumes(s.HostVolumes),
 		docker.WithPrivilegedImages(s.PrivilegedImages),
-		docker.WithEnableTrusted(s.EnableTrusted),
+		docker.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		docker.WithLogger(s.Logger),
 	}
 
@@ -84,7 +82,7 @@ func (s *Setup) Kubernetes() (Engine, error) {
 		kubernetes.WithNamespace(s.Namespace),
 		kubernetes.WithPodsTemplate(s.PodsTemplateName, s.PodsTemplateFile),
 		kubernetes.WithPrivilegedImages(s.PrivilegedImages),
-		kubernetes.WithEnableTrusted(s.EnableTrusted),
+		kubernetes.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		kubernetes.WithLogger(s.Logger),
 	}
 
