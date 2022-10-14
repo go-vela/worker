@@ -48,7 +48,11 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// check the build for privileged images
 	containsPrivilegedImages := false
 	for _, s := range c.pipeline.Steps {
+
 		// skip built-in steps
+		// TODO: remove hardcoded reference
+		//
+		//nolint:goconst // ignore making a constant for now
 		if s.Name == "init" {
 			continue
 		}
