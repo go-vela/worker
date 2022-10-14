@@ -91,7 +91,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
 				if err != nil {
 					// only log any step update errors to allow the return err to run
-					c.Logger.Errorf("unable to update step %s to status %s: %w", _s.Name, status, err)
+					c.Logger.Errorf("unable to update step %s to status %s: %s", _s.Name, status, err.Error())
 				}
 			}
 
