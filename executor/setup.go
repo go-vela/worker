@@ -40,7 +40,7 @@ type Setup struct {
 	LogMethod string
 	// specifies the maximum log size
 	MaxLogSize uint
-	// configures setting for enforcing trusted repos
+	// configuration for enforcing that only trusted repos may run privileged images
 	EnforceTrustedRepos bool
 	// specifies a list of privileged images to use
 	PrivilegedImages []string

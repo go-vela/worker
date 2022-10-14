@@ -135,15 +135,16 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
 
 	_build := testBuild()
-	// repo is not trusted by default
+	// test repo is not trusted by default
 	_untrustedRepo := testRepo()
-	// trusted repo
-	_trustedRepo := testRepo()
-	_trustedRepo.SetTrusted(true)
 	_user := testUser()
 	_metadata := testMetadata()
 	// to be matched with the image used by testdata/build/steps/basic.yml
 	_privilegedImages := []string{"alpine"}
+
+	// create trusted repo
+	_trustedRepo := testRepo()
+	_trustedRepo.SetTrusted(true)
 
 	gin.SetMode(gin.TestMode)
 
