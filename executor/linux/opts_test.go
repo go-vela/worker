@@ -169,14 +169,19 @@ func TestLinux_Opt_WithPrivilegedImages(t *testing.T) {
 		privilegedImages []string
 	}{
 		{
-			name:             "with privileged images",
+			name:             "empty privileged images",
 			failure:          false,
 			privilegedImages: []string{},
 		},
 		{
-			name:             "with privileged images",
+			name:             "with privileged image",
 			failure:          false,
 			privilegedImages: []string{"target/vela-docker"},
+		},
+		{
+			name:             "with privileged images",
+			failure:          false,
+			privilegedImages: []string{"alpine", "target/vela-docker"},
 		},
 	}
 
@@ -214,14 +219,14 @@ func TestLinux_Opt_WithEnforceTrustedRepos(t *testing.T) {
 		enforceTrustedRepos bool
 	}{
 		{
-			name:                "not enforced",
-			failure:             false,
-			enforceTrustedRepos: false,
-		},
-		{
-			name:                "enforced",
+			name:                "enforce trusted repos enabled",
 			failure:             false,
 			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled",
+			failure:             false,
+			enforceTrustedRepos: false,
 		},
 	}
 
