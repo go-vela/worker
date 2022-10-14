@@ -54,6 +54,8 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 		for _, s := range c.pipeline.Steps {
 			// TODO: remove hardcoded reference
+			//
+			//nolint:goconst // ignore making a constant for now
 			if s.Name == "init" {
 				continue
 			}
@@ -353,7 +355,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	for _, s := range c.pipeline.Steps {
 		// TODO: remove hardcoded reference
 		//
-		//nolint:goconst,nolintlint // ignore making a constant for now
+		//nolint:goconst // ignore making a constant for now
 		if s.Name == "init" {
 			continue
 		}
