@@ -101,6 +101,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 					c.Logger.Errorf("unable to update step %s to status %s: %s", _s.Name, status, err.Error())
 				}
 			}
+
 			return errors.New(errMsg)
 		}
 	}
