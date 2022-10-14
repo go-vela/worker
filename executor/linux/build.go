@@ -49,7 +49,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	containsPrivilegedImages := false
 	trustedRepo := c.repo != nil && c.repo.GetTrusted()
 	for _, s := range c.pipeline.Steps {
-
 		// skip built-in steps
 		// TODO: remove hardcoded reference
 		//
@@ -63,6 +62,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("could not verify if image %s is privileged", s.Image)
 			}
+
 			if privileged {
 				containsPrivilegedImages = true
 			}
