@@ -193,7 +193,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
-			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
 			enforceTrustedRepos: true,
 		},
 		{
@@ -202,7 +202,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
-			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
 			enforceTrustedRepos: true,
 		},
 		{
@@ -229,7 +229,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
-			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
 			enforceTrustedRepos: false,
 		},
 		{
@@ -238,7 +238,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
-			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
 			enforceTrustedRepos: false,
 		},
 	}
