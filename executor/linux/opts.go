@@ -64,6 +64,30 @@ func WithMaxLogSize(size uint) Opt {
 	}
 }
 
+// WithPrivilegedImages sets FILLME in the executor client for Linux.
+func WithPrivilegedImages(images []string) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring FILLME in linux executor client")
+
+		// set FILLME
+		c.privilegedImages = images
+
+		return nil
+	}
+}
+
+// WithEnforceTrustedRepos sets FILLME in the executor client for Linux.
+func WithEnforceTrustedRepos(enforce bool) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring FILLME in linux executor client")
+
+		// set FILLME
+		c.enforceTrustedRepos = enforce
+
+		return nil
+	}
+}
+
 // WithHostname sets the hostname in the executor client for Linux.
 func WithHostname(hostname string) Opt {
 	return func(c *client) error {

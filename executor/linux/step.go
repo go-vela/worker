@@ -34,7 +34,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	logger.Debug("setting up container")
 	// setup the runtime container
-	err := c.Runtime.SetupContainer(ctx, ctn, c.repo)
+	err := c.Runtime.SetupContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	logger.Debug("running container")
 	// run the runtime container
 
-	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline, c.repo)
+	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
 	if err != nil {
 		return err
 	}

@@ -40,6 +40,10 @@ type Setup struct {
 	LogMethod string
 	// specifies the maximum log size
 	MaxLogSize uint
+	// configures setting for enforcing trusted repos
+	EnforceTrustedRepos bool
+	// specifies a list of privileged images to use
+	PrivilegedImages []string
 	// specifies the executor hostname
 	Hostname string
 	// specifies the executor version
@@ -81,6 +85,8 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithBuild(s.Build),
 		linux.WithLogMethod(s.LogMethod),
 		linux.WithMaxLogSize(s.MaxLogSize),
+		linux.WithPrivilegedImages(s.PrivilegedImages),
+		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
 		linux.WithRepo(s.Repo),

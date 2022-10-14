@@ -6,13 +6,11 @@ package docker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -91,7 +89,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build, r *library.Repo) error {
+func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
 
 	// allocate new container config from pipeline container
@@ -149,11 +147,6 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		}
 
 		if privileged {
-			// ensure repo is trusted and therefore allowed to run privileged containers
-			if c.config.EnforceTrustedRepos && (r == nil || !r.GetTrusted()) {
-				return errors.New("repo must be trusted to run privileged images")
-			}
-
 			hostConf.Privileged = true
 		}
 	}
@@ -190,7 +183,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 }
 
 // SetupContainer prepares the image for the pipeline container.
-func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container, r *library.Repo) error {
+func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("setting up for container %s", ctn.ID)
 
 	// handle the container pull policy

@@ -93,9 +93,10 @@ func run(c *cli.Context) error {
 			CheckIn: c.Duration("checkIn"),
 			// executor configuration
 			Executor: &executor.Setup{
-				Driver:     c.String("executor.driver"),
-				LogMethod:  c.String("executor.log_method"),
-				MaxLogSize: c.Uint("executor.max_log_size"),
+				Driver:              c.String("executor.driver"),
+				LogMethod:           c.String("executor.log_method"),
+				MaxLogSize:          c.Uint("executor.max_log_size"),
+				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 			},
 			// logger configuration
 			Logger: &Logger{
@@ -104,14 +105,13 @@ func run(c *cli.Context) error {
 			},
 			// runtime configuration
 			Runtime: &runtime.Setup{
-				Driver:              c.String("runtime.driver"),
-				ConfigFile:          c.String("runtime.config"),
-				Namespace:           c.String("runtime.namespace"),
-				PodsTemplateName:    c.String("runtime.pods-template-name"),
-				PodsTemplateFile:    c.Path("runtime.pods-template-file"),
-				HostVolumes:         c.StringSlice("runtime.volumes"),
-				PrivilegedImages:    c.StringSlice("runtime.privileged-images"),
-				EnforceTrustedRepos: c.Bool("runtime.enforce-trusted-repos"),
+				Driver:           c.String("runtime.driver"),
+				ConfigFile:       c.String("runtime.config"),
+				Namespace:        c.String("runtime.namespace"),
+				PodsTemplateName: c.String("runtime.pods-template-name"),
+				PodsTemplateFile: c.Path("runtime.pods-template-file"),
+				HostVolumes:      c.StringSlice("runtime.volumes"),
+				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
 			},
 			// queue configuration
 			Queue: &queue.Setup{

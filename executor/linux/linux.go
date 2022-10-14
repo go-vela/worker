@@ -31,17 +31,19 @@ type (
 		secret *secretSvc
 
 		// private fields
-		init        *pipeline.Container
-		logMethod   string
-		maxLogSize  uint
-		build       *library.Build
-		pipeline    *pipeline.Build
-		repo        *library.Repo
-		secrets     sync.Map
-		services    sync.Map
-		serviceLogs sync.Map
-		steps       sync.Map
-		stepLogs    sync.Map
+		init                *pipeline.Container
+		logMethod           string
+		maxLogSize          uint
+		privilegedImages    []string
+		enforceTrustedRepos bool
+		build               *library.Build
+		pipeline            *pipeline.Build
+		repo                *library.Repo
+		secrets             sync.Map
+		services            sync.Map
+		serviceLogs         sync.Map
+		steps               sync.Map
+		stepLogs            sync.Map
 
 		streamRequests chan message.StreamRequest
 

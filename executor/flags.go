@@ -37,4 +37,11 @@ var Flags = []cli.Flag{
 		Name:     "executor.max_log_size",
 		Usage:    "maximum log size (in bytes)",
 	},
+	&cli.BoolFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS", "EXECUTOR_ENFORCE_TRUSTED_REPOS"},
+		FilePath: "/vela/executor/enforce_trusted_repos",
+		Name:     "executor.enforce-trusted-repos",
+		Usage:    "enforce trusted repo restrictions for privileged images",
+		Value:    false,
+	},
 }

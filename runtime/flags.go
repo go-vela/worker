@@ -61,11 +61,4 @@ var Flags = []cli.Flag{
 		Name:     "runtime.volumes",
 		Usage:    "list of host volumes to mount for the runtime",
 	},
-	&cli.BoolFlag{
-		EnvVars:  []string{"VELA_RUNTIME_ENFORCE_TRUSTED_REPOS", "RUNTIME_ENFORCE_TRUSTED_REPOS"},
-		FilePath: "/vela/runtime/enforce_trusted_repos",
-		Name:     "runtime.enforce-trusted-repos",
-		Usage:    "enforce trusted repo restrictions for privileged images",
-		Value:    false,
-	},
 }

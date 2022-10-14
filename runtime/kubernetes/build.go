@@ -127,6 +127,8 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 	}
 
+	// VADER: check for untrusted pipeline steps
+
 	// initialize the PodTracker now that we have a Pod for it to track
 	tracker, err := newPodTracker(c.Logger, c.Kubernetes, c.Pod, time.Second*30)
 	if err != nil {

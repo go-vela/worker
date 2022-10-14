@@ -7,6 +7,7 @@ package linux
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -14,7 +15,9 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/internal/build"
+	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -42,7 +45,52 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
 	}
 
+	// check the build for privileged images
+	containsPrivilegedImages := false
+	for _, s := range c.pipeline.Steps {
+		// skip built-in steps
+		if s.Name == "init" {
+			continue
+		}
+
+		for _, pattern := range c.privilegedImages {
+			privileged, err := image.IsPrivilegedImage(s.Image, pattern)
+			if err != nil {
+				return fmt.Errorf("could not verify if image is privileged: %v", s.Image)
+			}
+			if privileged {
+				containsPrivilegedImages = true
+			}
+		}
+
+		trusted := c.repo != nil && c.repo.GetTrusted()
+		// ensure repo is trusted and therefore allowed to run privileged containers
+		if c.enforceTrustedRepos && (containsPrivilegedImages && !trusted) {
+			err := errors.New("repo must be trusted to run privileged images")
+
+			c.build.SetStatus(constants.StatusError)
+			c.build.SetError(err.Error())
+
+			// ensure all preconfigured steps are set to 'killed'
+			status := constants.StatusKilled
+			for _, s := range c.pipeline.Steps {
+				// extract step
+				_step := library.StepFromBuildContainer(c.build, s)
+				// update status
+				_step.SetStatus(status)
+				// send API call to update the step
+				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
+				// only log on error
+				if err != nil {
+					c.Logger.Errorf("unable to update step %s to status %s")
+				}
+			}
+			return err
+		}
+	}
+
 	// setup the runtime build
+	// VADER: plan is to error out here if the build is untrusteds
 	c.err = c.Runtime.SetupBuild(ctx, c.pipeline)
 	if c.err != nil {
 		return fmt.Errorf("unable to setup build %s: %w", c.pipeline.ID, c.err)

@@ -214,7 +214,7 @@ func TestKubernetes_RunContainer(t *testing.T) {
 				_engine.config.Volumes = test.volumes
 			}
 
-			err = _engine.RunContainer(context.Background(), test.container, test.pipeline, test.repo)
+			err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
 
 			if test.failure {
 				if err == nil {
@@ -310,7 +310,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
 			// actually run the test
-			err = _engine.SetupContainer(context.Background(), test.container, test.repo)
+			err = _engine.SetupContainer(context.Background(), test.container)
 
 			// this does not (yet) test everything in the resulting pod spec (ie no tests for ImagePullPolicy, VolumeMounts)
 

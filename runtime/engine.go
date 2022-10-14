@@ -8,7 +8,6 @@ import (
 	"context"
 	"io"
 
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 )
 
@@ -51,10 +50,10 @@ type Engine interface {
 	RemoveContainer(context.Context, *pipeline.Container) error
 	// RunContainer defines a function that creates
 	// and starts the pipeline container.
-	RunContainer(context.Context, *pipeline.Container, *pipeline.Build, *library.Repo) error
+	RunContainer(context.Context, *pipeline.Container, *pipeline.Build) error
 	// SetupContainer defines a function that prepares
 	// the image for the pipeline container.
-	SetupContainer(context.Context, *pipeline.Container, *library.Repo) error
+	SetupContainer(context.Context, *pipeline.Container) error
 	// TailContainer defines a function that captures
 	// the logs on the pipeline container.
 	TailContainer(context.Context, *pipeline.Container) (io.ReadCloser, error)

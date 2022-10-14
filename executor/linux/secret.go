@@ -50,7 +50,7 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container) error {
 
 	logger.Debug("setting up container")
 	// setup the runtime container
-	err := s.client.Runtime.SetupContainer(ctx, ctn, s.client.repo)
+	err := s.client.Runtime.SetupContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 
 		logger.Debug("running container")
 		// run the runtime container
-		err := s.client.Runtime.RunContainer(ctx, _secret.Origin, s.client.pipeline, s.client.repo)
+		err := s.client.Runtime.RunContainer(ctx, _secret.Origin, s.client.pipeline)
 		if err != nil {
 			return err
 		}

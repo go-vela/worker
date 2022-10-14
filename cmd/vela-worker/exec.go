@@ -52,16 +52,15 @@ func (w *Worker) exec(index int) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
 	w.Runtime, err = runtime.New(&runtime.Setup{
-		Logger:              logger,
-		Mock:                w.Config.Mock,
-		Driver:              w.Config.Runtime.Driver,
-		ConfigFile:          w.Config.Runtime.ConfigFile,
-		HostVolumes:         w.Config.Runtime.HostVolumes,
-		Namespace:           w.Config.Runtime.Namespace,
-		PodsTemplateName:    w.Config.Runtime.PodsTemplateName,
-		PodsTemplateFile:    w.Config.Runtime.PodsTemplateFile,
-		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
-		EnforceTrustedRepos: w.Config.Runtime.EnforceTrustedRepos,
+		Logger:           logger,
+		Mock:             w.Config.Mock,
+		Driver:           w.Config.Runtime.Driver,
+		ConfigFile:       w.Config.Runtime.ConfigFile,
+		HostVolumes:      w.Config.Runtime.HostVolumes,
+		Namespace:        w.Config.Runtime.Namespace,
+		PodsTemplateName: w.Config.Runtime.PodsTemplateName,
+		PodsTemplateFile: w.Config.Runtime.PodsTemplateFile,
+		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
 	})
 	if err != nil {
 		return err
@@ -71,19 +70,21 @@ func (w *Worker) exec(index int) error {
 	//
 	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
-		Logger:     logger,
-		Mock:       w.Config.Mock,
-		Driver:     w.Config.Executor.Driver,
-		LogMethod:  w.Config.Executor.LogMethod,
-		MaxLogSize: w.Config.Executor.MaxLogSize,
-		Client:     w.VelaClient,
-		Hostname:   w.Config.API.Address.Hostname(),
-		Runtime:    w.Runtime,
-		Build:      item.Build,
-		Pipeline:   item.Pipeline.Sanitize(w.Config.Runtime.Driver),
-		Repo:       item.Repo,
-		User:       item.User,
-		Version:    v.Semantic(),
+		Logger:              logger,
+		Mock:                w.Config.Mock,
+		Driver:              w.Config.Executor.Driver,
+		LogMethod:           w.Config.Executor.LogMethod,
+		MaxLogSize:          w.Config.Executor.MaxLogSize,
+		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
+		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
+		Client:              w.VelaClient,
+		Hostname:            w.Config.API.Address.Hostname(),
+		Runtime:             w.Runtime,
+		Build:               item.Build,
+		Pipeline:            item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Repo:                item.Repo,
+		User:                item.User,
+		Version:             v.Semantic(),
 	})
 
 	// add the executor to the worker
@@ -122,6 +123,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("creating build")
 	// create the build with the executor
+	// VADER: can we check the steps for privileged images here to save ourselves waste of execution
 	err = _executor.CreateBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to create build: %v", err)
@@ -156,6 +158,7 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("executing build")
 	// execute the build with the executor
+	// VADER: this is the actual execution where we check privileged containers
 	err = _executor.ExecBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to execute build: %v", err)
