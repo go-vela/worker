@@ -95,6 +95,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 				// set step status
 				_step.SetStatus(status)
 				// send API call to update the step
+				//nolint:contextcheck // ignore passing context
 				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
 				if err != nil {
 					// only log any step update errors to allow the return err to run
