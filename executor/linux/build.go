@@ -72,13 +72,12 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			}
 		}
 
+		// determine if repo is trusted
 		trusted := c.repo != nil && c.repo.GetTrusted()
 
-		// pipeline contains privileged images and is not trusted
-		deny := containsPrivilegedImages && !trusted
-
-		// deny the build, clean build/steps, and return error
-		if deny {
+		// this build should be denied
+		if containsPrivilegedImages && !trusted {
+			// deny the build, clean build/steps, and return error
 			// message to display in the build
 			errMsg := "repo must be trusted to run privileged images"
 			// set the build status to error
@@ -102,6 +101,8 @@ func (c *client) CreateBuild(ctx context.Context) error {
 					c.Logger.Errorf("unable to update step %s to status %s: %s", _s.Name, status, err.Error())
 				}
 			}
+
+			c.Logger.Infof("build containing privileged images denied, repo %s/%s is not trusted", c.repo.FullName, c.build.GetNumber())
 
 			return errors.New(errMsg)
 		}
