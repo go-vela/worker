@@ -86,19 +86,19 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			c.build.SetError(errMsg)
 
 			// update all preconfigured steps to the correct status
-			for _, _s := range c.pipeline.Steps {
+			for _, s := range c.pipeline.Steps {
 				// extract step
-				_step := library.StepFromBuildContainer(c.build, _s)
+				step := library.StepFromBuildContainer(c.build, s)
 				// status to use for preconfigured steps that are not ran
 				status := constants.StatusKilled
 				// set step status
-				_step.SetStatus(status)
+				step.SetStatus(status)
 				// send API call to update the step
 				//nolint:contextcheck // ignore passing context
-				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
+				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), step)
 				if err != nil {
 					// only log any step update errors to allow the return err to run
-					c.Logger.Errorf("unable to update step %s to status %s: %s", _s.Name, status, err.Error())
+					c.Logger.Errorf("unable to update step %s to status %s: %s", s.Name, status, err.Error())
 				}
 			}
 
