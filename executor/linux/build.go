@@ -48,7 +48,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// check the build for privileged images
 	containsPrivilegedImages := false
 	trustedRepo := c.repo != nil && c.repo.GetTrusted()
-
 	for _, s := range c.pipeline.Steps {
 
 		// skip built-in steps
