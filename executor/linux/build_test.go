@@ -130,6 +130,163 @@ func TestLinux_CreateBuild(t *testing.T) {
 	}
 }
 
+func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
+	// setup types
+	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+
+	_build := testBuild()
+	// repo is not trusted by default
+	_untrustedRepo := testRepo()
+	// trusted repo
+	_trustedRepo := testRepo()
+	_trustedRepo.SetTrusted(true)
+	_user := testUser()
+	_metadata := testMetadata()
+	// to be matched with the image used by testdata/build/steps/basic.yml
+	_privilegedImages := []string{"alpine"}
+
+	gin.SetMode(gin.TestMode)
+
+	s := httptest.NewServer(server.FakeHandler())
+
+	_client, err := vela.NewClient(s.URL, "", nil)
+	if err != nil {
+		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_runtime, err := docker.NewMock()
+	if err != nil {
+		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	tests := []struct {
+		name                string
+		failure             bool
+		build               *library.Build
+		repo                *library.Repo
+		pipeline            string
+		privilegedImages    []string
+		enforceTrustedRepos bool
+	}{
+		{
+			name:                "enforce trusted repos: privileged pipeline with trusted repo",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImages, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos: privileged pipeline with untrusted repo",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImages, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos: non-privileged pipeline with trusted repo",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos: non-privileged pipeline with untrusted repo",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "disable enforce trusted repos: privileged pipeline with trusted repo",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImages, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "disable enforce trusted repos: privileged pipeline with untrusted repo",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImages, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "disable enforce trusted repos: non-privileged pipeline with trusted repo",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "disable enforce trusted repos: non-privileged pipeline with untrusted repo",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{"foobar"}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+	}
+
+	// run test
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_pipeline, _, err := compiler.
+				Duplicate().
+				WithBuild(_build).
+				WithRepo(test.repo).
+				WithMetadata(_metadata).
+				WithUser(_user).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+			}
+
+			_engine, err := New(
+				WithBuild(test.build),
+				WithPipeline(_pipeline),
+				WithRepo(test.repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				WithVelaClient(_client),
+				WithPrivilegedImages(test.privilegedImages),
+				WithEnforceTrustedRepos(test.enforceTrustedRepos),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
+
+			err = _engine.CreateBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateBuild returned err: %v", err)
+			}
+		})
+	}
+}
+
 func TestLinux_PlanBuild(t *testing.T) {
 	// setup types
 	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
