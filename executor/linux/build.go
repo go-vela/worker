@@ -47,6 +47,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	// check the build for privileged images
 	containsPrivilegedImages := false
+	trustedRepo := c.repo != nil && c.repo.GetTrusted()
 
 	for _, s := range c.pipeline.Steps {
 
@@ -68,22 +69,26 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			}
 		}
 
-		trusted := c.repo != nil && c.repo.GetTrusted()
 		// ensure repo is trusted and therefore allowed to run privileged containers
-		if c.enforceTrustedRepos && (containsPrivilegedImages && !trusted) {
+		if c.enforceTrustedRepos && (containsPrivilegedImages && !trustedRepo) {
 			err := errors.New("repo must be trusted to run privileged images")
 
+			// set the build status to error
 			c.build.SetStatus(constants.StatusError)
+			// populate the build error
 			c.build.SetError(err.Error())
 
-			// ensure all preconfigured steps are set to 'killed'
+			// status to use for preconfigured steps that are not ran
 			status := constants.StatusKilled
+
+			// update all preconfigured steps to the correct status
 			for _, _s := range c.pipeline.Steps {
 				// extract step
 				_step := library.StepFromBuildContainer(c.build, _s)
 				// update status
 				_step.SetStatus(status)
 				// send API call to update the step
+				//nolint:contextcheck // ignore passing context
 				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
 				if err != nil {
 					// only log any step update errors to allow the return err to run
