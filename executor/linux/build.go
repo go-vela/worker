@@ -78,14 +78,13 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			// populate the build error
 			c.build.SetError(err.Error())
 
-			// status to use for preconfigured steps that are not ran
-			status := constants.StatusKilled
-
 			// update all preconfigured steps to the correct status
 			for _, _s := range c.pipeline.Steps {
 				// extract step
 				_step := library.StepFromBuildContainer(c.build, _s)
-				// update status
+				// status to use for preconfigured steps that are not ran
+				status := constants.StatusKilled
+				// set step status
 				_step.SetStatus(status)
 				// send API call to update the step
 				//nolint:contextcheck // ignore passing context
