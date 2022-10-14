@@ -354,8 +354,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// create the steps for the pipeline
 	for _, s := range c.pipeline.Steps {
 		// TODO: remove hardcoded reference
-		//
-		//nolint:goconst // ignore making a constant for now
 		if s.Name == "init" {
 			continue
 		}
