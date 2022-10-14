@@ -49,15 +49,3 @@ func WithPrivilegedImages(images []string) ClientOpt {
 		return nil
 	}
 }
-
-// WithEnforceTrustedRepos sets whether to enforce trusted repo restrictions on privileged images in the runtime client for Docker.
-func WithEnforceTrustedRepos(enforce bool) ClientOpt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring trusted repo restrictions on privileged images in docker runtime client")
-
-		// set configuration for using trusted repo restrictions in the docker client
-		c.config.EnforceTrustedRepos = enforce
-
-		return nil
-	}
-}
