@@ -47,6 +47,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 	// check the build for privileged images
 	containsPrivilegedImages := false
+
 	for _, s := range c.pipeline.Steps {
 
 		// skip built-in steps
@@ -60,7 +61,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		for _, pattern := range c.privilegedImages {
 			privileged, err := image.IsPrivilegedImage(s.Image, pattern)
 			if err != nil {
-				return fmt.Errorf("could not verify if image is privileged: %v", s.Image)
+				return fmt.Errorf("could not verify if image %s is privileged", s.Image)
 			}
 			if privileged {
 				containsPrivilegedImages = true
@@ -77,18 +78,19 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 			// ensure all preconfigured steps are set to 'killed'
 			status := constants.StatusKilled
-			for _, s := range c.pipeline.Steps {
+			for _, _s := range c.pipeline.Steps {
 				// extract step
-				_step := library.StepFromBuildContainer(c.build, s)
+				_step := library.StepFromBuildContainer(c.build, _s)
 				// update status
 				_step.SetStatus(status)
 				// send API call to update the step
 				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
-				// only log on error
 				if err != nil {
-					c.Logger.Errorf("unable to update step %s to status %s")
+					// only log any step update errors to allow the return err to run
+					c.Logger.Errorf("unable to update step %s to status %s: %w", _s.Name, status, err)
 				}
 			}
+
 			return err
 		}
 	}
