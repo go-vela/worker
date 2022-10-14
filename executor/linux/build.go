@@ -7,7 +7,6 @@ package linux
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -72,18 +71,14 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			}
 		}
 
-		// determine if repo is trusted
-		trusted := c.repo != nil && c.repo.GetTrusted()
-
-		// this build should be denied
-		if containsPrivilegedImages && !trusted {
+		// check if this build should be denied
+		if containsPrivilegedImages && !(c.repo != nil && c.repo.GetTrusted()) {
 			// deny the build, clean build/steps, and return error
-			// message to display in the build
-			errMsg := "repo must be trusted to run privileged images"
+			// populate the build error
+			e := "build denied, repo must be trusted in order to run privileged images"
+			c.build.SetError(e)
 			// set the build status to error
 			c.build.SetStatus(constants.StatusError)
-			// populate the build error
-			c.build.SetError(errMsg)
 
 			// update all preconfigured steps to the correct status
 			for _, s := range c.pipeline.Steps {
@@ -102,9 +97,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 				}
 			}
 
-			c.Logger.Infof("build containing privileged images %s/%d denied, repo is not trusted", c.repo.GetFullName(), c.build.GetNumber())
-
-			return errors.New(errMsg)
+			return fmt.Errorf("build containing privileged images %s/%d denied, repo is not trusted", c.repo.GetFullName(), c.build.GetNumber())
 		}
 	}
 
