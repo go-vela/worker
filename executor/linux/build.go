@@ -51,18 +51,25 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		// assume no privileged images are in use
 		containsPrivilegedImages := false
 
-		for _, s := range c.pipeline.Steps {
+		// group steps services and stages together
+		containers := c.pipeline.Steps
+		containers = append(containers, c.pipeline.Services...)
+		for _, stage := range c.pipeline.Stages {
+			containers = append(containers, stage.Steps...)
+		}
+
+		for _, container := range containers {
 			// TODO: remove hardcoded reference
 			//
 			//nolint:goconst // ignore making a constant for now
-			if s.Name == "init" {
+			if container.Name == "init" {
 				continue
 			}
 
 			for _, pattern := range c.privilegedImages {
-				privileged, err := image.IsPrivilegedImage(s.Image, pattern)
+				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
 				if err != nil {
-					return fmt.Errorf("could not verify if image %s is privileged", s.Image)
+					return fmt.Errorf("could not verify if image %s is privileged", container.Image)
 				}
 
 				if privileged {
@@ -72,7 +79,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 		}
 
 		// check if this build should be denied
-		if containsPrivilegedImages && !(c.repo != nil && c.repo.GetTrusted()) {
+		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
 			// deny the build, clean build/steps, and return error
 			// populate the build error
 			e := "build denied, repo must be trusted in order to run privileged images"
