@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
@@ -171,7 +170,6 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 		name             string
 		failure          bool
 		pipeline         *pipeline.Build
-		repo             *library.Repo
 		opts             []ClientOpt
 		wantFromTemplate interface{}
 	}{

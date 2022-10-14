@@ -123,7 +123,6 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("creating build")
 	// create the build with the executor
-	// VADER: can we check the steps for privileged images here to save ourselves waste of execution
 	err = _executor.CreateBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to create build: %v", err)
@@ -158,7 +157,6 @@ func (w *Worker) exec(index int) error {
 
 	logger.Info("executing build")
 	// execute the build with the executor
-	// VADER: this is the actual execution where we check privileged containers
 	err = _executor.ExecBuild(timeoutCtx)
 	if err != nil {
 		logger.Errorf("unable to execute build: %v", err)

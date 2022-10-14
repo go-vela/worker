@@ -90,7 +90,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	}
 
 	// setup the runtime build
-	// VADER: plan is to error out here if the build is untrusteds
 	c.err = c.Runtime.SetupBuild(ctx, c.pipeline)
 	if c.err != nil {
 		return fmt.Errorf("unable to setup build %s: %w", c.pipeline.ID, c.err)

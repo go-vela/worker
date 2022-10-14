@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
@@ -182,7 +181,6 @@ func TestKubernetes_RunContainer(t *testing.T) {
 		failure   bool
 		container *pipeline.Container
 		pipeline  *pipeline.Build
-		repo      *library.Repo
 		pod       *v1.Pod
 		volumes   []string
 	}{
@@ -237,7 +235,6 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 		name             string
 		failure          bool
 		container        *pipeline.Container
-		repo             *library.Repo
 		opts             []ClientOpt
 		wantPrivileged   bool
 		wantFromTemplate interface{}

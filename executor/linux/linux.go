@@ -72,6 +72,8 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.init, b.init) &&
 		a.logMethod == b.logMethod &&
 		a.maxLogSize == b.maxLogSize &&
+		reflect.DeepEqual(a.privilegedImages, b.privilegedImages) &&
+		a.enforceTrustedRepos == b.enforceTrustedRepos &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
 		reflect.DeepEqual(a.repo, b.repo) &&

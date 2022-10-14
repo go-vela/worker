@@ -152,7 +152,6 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	logger.Debug("running container")
 	// run the runtime container
-
 	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
 	if err != nil {
 		return err
