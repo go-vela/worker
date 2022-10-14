@@ -53,6 +53,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 		// group steps services and stages together
 		containers := c.pipeline.Steps
+
 		containers = append(containers, c.pipeline.Services...)
 		for _, stage := range c.pipeline.Stages {
 			containers = append(containers, stage.Steps...)
