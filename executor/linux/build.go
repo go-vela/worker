@@ -88,8 +88,13 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			// set the build status to error
 			c.build.SetStatus(constants.StatusError)
 
+			steps := c.pipeline.Steps
+			for _, stage := range c.pipeline.Stages {
+				steps = append(containers, stage.Steps...)
+			}
+
 			// update all preconfigured steps to the correct status
-			for _, s := range c.pipeline.Steps {
+			for _, s := range steps {
 				// extract step
 				step := library.StepFromBuildContainer(c.build, s)
 				// status to use for preconfigured steps that are not ran
