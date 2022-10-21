@@ -155,6 +155,8 @@ github.com/go-redis/redis/v8 v8.11.5/go.mod h1:gREzHqY1hg6oD9ngVRbLStwAWKhA0FEgq
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/go-vela/sdk-go v0.15.1 h1:DEH5DzamH3InTXeXE2iiKiiQhu/NILWna+zb+ceXEFA=
 github.com/go-vela/sdk-go v0.15.1/go.mod h1:QjYqC1bbrDshUVaScUwtNgj3P/uqctdUHfD2agm6OCU=
+github.com/go-vela/server v0.15.1 h1:7J9QfFXNVREhX4mILCWyqZE3o29a2oThEN2WeQ/wWF4=
+github.com/go-vela/server v0.15.1/go.mod h1:k3p4ZhDKYKVO3rbkCAow3N/01f2Iel9KDR2yTaH90UI=
 github.com/go-vela/types v0.15.1 h1:nQxfxoqxavuTYtvFJW4wK9UkkADN2VG6Z4ubvJ8PT1s=
 github.com/go-vela/types v0.15.1/go.mod h1:6KoRkvXMw9DkAcLdtI7PxPqMlT2Bl0DiigQamLGGjwo=
 github.com/goccy/go-json v0.9.7 h1:IcB+Aqpx/iMHu5Yooh7jEzJk1JZ7Pjtmys2ukPr7EeM=
