@@ -19,6 +19,7 @@ import (
 // for the Worker.
 func flags() []cli.Flag {
 	f := []cli.Flag{
+
 		&cli.StringFlag{
 			EnvVars: []string{"WORKER_ADDR", "VELA_WORKER_ADDR", "VELA_WORKER"},
 			Name:    "worker.addr",
