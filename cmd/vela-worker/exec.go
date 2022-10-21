@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-vela/worker/executor"
@@ -28,10 +29,13 @@ func (w *Worker) exec(index int) error {
 	// capture an item from the queue
 	item, err := w.Queue.Pop(context.Background())
 	if err != nil {
+		fmt.Println("error popping item: " + err.Error())
+
 		return err
 	}
 
 	if item == nil {
+		fmt.Println("popped nil item")
 		return nil
 	}
 

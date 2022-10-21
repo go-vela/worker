@@ -33,6 +33,7 @@ services:
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_ADDR: 'http://worker:8080'
       WORKER_CHECK_IN: 5m
+      VELA_SIGNING_PUBLIC_KEY: 'FVMNLuknxHlsCh23dLO6HCg6oQxmsOjf6aapAeSZS4Y='
     restart: always
     ports:
       - "8081:8080"
@@ -73,6 +74,7 @@ services:
       VELA_ACCESS_TOKEN_DURATION: 60m
       VELA_DISABLE_WEBHOOK_VALIDATION: 'true'
       VELA_ENABLE_SECURE_COOKIE: 'false'
+      VELA_SIGNING_PRIVATE_KEY: 'Y9B5lVd5X/qWu931995HitA/u4oGRjxcfXyIO91tex4VUw0u6SfEeWwKHbd0s7ocKDqhDGaw6N/ppqkB5JlLhg=='
     env_file:
       - .env
     restart: always
