@@ -163,6 +163,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 		c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
 
+		// VADER: this MUST be removed
 		//nolint:contextcheck // ignore passing context
 		s, err := c.secret.pull(secret)
 		if err != nil {
