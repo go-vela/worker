@@ -91,6 +91,12 @@ func flags() []cli.Flag {
 			Usage:   "optional TLS minimum version requirement",
 			Value:   "1.2",
 		},
+
+		&cli.StringFlag{
+			EnvVars: []string{"WORKER_SERVER_REGISTRATION_TOKEN", "VELA_WORKER_REGISTRATION_TOKEN", "VELA_SERVER_REGISTRATION_TOKEN"},
+			Name:    "server.registration-token",
+			Usage:   "token to register worker with the server",
+		},
 	}
 
 	// Executor Flags

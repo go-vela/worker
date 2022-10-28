@@ -132,6 +132,8 @@ func run(c *cli.Context) error {
 			},
 			// TLS minimum version enforced
 			TLSMinVersion: c.String("server.tls-min-version"),
+			// server token
+			ServerToken: c.String("server.registration-token"),
 		},
 		Executors: make(map[int]executor.Engine),
 	}

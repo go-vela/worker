@@ -14,6 +14,14 @@ import (
 
 // checkIn is a helper function to to phone home to the server.
 func (w *Worker) checkIn(config *library.Worker) error {
+	// refresh the server token present in the worker
+	logrus.Infof("refreshing token for worker %s", config.GetHostname())
+
+	err := w.refreshToken(config)
+	if err != nil {
+		return fmt.Errorf("unable to refresh token for worker %s: %w", config.GetHostname(), err)
+	}
+
 	// check to see if the worker already exists in the database
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())
 
@@ -46,12 +54,26 @@ func (w *Worker) checkIn(config *library.Worker) error {
 func (w *Worker) register(config *library.Worker) error {
 	logrus.Infof("worker %s not found, registering it with the server", config.GetHostname())
 
+	// add worker to db
 	_, _, err := w.VelaClient.Worker.Add(config)
 	if err != nil {
-		// log the error instead of returning so the operation doesn't block worker deployment
 		return fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
 
 	// successfully added the worker so return nil
+	return nil
+}
+
+// refreshToken is a helper function to refresh the token with the server for accessing the server.
+func (w *Worker) refreshToken(config *library.Worker) error {
+	// refresh server token
+	t, _, err := w.VelaClient.Token.Refresh(w.Config.ServerToken)
+	if err != nil {
+		return fmt.Errorf("unable to refresh token for worker %s: %w", config.GetHostname(), err)
+	}
+
+	w.Config.ServerToken = t
+
+	// successfully refreshed the token so return nil
 	return nil
 }

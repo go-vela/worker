@@ -57,6 +57,7 @@ type (
 		Server        *Server
 		Certificate   *Certificate
 		TLSMinVersion string
+		ServerToken   string
 	}
 
 	// Worker represents all configuration and
