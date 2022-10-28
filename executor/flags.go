@@ -42,6 +42,6 @@ var Flags = []cli.Flag{
 		FilePath: "/vela/executor/enforce_trusted_repos",
 		Name:     "executor.enforce-trusted-repos",
 		Usage:    "enforce trusted repo restrictions for privileged images",
-		Value:    false,
+		Value:    true,
 	},
 }
