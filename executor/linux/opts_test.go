@@ -346,7 +346,7 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 	// setup types
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
