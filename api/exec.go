@@ -8,9 +8,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/types"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/worker"
 	"github.com/sirupsen/logrus"
 )
@@ -62,7 +64,7 @@ func Exec(c *gin.Context) {
 	// read incoming body from the request
 	body := c.Request.Body
 
-	itemBytes, err := io.ReadAll(body)
+	pkgBytes, err := io.ReadAll(body)
 	if err != nil {
 		msg := "unable to bind item"
 
@@ -71,8 +73,10 @@ func Exec(c *gin.Context) {
 		return
 	}
 
-	it := new(types.Item)
-	err = json.Unmarshal(itemBytes, it)
+	// TODO: vader: this should be a build package with secrets
+	// (for now) it is the item with faked secrets
+	item := new(types.Item)
+	err = json.Unmarshal(pkgBytes, item)
 	if err != nil {
 		msg := "unable to bind item"
 
@@ -81,8 +85,44 @@ func Exec(c *gin.Context) {
 		return
 	}
 
-	logrus.Info("Sending item over channel.")
-	w.ItemChannel <- it
+	// TODO: vader: create fake package (for now)
+	pkg := worker.Package{
+		Item: item,
+		Secrets: []*library.Secret{
+			testSecret(item),
+		},
+	}
 
-	c.JSON(http.StatusOK, "Executing build.")
+	logrus.Info("Sending package over channel.")
+	w.PackageChannel <- &pkg
+
+	c.JSON(http.StatusOK, "Executing build package.")
+}
+
+// ripped from types
+// testSecret is a test helper function to create a Secret
+// type with all fields set to a fake value.
+// TODO: vader: remove this definitely
+func testSecret(item *types.Item) *library.Secret {
+	currentTime := time.Now()
+	tsCreate := currentTime.UTC().Unix()
+	tsUpdate := currentTime.Add(time.Hour * 1).UTC().Unix()
+	s := new(library.Secret)
+
+	s.SetID(1)
+	s.SetOrg(item.Repo.GetOrg())
+	s.SetOrg(item.Repo.GetName())
+	s.SetTeam("octokitties")
+	s.SetName("foo")
+	s.SetValue("bar")
+	s.SetType("repo")
+	s.SetImages([]string{})
+	s.SetEvents([]string{"push", "tag", "deployment"})
+	s.SetAllowCommand(true)
+	s.SetCreatedAt(tsCreate)
+	s.SetCreatedBy("octocat")
+	s.SetUpdatedAt(tsUpdate)
+	s.SetUpdatedBy("octocat2")
+
+	return s
 }

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/types"
 	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
@@ -82,8 +81,8 @@ func (w *Worker) Operate(ctx context.Context) error {
 		return err
 	}
 
-	ch := make(chan *types.Item)
-	w.ItemChannel = ch
+	ch := make(chan *Package)
+	w.PackageChannel = ch
 
 	// iterate till the configured build limit
 	for i := 0; i < w.Config.Build.Limit; i++ {
@@ -95,7 +94,7 @@ func (w *Worker) Operate(ctx context.Context) error {
 		// log a message indicating the start of an operator thread
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
-		logrus.Infof("Thread ID %d listening to queue...", id)
+		logrus.Infof("Thread ID %d listening for Packages on channel...", id)
 
 		// spawn errgroup routine for operator subprocess
 		//
@@ -105,18 +104,19 @@ func (w *Worker) Operate(ctx context.Context) error {
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
+				// TODO: vader: feature flag to switch from queue polling mode to server listener mode
 				select {
 				case <-gctx.Done():
 					logrus.WithFields(logrus.Fields{
 						"id": id,
 					}).Info("Completed looping on worker executor")
 					return nil
-				case item := <-w.ItemChannel:
+				case pkg := <-w.PackageChannel:
 					// exec operator subprocess execute build from the queue
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
 					//nolint:contextcheck // ignore passing context
-					err = w.Exec(id, item)
+					err = w.ExecPackage(id, pkg)
 					if err != nil {
 						// log the error received from the executor
 						//
