@@ -97,6 +97,7 @@ func run(c *cli.Context) error {
 				Driver:     c.String("executor.driver"),
 				LogMethod:  c.String("executor.log_method"),
 				MaxLogSize: c.Uint("executor.max_log_size"),
+				BuildMode:  c.String("executor.build_mode"),
 			},
 			// logger configuration
 			Logger: &worker.Logger{

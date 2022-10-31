@@ -149,42 +149,45 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 	_log.AppendData(volume)
 
-	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte("> Preparing secrets...\n"))
+	if c.mode == "pull" {
+		// update the init log with progress
+		//
+		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		_log.AppendData([]byte("> Preparing secrets...\n"))
 
-	// iterate through each secret provided in the pipeline
-	for _, secret := range c.pipeline.Secrets {
-		// ignore pulling secrets coming from plugins
-		if !secret.Origin.Empty() {
-			continue
+		// iterate through each secret provided in the pipeline
+		for _, secret := range c.pipeline.Secrets {
+			// ignore pulling secrets coming from plugins
+			if !secret.Origin.Empty() {
+				continue
+			}
+
+			c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
+
+			//nolint:contextcheck // ignore passing context
+			s, err := c.secret.pull(secret)
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to pull secrets: %w", err)
+			}
+
+			_log.AppendData([]byte(
+				fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
+					secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
+
+			sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to decode secret: %w", err)
+			}
+
+			_log.AppendData(append(sRaw, "\n"...))
+
+			// add secret to the map
+			c.Secrets[secret.Name] = s
 		}
-
-		c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
-
-		// VADER: this MUST be removed
-		//nolint:contextcheck // ignore passing context
-		s, err := c.secret.pull(secret)
-		if err != nil {
-			c.err = err
-			return fmt.Errorf("unable to pull secrets: %w", err)
-		}
-
-		_log.AppendData([]byte(
-			fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
-				secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
-
-		sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
-		if err != nil {
-			c.err = err
-			return fmt.Errorf("unable to decode secret: %w", err)
-		}
-
-		_log.AppendData(append(sRaw, "\n"...))
-
-		// add secret to the map
-		c.Secrets[secret.Name] = s
+	} else {
+		// secrets should already be available when running in "push" mode
 	}
 
 	return nil
