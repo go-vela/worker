@@ -40,6 +40,8 @@ type Setup struct {
 	LogMethod string
 	// specifies the maximum log size
 	MaxLogSize uint
+	// specifies mode to run in (push or pull)
+	BuildMode string
 	// specifies the executor hostname
 	Hostname string
 	// specifies the executor version
@@ -59,6 +61,8 @@ type Setup struct {
 	Repo *library.Repo
 	// resource for storing user information in Vela
 	User *library.User
+	// resource for storing sensitive build args in Vela
+	Secrets []*library.Secret
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -81,6 +85,8 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithBuild(s.Build),
 		linux.WithLogMethod(s.LogMethod),
 		linux.WithMaxLogSize(s.MaxLogSize),
+		linux.WithBuildMode(s.BuildMode),
+		linux.WithSecrets(s.Secrets),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
 		linux.WithRepo(s.Repo),

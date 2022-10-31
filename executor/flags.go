@@ -37,4 +37,10 @@ var Flags = []cli.Flag{
 		Name:     "executor.max_log_size",
 		Usage:    "maximum log size (in bytes)",
 	},
+	&cli.StringFlag{
+		EnvVars: []string{"VELA_EXECUTOR_BUILD_MODE", "EXECUTOR_BUILD_MODE", "BUILD_MODE"},
+		Name:    "executor.build_mode",
+		Usage:   "which mode to run the worker in (push or pull)",
+		Value:   "push",
+	},
 }

@@ -104,27 +104,62 @@ func (w *Worker) Operate(ctx context.Context) error {
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
-				// TODO: vader: feature flag to switch from queue polling mode to server listener mode
-				select {
-				case <-gctx.Done():
-					logrus.WithFields(logrus.Fields{
-						"id": id,
-					}).Info("Completed looping on worker executor")
-					return nil
-				case pkg := <-w.PackageChannel:
-					// exec operator subprocess execute build from the queue
-					// (do not pass the context to avoid errors in one
-					// executor+build inadvertently canceling other builds)
-					//nolint:contextcheck // ignore passing context
-					err = w.ExecPackage(id, pkg)
-					if err != nil {
-						// log the error received from the executor
-						//
-						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
-						logrus.Errorf("failing worker executor: %v", err)
+				switch w.Config.Executor.BuildMode {
+				case "push":
+					select {
+					case <-gctx.Done():
+						logrus.WithFields(logrus.Fields{
+							"id": id,
+						}).Info("Completed listening on worker executor package channel")
+						return nil
+					case pkg := <-w.PackageChannel:
+						// exec operator subprocess execute build from the queue
+						// (do not pass the context to avoid errors in one
+						// executor+build inadvertently canceling other builds)
+						//nolint:contextcheck // ignore passing context
+						err = w.Exec(id, pkg)
+						if err != nil {
+							// log the error received from the executor
+							//
+							// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+							logrus.Errorf("failing worker executor: %v", err)
 
-						return err
+							return err
+						}
 					}
+					break
+				case "pull":
+					select {
+					case <-gctx.Done():
+						logrus.WithFields(logrus.Fields{
+							"id": id,
+						}).Info("Completed listening on worker executor package channel")
+						return nil
+					default:
+						// capture an item from the queue
+						item, err := w.Queue.Pop(context.Background())
+						if err != nil {
+							return err
+						}
+
+						if item == nil {
+							return nil
+						}
+						// exec operator subprocess execute build from the queue
+						// (do not pass the context to avoid errors in one
+						// executor+build inadvertently canceling other builds)
+						//nolint:contextcheck // ignore passing context
+						err = w.Exec(id, &Package{Item: item})
+						if err != nil {
+							// log the error received from the executor
+							//
+							// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+							logrus.Errorf("failing worker executor: %v", err)
+
+							return err
+						}
+					}
+					break
 				}
 			}
 		})
