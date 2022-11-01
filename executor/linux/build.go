@@ -149,11 +149,12 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 	_log.AppendData(volume)
 
+	// update the init log with progress
+	//
+	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	_log.AppendData([]byte("> Preparing secrets...\n"))
+
 	if c.mode == "pull" {
-		// update the init log with progress
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte("> Preparing secrets...\n"))
 
 		// iterate through each secret provided in the pipeline
 		for _, secret := range c.pipeline.Secrets {
@@ -188,6 +189,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 		}
 	} else {
 		// secrets should already be available when running in "push" mode
+		_log.AppendData([]byte("> Received packaged secrets, proceeding...\n"))
 	}
 
 	return nil
