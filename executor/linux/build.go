@@ -63,7 +63,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 			// TODO: remove hardcoded reference
 			//
 			//nolint:goconst // ignore making a constant for now
-			if container.Name == "init" {
+			if container.Image == "#init" {
 				continue
 			}
 
