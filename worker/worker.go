@@ -11,7 +11,6 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -68,11 +67,7 @@ type (
 		Executors      map[int]executor.Engine
 		Queue          queue.Service
 		Runtime        runtime.Engine
-		PackageChannel chan *Package
+		PackageChannel chan *types.BuildPackage
 		VelaClient     *vela.Client
 	}
 )
-type Package struct {
-	*types.Item
-	Secrets []*library.Secret
-}

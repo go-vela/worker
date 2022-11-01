@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types"
 	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
@@ -81,7 +82,7 @@ func (w *Worker) Operate(ctx context.Context) error {
 		return err
 	}
 
-	ch := make(chan *Package)
+	ch := make(chan *types.BuildPackage)
 	w.PackageChannel = ch
 
 	// iterate till the configured build limit
@@ -94,7 +95,7 @@ func (w *Worker) Operate(ctx context.Context) error {
 		// log a message indicating the start of an operator thread
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
-		logrus.Infof("Thread ID %d listening for Packages on channel...", id)
+		logrus.Infof("Thread ID %d listening for builds on channel...", id)
 
 		// spawn errgroup routine for operator subprocess
 		//
@@ -149,7 +150,13 @@ func (w *Worker) Operate(ctx context.Context) error {
 						// (do not pass the context to avoid errors in one
 						// executor+build inadvertently canceling other builds)
 						//nolint:contextcheck // ignore passing context
-						err = w.Exec(id, &Package{Item: item})
+						err = w.Exec(id, &types.BuildPackage{
+							Build:    item.Build,
+							Secrets:  []*library.Secret{},
+							Pipeline: item.Pipeline,
+							Repo:     item.Repo,
+							User:     item.User,
+						})
 						if err != nil {
 							// log the error received from the executor
 							//

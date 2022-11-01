@@ -15,9 +15,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// swagger:operation POST /api/v1/exec system Exec
+// swagger:operation POST /api/v1/challenge system Challenge
 //
-// Perform a manual execution on the worker
+// Initiate a manual execution on the worker
 //
 // ---
 // produces:
@@ -30,13 +30,9 @@ import (
 //     schema:
 //       type: string
 
-// Exec represents the API handler to shutdown a
-// executors currently running on an worker.
-//
-// This function performs a soft shut down of a worker.
-// Any build running during this time will safely complete, then
-// the worker will safely shut itself down.
-func Exec(c *gin.Context) {
+// TODO:VADER: fillme
+
+func Challenge(c *gin.Context) {
 	// var err error
 
 	// capture worker value from context
@@ -62,7 +58,7 @@ func Exec(c *gin.Context) {
 	// read incoming body from the request
 	body := c.Request.Body
 
-	pkgBytes, err := io.ReadAll(body)
+	challengeBody, err := io.ReadAll(body)
 	if err != nil {
 		msg := "unable to bind item"
 
@@ -70,11 +66,14 @@ func Exec(c *gin.Context) {
 
 		return
 	}
+	type Challenge struct {
+		Challenge string `json:"challenge"`
+		Token     string `json:"token"`
+	}
 
-	// TODO: vader: this should be a build package with secrets
-	// (for now) it is the item with faked secrets
-	pkg := new(types.BuildPackage)
-	err = json.Unmarshal(pkgBytes, pkg)
+	// TODO: vader: make this more secure
+	challenge := new(Challenge)
+	err = json.Unmarshal(challengeBody, challenge)
 	if err != nil {
 		msg := "unable to bind item"
 
@@ -82,9 +81,9 @@ func Exec(c *gin.Context) {
 
 		return
 	}
+	challenge.Token = w.Config.Server.Secret
 
-	logrus.Info("Sending package over channel.")
-	w.PackageChannel <- pkg
+	logrus.Info("Responding to server challenge.")
 
-	c.JSON(http.StatusOK, "Executing build package.")
+	c.JSON(http.StatusOK, challenge)
 }
