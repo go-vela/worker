@@ -145,6 +145,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 	_privilegedImagesServicesPipeline := []string{"postgres"}
 	// to be matched with the image used by testdata/build/stages/basic.yml
 	_privilegedImagesStagesPipeline := []string{"alpine"}
+
 	// create trusted repo
 	_trustedRepo := testRepo()
 	_trustedRepo.SetTrusted(true)
