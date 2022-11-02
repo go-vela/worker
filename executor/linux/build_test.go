@@ -535,7 +535,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo and init step name",
+			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo and init service name",
 			failure:             false,
 			build:               _build,
 			repo:                _trustedRepo,
@@ -544,7 +544,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with untrusted repo and init step name",
+			name:                "enforce trusted repos enabled: privileged services pipeline with untrusted repo and init service name",
 			failure:             true,
 			build:               _build,
 			repo:                _untrustedRepo,
@@ -553,7 +553,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with trusted repo and init step name",
+			name:                "enforce trusted repos enabled: non-privileged services pipeline with trusted repo and init service name",
 			failure:             false,
 			build:               _build,
 			repo:                _trustedRepo,
@@ -562,7 +562,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and init step name",
+			name:                "enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and init service name",
 			failure:             true,
 			build:               _build,
 			repo:                _untrustedRepo,
@@ -571,7 +571,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with trusted repo and init step name",
+			name:                "enforce trusted repos disabled: privileged services pipeline with trusted repo and init service name",
 			failure:             false,
 			build:               _build,
 			repo:                _trustedRepo,
@@ -580,7 +580,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with untrusted repo and init step name",
+			name:                "enforce trusted repos disabled: privileged services pipeline with untrusted repo and init service name",
 			failure:             false,
 			build:               _build,
 			repo:                _untrustedRepo,
@@ -589,7 +589,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with trusted repo and init step name",
+			name:                "enforce trusted repos disabled: non-privileged services pipeline with trusted repo and init service name",
 			failure:             false,
 			build:               _build,
 			repo:                _trustedRepo,
@@ -598,7 +598,7 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and init step name",
+			name:                "enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and init service name",
 			failure:             false,
 			build:               _build,
 			repo:                _untrustedRepo,
