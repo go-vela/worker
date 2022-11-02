@@ -61,8 +61,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 
 		for _, container := range containers {
 			// TODO: remove hardcoded reference
-			//
-			//nolint:goconst // ignore making a constant for now
 			if container.Image == "#init" {
 				continue
 			}
