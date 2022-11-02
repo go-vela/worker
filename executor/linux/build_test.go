@@ -145,7 +145,6 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 	_privilegedImagesServicesPipeline := []string{"postgres"}
 	// to be matched with the image used by testdata/build/stages/basic.yml
 	_privilegedImagesStagesPipeline := []string{"alpine"}
-
 	// create trusted repo
 	_trustedRepo := testRepo()
 	_trustedRepo.SetTrusted(true)
@@ -388,6 +387,222 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
 			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged steps pipeline with untrusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged stages pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged stages pipeline with untrusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged services pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged services pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged services pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged services pipeline with untrusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged services pipeline with trusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and init step name",
+			failure:             false,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
 			enforceTrustedRepos: false,
 		},
 	}
