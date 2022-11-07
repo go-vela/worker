@@ -31,6 +31,10 @@ func (w *Worker) checkIn(config *library.Worker) error {
 		return respErr
 	}
 
+	logrus.Infof("determining status of worker %s", config.GetHostname())
+
+	config.SetStatus(w.Activity.ToWorkerStatus(w))
+
 	// if we were able to GET the worker, update it
 	logrus.Infof("checking worker %s into the server", config.GetHostname())
 
@@ -45,6 +49,9 @@ func (w *Worker) checkIn(config *library.Worker) error {
 // register is a helper function to register the worker with the server.
 func (w *Worker) register(config *library.Worker) error {
 	logrus.Infof("worker %s not found, registering it with the server", config.GetHostname())
+
+	// TODO:
+	config.SetStatus("pending")
 
 	_, _, err := w.VelaClient.Worker.Add(config)
 	if err != nil {

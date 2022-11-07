@@ -1,0 +1,161 @@
+# Copyright (c) 2022 Target Brands, Inc. All rights reserved.
+#
+# Use of this source code is governed by the LICENSE file in this repository.
+
+version: '3'
+services:
+
+  # The `worker` compose service hosts the Vela build daemon.
+  #
+  # This component is used for pulling builds from the FIFO
+  # queue and executing them based off their configuration.
+  #
+  # https://go-vela.github.io/docs/administration/worker/
+  # worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: worker
+  #   image: worker:local
+  #   networks:
+  #     - vela
+  #   environment:
+  #     EXECUTOR_DRIVER: linux
+  #     EXECUTOR_LOG_METHOD: 'time-chunks'
+  #     QUEUE_DRIVER: redis
+  #     QUEUE_ADDR: 'redis://redis:6379'
+  #     VELA_BUILD_LIMIT: 1
+  #     VELA_BUILD_TIMEOUT: 30m
+  #     VELA_LOG_LEVEL: trace
+  #     VELA_RUNTIME_DRIVER: docker
+  #     VELA_RUNTIME_PRIVILEGED_IMAGES: 'target/vela-docker'
+  #     VELA_SERVER_ADDR: 'http://server:8080'
+  #     VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
+  #     WORKER_ADDR: 'http://worker:8080'
+  #     WORKER_CHECK_IN: 5m
+  #     WORKER_REGISTERATION_TOKEN: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjY5NzAxMjcsImlhdCI6MTY2Njk2OTUyNywic3ViIjoiIiwidG9rZW5UeXBlIjoiUmVnaXN0cmF0aW9uIn0.WmXCNeacRJ7aQ1mGuoQ_c5TKokOw_k6Wqz6K6pGtNN4ZO5Y-tODpCbAvAHaeZWZybJExDRUnUUNaVH4ieim6Gyuo0OK99JQl6063qoEAQMZSCCDou3tbjJlKek6TMiyCsQP47MYiv1635hBPHoMipqqI5dTdsghpEi3PAatLys-ucuYVNO0dtLfK4n3GSgRKoh42YqCLelSKkmWdQWWVKAoHYs1Z3t9r2ZrFhMiRqi-XRNyieMhYy5KhPEZsREHBQDSrjYevZ-g7GPCisWxZPzlJLnBMrRRry8zcT0kP1ZHAa1HIEXzNu75dR2jCdwqWoWZx6m7mClS0m4xKlZS3LQ'
+  #   restart: always
+  #   ports:
+  #     - "8081:8080"
+  #   volumes:
+  #     - "/var/run/docker.sock:/var/run/docker.sock"
+  #   depends_on:
+  #     - server
+
+  # The `server` compose service hosts the Vela server and API.
+  #
+  # This component is used for processing web requests and
+  # managing resources in the database and publishing
+  # builds to the FIFO queue.
+  #
+  # https://go-vela.github.io/docs/administration/server/
+  server:
+    container_name: server
+    # image: target/vela-server:latest
+    image: server:local
+    build:
+      # context: ../../gregusr01/server
+      context: ../../go-vela/server
+      dockerfile: Dockerfile
+    networks:
+      - vela
+    environment:
+      DATABASE_DRIVER: postgres
+      DATABASE_ADDR: 'postgres://vela:zB7mrKDTZqNeNTD8z47yG4DHywspAh@postgres:5432/vela?sslmode=disable'
+      DATABASE_COMPRESSION_LEVEL: 3
+      DATABASE_ENCRYPTION_KEY: 'C639A572E14D5075C526FDDD43E4ECF6'
+      QUEUE_DRIVER: redis
+      QUEUE_ADDR: 'redis://redis:6379'
+      SCM_DRIVER: github
+      SCM_CONTEXT: 'continuous-integration/vela'
+      SECRET_VAULT: 'true'
+      SECRET_VAULT_ADDR: 'http://vault:8200'
+      SECRET_VAULT_TOKEN: vela
+      VELA_ADDR: 'http://localhost:8080'
+      VELA_WEBUI_ADDR: 'http://localhost:8888'
+      VELA_LOG_LEVEL: trace
+      VELA_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
+      VELA_REFRESH_TOKEN_DURATION: 90m
+      VELA_ACCESS_TOKEN_DURATION: 60m
+      VELA_DISABLE_WEBHOOK_VALIDATION: 'true'
+      VELA_ENABLE_SECURE_COOKIE: 'false'
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+      - redis
+      - vault
+
+  # The `ui` compose service hosts the Vela UI.
+  #
+  # This component is used for providing a user-friendly
+  # interface for triggering actions in the Vela system.
+  #
+  # https://go-vela.github.io/docs/administration/ui/
+  ui:
+    container_name: ui
+    image: target/vela-ui:latest
+    networks:
+      - vela
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - '8888:80'
+    # depends_on:
+    #   - server
+
+  # The `redis` compose service hosts the Redis database.
+  #
+  # This component is used for publishing builds to a FIFO queue.
+  #
+  # https://redis.io/
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    networks:
+      - vela
+    ports:
+      - '6379:6379'
+
+  # The `postgres` compose service hosts the Postgresql database.
+  #
+  # This component is used for storing data at rest.
+  #
+  # https://www.postgresql.org/
+  postgres:
+    container_name: postgres
+    image: postgres:14-alpine
+    networks:
+      - vela
+    environment:
+      POSTGRES_DB: vela
+      POSTGRES_PASSWORD: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
+      POSTGRES_USER: vela
+    ports:
+      - '5432:5432'
+
+  # The `vault` compose service hosts the HashiCorp Vault instance.
+  #
+  # This component is used for storing sensitive data like secrets.
+  #
+  # https://www.vaultproject.io/
+  vault:
+    image: vault:latest
+    container_name: vault
+    command: server -dev
+    networks:
+      - vela
+    environment:
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_DEV_ROOT_TOKEN_ID: vela
+    ports:
+      - '8200:8200'
+    cap_add:
+      - IPC_LOCK
+
+networks:
+  vela:

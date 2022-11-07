@@ -55,6 +55,13 @@ func (c *client) CancelBuild() (*library.Build, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("CANCELLING2")
+	fmt.Println("CANCELLING2")
+	fmt.Println("CANCELLING2")
+	fmt.Println("CANCELLING2")
+	fmt.Println("CANCELLING2")
+	fmt.Println("CANCELLING2")
+	fmt.Println("CANCELLING2")
 
 	// set the build status to canceled
 	b.SetStatus(constants.StatusCanceled)

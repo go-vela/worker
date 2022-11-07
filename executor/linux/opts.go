@@ -212,3 +212,14 @@ func withStreamRequests(s chan message.StreamRequest) Opt {
 		return nil
 	}
 }
+
+func WithBuildActivity(ch chan message.BuildActivity) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring build activity channel in linux executor client")
+
+		// set the buildActivity channel in the client
+		c.buildActivity = ch
+
+		return nil
+	}
+}
