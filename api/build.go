@@ -88,6 +88,13 @@ func GetBuild(c *gin.Context) {
 func CancelBuild(c *gin.Context) {
 	e := executor.Retrieve(c)
 
+	fmt.Println("CANCELLING")
+	fmt.Println("CANCELLING")
+	fmt.Println("CANCELLING")
+	fmt.Println("CANCELLING")
+	fmt.Println("CANCELLING")
+	fmt.Println("CANCELLING")
+	fmt.Println("CANCELLING")
 	build, err := e.CancelBuild()
 	if err != nil {
 		msg := fmt.Errorf("unable to cancel build: %w", err).Error()

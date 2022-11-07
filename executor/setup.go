@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
+	"github.com/go-vela/worker/internal/message"
 
 	"github.com/go-vela/worker/runtime"
 
@@ -59,6 +60,8 @@ type Setup struct {
 	Repo *library.Repo
 	// resource for storing user information in Vela
 	User *library.User
+
+	BuildActivityChannel chan message.BuildActivity
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -89,6 +92,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithVelaClient(s.Client),
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
+		linux.WithBuildActivity(s.BuildActivityChannel),
 	)
 }
 

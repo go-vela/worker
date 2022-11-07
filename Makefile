@@ -243,7 +243,7 @@ pull:
 compose-up:
 	@echo
 	@echo "### Creating containers for docker-compose stack"
-	@docker-compose -f docker-compose.yml up -d --build
+	@docker-compose -f docker-compose.test.yml up -d --build
 
 # The `compose-down` target is intended to destroy
 # all containers for the local Docker compose stack.

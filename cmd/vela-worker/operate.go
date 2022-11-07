@@ -81,6 +81,19 @@ func (w *Worker) operate(ctx context.Context) error {
 		return err
 	}
 
+	// initialize build activity
+	w.Activity = NewActivity()
+
+	go func() {
+		for {
+			select {
+			case act := <-w.Activity.Channel:
+				// received build activity update
+				w.HandleMessage(&act)
+			}
+		}
+	}()
+
 	// iterate till the configured build limit
 	for i := 0; i < w.Config.Build.Limit; i++ {
 		// evaluate and capture i at each iteration
