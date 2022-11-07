@@ -2,13 +2,14 @@
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
-package main
+package worker
 
 import (
 	"context"
 	"time"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types"
 	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
@@ -16,10 +17,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// operate is a helper function to initiate all
+// Operate is a helper function to initiate all
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
-func (w *Worker) operate(ctx context.Context) error {
+func (w *Worker) Operate(ctx context.Context) error {
 	var err error
 
 	// setup the client
@@ -93,6 +94,8 @@ func (w *Worker) operate(ctx context.Context) error {
 			}
 		}
 	}()
+	ch := make(chan *types.BuildPackage)
+	w.PackageChannel = ch
 
 	// iterate till the configured build limit
 	for i := 0; i < w.Config.Build.Limit; i++ {
@@ -104,34 +107,78 @@ func (w *Worker) operate(ctx context.Context) error {
 		// log a message indicating the start of an operator thread
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
-		logrus.Infof("Thread ID %d listening to queue...", id)
+		logrus.Infof("Thread ID %d listening for builds on channel...", id)
 
 		// spawn errgroup routine for operator subprocess
 		//
 		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
+
+		// TODO: disable/enable this based on environment config
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
-				select {
-				case <-gctx.Done():
-					logrus.WithFields(logrus.Fields{
-						"id": id,
-					}).Info("Completed looping on worker executor")
-					return nil
-				default:
-					// exec operator subprocess to poll and execute builds
-					// (do not pass the context to avoid errors in one
-					// executor+build inadvertently canceling other builds)
-					//nolint:contextcheck // ignore passing context
-					err = w.exec(id)
-					if err != nil {
-						// log the error received from the executor
-						//
-						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
-						logrus.Errorf("failing worker executor: %v", err)
+				switch w.Config.Executor.BuildMode {
+				case "push":
+					select {
+					case <-gctx.Done():
+						logrus.WithFields(logrus.Fields{
+							"id": id,
+						}).Info("Completed listening on worker executor package channel")
+						return nil
+					case pkg := <-w.PackageChannel:
+						// exec operator subprocess execute build from the queue
+						// (do not pass the context to avoid errors in one
+						// executor+build inadvertently canceling other builds)
+						//nolint:contextcheck // ignore passing context
+						err = w.Exec(id, pkg)
+						if err != nil {
+							// log the error received from the executor
+							//
+							// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+							logrus.Errorf("failing worker executor: %v", err)
 
-						return err
+							return err
+						}
 					}
+					break
+				case "pull":
+					select {
+					case <-gctx.Done():
+						logrus.WithFields(logrus.Fields{
+							"id": id,
+						}).Info("Completed listening on worker executor package channel")
+						return nil
+					default:
+						// capture an item from the queue
+						item, err := w.Queue.Pop(context.Background())
+						if err != nil {
+							return err
+						}
+
+						if item == nil {
+							return nil
+						}
+						// exec operator subprocess execute build from the queue
+						// (do not pass the context to avoid errors in one
+						// executor+build inadvertently canceling other builds)
+						//nolint:contextcheck // ignore passing context
+						err = w.Exec(id, &types.BuildPackage{
+							Build:    item.Build,
+							Secrets:  []*library.Secret{},
+							Pipeline: item.Pipeline,
+							Repo:     item.Repo,
+							User:     item.User,
+						})
+						if err != nil {
+							// log the error received from the executor
+							//
+							// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+							logrus.Errorf("failing worker executor: %v", err)
+
+							return err
+						}
+					}
+					break
 				}
 			}
 		})

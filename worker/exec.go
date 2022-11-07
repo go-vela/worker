@@ -2,12 +2,13 @@
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
-package main
+package worker
 
 import (
 	"context"
 	"time"
 
+	"github.com/go-vela/types"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -19,32 +20,22 @@ import (
 // and execute Vela pipelines for the Worker.
 //
 //nolint:nilerr // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int) error {
+func (w *Worker) Exec(index int, pkg *types.BuildPackage) error {
 	var err error
 
 	// setup the version
 	v := version.New()
 
-	// capture an item from the queue
-	item, err := w.Queue.Pop(context.Background())
-	if err != nil {
-		return err
-	}
-
-	if item == nil {
-		return nil
-	}
-
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
 	logger := logrus.WithFields(logrus.Fields{
-		"build":    item.Build.GetNumber(),
+		"build":    pkg.Build.GetNumber(),
 		"executor": w.Config.Executor.Driver,
 		"host":     w.Config.API.Address.Hostname(),
-		"repo":     item.Repo.GetFullName(),
+		"repo":     pkg.Repo.GetFullName(),
 		"runtime":  w.Config.Runtime.Driver,
-		"user":     item.User.GetName(),
+		"user":     pkg.User.GetName(),
 		"version":  v.Semantic(),
 	})
 
@@ -75,13 +66,15 @@ func (w *Worker) exec(index int) error {
 		Driver:               w.Config.Executor.Driver,
 		LogMethod:            w.Config.Executor.LogMethod,
 		MaxLogSize:           w.Config.Executor.MaxLogSize,
+		BuildMode:            w.Config.Executor.BuildMode,
 		Client:               w.VelaClient,
 		Hostname:             w.Config.API.Address.Hostname(),
 		Runtime:              w.Runtime,
-		Build:                item.Build,
-		Pipeline:             item.Pipeline.Sanitize(w.Config.Runtime.Driver),
-		Repo:                 item.Repo,
-		User:                 item.User,
+		Build:                pkg.Build,
+		Pipeline:             pkg.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Repo:                 pkg.Repo,
+		User:                 pkg.User,
+		Secrets:              pkg.Secrets,
 		Version:              v.Semantic(),
 		BuildActivityChannel: w.Activity.Channel,
 	})
@@ -92,9 +85,9 @@ func (w *Worker) exec(index int) error {
 	// capture the configured build timeout
 	t := w.Config.Build.Timeout
 	// check if the repository has a custom timeout
-	if item.Repo.GetTimeout() > 0 {
+	if pkg.Repo.GetTimeout() > 0 {
 		// update timeout variable to repository custom timeout
-		t = time.Duration(item.Repo.GetTimeout()) * time.Minute
+		t = time.Duration(pkg.Repo.GetTimeout()) * time.Minute
 	}
 
 	// create a build context (from a background context

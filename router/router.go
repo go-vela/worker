@@ -102,6 +102,16 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.POST
 		baseAPI.POST("/shutdown", api.Shutdown)
 
+		// add an challenge for initiating a build execution in "push" mode
+		//
+		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.POST
+		baseAPI.POST("/challenge", api.Challenge)
+
+		// add an endpoint for executing a build in "push" mode
+		//
+		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.POST
+		baseAPI.POST("/exec", api.Exec)
+
 		// add a collection of endpoints for handling executor related requests
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#ExecutorHandlers

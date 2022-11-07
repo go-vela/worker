@@ -13,6 +13,7 @@ import (
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/worker"
 
 	"github.com/sirupsen/logrus"
 
@@ -77,15 +78,15 @@ func run(c *cli.Context) error {
 	}
 
 	// create the worker
-	w := &Worker{
+	w := &worker.Worker{
 		// worker configuration
-		Config: &Config{
+		Config: &worker.Config{
 			// api configuration
-			API: &API{
+			API: &worker.API{
 				Address: addr,
 			},
 			// build configuration
-			Build: &Build{
+			Build: &worker.Build{
 				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
@@ -96,9 +97,10 @@ func run(c *cli.Context) error {
 				Driver:     c.String("executor.driver"),
 				LogMethod:  c.String("executor.log_method"),
 				MaxLogSize: c.Uint("executor.max_log_size"),
+				BuildMode:  c.String("executor.build_mode"),
 			},
 			// logger configuration
-			Logger: &Logger{
+			Logger: &worker.Logger{
 				Format: c.String("log.format"),
 				Level:  c.String("log.level"),
 			},
@@ -121,12 +123,12 @@ func run(c *cli.Context) error {
 				Timeout: c.Duration("queue.pop.timeout"),
 			},
 			// server configuration
-			Server: &Server{
+			Server: &worker.Server{
 				Address: c.String("server.addr"),
 				Secret:  c.String("server.secret"),
 			},
 			// Certificate configuration
-			Certificate: &Certificate{
+			Certificate: &worker.Certificate{
 				Cert: c.String("server.cert"),
 				Key:  c.String("server.cert-key"),
 			},
@@ -148,5 +150,5 @@ func run(c *cli.Context) error {
 	}
 
 	// start the worker
-	return w.Start()
+	return Start(w)
 }

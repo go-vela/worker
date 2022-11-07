@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
-package main
+package worker
 
 import (
 	"net/url"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/internal/message"
@@ -66,11 +67,12 @@ type (
 	// Worker represents all configuration and
 	// system processes for the worker.
 	Worker struct {
-		Config     *Config
-		Executors  map[int]executor.Engine
-		Queue      queue.Service
-		Runtime    runtime.Engine
-		VelaClient *vela.Client
+		Config         *Config
+		Executors      map[int]executor.Engine
+		Queue          queue.Service
+		Runtime        runtime.Engine
+		VelaClient     *vela.Client
+		PackageChannel chan *types.BuildPackage
 		*Activity
 	}
 

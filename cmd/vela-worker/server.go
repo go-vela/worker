@@ -1,7 +1,3 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
-
 package main
 
 import (
@@ -11,15 +7,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-vela/worker/router"
 	"github.com/go-vela/worker/router/middleware"
-
+	"github.com/go-vela/worker/worker"
 	"github.com/sirupsen/logrus"
 )
 
 // server is a helper function to listen and serve
 // traffic for web and API requests for the Worker.
-func (w *Worker) server() (http.Handler, *tls.Config) {
+func server(w *worker.Worker) (http.Handler, *tls.Config) {
 	// log a message indicating the setup of the server handlers
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Trace
@@ -29,6 +26,7 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#Load
 	_server := router.Load(
+		WorkerMiddleware(w),
 		middleware.RequestVersion,
 		middleware.Executors(w.Executors),
 		middleware.Secret(w.Config.Server.Secret),
@@ -86,4 +84,13 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 	// else serve over http
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
 	return _server, nil
+}
+
+// Worker is a middleware function that attaches the
+// worker to the context of every http.Request.
+func WorkerMiddleware(w *worker.Worker) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("worker", *w)
+		c.Next()
+	}
 }

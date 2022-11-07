@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-vela/worker/worker"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -24,7 +25,7 @@ import (
 // serve traffic for web and API requests. The
 // operator subprocess enables the Worker to
 // poll the queue and execute Vela pipelines.
-func (w *Worker) Start() error {
+func Start(w *worker.Worker) error {
 	// create the context for controlling the worker subprocesses
 	ctx, done := context.WithCancel(context.Background())
 	// create the errgroup for managing worker subprocesses
@@ -32,7 +33,7 @@ func (w *Worker) Start() error {
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
 	g, gctx := errgroup.WithContext(ctx)
 
-	httpHandler, tlsCfg := w.server()
+	httpHandler, tlsCfg := server(w)
 
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%s", w.Config.API.Address.Port()),
@@ -93,7 +94,7 @@ func (w *Worker) Start() error {
 	g.Go(func() error {
 		logrus.Info("starting worker operator")
 		// start the operator for the worker
-		err := w.operate(gctx)
+		err := w.Operate(gctx)
 		if err != nil {
 			// log the error received from the operator
 			//

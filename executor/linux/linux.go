@@ -34,6 +34,7 @@ type (
 		init        *pipeline.Container
 		logMethod   string
 		maxLogSize  uint
+		mode        string
 		build       *library.Build
 		pipeline    *pipeline.Build
 		repo        *library.Repo
@@ -104,6 +105,9 @@ func New(opts ...Opt) (*client, error) {
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
 	c.streamRequests = make(chan message.StreamRequest)
 
+	// instantiate map for non-plugin secrets
+	c.Secrets = make(map[string]*library.Secret)
+
 	// apply all provided configuration options
 	for _, opt := range opts {
 		err := opt(c)
@@ -111,9 +115,6 @@ func New(opts ...Opt) (*client, error) {
 			return nil, err
 		}
 	}
-
-	// instantiate map for non-plugin secrets
-	c.Secrets = make(map[string]*library.Secret)
 
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}

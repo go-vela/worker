@@ -64,6 +64,35 @@ func WithMaxLogSize(size uint) Opt {
 	}
 }
 
+// WithMode
+func WithBuildMode(mode string) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring build exec mode in linux executor client")
+
+		// set the maximum log size in the client
+		c.mode = mode
+
+		return nil
+	}
+}
+
+// WithSecrets
+func WithSecrets(secrets []*library.Secret) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring build secrets in linux executor client")
+
+		if secrets == nil {
+			return nil
+		}
+
+		for _, s := range secrets {
+			c.Secrets[*s.Name] = s
+		}
+
+		return nil
+	}
+}
+
 // WithHostname sets the hostname in the executor client for Linux.
 func WithHostname(hostname string) Opt {
 	return func(c *client) error {
