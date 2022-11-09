@@ -16,7 +16,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.13.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/urfave/cli/v2 v2.17.1
+	github.com/urfave/cli/v2 v2.23.5
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	gotest.tools/v3 v3.4.0
 	k8s.io/api v0.25.2
