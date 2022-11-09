@@ -17,7 +17,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.23.5
-	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
+	golang.org/x/sync v0.1.0
 	gotest.tools/v3 v3.4.0
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
