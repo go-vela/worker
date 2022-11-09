@@ -377,3 +377,258 @@ func Test_podTracker_Stop(t *testing.T) {
 		})
 	}
 }
+
+func Test_podTracker_getTrackedPodEvent(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	_podEvent := mockContainerEvent(
+		_pod,
+		"step-github-ooctocat-1-echo",
+		reasonFailed,
+		"foobar",
+	)
+
+	_podTemplateEvent := _podEvent.DeepCopy()
+	_podTemplateEvent.InvolvedObject.Kind = new(v1.PodTemplate).TypeMeta.Kind
+
+	tests := []struct {
+		name       string
+		trackedPod string // namespace/podName
+		obj        interface{}
+		want       *v1.Event
+	}{
+		{
+			name:       "got-tracked-pod-event",
+			trackedPod: "test/github-octocat-1",
+			obj:        _podEvent,
+			want:       _podEvent,
+		},
+		{
+			name:       "wrong-pod",
+			trackedPod: "test/github-octocat-2",
+			obj:        _podEvent,
+			want:       nil,
+		},
+		{
+			name:       "invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj:        new(v1.PodTemplate),
+			want:       nil,
+		},
+		{
+			name:       "nil",
+			trackedPod: "test/nil",
+			obj:        nil,
+			want:       nil,
+		},
+		{
+			name:       "invalid-involved-object-type",
+			trackedPod: "test/github-octocat-1",
+			obj:        _podTemplateEvent,
+			want:       nil,
+		},
+		{
+			name:       "tombstone-pod-event",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: _podEvent,
+			},
+			want: nil,
+		},
+		{
+			name:       "tombstone-nil",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: nil,
+			},
+			want: nil,
+		},
+		{
+			name:       "tombstone-invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj: cache.DeletedFinalStateUnknown{
+				Key: "test/github-octocat-1",
+				Obj: new(v1.PodTemplate),
+			},
+			want: nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p := podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				// other fields not used by getTrackedPodEvent
+				// if they're needed, use newPodTracker
+			}
+			if got := p.getTrackedPodEvent(test.obj); !reflect.DeepEqual(got, test.want) {
+				t.Errorf("getTrackedPodEvent() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func Test_podTracker_HandleEventAdd(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	_podEvent := mockContainerEvent(
+		_pod,
+		"step-github-ooctocat-1-echo",
+		reasonInspectFailed,
+		"foobar",
+	)
+
+	_podTemplateEvent := _podEvent.DeepCopy()
+	_podTemplateEvent.InvolvedObject.Kind = new(v1.PodTemplate).TypeMeta.Kind
+
+	tests := []struct {
+		name       string
+		trackedPod string // namespace/podName
+		obj        interface{}
+	}{
+		{
+			name:       "got-tracked-pod-event",
+			trackedPod: "test/github-octocat-1",
+			obj:        _podEvent,
+		},
+		{
+			name:       "wrong-pod",
+			trackedPod: "test/github-octocat-2",
+			obj:        _podEvent,
+		},
+		{
+			name:       "invalid-type",
+			trackedPod: "test/github-octocat-1",
+			obj:        new(v1.PodTemplate),
+		},
+		{
+			name:       "nil",
+			trackedPod: "test/nil",
+			obj:        nil,
+		},
+		{
+			name:       "invalid-involved-object-type",
+			trackedPod: "test/github-octocat-1",
+			obj:        _podTemplateEvent,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p := &podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				// other fields not used by getTrackedPodEvent
+				// if they're needed, use newPodTracker
+			}
+
+			// just make sure this doesn't panic
+			p.HandleEventAdd(test.obj)
+		})
+	}
+}
+
+func Test_podTracker_HandleEventUpdate(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	_podEvent := mockContainerEvent(
+		_pod,
+		"step-github-ooctocat-1-echo",
+		reasonBackOff,
+		"foobar",
+	)
+
+	_podTemplateEvent := _podEvent.DeepCopy()
+	_podTemplateEvent.InvolvedObject.Kind = new(v1.PodTemplate).TypeMeta.Kind
+
+	tests := []struct {
+		name       string
+		trackedPod string // namespace/podName
+		oldObj     interface{}
+		newObj     interface{}
+	}{
+		{
+			name:       "re-sync event without change",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _podEvent,
+			newObj:     _podEvent,
+		},
+		{
+			name:       "wrong-pod",
+			trackedPod: "test/github-octocat-2",
+			oldObj:     _podEvent,
+			newObj:     _podEvent,
+		},
+		{
+			name:       "invalid-type-old",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     new(v1.PodTemplate),
+			newObj:     _podEvent,
+		},
+		{
+			name:       "nil-old",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     nil,
+			newObj:     _podEvent,
+		},
+		{
+			name:       "invalid-involved-object-type-old",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _podTemplateEvent,
+			newObj:     _podEvent,
+		},
+		{
+			name:       "invalid-type-new",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _podEvent,
+			newObj:     new(v1.PodTemplate),
+		},
+		{
+			name:       "nil-new",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _podEvent,
+			newObj:     nil,
+		},
+		{
+			name:       "invalid-involved-object-type-new",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _podEvent,
+			newObj:     _podTemplateEvent,
+		},
+		{
+			name:       "invalid-type-both",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     new(v1.PodTemplate),
+			newObj:     new(v1.PodTemplate),
+		},
+		{
+			name:       "nil-both",
+			trackedPod: "test/nil",
+			oldObj:     nil,
+			newObj:     nil,
+		},
+		{
+			name:       "invalid-involved-object-type-both",
+			trackedPod: "test/github-octocat-1",
+			oldObj:     _podTemplateEvent,
+			newObj:     _podTemplateEvent,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p := &podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				// other fields not used by getTrackedPodEvent
+				// if they're needed, use newPodTracker
+			}
+
+			// just make sure this doesn't panic
+			p.HandleEventUpdate(test.oldObj, test.newObj)
+		})
+	}
+}

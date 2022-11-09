@@ -6,15 +6,19 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestKubernetes_InspectContainer(t *testing.T) {
@@ -177,33 +181,79 @@ func TestKubernetes_RunContainer(t *testing.T) {
 	// TODO: include VolumeMounts?
 	// setup tests
 	tests := []struct {
-		name      string
-		failure   bool
-		container *pipeline.Container
-		pipeline  *pipeline.Build
-		pod       *v1.Pod
-		volumes   []string
+		name           string
+		failure        bool
+		cancelBuild    bool
+		imagePullError bool
+		container      *pipeline.Container
+		pipeline       *pipeline.Build
+		oldPod         *v1.Pod
+		newPod         *v1.Pod
+		volumes        []string
 	}{
 		{
-			name:      "stages",
+			name:      "stages-step starts running",
 			failure:   false,
-			container: _container,
+			container: _stagesContainer,
 			pipeline:  _stages,
-			pod:       _pod,
+			oldPod:    _stagesPodBeforeRunStep,
+			newPod:    _stagesPodWithRunningStep,
 		},
 		{
-			name:      "steps",
+			name:      "steps-step starts running",
 			failure:   false,
 			container: _container,
 			pipeline:  _steps,
-			pod:       _pod,
+			oldPod:    _stepsPodBeforeRunStep,
+			newPod:    _stepsPodWithRunningStep,
+		},
+		{
+			name:        "stages-build canceled",
+			failure:     false,
+			cancelBuild: true,
+			container:   _stagesContainer,
+			pipeline:    _stages,
+			oldPod:      _stagesPodBeforeRunStep,
+			newPod:      _stagesPodWithRunningStep,
+		},
+		{
+			name:        "steps-build canceled",
+			failure:     false,
+			cancelBuild: true,
+			container:   _container,
+			pipeline:    _steps,
+			oldPod:      _stepsPodBeforeRunStep,
+			newPod:      _stepsPodWithRunningStep,
+		},
+		{
+			name:      "if client.Pod.Spec is empty podTracker fails",
+			failure:   true,
+			container: _container,
+			oldPod:    _pod,
+			newPod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Status:     _pod.Status,
+				// if client.Pod.Spec is empty, podTracker will fail
+				//Spec:       _pod.Spec,
+			},
+		},
+		{
+			name:           "steps-image pull error",
+			failure:        true,
+			imagePullError: true,
+			container:      _container,
+			pipeline:       _steps,
+			oldPod:         _stepsPodBeforeRunStep,
+			newPod:         _stepsPodWithRunningStep,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_engine, err := NewMock(test.pod)
+			// set up the fake k8s clientset so that it returns the final/updated state
+			_engine, err := NewMock(test.newPod)
 			if err != nil {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
@@ -212,7 +262,47 @@ func TestKubernetes_RunContainer(t *testing.T) {
 				_engine.config.Volumes = test.volumes
 			}
 
-			err = _engine.RunContainer(context.Background(), test.container, test.pipeline)
+			// setup test context
+			ctx, done := context.WithCancel(context.Background())
+			defer done()
+
+			// use an errgroup to make sure the test goroutine finishes
+			grp, _ := errgroup.WithContext(ctx)
+			defer func() {
+				err := grp.Wait()
+				if err != nil {
+					t.Error("waitgroup got an error")
+				}
+			}()
+
+			grp.Go(func() error {
+				oldPod := test.oldPod.DeepCopy()
+				oldPod.SetResourceVersion("older")
+
+				if test.cancelBuild {
+					// simulate a build timeout
+					done()
+				} else if test.imagePullError {
+					ctnTracker, ok := _engine.PodTracker.Containers[test.container.ID]
+					if !ok {
+						t.Error("containerTracker is missing")
+					}
+
+					ctnTracker.ImagePullErrors <- mockContainerEvent(
+						oldPod,
+						test.container.ID,
+						reasonFailed,
+						fmt.Sprintf("Failed to pull image \"%s\": containerd message foobar", test.container.Image),
+					)
+				} else {
+					// simulate a re-sync/PodUpdate event
+					_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				}
+				return nil
+			})
+
+			// before returning RunContainer waits for: running container, canceled build, or image pull error
+			err = _engine.RunContainer(ctx, test.container, test.pipeline)
 
 			if test.failure {
 				if err == nil {
@@ -248,7 +338,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 			wantFromTemplate: nil,
 		},
 		{
-			name:    "step-echo",
+			name:    "step-echo-pull always",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -259,7 +349,79 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 				Image:       "alpine:latest",
 				Name:        "echo",
 				Number:      2,
-				Pull:        "always",
+				Pull:        constants.PullAlways,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull never",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        constants.PullNever,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull on start",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        constants.PullOnStart,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull not present",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        constants.PullNotPresent,
+			},
+			opts:             nil,
+			wantPrivileged:   false,
+			wantFromTemplate: nil,
+		},
+		{
+			name:    "step-echo-pull default",
+			failure: false,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Commands:    []string{"echo", "hello"},
+				Directory:   "/vela/src/github.com/octocat/helloworld",
+				Environment: map[string]string{"FOO": "bar"},
+				Entrypoint:  []string{"/bin/sh", "-c"},
+				Image:       "alpine:latest",
+				Name:        "echo",
+				Number:      2,
+				Pull:        "",
 			},
 			opts:             nil,
 			wantPrivileged:   false,
@@ -420,11 +582,13 @@ func TestKubernetes_TailContainer(t *testing.T) {
 func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {
-		name      string
-		failure   bool
-		container *pipeline.Container
-		oldPod    *v1.Pod
-		newPod    *v1.Pod
+		name        string
+		failure     bool
+		cancelBuild bool
+		ctx         context.Context
+		container   *pipeline.Container
+		oldPod      *v1.Pod
+		newPod      *v1.Pod
 	}{
 		{
 			name:      "default order in ContainerStatuses",
@@ -474,23 +638,16 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			name:      "container goes from running to terminated",
 			failure:   false,
 			container: _container,
-			oldPod: &v1.Pod{
-				ObjectMeta: _pod.ObjectMeta,
-				TypeMeta:   _pod.TypeMeta,
-				Spec:       _pod.Spec,
-				Status: v1.PodStatus{
-					Phase: v1.PodRunning,
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name: "step-github-octocat-1-clone",
-							State: v1.ContainerState{
-								Running: &v1.ContainerStateRunning{},
-							},
-						},
-					},
-				},
-			},
-			newPod: _pod,
+			oldPod:    _stepsPodWithRunningStep,
+			newPod:    _pod,
+		},
+		{
+			name:        "canceled build",
+			failure:     false,
+			cancelBuild: true,
+			container:   _container,
+			oldPod:      _stepsPodWithRunningStep,
+			newPod:      _pod,
 		},
 		{
 			name:      "if client.Pod.Spec is empty podTracker fails",
@@ -516,15 +673,24 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 				t.Errorf("unable to create runtime engine: %v", err)
 			}
 
+			// setup test context
+			ctx, done := context.WithCancel(context.Background())
+			defer done()
+
 			go func() {
 				oldPod := test.oldPod.DeepCopy()
 				oldPod.SetResourceVersion("older")
 
-				// simulate a re-sync/PodUpdate event
-				_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				if test.cancelBuild {
+					// simulate a build timeout
+					done()
+				} else {
+					// simulate a re-sync/PodUpdate event
+					_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				}
 			}()
 
-			err = _engine.WaitContainer(context.Background(), test.container)
+			err = _engine.WaitContainer(ctx, test.container)
 
 			if test.failure {
 				if err == nil {
@@ -546,24 +712,31 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
 	tests := []struct {
-		name       string
-		trackedPod string
-		ctnName    string
-		terminated bool
-		pod        *v1.Pod
+		name           string
+		trackedPod     string
+		ctnName        string
+		ctnImage       string
+		terminated     bool
+		running        bool
+		imagePullError bool
+		pod            *v1.Pod
 	}{
 		{
 			name:       "container is terminated",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: true,
+			running:    false,
 			pod:        _pod,
 		},
 		{
 			name:       "pod is pending",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
+			running:    false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
@@ -577,7 +750,18 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			name:       "container is running",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: false,
+			running:    true,
+			pod:        _stepsPodWithRunningStep,
+		},
+		{
+			name:       "container is still running pause image",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
+			terminated: false,
+			running:    false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
@@ -586,7 +770,33 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 					Phase: v1.PodRunning,
 					ContainerStatuses: []v1.ContainerStatus{
 						{
-							Name: "step-github-octocat-1-clone",
+							Name:  "step-github-octocat-1-clone",
+							Image: pauseImage,
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:       "container is still running pause image",
+			trackedPod: "test/github-octocat-1",
+			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
+			terminated: false,
+			running:    false,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name:  "step-github-octocat-1-clone",
+							Image: image.Parse(pauseImage),
 							State: v1.ContainerState{
 								Running: &v1.ContainerStateRunning{},
 							},
@@ -599,7 +809,9 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 			name:       "pod has an untracked container",
 			trackedPod: "test/github-octocat-1",
 			ctnName:    "step-github-octocat-1-clone",
+			ctnImage:   "target/vela-git:v0.4.0",
 			terminated: true,
+			running:    false,
 			pod: &v1.Pod{
 				ObjectMeta: _pod.ObjectMeta,
 				TypeMeta:   _pod.TypeMeta,
@@ -608,7 +820,8 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 					Phase: v1.PodRunning,
 					ContainerStatuses: []v1.ContainerStatus{
 						{
-							Name: "step-github-octocat-1-clone",
+							Name:  "step-github-octocat-1-clone",
+							Image: "target/vela-git:v0.4.0",
 							State: v1.ContainerState{
 								Terminated: &v1.ContainerStateTerminated{
 									Reason:   "Completed",
@@ -617,9 +830,39 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 							},
 						},
 						{
-							Name: "injected-by-admissions-controller",
+							Name:  "injected-by-admissions-controller",
+							Image: "target/vela-git:v0.4.0",
 							State: v1.ContainerState{
 								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:           "image pull failure reported in ContainerStatus",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			terminated:     false,
+			running:        false,
+			imagePullError: true,
+			pod: &v1.Pod{
+				ObjectMeta: _pod.ObjectMeta,
+				TypeMeta:   _pod.TypeMeta,
+				Spec:       _pod.Spec,
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name:  "step-github-octocat-1-clone",
+							Image: "target/vela-git:v0.4.0",
+							State: v1.ContainerState{
+								Waiting: &v1.ContainerStateWaiting{
+									Reason:  reasonFailed,
+									Message: "Failed to pull image \"target/vela-git:v0.4.0\": containerd message foobar",
+								},
 							},
 						},
 					},
@@ -630,8 +873,12 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ctnTracker := containerTracker{
-				Name:       test.ctnName,
-				Terminated: make(chan struct{}),
+				Name:            test.ctnName,
+				Image:           test.ctnImage,
+				ImagePulled:     make(chan struct{}),
+				ImagePullErrors: make(chan *v1.Event),
+				Running:         make(chan struct{}),
+				Terminated:      make(chan struct{}),
 			}
 			podTracker := podTracker{
 				Logger:     logger,
@@ -641,6 +888,30 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				// if they're needed, use newPodTracker
 			}
 			podTracker.Containers[test.ctnName] = &ctnTracker
+
+			if test.imagePullError {
+				ctx, done := context.WithCancel(context.Background())
+				defer done()
+
+				// use an errgroup to make sure the test goroutine finishes
+				grp, grpCtx := errgroup.WithContext(ctx)
+				defer func() {
+					err := grp.Wait()
+					if err != nil {
+						t.Error("waitgroup got an error")
+					}
+				}()
+
+				grp.Go(func() error {
+					select {
+					case <-ctnTracker.ImagePullErrors:
+						return nil // success
+					case <-grpCtx.Done():
+						t.Error("inspectContainerStatuses should have sent an imagePullError")
+						return nil
+					}
+				})
+			}
 
 			podTracker.inspectContainerStatuses(test.pod)
 
@@ -655,6 +926,326 @@ func Test_podTracker_inspectContainerStatuses(t *testing.T) {
 				// this will only run if close() did not panic
 				if test.terminated {
 					t.Error("inspectContainerStatuses should have signaled termination")
+				}
+			}()
+
+			func() {
+				defer func() {
+					// nolint: errcheck // repeat close() panics (otherwise it won't)
+					recover()
+				}()
+
+				close(ctnTracker.Running)
+
+				// this will only run if close() did not panic
+				if test.running {
+					t.Error("inspectContainerStatuses should have signaled running")
+				}
+			}()
+		})
+	}
+}
+
+func Test_podTracker_inspectContainerEvent(t *testing.T) {
+	// setup types
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	tests := []struct {
+		name           string
+		trackedPod     string
+		ctnName        string
+		ctnImage       string
+		imagePulled    bool
+		imagePullError bool
+		event          *v1.Event
+	}{
+		{
+			name:           "pod scheduled event ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: &v1.Event{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      _pod.ObjectMeta.Name + ".16ea333d810392b7",
+					Namespace: _pod.ObjectMeta.Namespace,
+				},
+				Action:              "Binding",
+				Reason:              "Scheduled", // reasonScheduled,
+				Message:             "Successfully assigned test/github-octocat-1 to k8s-worker",
+				ReportingController: "default-scheduler",
+				ReportingInstance:   "default-scheduler-k8s-master",
+				Source:              v1.EventSource{}, // empty
+			},
+		},
+		{
+			name:           "container created event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"Created", // reasonCreated,
+				"Created container step-github-octocat-1-clone",
+			),
+		},
+		{
+			name:           "container started event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"Started", // reasonStarted,
+				"Started container step-github-octocat-1-clone",
+			),
+		},
+		{
+			name:           "container killing event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"Killing", //reasonKilling,
+				"Container step-github-octocat-1-clone definition changed, will be restarted",
+			),
+		},
+		{
+			name:           "generic image pull failed event is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonFailed,
+				"ErrImagePull",
+			),
+		},
+		{
+			name:           "generic image pull back-off is ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonBackOff,
+				"ImagePullBackOff",
+			),
+		},
+		{
+			name:           "event for unnamed container ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"",
+				reasonFailed,
+				"Failed to pull image \"target/vela-git:v0.4.0\": containerd message",
+			),
+		},
+		{
+			name:           "event for unknown container ignored",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"admissions-controller-injected-container",
+				reasonFailed,
+				"Failed to pull image \"target/vela-git:v0.4.0\": containerd message",
+			),
+		},
+		{
+			name:           "image pull failed",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonFailed,
+				"Failed to pull image \"target/vela-git:v0.4.0\": containerd message",
+			),
+		},
+		{
+			name:           "image pull back-off",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonBackOff,
+				"Back-off pulling image \"target/vela-git:v0.4.0\"",
+			),
+		},
+		{
+			name:           "image inspect failed",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonInspectFailed,
+				"Failed to inspect image \"target/vela-git:v0.4.0\": docker error",
+			),
+		},
+		{
+			name:           "image pull policy is never",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: true,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonErrImageNeverPull,
+				"Container image \"target/vela-git:v0.4.0\" is not present with pull policy of Never",
+			),
+		},
+		{
+			name:           "image pulled",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    true,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonPulled,
+				"Successfully pulled image \"target/vela-git:v0.4.0\" in 5s",
+			),
+		},
+		{
+			name:           "image already present",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    true,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonPulled,
+				"Container image \"target/vela-git:v0.4.0\" already present on machine",
+			),
+		},
+		{
+			name:           "image pulling",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				reasonPulling,
+				"Pulling image \"target/vela-git:v0.4.0\"",
+			),
+		},
+		{
+			name:           "unrecognized event reason",
+			trackedPod:     "test/github-octocat-1",
+			ctnName:        "step-github-octocat-1-clone",
+			ctnImage:       "target/vela-git:v0.4.0",
+			imagePulled:    false,
+			imagePullError: false,
+			event: mockContainerEvent(
+				_pod,
+				"step-github-octocat-1-clone",
+				"foobar",
+				"Pulling image \"target/vela-git:v0.4.0\"",
+			),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctnTracker := containerTracker{
+				Name:            test.ctnName,
+				Image:           test.ctnImage,
+				ImagePulled:     make(chan struct{}),
+				ImagePullErrors: make(chan *v1.Event),
+				Running:         make(chan struct{}),
+				Terminated:      make(chan struct{}),
+			}
+			podTracker := podTracker{
+				Logger:     logger,
+				TrackedPod: test.trackedPod,
+				Containers: map[string]*containerTracker{},
+				// other fields not used by inspectContainerEvent
+				// if they're needed, use newPodTracker
+			}
+			podTracker.Containers[test.ctnName] = &ctnTracker
+
+			if test.imagePullError {
+				ctx, done := context.WithCancel(context.Background())
+				defer done()
+
+				// use an errgroup to make sure the test goroutine finishes
+				grp, grpCtx := errgroup.WithContext(ctx)
+				defer func() {
+					err := grp.Wait()
+					if err != nil {
+						t.Error("waitgroup got an error")
+					}
+				}()
+
+				grp.Go(func() error {
+					select {
+					case <-ctnTracker.ImagePullErrors:
+						return nil // success
+					case <-grpCtx.Done():
+						t.Error("inspectContainerEvent should have sent an imagePullError")
+						return nil
+					}
+				})
+			}
+
+			podTracker.inspectContainerEvent(test.event)
+
+			func() {
+				defer func() {
+					// nolint: errcheck // repeat close() panics (otherwise it won't)
+					recover()
+				}()
+
+				close(ctnTracker.ImagePulled)
+
+				// this will only run if close() did not panic
+				if test.imagePulled {
+					t.Error("inspectContainerEvent should have signaled termination")
 				}
 			}()
 		})

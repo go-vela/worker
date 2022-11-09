@@ -28,11 +28,23 @@ import (
 type containerTracker struct {
 	// Name is the name of the container
 	Name string
+	// Image is the final image of the container
+	Image string
+
+	// imagePulledOnce ensures that the ImagePulled channel only gets closed once.
+	imagePulledOnce sync.Once
+	// ImagePulled will be closed once the container's image has been pulled.
+	ImagePulled chan struct{}
+	// ImagePullErrors collects any image pull errors.
+	ImagePullErrors chan *v1.Event
+	// runningOnce ensures that the Running channel only gets closed once.
+	runningOnce sync.Once
+	// Running will be closed once the container reaches a running state.
+	Running chan struct{}
 	// terminatedOnce ensures that the Terminated channel only gets closed once.
 	terminatedOnce sync.Once
 	// Terminated will be closed once the container reaches a terminal state.
 	Terminated chan struct{}
-	// TODO: collect streaming logs here before TailContainer is called
 }
 
 // podTracker contains Informers used to watch and synchronize local k8s caches.
@@ -40,21 +52,36 @@ type containerTracker struct {
 type podTracker struct {
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry
+
+	// Name is the Name of the tracked pod
+	Name string
+	// Namespace is the Namespace of the tracked pod
+	Namespace string
 	// TrackedPod is the Namespace/Name of the tracked pod
 	TrackedPod string
 
 	// informerFactory is used to create Informers and Listers
 	informerFactory kubeinformers.SharedInformerFactory
-	// informerDone is a function used to stop the informerFactory
+	// eventInformerFactory is used to create Informers and Listers for events
+	eventInformerFactory kubeinformers.SharedInformerFactory
+	// informerDone is a function used to stop informerFactory and eventInformerFactory
 	informerDone context.CancelFunc
 	// podInformer watches the given pod, caches the results, and makes them available in podLister
 	podInformer informers.PodInformer
+	// eventInformer watches events for the given pod, caches the results, and makes them available in eventLister
+	eventInformer informers.EventInformer
 
 	// PodLister helps list Pods. All objects returned here must be treated as read-only.
 	PodLister listers.PodLister
 	// PodSynced is a function that can be used to determine if an informer has synced.
 	// This is useful for determining if caches have synced.
 	PodSynced cache.InformerSynced
+
+	// EventLister helps list Events. All objects returned here must be treated as read-only.
+	EventLister listers.EventLister
+	// EventSynced is a function that can be used to determine if an informer has synced.
+	// This is useful for determining if caches have synced.
+	EventSynced cache.InformerSynced
 
 	// Containers maps the container name to a containerTracker
 	Containers map[string]*containerTracker
@@ -143,6 +170,72 @@ func (p *podTracker) getTrackedPod(obj interface{}) *v1.Pod {
 	return pod
 }
 
+// HandleEventAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Events.
+func (p *podTracker) HandleEventAdd(newObj interface{}) {
+	newEvent := p.getTrackedPodEvent(newObj)
+	if newEvent == nil {
+		// not valid or not for our tracked pod
+		return
+	}
+
+	p.Logger.Tracef(
+		"handling %s event add event for %s: fieldPath=%v",
+		newEvent.Type, // Normal, Warning
+		p.TrackedPod,
+		newEvent.InvolvedObject.FieldPath,
+	)
+
+	p.inspectContainerEvent(newEvent)
+}
+
+// HandleEventUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Events.
+func (p *podTracker) HandleEventUpdate(oldObj, newObj interface{}) {
+	oldEvent := p.getTrackedPodEvent(oldObj)
+	newEvent := p.getTrackedPodEvent(newObj)
+
+	if oldEvent == nil || newEvent == nil {
+		// not valid or not for our tracked pod
+		return
+	}
+
+	p.Logger.Tracef(
+		"handling %s event update event for %s: fieldPath=%v",
+		newEvent.Type, // Normal, Warning
+		p.TrackedPod,
+		newEvent.InvolvedObject.FieldPath,
+	)
+
+	p.inspectContainerEvent(newEvent)
+}
+
+// getTrackedPodEvent tries to convert the obj into an Event and makes sure it is for the tracked Pod.
+// This should only be used by the funcs of cache.ResourceEventHandlerFuncs.
+func (p *podTracker) getTrackedPodEvent(obj interface{}) *v1.Event {
+	var (
+		event *v1.Event
+		ok    bool
+	)
+
+	if event, ok = obj.(*v1.Event); !ok {
+		p.Logger.Errorf("error decoding event, invalid type")
+		return nil
+	}
+
+	eventObjectName := event.InvolvedObject.Namespace + "/" + event.InvolvedObject.Name
+	if event.InvolvedObject.Kind != "Pod" || eventObjectName != p.TrackedPod {
+		p.Logger.Errorf(
+			"unexpected event for %s (%s), expected %s (Pod)",
+			eventObjectName,
+			event.InvolvedObject.Kind,
+			p.TrackedPod,
+		)
+
+		return nil
+	}
+
+	return event
+}
+
 // Start kicks off the API calls to start populating the cache.
 // There is no need to run this in a separate goroutine (ie go podTracker.Start(ctx)).
 func (p *podTracker) Start(ctx context.Context) {
@@ -153,6 +246,7 @@ func (p *podTracker) Start(ctx context.Context) {
 
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
 	p.informerFactory.Start(informerCtx.Done())
+	p.eventInformerFactory.Start(informerCtx.Done())
 }
 
 // Stop shuts down any informers (e.g. stop watching APIs).
@@ -174,8 +268,12 @@ func (p *podTracker) TrackContainers(containers []v1.Container) {
 
 	for _, ctn := range containers {
 		p.Containers[ctn.Name] = &containerTracker{
-			Name:       ctn.Name,
-			Terminated: make(chan struct{}),
+			Name:            ctn.Name,
+			Image:           ctn.Image,
+			ImagePulled:     make(chan struct{}),
+			ImagePullErrors: make(chan *v1.Event),
+			Running:         make(chan struct{}),
+			Terminated:      make(chan struct{}),
 		}
 	}
 }
@@ -193,8 +291,8 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 
 	log.Tracef("creating PodTracker for pod %s", trackedPod)
 
-	// create label selector for watching the pod
-	selector, err := labels.NewRequirement(
+	// create labelSelector for watching the pod
+	labelSelector, err := labels.NewRequirement(
 		"pipeline",
 		selection.Equals,
 		[]string{fields.EscapeValue(pod.ObjectMeta.Name)},
@@ -203,26 +301,48 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		return nil, err
 	}
 
+	// create fieldSelector for watching the pod events
+	fieldSelector := fields.Set{
+		"involvedObject.name": fields.EscapeValue(pod.ObjectMeta.Name),
+	}.AsSelector()
+
 	// create filtered Informer factory which is commonly used for k8s controllers
 	informerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(
 		clientset,
 		defaultResync,
 		kubeinformers.WithNamespace(pod.ObjectMeta.Namespace),
 		kubeinformers.WithTweakListOptions(func(listOptions *metav1.ListOptions) {
-			listOptions.LabelSelector = selector.String()
+			listOptions.LabelSelector = labelSelector.String()
 		}),
 	)
 	podInformer := informerFactory.Core().V1().Pods()
 
+	// events do not have labels like the pods do, so we need a separate Informer
+	eventInformerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(
+		clientset,
+		defaultResync,
+		kubeinformers.WithNamespace(pod.ObjectMeta.Namespace),
+		kubeinformers.WithTweakListOptions(func(listOptions *metav1.ListOptions) {
+			listOptions.FieldSelector = fieldSelector.String()
+		}),
+	)
+	eventInformer := eventInformerFactory.Core().V1().Events()
+
 	// initialize podTracker
 	tracker := podTracker{
-		Logger:          log,
-		TrackedPod:      trackedPod,
-		informerFactory: informerFactory,
-		podInformer:     podInformer,
-		PodLister:       podInformer.Lister(),
-		PodSynced:       podInformer.Informer().HasSynced,
-		Ready:           make(chan struct{}),
+		Logger:               log,
+		Name:                 pod.ObjectMeta.Name,
+		Namespace:            pod.ObjectMeta.Namespace,
+		TrackedPod:           trackedPod,
+		informerFactory:      informerFactory,
+		podInformer:          podInformer,
+		PodLister:            podInformer.Lister(),
+		PodSynced:            podInformer.Informer().HasSynced,
+		eventInformerFactory: eventInformerFactory,
+		eventInformer:        eventInformer,
+		EventLister:          eventInformer.Lister(),
+		EventSynced:          eventInformer.Informer().HasSynced,
+		Ready:                make(chan struct{}),
 	}
 
 	// register event handler funcs in podInformer
@@ -230,6 +350,12 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		AddFunc:    tracker.HandlePodAdd,
 		UpdateFunc: tracker.HandlePodUpdate,
 		DeleteFunc: tracker.HandlePodDelete,
+	})
+
+	eventInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    tracker.HandleEventAdd,
+		UpdateFunc: tracker.HandleEventUpdate,
+		// No DeleteFunc as events get deleted after some time, which we ignore.
 	})
 
 	return &tracker, nil
