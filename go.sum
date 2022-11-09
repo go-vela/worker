@@ -153,8 +153,8 @@ github.com/go-playground/validator/v10 v10.10.0/go.mod h1:74x4gJWsvQexRdW8Pn3dXS
 github.com/go-redis/redis/v8 v8.11.5 h1:AcZZR7igkdvfVmQTPnu9WE37LRrO/YrBH5zWyjDC0oI=
 github.com/go-redis/redis/v8 v8.11.5/go.mod h1:gREzHqY1hg6oD9ngVRbLStwAWKhA0FEgq8Jd4h5lpwo=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
-github.com/go-vela/sdk-go v0.16.0 h1:Xpj/2ke1pooA1+V5KrUh9cZaBXLh3D4wNV3ccDldOWU=
-github.com/go-vela/sdk-go v0.16.0/go.mod h1:GeNNcITCXnj0aVnK5Ut63H7zr8QYefBFxd08pD4C0lw=
+github.com/go-vela/sdk-go v0.16.1 h1:TrexXFMRQVs5UQXL9NV0Urv+sRu7RElKyVo8qK/yGLY=
+github.com/go-vela/sdk-go v0.16.1/go.mod h1:fm8xpL9t1pBLdB9cQDHn8jyuQX8IapYzexD/cbQwKoc=
 github.com/go-vela/server v0.16.1 h1:1ihfbBha098noeM9dbBNSVqj8PLaNy+Sw9VBtc7tabY=
 github.com/go-vela/server v0.16.1/go.mod h1:vqSBrSJWw/OpynddskXDS5GggmlYpisQXODEWsGXk6k=
 github.com/go-vela/types v0.16.1 h1:PGtOQ0AQLAFJ23wi6ns5JF1y68v4VjA/NbZs5HYZmhY=
