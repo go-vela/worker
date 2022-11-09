@@ -161,6 +161,101 @@ func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 	}
 }
 
+func TestLinux_Opt_WithPrivilegedImages(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name             string
+		failure          bool
+		privilegedImages []string
+	}{
+		{
+			name:             "empty privileged images",
+			failure:          false,
+			privilegedImages: []string{},
+		},
+		{
+			name:             "with privileged image",
+			failure:          false,
+			privilegedImages: []string{"target/vela-docker"},
+		},
+		{
+			name:             "with privileged images",
+			failure:          false,
+			privilegedImages: []string{"alpine", "target/vela-docker"},
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithPrivilegedImages(test.privilegedImages),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithPrivilegedImages should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithPrivilegedImages returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.privilegedImages, test.privilegedImages) {
+				t.Errorf("WithPrivilegedImages is %v, want %v", _engine.privilegedImages, test.privilegedImages)
+			}
+		})
+	}
+}
+
+func TestLinux_Opt_WithEnforceTrustedRepos(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name                string
+		failure             bool
+		enforceTrustedRepos bool
+	}{
+		{
+			name:                "enforce trusted repos enabled",
+			failure:             false,
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled",
+			failure:             false,
+			enforceTrustedRepos: false,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithEnforceTrustedRepos(test.enforceTrustedRepos),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithEnforceTrustedRepos should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithEnforceTrustedRepos returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.enforceTrustedRepos, test.enforceTrustedRepos) {
+				t.Errorf("WithEnforceTrustedRepos is %v, want %v", _engine.enforceTrustedRepos, test.enforceTrustedRepos)
+			}
+		})
+	}
+}
+
 func TestLinux_Opt_WithHostname(t *testing.T) {
 	// setup tests
 	tests := []struct {

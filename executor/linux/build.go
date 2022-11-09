@@ -14,7 +14,9 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/internal/build"
+	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -40,6 +42,74 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
+	}
+
+	// before setting up the build, enforce repo.trusted is set for pipelines containing privileged images
+	// this configuration is set as an executor flag
+	if c.enforceTrustedRepos {
+		// check if pipeline steps contain privileged images
+		// assume no privileged images are in use
+		containsPrivilegedImages := false
+
+		// group steps services and stages together
+		containers := c.pipeline.Steps
+
+		containers = append(containers, c.pipeline.Services...)
+		for _, stage := range c.pipeline.Stages {
+			containers = append(containers, stage.Steps...)
+		}
+
+		for _, container := range containers {
+			// TODO: remove hardcoded reference
+			if container.Image == "#init" {
+				continue
+			}
+
+			for _, pattern := range c.privilegedImages {
+				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
+				if err != nil {
+					return fmt.Errorf("could not verify if image %s is privileged", container.Image)
+				}
+
+				if privileged {
+					containsPrivilegedImages = true
+				}
+			}
+		}
+
+		// check if this build should be denied
+		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
+			// deny the build, clean build/steps, and return error
+			// populate the build error
+			e := "build denied, repo must be trusted in order to run privileged images"
+			c.build.SetError(e)
+			// set the build status to error
+			c.build.SetStatus(constants.StatusError)
+
+			steps := c.pipeline.Steps
+			for _, stage := range c.pipeline.Stages {
+				steps = append(containers, stage.Steps...)
+			}
+
+			// update all preconfigured steps to the correct status
+			for _, s := range steps {
+				// extract step
+				step := library.StepFromBuildContainer(c.build, s)
+				// status to use for preconfigured steps that are not ran
+				status := constants.StatusKilled
+				// set step status
+				step.SetStatus(status)
+				// send API call to update the step
+				//nolint:contextcheck // ignore passing context
+				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), step)
+				if err != nil {
+					// only log any step update errors to allow the return err to run
+					c.Logger.Errorf("unable to update step %s to status %s: %s", s.Name, status, err.Error())
+				}
+			}
+
+			return fmt.Errorf("build containing privileged images %s/%d denied, repo is not trusted", c.repo.GetFullName(), c.build.GetNumber())
+		}
 	}
 
 	// setup the runtime build

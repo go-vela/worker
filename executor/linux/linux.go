@@ -31,17 +31,19 @@ type (
 		secret *secretSvc
 
 		// private fields
-		init        *pipeline.Container
-		logMethod   string
-		maxLogSize  uint
-		build       *library.Build
-		pipeline    *pipeline.Build
-		repo        *library.Repo
-		secrets     sync.Map
-		services    sync.Map
-		serviceLogs sync.Map
-		steps       sync.Map
-		stepLogs    sync.Map
+		init                *pipeline.Container
+		logMethod           string
+		maxLogSize          uint
+		privilegedImages    []string
+		enforceTrustedRepos bool
+		build               *library.Build
+		pipeline            *pipeline.Build
+		repo                *library.Repo
+		secrets             sync.Map
+		services            sync.Map
+		serviceLogs         sync.Map
+		steps               sync.Map
+		stepLogs            sync.Map
 
 		streamRequests chan message.StreamRequest
 
@@ -70,6 +72,8 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.init, b.init) &&
 		a.logMethod == b.logMethod &&
 		a.maxLogSize == b.maxLogSize &&
+		reflect.DeepEqual(a.privilegedImages, b.privilegedImages) &&
+		a.enforceTrustedRepos == b.enforceTrustedRepos &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
 		reflect.DeepEqual(a.repo, b.repo) &&

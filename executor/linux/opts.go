@@ -64,6 +64,30 @@ func WithMaxLogSize(size uint) Opt {
 	}
 }
 
+// WithPrivilegedImages sets the privileged images in the executor client for Linux.
+func WithPrivilegedImages(images []string) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring privileged images in linux executor client")
+
+		// set the privileged images in the client
+		c.privilegedImages = images
+
+		return nil
+	}
+}
+
+// WithEnforceTrustedRepos configures trusted repo restrictions in the executor client for Linux.
+func WithEnforceTrustedRepos(enforce bool) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring trusted repo restrictions in linux executor client")
+
+		// set trusted repo restrictions in the client
+		c.enforceTrustedRepos = enforce
+
+		return nil
+	}
+}
+
 // WithHostname sets the hostname in the executor client for Linux.
 func WithHostname(hostname string) Opt {
 	return func(c *client) error {
