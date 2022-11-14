@@ -93,9 +93,10 @@ func run(c *cli.Context) error {
 			CheckIn: c.Duration("checkIn"),
 			// executor configuration
 			Executor: &executor.Setup{
-				Driver:     c.String("executor.driver"),
-				LogMethod:  c.String("executor.log_method"),
-				MaxLogSize: c.Uint("executor.max_log_size"),
+				Driver:              c.String("executor.driver"),
+				LogMethod:           c.String("executor.log_method"),
+				MaxLogSize:          c.Uint("executor.max_log_size"),
+				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 			},
 			// logger configuration
 			Logger: &Logger{
