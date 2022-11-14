@@ -29,6 +29,7 @@ services:
       VELA_LOG_LEVEL: trace
       VELA_RUNTIME_DRIVER: docker
       VELA_RUNTIME_PRIVILEGED_IMAGES: 'target/vela-docker'
+      VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS: 'true'
       VELA_SERVER_ADDR: 'http://server:8080'
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_ADDR: 'http://worker:8080'
@@ -122,7 +123,7 @@ services:
   # https://www.postgresql.org/
   postgres:
     container_name: postgres
-    image: postgres:14-alpine
+    image: postgres:15-alpine
     networks:
       - vela
     environment:
