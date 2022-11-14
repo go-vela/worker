@@ -45,4 +45,11 @@ var Flags = []cli.Flag{
 		Usage:   "maximum amount of time to wait for log streaming after build completes",
 		Value:   5 * time.Minute,
 	},
+	&cli.BoolFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS", "EXECUTOR_ENFORCE_TRUSTED_REPOS"},
+		FilePath: "/vela/executor/enforce_trusted_repos",
+		Name:     "executor.enforce-trusted-repos",
+		Usage:    "enforce trusted repo restrictions for privileged images",
+		Value:    true,
+	},
 }

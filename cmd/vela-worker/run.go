@@ -97,6 +97,7 @@ func run(c *cli.Context) error {
 				LogMethod:           c.String("executor.log_method"),
 				MaxLogSize:          c.Uint("executor.max_log_size"),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
+				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 			},
 			// logger configuration
 			Logger: &Logger{

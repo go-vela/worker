@@ -44,6 +44,10 @@ type Setup struct {
 	// specifies how long to wait after the build finishes
 	// for log streaming to complete
 	LogStreamingTimeout time.Duration
+	// specifies a list of privileged images to use
+	PrivilegedImages []string
+	// configuration for enforcing that only trusted repos may run privileged images
+	EnforceTrustedRepos bool
 	// specifies the executor hostname
 	Hostname string
 	// specifies the executor version
@@ -86,6 +90,8 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithLogMethod(s.LogMethod),
 		linux.WithMaxLogSize(s.MaxLogSize),
 		linux.WithLogStreamingTimeout(s.LogStreamingTimeout),
+		linux.WithPrivilegedImages(s.PrivilegedImages),
+		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
 		linux.WithRepo(s.Repo),

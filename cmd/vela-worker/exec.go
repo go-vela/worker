@@ -76,6 +76,8 @@ func (w *Worker) exec(index int) error {
 		LogMethod:           w.Config.Executor.LogMethod,
 		MaxLogSize:          w.Config.Executor.MaxLogSize,
 		LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
+		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
+		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
 		Client:              w.VelaClient,
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
