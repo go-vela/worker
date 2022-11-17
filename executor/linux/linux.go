@@ -45,7 +45,7 @@ type (
 		stepLogs    sync.Map
 
 		streamRequests chan message.StreamRequest
-		buildActivity  chan message.BuildActivity
+		buildActivity  *message.Activity
 
 		user *library.User
 		err  error

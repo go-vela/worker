@@ -33,13 +33,17 @@ func (w *Worker) checkIn(config *library.Worker) error {
 
 	logrus.Infof("determining status of worker %s", config.GetHostname())
 
-	config.SetStatus(w.Activity.ToWorkerStatus(w))
+	w.Activity.Mutex.Lock()
+
+	config.SetStatus(ToWorkerStatus(w, w.Activity))
 
 	// if we were able to GET the worker, update it
 	logrus.Infof("checking worker %s into the server", config.GetHostname())
 
 	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
+	w.Activity.Mutex.Unlock()
 	if err != nil {
+		// todo: vader: retry this a few times
 		return fmt.Errorf("unable to update worker %s on the server: %w", config.GetHostname(), err)
 	}
 

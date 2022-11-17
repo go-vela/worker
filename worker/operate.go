@@ -36,13 +36,9 @@ func (w *Worker) Operate(ctx context.Context) error {
 
 	// Define the database representation of the worker
 	// and register itself in the database
-	registryWorker := new(library.Worker)
-	registryWorker.SetHostname(w.Config.API.Address.Hostname())
-	registryWorker.SetAddress(w.Config.API.Address.String())
-	registryWorker.SetRoutes(w.Config.Queue.Routes)
+	registryWorker := ToLibrary(w)
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
 
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
@@ -85,15 +81,6 @@ func (w *Worker) Operate(ctx context.Context) error {
 	// initialize build activity
 	w.Activity = NewActivity()
 
-	go func() {
-		for {
-			select {
-			case act := <-w.Activity.Channel:
-				// received build activity update
-				w.HandleMessage(&act)
-			}
-		}
-	}()
 	ch := make(chan *types.BuildPackage)
 	w.PackageChannel = ch
 
@@ -126,6 +113,9 @@ func (w *Worker) Operate(ctx context.Context) error {
 						}).Info("Completed listening on worker executor package channel")
 						return nil
 					case pkg := <-w.PackageChannel:
+						logrus.WithFields(logrus.Fields{
+							"id": id,
+						}).Info("Received execution package over channel.")
 						// exec operator subprocess execute build from the queue
 						// (do not pass the context to avoid errors in one
 						// executor+build inadvertently canceling other builds)

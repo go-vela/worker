@@ -15,7 +15,6 @@ import (
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
-	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -32,13 +31,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	c.build.SetHost(c.Hostname)
 	c.build.SetDistribution(c.Driver())
 	c.build.SetRuntime(c.Runtime.Driver())
-
-	// TODO: vader
-	act := message.BuildActivity{
-		Build:  c.build,
-		Action: message.AddBuild{},
-	}
-	c.buildActivity <- act
 
 	c.Logger.Info("uploading build state")
 	// send API call to update the build
@@ -570,14 +562,6 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		if err != nil {
 			c.Logger.Errorf("unable to remove runtime build: %v", err)
 		}
-
-		// TODO: vader
-		act := message.BuildActivity{
-			Build:  c.build,
-			Action: message.RemoveBuild{},
-		}
-		c.buildActivity <- act
-
 	}()
 
 	// destroy the steps for the pipeline

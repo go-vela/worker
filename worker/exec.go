@@ -6,6 +6,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-vela/types"
@@ -61,22 +62,22 @@ func (w *Worker) Exec(index int, pkg *types.BuildPackage) error {
 	//
 	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
-		Logger:               logger,
-		Mock:                 w.Config.Mock,
-		Driver:               w.Config.Executor.Driver,
-		LogMethod:            w.Config.Executor.LogMethod,
-		MaxLogSize:           w.Config.Executor.MaxLogSize,
-		BuildMode:            w.Config.Executor.BuildMode,
-		Client:               w.VelaClient,
-		Hostname:             w.Config.API.Address.Hostname(),
-		Runtime:              w.Runtime,
-		Build:                pkg.Build,
-		Pipeline:             pkg.Pipeline.Sanitize(w.Config.Runtime.Driver),
-		Repo:                 pkg.Repo,
-		User:                 pkg.User,
-		Secrets:              pkg.Secrets,
-		Version:              v.Semantic(),
-		BuildActivityChannel: w.Activity.Channel,
+		Logger:        logger,
+		Mock:          w.Config.Mock,
+		Driver:        w.Config.Executor.Driver,
+		LogMethod:     w.Config.Executor.LogMethod,
+		MaxLogSize:    w.Config.Executor.MaxLogSize,
+		BuildMode:     w.Config.Executor.BuildMode,
+		Client:        w.VelaClient,
+		Hostname:      w.Config.API.Address.Hostname(),
+		Runtime:       w.Runtime,
+		Build:         pkg.Build,
+		Pipeline:      pkg.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Repo:          pkg.Repo,
+		User:          pkg.User,
+		Secrets:       pkg.Secrets,
+		Version:       v.Semantic(),
+		BuildActivity: w.Activity,
 	})
 
 	// add the executor to the worker
@@ -110,8 +111,51 @@ func (w *Worker) Exec(index int, pkg *types.BuildPackage) error {
 			logger.Errorf("unable to destroy build: %v", err)
 		}
 
+		logrus.Infof("Locking worker activity mutex for build %s", pkg.Build.GetID())
+
+		w.Activity.Mutex.Lock()
+
+		w.Activity.RemoveBuild(pkg.Build)
+		_w := ToLibrary(w)
+		_w.SetStatus(ToWorkerStatus(w, w.Activity))
+
+		// if we were able to GET the worker, update it
+		// todo: vader: retrieve the worker first?
+		//  though it couldnt accept a build without being registered
+		logrus.Infof("updating worker %s to status %s", _w.GetHostname(), _w.GetStatus())
+
+		_, _, err = w.VelaClient.Worker.Update(_w.GetHostname(), _w)
+		w.Activity.Mutex.Unlock()
+		if err != nil {
+			// todo: vader: retry this a few times
+			e := fmt.Errorf("unable to update worker %s on the server: %w", _w.GetHostname(), err)
+			logrus.Error(e.Error())
+		}
+
 		logger.Info("completed build")
 	}()
+
+	logrus.Infof("Locking worker activity mutex for build %s", pkg.Build.GetID())
+
+	w.Activity.Mutex.Lock()
+
+	w.Activity.AddBuild(pkg.Build)
+	_w := ToLibrary(w)
+	_w.SetStatus(ToWorkerStatus(w, w.Activity))
+
+	// if we were able to GET the worker, update it
+	// todo: vader: retrieve the worker first?
+	//  though it couldnt accept a build without being registered
+	logrus.Infof("updating worker %s to status %s", _w.GetHostname(), _w.GetStatus())
+
+	_, _, err = w.VelaClient.Worker.Update(_w.GetHostname(), _w)
+	w.Activity.Mutex.Unlock()
+	if err != nil {
+		// todo: vader: retry this a few times
+		return fmt.Errorf("unable to update worker %s on the server: %w", _w.GetHostname(), err)
+	}
+
+	// TODO: vader update worker status here
 
 	logger.Info("creating build")
 	// create the build with the executor

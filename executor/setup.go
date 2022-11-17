@@ -63,7 +63,7 @@ type Setup struct {
 	// resource for storing user information in Vela
 	User *library.User
 
-	BuildActivityChannel chan message.BuildActivity
+	BuildActivity *message.Activity
 	// resource for storing sensitive build args in Vela
 	Secrets []*library.Secret
 }
@@ -98,7 +98,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithVelaClient(s.Client),
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
-		linux.WithBuildActivity(s.BuildActivityChannel),
+		linux.WithBuildActivity(s.BuildActivity),
 	)
 }
 
