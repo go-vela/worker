@@ -145,8 +145,10 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
-	// log/event streaming uses buildCtx so that it is not subject to the timeout.
+	// add StreamBuild goroutine to WaitGroup
 	wg.Add(1)
+
+	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
 		defer wg.Done()
 		logger.Info("streaming build logs")
