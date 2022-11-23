@@ -257,7 +257,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to inspect %s service: %w", s.Name, err)
 		}
 
-		// update the init log with step image info
+		// update the init log with service image info
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(_image)
@@ -437,7 +437,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to inspect %s secret: %w", s.Origin.Name, err)
 		}
 
-		// update the init log with step image info
+		// update the init log with secret origin image info
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(_image)
