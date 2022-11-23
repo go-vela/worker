@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
 
@@ -153,8 +152,8 @@ func (w *Worker) Operate(ctx context.Context) error {
 						// executor+build inadvertently canceling other builds)
 						//nolint:contextcheck // ignore passing context
 						err = w.Exec(id, &types.BuildPackage{
-							Build:    item.Build,
-							Secrets:  []*library.Secret{},
+							Build: item.Build,
+							// Secrets:  []*library.Secret{},
 							Pipeline: item.Pipeline,
 							Repo:     item.Repo,
 							User:     item.User,
