@@ -57,15 +57,15 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(_image)
 
-		c.Logger.Infof("checking privilege for container %s", _step.Name)
+		// c.Logger.Infof("checking privilege for container %s", _step.Name)
 
-		// check image privileged permissions
-		err = c.verifyPrivileged(_step.Image)
-		if err != nil {
-			c.err = err
-			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
-			return fmt.Errorf("unable to verify privilege for stage image %s: %w", _step.Name, err)
-		}
+		// // check image privileged permissions
+		// err = c.verifyPrivileged(_step.Image)
+		// if err != nil {
+		// 	c.err = err
+		// 	_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
+		// 	return fmt.Errorf("unable to verify privilege for stage image %s: %w", _step.Name, err)
+		// }
 	}
 
 	return nil

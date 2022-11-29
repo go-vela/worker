@@ -260,26 +260,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(output)
-
-		c.Logger.Infof("verifying privilege for container %s", s.Name)
-
-		// update the init log with service image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", s.Image)))
-
-		// check image privileged permissions
-		err = c.verifyPrivileged(s.Image)
-		if err != nil {
-			c.err = err
-			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
-			return fmt.Errorf("unable to verify privilege for service image %s: %w", s.Name, err)
-		}
-
-		// update the init log with service image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s...\n", s.Image)))
 	}
 
 	// update the init log with progress
@@ -335,26 +315,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(_image)
-
-		c.Logger.Infof("verifying privilege for container %s", s.Name)
-
-		// update the init log with step image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", s.Image)))
-
-		// check image privileged permissions
-		err = c.verifyPrivileged(s.Image)
-		if err != nil {
-			c.err = err
-			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
-			return fmt.Errorf("unable to check privilege for step image %s: %w", s.Name, err)
-		}
-
-		// update the init log with service image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s...\n", s.Image)))
 	}
 
 	// update the init log with progress
@@ -388,26 +348,44 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(_image)
+	}
 
-		c.Logger.Infof("verifying privilege for container %s", s.Origin.Name)
+	// update the init log with progress
+	//
+	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	_log.AppendData([]byte("> Verifying privileges for container images...\n"))
 
-		// update the init log with secret origin image info
+	// group steps services stages and secret origins together
+	containers := c.pipeline.Steps
+	containers = append(containers, c.pipeline.Services...)
+	for _, stage := range c.pipeline.Stages {
+		containers = append(containers, stage.Steps...)
+	}
+	for _, secret := range c.pipeline.Secrets {
+		containers = append(containers, secret.Origin)
+	}
+
+	// verify the image privileges for all pipeline containers
+	for _, container := range containers {
+		c.Logger.Infof("verifying privileges for container %s", container.Name)
+
+		// update the init log with image info
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", s.Origin.Image)))
+		_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
 
 		// check image privileged permissions
-		err = c.verifyPrivileged(s.Origin.Image)
+		err = c.verifyPrivileged(container.Image)
 		if err != nil {
 			c.err = err
 			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
-			return fmt.Errorf("unable to check privilege for secret origin image %s: %w", s.Name, err)
+			return fmt.Errorf("unable to verify privilege for image %s: %w", container.Name, err)
 		}
 
-		// update the init log with service image info
+		// update the init log with image info
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s...\n", s.Origin.Image)))
+		_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 	}
 
 	// inspect the runtime build (eg a kubernetes pod) for the pipeline
@@ -474,6 +452,7 @@ func (c *client) verifyPrivileged(img string) error {
 }
 
 func clean() {
+
 	// c.build.SetStatus(constants.StatusError)
 	// c.build.SetError(e.Error())
 
