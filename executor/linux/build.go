@@ -362,6 +362,16 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// verify the image privileges for all pipeline containers
 	for _, container := range containers {
+		// TODO: remove hardcoded reference
+		if container.Image == "#init" {
+			continue
+		}
+
+		// ignore secret origins coming from plugins
+		if container.Empty() {
+			continue
+		}
+
 		c.Logger.Infof("verifying privileges for container %s", container.Name)
 
 		// update the init log with image info
