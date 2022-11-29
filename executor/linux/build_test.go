@@ -130,7 +130,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 	}
 }
 
-func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
+func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	// setup types
 	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
 
@@ -399,29 +399,12 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
 			enforceTrustedRepos: true,
 		},
-		{
-			name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo and init step name",
-			failure:             true,
-			build:               _build,
-			repo:                _untrustedRepo,
-			pipeline:            "testdata/build/steps/name_init.yml",
-			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
-			enforceTrustedRepos: true,
-		},
+
 		{
 			name:                "enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and init step name",
 			failure:             false,
 			build:               _build,
 			repo:                _trustedRepo,
-			pipeline:            "testdata/build/steps/name_init.yml",
-			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
-			enforceTrustedRepos: true,
-		},
-		{
-			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and init step name",
-			failure:             true,
-			build:               _build,
-			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
 			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
 			enforceTrustedRepos: true,
@@ -608,6 +591,34 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 		},
 	}
 
+	// focus these tests
+	tests = []struct {
+		name                string
+		failure             bool
+		build               *library.Build
+		repo                *library.Repo
+		pipeline            string
+		privilegedImages    []string
+		enforceTrustedRepos bool
+	}{{
+		name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo and init step name",
+		failure:             true,
+		build:               _build,
+		repo:                _untrustedRepo,
+		pipeline:            "testdata/build/steps/name_init.yml",
+		privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+		enforceTrustedRepos: true,
+	},
+		{
+			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		}}
+
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -637,17 +648,27 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			}
 
 			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("CreateBuild returned err: %v", err)
+			}
+
+			err = _engine.PlanBuild(context.Background())
+			if err != nil {
+				t.Errorf("PlanBuild returned err: %v", err)
+			}
+
+			err = _engine.AssembleBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateBuild should have returned err")
+					t.Errorf("AssembleBuild should have returned err")
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateBuild returned err: %v", err)
+				t.Errorf("AssembleBuild returned err: %v", err)
 			}
 		})
 	}

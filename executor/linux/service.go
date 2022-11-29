@@ -33,6 +33,10 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 		return err
 	}
 
+	// create a library step object to facilitate injecting environment as early as possible
+	// (PlanStep is too late to inject environment vars for the kubernetes runtime).
+	// _service := library.ServiceFromBuildContainer(c.build, ctn)
+
 	// update the service container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Environment
