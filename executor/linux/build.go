@@ -305,7 +305,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		c.Logger.Infof("inspecting %s step", s.Name)
 		// inspect the step image
-		_image, err := c.Runtime.InspectImage(ctx, s)
+		image, err := c.Runtime.InspectImage(ctx, s)
 		if err != nil {
 			c.err = err
 			return fmt.Errorf("unable to inspect %s step: %w", s.Name, c.err)
@@ -314,7 +314,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// update the init log with step image info
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData(_image)
+		_log.AppendData(image)
 	}
 
 	// update the init log with progress
@@ -338,16 +338,16 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		c.Logger.Infof("inspecting %s secret", s.Origin.Name)
 		// inspect the service image
-		_image, err := c.Runtime.InspectImage(ctx, s.Origin)
+		image, err := c.Runtime.InspectImage(ctx, s.Origin)
 		if err != nil {
 			c.err = err
 			return fmt.Errorf("unable to inspect %s secret: %w", s.Origin.Name, err)
 		}
 
-		// update the init log with secret origin image info
+		// update the init log with secret image info
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData(_image)
+		_log.AppendData(image)
 	}
 
 	// update the init log with progress
