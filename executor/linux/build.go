@@ -250,7 +250,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		c.Logger.Infof("inspecting %s service", s.Name)
 		// inspect the service image
-		output, err := c.Runtime.InspectImage(ctx, s)
+		image, err := c.Runtime.InspectImage(ctx, s)
 		if err != nil {
 			c.err = err
 			return fmt.Errorf("unable to inspect %s service: %w", s.Name, err)
@@ -259,7 +259,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// update the init log with service image info
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData(output)
+		_log.AppendData(image)
 	}
 
 	// update the init log with progress
@@ -349,11 +349,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(image)
 	}
-
-	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-	_log.AppendData([]byte("> Verifying privileges for container images...\n"))
 
 	// group steps services stages and secret origins together
 	containers := c.pipeline.Steps
