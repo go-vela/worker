@@ -367,7 +367,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
-		// ignore secret origins coming from plugins
+		// skip over non-plugin secrets origins
 		if container.Empty() {
 			continue
 		}
