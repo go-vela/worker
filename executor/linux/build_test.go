@@ -400,10 +400,28 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
+			name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
 			name:                "enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and init step name",
 			failure:             false,
 			build:               _build,
 			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and init step name",
+			failure:             true,
+			build:               _build,
+			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
 			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
 			enforceTrustedRepos: true,
