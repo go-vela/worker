@@ -349,7 +349,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(image)
 	}
-
+	// enforce repo.trusted is set for pipelines containing privileged images
 	// if not enforced, allow all that exist in the list of runtime privileged images
 	// this configuration is set as an executor flag
 	if c.enforceTrustedRepos {
@@ -363,7 +363,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			containers = append(containers, secret.Origin)
 		}
 
-		// check if pipeline steps contain privileged images
 		// assume no privileged images are in use
 		containsPrivilegedImages := false
 
@@ -387,7 +386,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
 
 			for _, pattern := range c.privilegedImages {
-				// check privilege
+				// check if image matches privileged pattern
 				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
 				if err != nil {
 					// wrap the error
@@ -403,8 +402,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 					return c.err
 				}
 
-				// we only care about privileged images
 				if privileged {
+					// pipeline contains at least one privileged image
 					containsPrivilegedImages = privileged
 				}
 			}
@@ -415,7 +414,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 		}
 
-		// ensure privileged images are only permitted by trusted repos
+		// ensure pipelines containing privileged images are only permitted to run by trusted repos
 		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
 			// update error
 			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted")
@@ -426,7 +425,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
 
 			// return error and destroy the build
-			// ignore checking more images
 			return c.err
 		}
 	}
