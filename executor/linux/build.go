@@ -355,10 +355,13 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	if c.enforceTrustedRepos {
 		// group steps services stages and secret origins together
 		containers := c.pipeline.Steps
+
 		containers = append(containers, c.pipeline.Services...)
+
 		for _, stage := range c.pipeline.Stages {
 			containers = append(containers, stage.Steps...)
 		}
+
 		for _, secret := range c.pipeline.Secrets {
 			containers = append(containers, secret.Origin)
 		}
@@ -390,7 +393,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
 				if err != nil {
 					// wrap the error
-					c.err = fmt.Errorf("unable to verify privileges for image %s: %s", container.Image, err.Error())
+					c.err = fmt.Errorf("unable to verify privileges for image %s: %w", container.Image, err)
 
 					// update the init log with image info
 					//
