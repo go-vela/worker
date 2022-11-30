@@ -350,47 +350,51 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		_log.AppendData(image)
 	}
 
-	// group steps services stages and secret origins together
-	containers := c.pipeline.Steps
-	containers = append(containers, c.pipeline.Services...)
-	for _, stage := range c.pipeline.Stages {
-		containers = append(containers, stage.Steps...)
-	}
-	for _, secret := range c.pipeline.Secrets {
-		containers = append(containers, secret.Origin)
-	}
-
-	// verify the image privileges for all pipeline containers
-	for _, container := range containers {
-		// TODO: remove hardcoded reference
-		if container.Image == "#init" {
-			continue
+	// if not enforced, allow all
+	// this still does not impact the list of runtime privileged images
+	if c.enforceTrustedRepos {
+		// group steps services stages and secret origins together
+		containers := c.pipeline.Steps
+		containers = append(containers, c.pipeline.Services...)
+		for _, stage := range c.pipeline.Stages {
+			containers = append(containers, stage.Steps...)
+		}
+		for _, secret := range c.pipeline.Secrets {
+			containers = append(containers, secret.Origin)
 		}
 
-		// skip over non-plugin secrets origins
-		if container.Empty() {
-			continue
+		// verify the image privileges for all pipeline containers
+		for _, container := range containers {
+			// TODO: remove hardcoded reference
+			if container.Image == "#init" {
+				continue
+			}
+
+			// skip over non-plugin secrets origins
+			if container.Empty() {
+				continue
+			}
+
+			c.Logger.Infof("verifying privileges for container %s", container.Name)
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
+
+			// check image privileged permissions
+			err = c.verifyPrivileged(container.Image)
+			if err != nil {
+				c.err = err
+				_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
+				return fmt.Errorf("unable to verify privilege for image %s: %w", container.Name, err)
+			}
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 		}
-
-		c.Logger.Infof("verifying privileges for container %s", container.Name)
-
-		// update the init log with image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
-
-		// check image privileged permissions
-		err = c.verifyPrivileged(container.Image)
-		if err != nil {
-			c.err = err
-			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
-			return fmt.Errorf("unable to verify privilege for image %s: %w", container.Name, err)
-		}
-
-		// update the init log with image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-		_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 	}
 
 	// inspect the runtime build (eg a kubernetes pod) for the pipeline
@@ -432,12 +436,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 // enforce repo.trusted is set for pipelines containing privileged images
 // this configuration is set as an executor flag
 func (c *client) verifyPrivileged(img string) error {
-	// if not enforced, allow all
-	// this still does not impact the list of runtime privileged images
-	if !c.enforceTrustedRepos {
-		return nil
-	}
-
 	// prevent ghosting
 	privileged := false
 	var err error = nil
@@ -445,39 +443,15 @@ func (c *client) verifyPrivileged(img string) error {
 		privileged, err = image.IsPrivilegedImage(img, pattern)
 		if err != nil {
 			// wrap and return error
-			return fmt.Errorf("unable to verify if image is privileged: %s", err.Error())
+			return fmt.Errorf("unable to verify privileges for image %s", err.Error())
 		}
 	}
 
 	if (privileged) && !(c.repo != nil && c.repo.GetTrusted()) {
-		return fmt.Errorf("unable to prepare %s. image is privileged and repo is not trusted", img)
+		return fmt.Errorf("unable to verify image %s. image is privileged and repo is not trusted", img)
 	}
 
 	return nil
-}
-
-func clean() {
-
-	// c.build.SetStatus(constants.StatusError)
-	// c.build.SetError(e.Error())
-
-	// // todo: vader:
-	// // also iterate over stages and services?
-	// for _, s := range c.pipeline.Steps {
-	// 	// extract step
-	// 	step := library.StepFromBuildContainer(c.build, s)
-	// 	// status to use for preconfigured steps that are not ran
-	// 	status := constants.StatusKilled
-	// 	// set step status
-	// 	step.SetStatus(status)
-	// 	// send API call to update the step
-	// 	//nolint:contextcheck // ignore passing context
-	// 	_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), step)
-	// 	if err != nil {
-	// 		// only log any step update errors to allow the return err to run
-	// 		c.Logger.Errorf("unable to update step %s to status %s: %s", s.Name, status, err.Error())
-	// 	}
-	// }
 }
 
 // ExecBuild runs a pipeline for a build.
