@@ -383,11 +383,35 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
 
 			// check image privileged permissions
-			err = c.verifyPrivileged(container.Image)
-			if err != nil {
-				c.err = err
-				_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", err.Error())))
-				return fmt.Errorf("unable to verify privilege for image %s: %w", container.Name, err)
+			privileged := false
+			var err error = nil
+			for _, pattern := range c.privilegedImages {
+				privileged, err = image.IsPrivilegedImage(container.Image, pattern)
+				if err != nil {
+					// wrap and return error
+					c.err = fmt.Errorf("unable to verify privileges for image %s", err.Error())
+
+					// update the init log with image info
+					//
+					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
+
+					// return error and destroy the build
+					return c.err
+				}
+			}
+
+			// ensure privileged images are only permitted by trusted repos
+			if (privileged) && !(c.repo != nil && c.repo.GetTrusted()) {
+				c.err = fmt.Errorf("unable to verify image %s. image is privileged and repo is not trusted", container.Image)
+
+				// update the init log with image info
+				//
+				// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+				_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
+
+				// return error and destroy the build
+				return c.err
 			}
 
 			// update the init log with image info
@@ -431,27 +455,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	return c.err
-}
-
-// enforce repo.trusted is set for pipelines containing privileged images
-// this configuration is set as an executor flag
-func (c *client) verifyPrivileged(img string) error {
-	// prevent ghosting
-	privileged := false
-	var err error = nil
-	for _, pattern := range c.privilegedImages {
-		privileged, err = image.IsPrivilegedImage(img, pattern)
-		if err != nil {
-			// wrap and return error
-			return fmt.Errorf("unable to verify privileges for image %s", err.Error())
-		}
-	}
-
-	if (privileged) && !(c.repo != nil && c.repo.GetTrusted()) {
-		return fmt.Errorf("unable to verify image %s. image is privileged and repo is not trusted", img)
-	}
-
-	return nil
 }
 
 // ExecBuild runs a pipeline for a build.
