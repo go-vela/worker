@@ -47,7 +47,7 @@ func TestLinux_Secret_create(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -57,7 +57,7 @@ func TestLinux_Secret_create(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "good image tag",
+			name:    "docker-good image tag",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -70,7 +70,7 @@ func TestLinux_Secret_create(t *testing.T) {
 			},
 		},
 		{
-			name:    "notfound image tag",
+			name:    "docker-notfound image tag",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -96,21 +96,21 @@ func TestLinux_Secret_create(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.secret.create(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("create should have returned err")
+					t.Errorf("%s create should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("create returned err: %v", err)
+				t.Errorf("%s create returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -134,7 +134,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	_step := new(library.Step)
@@ -150,7 +150,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		step      *library.Step
 	}{
 		{
-			name:    "running container-empty step",
+			name:    "docker-running container-empty step",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -164,7 +164,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: new(library.Step),
 		},
 		{
-			name:    "running container-pending step",
+			name:    "docker-running container-pending step",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
@@ -178,7 +178,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: _step,
 		},
 		{
-			name:    "inspecting container failure due to invalid container id",
+			name:    "docker-inspecting container failure due to invalid container id",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
@@ -192,7 +192,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 			step: new(library.Step),
 		},
 		{
-			name:    "removing container failure",
+			name:    "docker-removing container failure",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_ignorenotfound",
@@ -219,7 +219,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			_ = _engine.CreateBuild(context.Background())
@@ -230,14 +230,14 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("destroy should have returned err")
+					t.Errorf("%s destroy should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("destroy returned err: %v", err)
+				t.Errorf("%s destroy returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -263,7 +263,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -276,12 +276,12 @@ func TestLinux_Secret_exec(t *testing.T) {
 		pipeline string
 	}{
 		{
-			name:     "basic secrets pipeline",
+			name:     "docker-basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "pipeline with secret name not found",
+			name:     "docker-pipeline with secret name not found",
 			failure:  true,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
@@ -313,7 +313,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			_engine.build.SetStatus(constants.StatusSuccess)
@@ -325,14 +325,14 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("exec should have returned err")
+					t.Errorf("%s exec should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("exec returned err: %v", err)
+				t.Errorf("%s exec returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -355,7 +355,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -365,7 +365,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		secret  *pipeline.Secret
 	}{
 		{
-			name:    "success with org secret",
+			name:    "docker-success with org secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -377,7 +377,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with invalid org secret",
+			name:    "docker-failure with invalid org secret",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -389,7 +389,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with org secret key not found",
+			name:    "docker-failure with org secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -401,7 +401,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "success with repo secret",
+			name:    "docker-success with repo secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -413,7 +413,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with invalid repo secret",
+			name:    "docker-failure with invalid repo secret",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -425,7 +425,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with repo secret key not found",
+			name:    "docker-failure with repo secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -437,7 +437,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "success with shared secret",
+			name:    "docker-success with shared secret",
 			failure: false,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -449,7 +449,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with shared secret key not found",
+			name:    "docker-failure with shared secret key not found",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -461,7 +461,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 			},
 		},
 		{
-			name:    "failure with invalid type",
+			name:    "docker-failure with invalid type",
 			failure: true,
 			secret: &pipeline.Secret{
 				Name:   "foo",
@@ -486,21 +486,21 @@ func TestLinux_Secret_pull(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			_, err = _engine.secret.pull(test.secret)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("pull should have returned err")
+					t.Errorf("%s pull should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("pull returned err: %v", err)
+				t.Errorf("%s pull returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -524,7 +524,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -535,7 +535,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "container step succeeds",
+			name:    "docker-container step succeeds",
 			failure: false,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
@@ -549,7 +549,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 			},
 		},
 		{
-			name:    "container step fails because of invalid container id",
+			name:    "docker-container step fails because of invalid container id",
 			failure: true,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
@@ -576,7 +576,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// add init container info to client
@@ -586,14 +586,14 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("stream should have returned err")
+					t.Errorf("%s stream should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("stream returned err: %v", err)
+				t.Errorf("%s stream returned err: %v", test.name, err)
 			}
 		})
 	}
