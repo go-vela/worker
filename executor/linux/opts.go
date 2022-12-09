@@ -6,6 +6,7 @@ package linux
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
@@ -59,6 +60,18 @@ func WithMaxLogSize(size uint) Opt {
 
 		// set the maximum log size in the client
 		c.maxLogSize = size
+
+		return nil
+	}
+}
+
+// WithLogStreamingTimeout sets the log streaming timeout in the executor client for Linux.
+func WithLogStreamingTimeout(timeout time.Duration) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring log streaming timeout in linux executor client")
+
+		// set the maximum log size in the client
+		c.logStreamingTimeout = timeout
 
 		return nil
 	}
