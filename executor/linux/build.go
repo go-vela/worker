@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
+	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -579,10 +580,15 @@ func (c *client) ExecBuild(ctx context.Context) error {
 // StreamBuild receives a StreamRequest and then
 // runs StreamService or StreamStep in a goroutine.
 func (c *client) StreamBuild(ctx context.Context) error {
+	// cancel streaming after a timeout once the build has finished
+	delayedCtx, cancelStreaming := context2.
+		WithDelayedCancelPropagation(ctx, c.logStreamingTimeout, "streaming", c.Logger)
+	defer cancelStreaming()
+
 	// create an error group with the parent context
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
-	streams, streamCtx := errgroup.WithContext(ctx)
+	streams, streamCtx := errgroup.WithContext(delayedCtx)
 
 	defer func() {
 		c.Logger.Trace("waiting for stream functions to return")
@@ -591,6 +597,8 @@ func (c *client) StreamBuild(ctx context.Context) error {
 		if err != nil {
 			c.Logger.Errorf("error in a stream request, %v", err)
 		}
+
+		cancelStreaming()
 
 		c.Logger.Info("all stream functions have returned")
 	}()
@@ -620,7 +628,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 
 				return nil
 			})
-		case <-ctx.Done():
+		case <-delayedCtx.Done():
 			c.Logger.Debug("streaming context canceled")
 			// build done or canceled
 			return nil
