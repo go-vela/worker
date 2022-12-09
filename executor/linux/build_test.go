@@ -46,7 +46,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	tests := []struct {
@@ -56,31 +56,31 @@ func TestLinux_CreateBuild(t *testing.T) {
 		pipeline string
 	}{
 		{
-			name:     "basic secrets pipeline",
+			name:     "docker-basic secrets pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "basic services pipeline",
+			name:     "docker-basic services pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "basic steps pipeline",
+			name:     "docker-basic steps pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "basic stages pipeline",
+			name:     "docker-basic stages pipeline",
 			failure:  false,
 			build:    _build,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
-			name:     "steps pipeline with empty build",
+			name:     "docker-steps pipeline with empty build",
 			failure:  true,
 			build:    new(library.Build),
 			pipeline: "testdata/build/steps/basic.yml",
@@ -98,7 +98,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
 			_engine, err := New(
@@ -110,21 +110,21 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.CreateBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateBuild should have returned err")
+					t.Errorf("%s CreateBuild should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateBuild returned err: %v", err)
+				t.Errorf("%s CreateBuild returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -673,7 +673,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	tests := []struct {
@@ -682,22 +682,22 @@ func TestLinux_PlanBuild(t *testing.T) {
 		pipeline string
 	}{
 		{
-			name:     "basic secrets pipeline",
+			name:     "docker-basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "basic services pipeline",
+			name:     "docker-basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "basic steps pipeline",
+			name:     "docker-basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "basic stages pipeline",
+			name:     "docker-basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
@@ -714,7 +714,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
 			_engine, err := New(
@@ -726,27 +726,27 @@ func TestLinux_PlanBuild(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
-				t.Errorf("unable to create build: %v", err)
+				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
 			err = _engine.PlanBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("PlanBuild should have returned err")
+					t.Errorf("%s PlanBuild should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("PlanBuild returned err: %v", err)
+				t.Errorf("%s PlanBuild returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -772,7 +772,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -784,62 +784,62 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		pipeline string
 	}{
 		{
-			name:     "basic secrets pipeline",
+			name:     "docker-basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "secrets pipeline with image not found",
+			name:     "docker-secrets pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/secrets/img_notfound.yml",
 		},
 		{
-			name:     "secrets pipeline with ignoring image not found",
+			name:     "docker-secrets pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
 		},
 		{
-			name:     "basic services pipeline",
+			name:     "docker-basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "services pipeline with image not found",
+			name:     "docker-services pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
 		{
-			name:     "services pipeline with ignoring image not found",
+			name:     "docker-services pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		},
 		{
-			name:     "basic steps pipeline",
+			name:     "docker-basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "steps pipeline with image not found",
+			name:     "docker-steps pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
 		{
-			name:     "steps pipeline with ignoring image not found",
+			name:     "docker-steps pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		},
 		{
-			name:     "basic stages pipeline",
+			name:     "docker-basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
-			name:     "stages pipeline with image not found",
+			name:     "docker-stages pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
 		{
-			name:     "stages pipeline with ignoring image not found",
+			name:     "docker-stages pipeline with ignoring image not found",
 			failure:  true,
 			pipeline: "testdata/build/stages/img_ignorenotfound.yml",
 		},
@@ -856,7 +856,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
 			_engine, err := New(
@@ -869,7 +869,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// run create to init steps to be created properly
@@ -882,14 +882,14 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("AssembleBuild should have returned err")
+					t.Errorf("%s AssembleBuild should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("AssembleBuild returned err: %v", err)
+				t.Errorf("%s AssembleBuild returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -915,7 +915,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -927,32 +927,32 @@ func TestLinux_ExecBuild(t *testing.T) {
 		pipeline string
 	}{
 		{
-			name:     "basic services pipeline",
+			name:     "docker-basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "services pipeline with image not found",
+			name:     "docker-services pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/services/img_notfound.yml",
 		},
 		{
-			name:     "basic steps pipeline",
+			name:     "docker-basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "steps pipeline with image not found",
+			name:     "docker-steps pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/steps/img_notfound.yml",
 		},
 		{
-			name:     "basic stages pipeline",
+			name:     "docker-basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
-			name:     "stages pipeline with image not found",
+			name:     "docker-stages pipeline with image not found",
 			failure:  true,
 			pipeline: "testdata/build/stages/img_notfound.yml",
 		},
@@ -969,7 +969,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
 			_engine, err := New(
@@ -982,7 +982,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// run create to init steps to be created properly
@@ -1007,7 +1007,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// in a privileged fashion.
 			err = _runtime.CreateVolume(context.Background(), _pipeline)
 			if err != nil {
-				t.Errorf("unable to create runtime volume: %v", err)
+				t.Errorf("unable to create docker runtime volume: %v", err)
 			}
 
 			// TODO: hack - remove this
@@ -1029,14 +1029,14 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("ExecBuild for %s should have returned err", test.pipeline)
+					t.Errorf("%s ExecBuild for %s should have returned err", test.name, test.pipeline)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("ExecBuild for %s returned err: %v", test.pipeline, err)
+				t.Errorf("%s ExecBuild for %s returned err: %v", test.name, test.pipeline, err)
 			}
 		})
 	}
@@ -1062,7 +1062,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	type planFuncType = func(context.Context, *pipeline.Container) error
@@ -1082,7 +1082,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 		planFunc   func(*client) planFuncType
 	}{
 		{
-			name:       "basic services pipeline",
+			name:       "docker-basic services pipeline",
 			failure:    false,
 			pipeline:   "testdata/build/services/basic.yml",
 			messageKey: "service",
@@ -1105,7 +1105,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
-			name:       "basic services pipeline with StreamService failure",
+			name:       "docker-basic services pipeline with StreamService failure",
 			failure:    false,
 			pipeline:   "testdata/build/services/basic.yml",
 			messageKey: "service",
@@ -1129,7 +1129,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
-			name:       "basic steps pipeline",
+			name:       "docker-basic steps pipeline",
 			failure:    false,
 			pipeline:   "testdata/build/steps/basic.yml",
 			messageKey: "step",
@@ -1150,7 +1150,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
-			name:       "basic steps pipeline with StreamStep failure",
+			name:       "docker-basic steps pipeline with StreamStep failure",
 			failure:    false,
 			pipeline:   "testdata/build/steps/basic.yml",
 			messageKey: "step",
@@ -1172,7 +1172,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
-			name:       "basic stages pipeline",
+			name:       "docker-basic stages pipeline",
 			failure:    false,
 			pipeline:   "testdata/build/stages/basic.yml",
 			messageKey: "step",
@@ -1193,7 +1193,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
-			name:       "basic secrets pipeline",
+			name:       "docker-basic secrets pipeline",
 			failure:    false,
 			pipeline:   "testdata/build/secrets/basic.yml",
 			messageKey: "secret",
@@ -1230,7 +1230,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
 			_engine, err := New(
@@ -1238,18 +1238,19 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
+				WithLogStreamingTimeout(1*time.Second),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(buildCtx)
 			if err != nil {
-				t.Errorf("unable to create build: %v", err)
+				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
 			// simulate ExecBuild() which runs concurrently with StreamBuild()
@@ -1276,14 +1277,14 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("StreamBuild for %s should have returned err", test.pipeline)
+					t.Errorf("%s StreamBuild for %s should have returned err", test.name, test.pipeline)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("StreamBuild for %s returned err: %v", test.pipeline, err)
+				t.Errorf("%s StreamBuild for %s returned err: %v", test.name, test.pipeline, err)
 			}
 		})
 	}
@@ -1309,7 +1310,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	tests := []struct {
@@ -1318,42 +1319,42 @@ func TestLinux_DestroyBuild(t *testing.T) {
 		pipeline string
 	}{
 		{
-			name:     "basic secrets pipeline",
+			name:     "docker-basic secrets pipeline",
 			failure:  false,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
-			name:     "secrets pipeline with name not found",
+			name:     "docker-secrets pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 		{
-			name:     "basic services pipeline",
+			name:     "docker-basic services pipeline",
 			failure:  false,
 			pipeline: "testdata/build/services/basic.yml",
 		},
 		{
-			name:     "services pipeline with name not found",
+			name:     "docker-services pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/services/name_notfound.yml",
 		},
 		{
-			name:     "basic steps pipeline",
+			name:     "docker-basic steps pipeline",
 			failure:  false,
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
-			name:     "steps pipeline with name not found",
+			name:     "docker-steps pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/steps/name_notfound.yml",
 		},
 		{
-			name:     "basic stages pipeline",
+			name:     "docker-basic stages pipeline",
 			failure:  false,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
 		{
-			name:     "stages pipeline with name not found",
+			name:     "docker-stages pipeline with name not found",
 			failure:  false,
 			pipeline: "testdata/build/stages/name_notfound.yml",
 		},
@@ -1370,7 +1371,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
-				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
 			_engine, err := New(
@@ -1382,27 +1383,27 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
-				t.Errorf("unable to create build: %v", err)
+				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
 			err = _engine.DestroyBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("DestroyBuild should have returned err")
+					t.Errorf("%s DestroyBuild should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("DestroyBuild returned err: %v", err)
+				t.Errorf("%s DestroyBuild returned err: %v", test.name, err)
 			}
 		})
 	}
