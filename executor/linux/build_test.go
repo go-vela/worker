@@ -1238,6 +1238,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
+				WithLogStreamingTimeout(1*time.Second),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
