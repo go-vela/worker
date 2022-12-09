@@ -859,12 +859,6 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 				t.Errorf("CreateBuild returned err: %v", err)
 			}
 
-			// run plan to init steps to be created properly
-			err = _engine.PlanBuild(context.Background())
-			if err != nil {
-				t.Errorf("unable to create build: %v", err)
-			}
-
 			// override mock handler PUT build update
 			// used for dynamic substitute testing
 			_engine.build.SetMessage(test.build.GetMessage())

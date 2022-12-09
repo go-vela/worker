@@ -9,7 +9,7 @@ services:
   - name: test
     environment:
       FOO: bar
-    image: '${DYNAMIC_IMAGE}:${DYNAMIC_TAG}'
+    image: "${DYNAMIC_IMAGE}:${DYNAMIC_TAG}"
     pull: on_start
 
 steps:
