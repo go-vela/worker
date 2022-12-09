@@ -58,7 +58,7 @@ func TestLinux_CreateStage(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -68,7 +68,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -86,7 +86,7 @@ func TestLinux_CreateStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "stage with step container with image not found",
+			name:    "docker-stage with step container with image not found",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -104,7 +104,7 @@ func TestLinux_CreateStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "empty stage",
+			name:    "docker-empty stage",
 			failure: true,
 			stage:   new(pipeline.Stage),
 		},
@@ -122,14 +122,14 @@ func TestLinux_CreateStage(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if len(test.stage.Name) > 0 {
 				// run create to init steps to be created properly
 				err = _engine.CreateBuild(context.Background())
 				if err != nil {
-					t.Errorf("unable to create build: %v", err)
+					t.Errorf("unable to create %s build: %v", test.name, err)
 				}
 			}
 
@@ -137,14 +137,14 @@ func TestLinux_CreateStage(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateStage should have returned err")
+					t.Errorf("%s CreateStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateStage returned err: %v", err)
+				t.Errorf("%s CreateStage returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -167,7 +167,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	testMap := new(sync.Map)
@@ -192,7 +192,7 @@ func TestLinux_PlanStage(t *testing.T) {
 		stageMap *sync.Map
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -211,7 +211,7 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: new(sync.Map),
 		},
 		{
-			name:    "basic stage with nil stage map",
+			name:    "docker-basic stage with nil stage map",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name:  "echo",
@@ -231,7 +231,7 @@ func TestLinux_PlanStage(t *testing.T) {
 			stageMap: testMap,
 		},
 		{
-			name:    "basic stage with error stage map",
+			name:    "docker-basic stage with error stage map",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name:  "echo",
@@ -264,21 +264,21 @@ func TestLinux_PlanStage(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.PlanStage(context.Background(), test.stage, test.stageMap)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("PlanStage should have returned err")
+					t.Errorf("%s PlanStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("PlanStage returned err: %v", err)
+				t.Errorf("%s PlanStage returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -301,7 +301,7 @@ func TestLinux_ExecStage(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -314,7 +314,7 @@ func TestLinux_ExecStage(t *testing.T) {
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Independent: true,
@@ -333,7 +333,7 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "stage with step container with image not found",
+			name:    "docker-stage with step container with image not found",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name:        "echo",
@@ -352,7 +352,7 @@ func TestLinux_ExecStage(t *testing.T) {
 			},
 		},
 		{
-			name:    "stage with step container with bad number",
+			name:    "docker-stage with step container with bad number",
 			failure: true,
 			stage: &pipeline.Stage{
 				Name:        "echo",
@@ -388,21 +388,21 @@ func TestLinux_ExecStage(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.ExecStage(context.Background(), test.stage, stageMap)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("ExecStage should have returned err")
+					t.Errorf("%s ExecStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("ExecStage returned err: %v", err)
+				t.Errorf("%s ExecStage returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -425,7 +425,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -435,7 +435,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 		stage   *pipeline.Stage
 	}{
 		{
-			name:    "basic stage",
+			name:    "docker-basic stage",
 			failure: false,
 			stage: &pipeline.Stage{
 				Name: "echo",
@@ -466,21 +466,21 @@ func TestLinux_DestroyStage(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.DestroyStage(context.Background(), test.stage)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("DestroyStage should have returned err")
+					t.Errorf("%s DestroyStage should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("DestroyStage returned err: %v", err)
+				t.Errorf("%s DestroyStage returned err: %v", test.name, err)
 			}
 		})
 	}

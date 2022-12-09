@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/go-vela/worker/executor"
@@ -75,6 +76,7 @@ func (w *Worker) exec(index int) error {
 		Driver:              w.Config.Executor.Driver,
 		LogMethod:           w.Config.Executor.LogMethod,
 		MaxLogSize:          w.Config.Executor.MaxLogSize,
+		LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
 		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
 		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
 		Client:              w.VelaClient,
@@ -108,7 +110,13 @@ func (w *Worker) exec(index int) error {
 	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
 
+	// This WaitGroup delays calling DestroyBuild until the StreamBuild goroutine finishes.
+	var wg sync.WaitGroup
+
 	defer func() {
+		// if exec() exits before starting StreamBuild, this returns immediately.
+		wg.Wait()
+
 		logger.Info("destroying build")
 
 		// destroy the build with the executor (pass a background
@@ -137,8 +145,12 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
+	// add StreamBuild goroutine to WaitGroup
+	wg.Add(1)
+
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
+		defer wg.Done()
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)
