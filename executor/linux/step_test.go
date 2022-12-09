@@ -41,7 +41,7 @@ func TestLinux_CreateStep(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -51,7 +51,7 @@ func TestLinux_CreateStep(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "init step container",
+			name:    "docker-init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -64,7 +64,7 @@ func TestLinux_CreateStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "basic step container",
+			name:    "docker-basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -77,7 +77,7 @@ func TestLinux_CreateStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "step container with image not found",
+			name:    "docker-step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -90,7 +90,7 @@ func TestLinux_CreateStep(t *testing.T) {
 			},
 		},
 		{
-			name:      "empty step container",
+			name:      "docker-empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -108,21 +108,21 @@ func TestLinux_CreateStep(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.CreateStep(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateStep should have returned err")
+					t.Errorf("%s CreateStep should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateStep returned err: %v", err)
+				t.Errorf("%s CreateStep returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -145,7 +145,7 @@ func TestLinux_PlanStep(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -155,7 +155,7 @@ func TestLinux_PlanStep(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "basic step container",
+			name:    "docker-basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -168,7 +168,7 @@ func TestLinux_PlanStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "step container with nil environment",
+			name:    "docker-step container with nil environment",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -181,7 +181,7 @@ func TestLinux_PlanStep(t *testing.T) {
 			},
 		},
 		{
-			name:      "empty step container",
+			name:      "docker-empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -199,21 +199,21 @@ func TestLinux_PlanStep(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.PlanStep(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("PlanStep should have returned err")
+					t.Errorf("%s PlanStep should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("PlanStep returned err: %v", err)
+				t.Errorf("%s PlanStep returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -236,7 +236,7 @@ func TestLinux_ExecStep(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -249,7 +249,7 @@ func TestLinux_ExecStep(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "init step container",
+			name:    "docker-init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -262,7 +262,7 @@ func TestLinux_ExecStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "basic step container",
+			name:    "docker-basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -275,7 +275,7 @@ func TestLinux_ExecStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "detached step container",
+			name:    "docker-detached step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -289,7 +289,7 @@ func TestLinux_ExecStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "step container with image not found",
+			name:    "docker-step container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -302,7 +302,7 @@ func TestLinux_ExecStep(t *testing.T) {
 			},
 		},
 		{
-			name:      "empty step container",
+			name:      "docker-empty step container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -321,7 +321,7 @@ func TestLinux_ExecStep(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if !test.container.Empty() {
@@ -333,14 +333,14 @@ func TestLinux_ExecStep(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("ExecStep should have returned err")
+					t.Errorf("%s ExecStep should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("ExecStep returned err: %v", err)
+				t.Errorf("%s ExecStep returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -368,7 +368,7 @@ func TestLinux_StreamStep(t *testing.T) {
 	_runtime, err := docker.NewMock()
 
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -379,7 +379,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "init step container",
+			name:    "docker-init step container",
 			failure: false,
 			logs:    _logs,
 			container: &pipeline.Container{
@@ -393,7 +393,7 @@ func TestLinux_StreamStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "basic step container",
+			name:    "docker-basic step container",
 			failure: false,
 			logs:    _logs,
 			container: &pipeline.Container{
@@ -407,7 +407,7 @@ func TestLinux_StreamStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "step container with name not found",
+			name:    "docker-step container with name not found",
 			failure: true,
 			logs:    _logs,
 			container: &pipeline.Container{
@@ -421,7 +421,7 @@ func TestLinux_StreamStep(t *testing.T) {
 			},
 		},
 		{
-			name:      "empty step container",
+			name:      "docker-empty step container",
 			failure:   true,
 			logs:      _logs,
 			container: new(pipeline.Container),
@@ -441,7 +441,7 @@ func TestLinux_StreamStep(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if !test.container.Empty() {
@@ -453,14 +453,14 @@ func TestLinux_StreamStep(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("StreamStep should have returned err")
+					t.Errorf("%s StreamStep should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("StreamStep returned err: %v", err)
+				t.Errorf("%s StreamStep returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -483,7 +483,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -493,7 +493,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "init step container",
+			name:    "docker-init step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -506,7 +506,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "basic step container",
+			name:    "docker-basic step container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_echo",
@@ -519,7 +519,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 			},
 		},
 		{
-			name:    "step container with ignoring name not found",
+			name:    "docker-step container with ignoring name not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_ignorenotfound",
@@ -545,21 +545,21 @@ func TestLinux_DestroyStep(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.DestroyStep(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("DestroyStep should have returned err")
+					t.Errorf("%s DestroyStep should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("DestroyStep returned err: %v", err)
+				t.Errorf("%s DestroyStep returned err: %v", test.name, err)
 			}
 		})
 	}
