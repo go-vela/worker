@@ -517,11 +517,8 @@ func TestKubernetes_WaitContainer(t *testing.T) {
 			}
 
 			go func() {
-				oldPod := test.oldPod.DeepCopy()
-				oldPod.SetResourceVersion("older")
-
 				// simulate a re-sync/PodUpdate event
-				_engine.PodTracker.HandlePodUpdate(oldPod, _engine.Pod)
+				_engine.SimulateResync(test.oldPod)
 			}()
 
 			err = _engine.WaitContainer(context.Background(), test.container)

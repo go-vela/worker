@@ -85,3 +85,34 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	return c, nil
 }
+
+// MockKubernetesRuntime makes it possible to use the client mocks in other packages.
+//
+// This interface is intended for running tests only.
+type MockKubernetesRuntime interface {
+	MarkPodTrackerReady()
+	SimulateResync(*v1.Pod)
+}
+
+// MarkPodTrackerReady signals that PodTracker has been setup with ContainerTrackers.
+//
+// This function is intended for running tests only.
+func (c *client) MarkPodTrackerReady() {
+	close(c.PodTracker.Ready)
+}
+
+// SimulateResync simulates an resync where the PodTracker refreshes its cache.
+// This resync is from oldPod to runtime.Pod. If nil, oldPod defaults to runtime.Pod.
+//
+// This function is intended for running tests only.
+func (c *client) SimulateResync(oldPod *v1.Pod) {
+	if oldPod == nil {
+		oldPod = c.Pod
+	}
+
+	oldPod = oldPod.DeepCopy()
+	oldPod.SetResourceVersion("older")
+
+	// simulate a re-sync/PodUpdate event
+	c.PodTracker.HandlePodUpdate(oldPod, c.Pod)
+}
