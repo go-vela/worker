@@ -122,12 +122,14 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 	//
 	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
 	c.Pod.Spec.Volumes = []v1.Volume{}
+	c.commonVolumeMounts = []v1.VolumeMount{}
 
 	return nil
 }
 
 // setupVolumeMounts generates the VolumeMounts for a given container.
-// nolint:unparam // keep signature similar to Engine interface methods despite unused ctx and err
+//
+//nolint:unparam // keep signature similar to Engine interface methods despite unused ctx and err
 func (c *client) setupVolumeMounts(ctx context.Context, ctn *pipeline.Container) (
 	volumeMounts []v1.VolumeMount,
 	err error,

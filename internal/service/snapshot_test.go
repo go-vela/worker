@@ -113,6 +113,7 @@ func TestService_Snapshot(t *testing.T) {
 	}
 
 	tests := []struct {
+		name      string
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
@@ -120,6 +121,7 @@ func TestService_Snapshot(t *testing.T) {
 		service   *library.Service
 	}{
 		{
+			name:      "running service",
 			build:     _build,
 			client:    _client,
 			container: _container,
@@ -127,6 +129,7 @@ func TestService_Snapshot(t *testing.T) {
 			service:   _service,
 		},
 		{
+			name:      "exited service",
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
@@ -137,6 +140,8 @@ func TestService_Snapshot(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		Snapshot(test.container, test.build, test.client, nil, test.repo, test.service)
+		t.Run(test.name, func(t *testing.T) {
+			Snapshot(test.container, test.build, test.client, nil, test.repo, test.service)
+		})
 	}
 }

@@ -10,13 +10,12 @@ import (
 	"github.com/go-vela/worker/api"
 )
 
-// nolint: godot // ignore comment ending in period
-//
 // PipelineHandlers extends the provided base router group
 // by adding a collection of endpoints for handling
 // pipeline related requests.
 //
 // GET  /api/v1/executors/:executor/pipeline
+// .
 func PipelineHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling pipeline related requests
 	//

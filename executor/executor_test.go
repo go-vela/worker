@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/go-vela/server/mock/server"
 
@@ -73,11 +74,14 @@ func TestExecutor_New(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name    string
 		failure bool
 		setup   *Setup
 		want    Engine
+		equal   interface{}
 	}{
 		{
+			name:    "driver-darwin",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,
@@ -89,9 +93,11 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 		{
+			name:    "driver-linux",
 			failure: false,
 			setup: &Setup{
 				Build:      _build,
@@ -105,9 +111,11 @@ func TestExecutor_New(t *testing.T) {
 				User:       _user,
 				Version:    "v1.0.0",
 			},
-			want: _linux,
+			want:  _linux,
+			equal: linux.Equal,
 		},
 		{
+			name:    "driver-local",
 			failure: false,
 			setup: &Setup{
 				Build:    _build,
@@ -119,9 +127,11 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: _local,
+			want:  _local,
+			equal: local.Equal,
 		},
 		{
+			name:    "driver-windows",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,
@@ -133,9 +143,11 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 		{
+			name:    "driver-invalid",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,
@@ -147,9 +159,11 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 		{
+			name:    "driver-empty",
 			failure: true,
 			setup: &Setup{
 				Build:    _build,
@@ -161,33 +175,38 @@ func TestExecutor_New(t *testing.T) {
 				User:     _user,
 				Version:  "v1.0.0",
 			},
-			want: nil,
+			want:  nil,
+			equal: reflect.DeepEqual,
 		},
 	}
 
 	// run tests
 	for _, test := range tests {
-		got, err := New(test.setup)
+		t.Run(test.name, func(t *testing.T) {
+			got, err := New(test.setup)
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("New should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("New should have returned err")
+				}
+
+				if !reflect.DeepEqual(got, test.want) {
+					t.Errorf("New is %v, want %v", got, test.want)
+				}
+
+				return // continue to next test
 			}
 
-			if !reflect.DeepEqual(got, test.want) {
-				t.Errorf("New is %v, want %v", got, test.want)
+			if err != nil {
+				t.Errorf("New returned err: %v", err)
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("New returned err: %v", err)
-		}
-
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("New is %v, want %v", got, test.want)
-		}
+			// Comparing with reflect.DeepEqual(x, y interface) panics due to the
+			// unexported streamRequests channel.
+			if diff := cmp.Diff(test.want, got, cmp.Comparer(test.equal)); diff != "" {
+				t.Errorf("engine mismatch (-want +got):\n%v", diff)
+			}
+		})
 	}
 }
 

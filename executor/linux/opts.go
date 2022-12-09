@@ -10,6 +10,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/sirupsen/logrus"
 )
@@ -58,6 +59,30 @@ func WithMaxLogSize(size uint) Opt {
 
 		// set the maximum log size in the client
 		c.maxLogSize = size
+
+		return nil
+	}
+}
+
+// WithPrivilegedImages sets the privileged images in the executor client for Linux.
+func WithPrivilegedImages(images []string) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring privileged images in linux executor client")
+
+		// set the privileged images in the client
+		c.privilegedImages = images
+
+		return nil
+	}
+}
+
+// WithEnforceTrustedRepos configures trusted repo restrictions in the executor client for Linux.
+func WithEnforceTrustedRepos(enforce bool) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring trusted repo restrictions in linux executor client")
+
+		// set trusted repo restrictions in the client
+		c.enforceTrustedRepos = enforce
 
 		return nil
 	}
@@ -194,6 +219,19 @@ func WithVersion(version string) Opt {
 
 		// set the version in the client
 		c.Version = version
+
+		return nil
+	}
+}
+
+// withStreamRequests sets the streamRequests channel in the executor client for Linux
+// (primarily used for tests).
+func withStreamRequests(s chan message.StreamRequest) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring stream requests in linux executor client")
+
+		// set the streamRequests channel in the client
+		c.streamRequests = s
 
 		return nil
 	}

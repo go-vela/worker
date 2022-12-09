@@ -9,14 +9,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"time"
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
-	"golang.org/x/sync/errgroup"
 )
 
 // CreateService configures the service for execution.
@@ -84,6 +84,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	// send API call to update the service
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#SvcService.Update
+	//nolint:contextcheck // ignore passing context
 	_service, _, err = c.Vela.Svc.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service)
 	if err != nil {
 		return err
@@ -105,6 +106,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	// send API call to capture the service log
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.GetService
+	//nolint:contextcheck // ignore passing context
 	_log, _, err := c.Vela.Log.GetService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service.GetNumber())
 	if err != nil {
 		return err
@@ -143,28 +145,19 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 		return err
 	}
 
-	// create an error group with the parent context
-	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
-	logs, logCtx := errgroup.WithContext(ctx)
-
-	logs.Go(func() error {
-		logger.Debug("streaming logs for container")
-		// stream logs from container
-		err := c.StreamService(logCtx, ctn)
-		if err != nil {
-			logger.Error(err)
-		}
-
-		return nil
-	})
+	// trigger StreamService goroutine with logging context
+	c.streamRequests <- message.StreamRequest{
+		Key:       "service",
+		Stream:    c.StreamService,
+		Container: ctn,
+	}
 
 	return nil
 }
 
 // StreamService tails the output for a service.
 //
-// nolint: funlen // ignore function length
+//nolint:funlen // ignore function length
 func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with service metadata
 	//
@@ -190,7 +183,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		defer rc.Close()
 
 		// read all output from the runtime container
-		data, err := ioutil.ReadAll(rc)
+		data, err := io.ReadAll(rc)
 		if err != nil {
 			logger.Errorf("unable to read container output for upload: %v", err)
 
@@ -213,6 +206,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		// send API call to update the logs for the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
+		//nolint:contextcheck // ignore passing context
 		_, _, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
@@ -332,6 +326,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 				// send API call to append the logs for the service
 				//
 				// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
+				//nolint:contextcheck // ignore passing context
 				_log, _, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 				if err != nil {
 					return err

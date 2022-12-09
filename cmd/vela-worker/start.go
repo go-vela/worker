@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -31,11 +32,13 @@ func (w *Worker) Start() error {
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
 	g, gctx := errgroup.WithContext(ctx)
 
-	httpHandler, tls := w.server()
+	httpHandler, tlsCfg := w.server()
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", w.Config.API.Address.Port()),
-		Handler: httpHandler,
+		Addr:              fmt.Sprintf(":%s", w.Config.API.Address.Port()),
+		Handler:           httpHandler,
+		TLSConfig:         tlsCfg,
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 
 	// goroutine to check for signals to gracefully finish all functions
@@ -67,7 +70,7 @@ func (w *Worker) Start() error {
 	g.Go(func() error {
 		var err error
 		logrus.Info("starting worker server")
-		if tls {
+		if tlsCfg != nil {
 			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server
 				//

@@ -8,12 +8,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -103,14 +103,12 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		return err
 	}
 
-	go func() {
-		// stream logs from container
-		err := c.StreamStep(context.Background(), ctn)
-		if err != nil {
-			// TODO: Should this be changed or removed?
-			fmt.Println(err)
-		}
-	}()
+	// trigger StreamStep goroutine with logging context
+	c.streamRequests <- message.StreamRequest{
+		Key:       "step",
+		Stream:    c.StreamStep,
+		Container: ctn,
+	}
 
 	// do not wait for detached containers
 	if ctn.Detach {
@@ -165,7 +163,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 	// scan entire container output
 	for scanner.Scan() {
 		// ensure we output to stdout
-		fmt.Fprintln(os.Stdout, _pattern, scanner.Text())
+		fmt.Fprintln(c.stdout, _pattern, scanner.Text())
 	}
 
 	return scanner.Err()

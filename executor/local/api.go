@@ -7,7 +7,6 @@ package local
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/go-vela/types/constants"
@@ -48,7 +47,8 @@ func (c *client) GetRepo() (*library.Repo, error) {
 }
 
 // CancelBuild cancels the current build in execution.
-// nolint: funlen // process of going through steps/services/stages is verbose and could be funcitonalized
+//
+//nolint:funlen // process of going through steps/services/stages is verbose and could be funcitonalized
 func (c *client) CancelBuild() (*library.Build, error) {
 	// get the current build from the client
 	b, err := c.GetBuild()
@@ -66,7 +66,7 @@ func (c *client) CancelBuild() (*library.Build, error) {
 	}
 
 	// cancel non successful services
-	// nolint: dupl // false positive, steps/services are different
+	//nolint:dupl // false positive, steps/services are different
 	for _, _service := range pipeline.Services {
 		// load the service from the client
 		//
@@ -107,7 +107,7 @@ func (c *client) CancelBuild() (*library.Build, error) {
 	}
 
 	// cancel non successful steps
-	// nolint: dupl // false positive, steps/services are different
+	//nolint:dupl // false positive, steps/services are different
 	for _, _step := range pipeline.Steps {
 		// load the step from the client
 		//
@@ -193,7 +193,7 @@ func (c *client) CancelBuild() (*library.Build, error) {
 
 	err = c.DestroyBuild(context.Background())
 	if err != nil {
-		fmt.Fprintln(os.Stdout, "unable to destroy build:", err)
+		fmt.Fprintln(c.stdout, "unable to destroy build:", err)
 	}
 
 	return b, nil

@@ -6,7 +6,7 @@ package kubernetes
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/sirupsen/logrus"
 
@@ -91,7 +91,7 @@ func WithPodsTemplate(name string, path string) ClientOpt {
 
 		if len(name) == 0 {
 			// load the PodsTemplate from the path (must restart Worker to reload the local file)
-			if data, err := ioutil.ReadFile(path); err == nil {
+			if data, err := os.ReadFile(path); err == nil {
 				pipelinePodsTemplate := velav1alpha1.PipelinePodsTemplate{}
 
 				err := yaml.UnmarshalStrict(data, &pipelinePodsTemplate)

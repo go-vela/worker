@@ -8,6 +8,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/types/library"
@@ -27,10 +28,12 @@ func TestLocal_CreateService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -44,7 +47,8 @@ func TestLocal_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with image not found
+		{
+			name:    "service container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -58,7 +62,8 @@ func TestLocal_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -66,30 +71,32 @@ func TestLocal_CreateService(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.CreateService(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("CreateService should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.CreateService(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("CreateService returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("CreateService should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("CreateService returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -106,10 +113,12 @@ func TestLocal_PlanService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -123,7 +132,8 @@ func TestLocal_PlanService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -131,30 +141,32 @@ func TestLocal_PlanService(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.PlanService(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("PlanService should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.PlanService(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("PlanService returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("PlanService should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PlanService returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -169,12 +181,17 @@ func TestLocal_ExecService(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
+	defer done()
+
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -188,7 +205,8 @@ func TestLocal_ExecService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // service container with image not found
+		{
+			name:    "service container with image not found",
 			failure: true,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -202,7 +220,8 @@ func TestLocal_ExecService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -210,34 +229,37 @@ func TestLocal_ExecService(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		if !test.container.Empty() {
-			_engine.services.Store(test.container.ID, new(library.Service))
-		}
-
-		err = _engine.ExecService(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("ExecService should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+				withStreamRequests(streamRequests),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			if !test.container.Empty() {
+				_engine.services.Store(test.container.ID, new(library.Service))
+			}
 
-		if err != nil {
-			t.Errorf("ExecService returned err: %v", err)
-		}
+			err = _engine.ExecService(context.Background(), test.container)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("ExecService should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("ExecService returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -254,10 +276,12 @@ func TestLocal_StreamService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -271,7 +295,8 @@ func TestLocal_StreamService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
-		{ // empty service container
+		{
+			name:      "empty service container",
 			failure:   true,
 			container: new(pipeline.Container),
 		},
@@ -279,30 +304,32 @@ func TestLocal_StreamService(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.StreamService(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("StreamService should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.StreamService(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("StreamService returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("StreamService should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("StreamService returned err: %v", err)
+			}
+		})
 	}
 }
 
@@ -319,10 +346,12 @@ func TestLocal_DestroyService(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		container *pipeline.Container
 	}{
-		{ // basic service container
+		{
+			name:    "basic service container",
 			failure: false,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
@@ -340,29 +369,31 @@ func TestLocal_DestroyService(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		_engine, err := New(
-			WithBuild(_build),
-			WithPipeline(new(pipeline.Build)),
-			WithRepo(_repo),
-			WithRuntime(_runtime),
-			WithUser(_user),
-		)
-		if err != nil {
-			t.Errorf("unable to create executor engine: %v", err)
-		}
-
-		err = _engine.DestroyService(context.Background(), test.container)
-
-		if test.failure {
-			if err == nil {
-				t.Errorf("DestroyService should have returned err")
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithBuild(_build),
+				WithPipeline(new(pipeline.Build)),
+				WithRepo(_repo),
+				WithRuntime(_runtime),
+				WithUser(_user),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
 			}
 
-			continue
-		}
+			err = _engine.DestroyService(context.Background(), test.container)
 
-		if err != nil {
-			t.Errorf("DestroyService returned err: %v", err)
-		}
+			if test.failure {
+				if err == nil {
+					t.Errorf("DestroyService should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("DestroyService returned err: %v", err)
+			}
+		})
 	}
 }

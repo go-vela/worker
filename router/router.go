@@ -6,22 +6,22 @@
 //
 // API for a Vela worker
 //
-//     Version: 0.0.0-dev
-//     Schemes: http, https
-//     Host: localhost
+//	Version: 0.0.0-dev
+//	Schemes: http, https
+//	Host: localhost
 //
-//     Consumes:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Produces:
-//     - application/json
+//	Produces:
+//	- application/json
 //
-//     SecurityDefinitions:
-//       ApiKeyAuth:
-//         description: Bearer token
-//         type: apiKey
-//         in: header
-//         name: Authorization
+//	SecurityDefinitions:
+//	  ApiKeyAuth:
+//	    description: Bearer token
+//	    type: apiKey
+//	    in: header
+//	    name: Authorization
 //
 // swagger:meta
 package router

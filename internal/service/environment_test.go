@@ -93,6 +93,7 @@ func TestService_Environment(t *testing.T) {
 
 	// setup tests
 	tests := []struct {
+		name      string
 		failure   bool
 		build     *library.Build
 		container *pipeline.Container
@@ -100,6 +101,7 @@ func TestService_Environment(t *testing.T) {
 		service   *library.Service
 	}{
 		{
+			name:      "success",
 			failure:   false,
 			build:     b,
 			container: c,
@@ -107,6 +109,7 @@ func TestService_Environment(t *testing.T) {
 			service:   s,
 		},
 		{
+			name:      "nil failure",
 			failure:   true,
 			build:     nil,
 			container: nil,
@@ -117,18 +120,20 @@ func TestService_Environment(t *testing.T) {
 
 	// run tests
 	for _, test := range tests {
-		err := Environment(test.container, test.build, test.repo, test.service, "v0.0.0")
+		t.Run(test.name, func(t *testing.T) {
+			err := Environment(test.container, test.build, test.repo, test.service, "v0.0.0")
 
-		if test.failure {
-			if err == nil {
-				t.Errorf("Environment should have returned err")
+			if test.failure {
+				if err == nil {
+					t.Errorf("Environment should have returned err")
+				}
+
+				return // continue to next test
 			}
 
-			continue
-		}
-
-		if err != nil {
-			t.Errorf("Environment returned err: %v", err)
-		}
+			if err != nil {
+				t.Errorf("Environment returned err: %v", err)
+			}
+		})
 	}
 }

@@ -21,12 +21,20 @@ func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
 		return true
 	}
 
+	event := b.GetEvent()
+	action := b.GetEventAction()
+
+	// if the build has an event action, concatenate event and event action for matching
+	if !strings.EqualFold(action, "") {
+		event = event + ":" + action
+	}
+
 	// create ruledata from build and repository information
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/pipeline#RuleData
 	ruledata := &pipeline.RuleData{
 		Branch:   b.GetBranch(),
-		Event:    b.GetEvent(),
+		Event:    event,
 		Repo:     r.GetFullName(),
 		Status:   b.GetStatus(),
 		Parallel: c.Ruleset.If.Parallel,
@@ -40,6 +48,11 @@ func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
 
 	// check if the build event is deployment
 	if strings.EqualFold(b.GetEvent(), constants.EventDeploy) {
+		// handle when deployment event is for a tag
+		if strings.HasPrefix(b.GetRef(), "refs/tags/") {
+			// add tag information to ruledata with refs/tags prefix removed
+			ruledata.Tag = strings.TrimPrefix(b.GetRef(), "refs/tags/")
+		}
 		// add deployment target information to ruledata
 		ruledata.Target = b.GetDeploy()
 	}

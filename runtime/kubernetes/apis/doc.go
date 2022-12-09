@@ -6,5 +6,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/runtime/kubernetes/apis"
+//	import "github.com/go-vela/worker/runtime/kubernetes/apis"
 package apis

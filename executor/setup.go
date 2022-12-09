@@ -31,12 +31,19 @@ type Setup struct {
 
 	// Executor Configuration
 
+	// Mock should only be true for tests.
+	Mock bool
+
 	// specifies the executor driver to use
 	Driver string
 	// specifies the executor method used to publish logs
 	LogMethod string
 	// specifies the maximum log size
 	MaxLogSize uint
+	// specifies a list of privileged images to use
+	PrivilegedImages []string
+	// configuration for enforcing that only trusted repos may run privileged images
+	EnforceTrustedRepos bool
 	// specifies the executor hostname
 	Hostname string
 	// specifies the executor version
@@ -78,6 +85,8 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithBuild(s.Build),
 		linux.WithLogMethod(s.LogMethod),
 		linux.WithMaxLogSize(s.MaxLogSize),
+		linux.WithPrivilegedImages(s.PrivilegedImages),
+		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
 		linux.WithRepo(s.Repo),
@@ -106,6 +115,7 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithUser(s.User),
 		local.WithVelaClient(s.Client),
 		local.WithVersion(s.Version),
+		local.WithMockStdout(s.Mock),
 	)
 }
 

@@ -13,5 +13,5 @@
 //
 // Usage:
 //
-// 	import "github.com/go-vela/worker/runtime"
+//	import "github.com/go-vela/worker/runtime"
 package runtime

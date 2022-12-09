@@ -53,7 +53,6 @@ var Flags = []cli.Flag{
 		FilePath: "/vela/runtime/privileged_images",
 		Name:     "runtime.privileged-images",
 		Usage:    "list of images allowed to run in privileged mode for the runtime",
-		Value:    cli.NewStringSlice("target/vela-docker"),
 	},
 	&cli.StringSliceFlag{
 		EnvVars:  []string{"VELA_RUNTIME_VOLUMES", "RUNTIME_VOLUMES"},
