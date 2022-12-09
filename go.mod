@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-vela/sdk-go v0.16.2
 	github.com/go-vela/server v0.16.2
-	github.com/go-vela/types v0.16.3-0.20221105053740-45311b89c32d
+	github.com/go-vela/types v0.16.3-0.20221209200126-e2772715208d
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
