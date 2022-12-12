@@ -1,12 +1,9 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// Copyright (c) 2022 Target Brands, Inc. All rights reserved. Use of this source code is governed by the LICENSE file in this repository.
 
 package main
 
 import (
 	"context"
-	// "sync"
 	"time"
 
 	"github.com/go-vela/worker/executor"
@@ -110,13 +107,7 @@ func (w *Worker) exec(index int) error {
 	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
 
-	// This WaitGroup delays calling DestroyBuild until the StreamBuild goroutine finishes.
-	// var wg sync.WaitGroup
-
 	defer func() {
-		// if exec() exits before starting StreamBuild, this returns immediately.
-		// wg.Wait()
-
 		logger.Info("destroying build")
 
 		// destroy the build with the executor (pass a background
@@ -145,12 +136,8 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
-	// add StreamBuild goroutine to WaitGroup
-	// wg.Add(1)
-
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
-		// defer wg.Done()
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)
