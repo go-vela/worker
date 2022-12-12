@@ -7,7 +7,6 @@ package executor
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/go-vela/sdk-go/vela"
 
@@ -41,9 +40,6 @@ type Setup struct {
 	LogMethod string
 	// specifies the maximum log size
 	MaxLogSize uint
-	// specifies how long to wait after the build finishes
-	// for log streaming to complete
-	LogStreamingTimeout time.Duration
 	// specifies a list of privileged images to use
 	PrivilegedImages []string
 	// configuration for enforcing that only trusted repos may run privileged images
@@ -89,7 +85,6 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithBuild(s.Build),
 		linux.WithLogMethod(s.LogMethod),
 		linux.WithMaxLogSize(s.MaxLogSize),
-		linux.WithLogStreamingTimeout(s.LogStreamingTimeout),
 		linux.WithPrivilegedImages(s.PrivilegedImages),
 		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		linux.WithHostname(s.Hostname),

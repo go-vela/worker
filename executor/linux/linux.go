@@ -7,7 +7,6 @@ package linux
 import (
 	"reflect"
 	"sync"
-	"time"
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
@@ -35,7 +34,6 @@ type (
 		init                *pipeline.Container
 		logMethod           string
 		maxLogSize          uint
-		logStreamingTimeout time.Duration
 		privilegedImages    []string
 		enforceTrustedRepos bool
 		build               *library.Build
