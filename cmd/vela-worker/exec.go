@@ -6,7 +6,7 @@ package main
 
 import (
 	"context"
-	"sync"
+	// "sync"
 	"time"
 
 	"github.com/go-vela/worker/executor"
@@ -111,11 +111,11 @@ func (w *Worker) exec(index int) error {
 	defer timeout()
 
 	// This WaitGroup delays calling DestroyBuild until the StreamBuild goroutine finishes.
-	var wg sync.WaitGroup
+	// var wg sync.WaitGroup
 
 	defer func() {
 		// if exec() exits before starting StreamBuild, this returns immediately.
-		wg.Wait()
+		// wg.Wait()
 
 		logger.Info("destroying build")
 
@@ -146,11 +146,11 @@ func (w *Worker) exec(index int) error {
 	}
 
 	// add StreamBuild goroutine to WaitGroup
-	wg.Add(1)
+	// wg.Add(1)
 
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
-		defer wg.Done()
+		// defer wg.Done()
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)
