@@ -91,6 +91,21 @@ func (w *Worker) exec(index int) error {
 	// add the executor to the worker
 	w.Executors[index] = _executor
 
+	// this gets deferred first so that DestroyBuild runs AFTER the
+	// new contexts (buildCtx and timeoutCtx) have been canceled
+	defer func() {
+		logger.Info("destroying build")
+
+		// destroy the build with the executor (pass a background
+		// context to guarantee all build resources are destroyed).
+		err = _executor.DestroyBuild(context.Background())
+		if err != nil {
+			logger.Errorf("unable to destroy build: %v", err)
+		}
+
+		logger.Info("completed build")
+	}()
+
 	// capture the configured build timeout
 	t := w.Config.Build.Timeout
 	// check if the repository has a custom timeout
@@ -108,19 +123,6 @@ func (w *Worker) exec(index int) error {
 	// built in for ensuring a build doesn't run forever
 	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
-
-	defer func() {
-		logger.Info("destroying build")
-
-		// destroy the build with the executor (pass a background
-		// context to guarantee all build resources are destroyed).
-		err = _executor.DestroyBuild(context.Background())
-		if err != nil {
-			logger.Errorf("unable to destroy build: %v", err)
-		}
-
-		logger.Info("completed build")
-	}()
 
 	logger.Info("creating build")
 	// create the build with the executor
