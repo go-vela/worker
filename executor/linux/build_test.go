@@ -130,11 +130,16 @@ func TestLinux_CreateBuild(t *testing.T) {
 	}
 }
 
-func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
+func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	// setup types
 	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
 
 	_build := testBuild()
+
+	// setting mock build for testing dynamic environment tags
+	_buildWithMessageAlpine := testBuild()
+	_buildWithMessageAlpine.SetMessage("alpine")
+
 	// test repo is not trusted by default
 	_untrustedRepo := testRepo()
 	_user := testUser()
@@ -145,7 +150,6 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 	_privilegedImagesServicesPipeline := []string{"postgres"}
 	// to be matched with the image used by testdata/build/stages/basic.yml
 	_privilegedImagesStagesPipeline := []string{"alpine"}
-
 	// create trusted repo
 	_trustedRepo := testRepo()
 	_trustedRepo.SetTrusted(true)
@@ -245,7 +249,78 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			privilegedImages:    []string{}, // this matches the image from test.pipeline
 			enforceTrustedRepos: false,
 		},
-
+		{
+			name:                "enforce trusted repos enabled: privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             true,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
 		{
 			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo",
 			failure:             false,
@@ -319,6 +394,78 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
+			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             true,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
 			name:                "enforce trusted repos enabled: privileged stages pipeline with trusted repo",
 			failure:             false,
 			build:               _build,
@@ -387,6 +534,78 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             true,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
 			privilegedImages:    []string{}, // this matches the image from test.pipeline
 			enforceTrustedRepos: false,
 		},
@@ -637,17 +856,26 @@ func TestLinux_CreateBuild_EnforceTrustedRepos(t *testing.T) {
 			}
 
 			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("CreateBuild returned err: %v", err)
+			}
+
+			// override mock handler PUT build update
+			// used for dynamic substitute testing
+			_engine.build.SetMessage(test.build.GetMessage())
+
+			err = _engine.AssembleBuild(context.Background())
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateBuild should have returned err")
+					t.Errorf("AssembleBuild should have returned err")
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateBuild returned err: %v", err)
+				t.Errorf("AssembleBuild returned err: %v", err)
 			}
 		})
 	}

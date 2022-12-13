@@ -1,0 +1,17 @@
+---
+version: "1"
+
+environment:
+  DYNAMIC_IMAGE: "${VELA_BUILD_MESSAGE}"
+  DYNAMIC_TAG: "${VELA_BUILD_NUMBER}"
+
+stages:
+  test:
+    steps:
+      - name: test
+        commands:
+          - echo ${FOO}
+        environment:
+          FOO: bar
+        image: "${DYNAMIC_IMAGE}:${DYNAMIC_TAG}"
+        pull: on_start
