@@ -593,6 +593,10 @@ func (c *client) StreamBuild(ctx context.Context) error {
 		}
 
 		cancelStreaming()
+		// wait for context to be done before reporting that everything has returned.
+		<-delayedCtx.Done()
+		// there might be one more log message from WithDelayedCancelPropagation
+		// but there's not a good way to wait for that goroutine to finish.
 
 		c.Logger.Info("all stream functions have returned")
 	}()
