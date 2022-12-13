@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -119,23 +120,28 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 
 	logger.Debug("starting execution of stage")
 
+	// stop value determines when a stage's step series should stop executing
 	stop := false
 
 	// execute the steps for the stage
 	for _, _step := range s.Steps {
+		// first check to see if we need to stop the stage before it even starts.
+		// this happens when using 'needs' block
+		if !s.Independent && c.build.GetStatus() == constants.StatusFailure {
+			stop = true
+		}
+
+		// set parallel rule that determines whether the step should adhere to entire build
+		// status check, which is determined by independent rule and stop value.
+		if !stop && s.Independent {
+			_step.Ruleset.If.Parallel = true
+		} else {
+			_step.Ruleset.If.Parallel = false
+		}
+
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		ruleset := _step.Ruleset
-
-		if !stop && s.Independent {
-			ruleset.If.Parallel = true
-		} else {
-			ruleset.If.Parallel = false
-		}
-
-		_step.Ruleset = ruleset
-
 		if step.Skip(_step, c.build, c.repo) {
 			continue
 		}
@@ -154,6 +160,8 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			return fmt.Errorf("unable to exec step %s: %w", _step.Name, err)
 		}
 
+		// failed steps within the stage should set the stop value to true unless
+		// the continue rule is set to true.
 		if _step.ExitCode != 0 && !_step.Ruleset.Continue {
 			stop = true
 		}
