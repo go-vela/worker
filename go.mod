@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-vela/sdk-go v0.16.2
 	github.com/go-vela/server v0.16.2
-	github.com/go-vela/types v0.16.2
+	github.com/go-vela/types v0.16.3-0.20221209200126-e2772715208d
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
@@ -34,7 +34,7 @@ require (
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/alicebob/miniredis/v2 v2.23.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/buildkite/yaml v0.0.0-20181016232759-0caa5f0796e3 // indirect
+	github.com/buildkite/yaml v0.0.0-20210326113714-4a3f40911396 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect

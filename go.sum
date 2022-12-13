@@ -67,8 +67,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
-github.com/buildkite/yaml v0.0.0-20181016232759-0caa5f0796e3 h1:q+sMKdA6L8LyGVudTkpGoC73h6ak2iWSPFiFo/pFOU8=
-github.com/buildkite/yaml v0.0.0-20181016232759-0caa5f0796e3/go.mod h1:5hCug3EZaHXU3FdCA3gJm0YTNi+V+ooA2qNTiVpky4A=
+github.com/buildkite/yaml v0.0.0-20210326113714-4a3f40911396 h1:qLN32md48xyTEqw6XEZMyNMre7njm0XXvDrea6NVwOM=
+github.com/buildkite/yaml v0.0.0-20210326113714-4a3f40911396/go.mod h1:AV5wtJnn1/CRaRGlJ8xspkMWfKXV0/pkJVgGleTIrfk=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
@@ -157,8 +157,8 @@ github.com/go-vela/sdk-go v0.16.2 h1:M9+u89mGomJc2uwUPVGWp9UnUIFm0IhIIsFEfxROhZQ
 github.com/go-vela/sdk-go v0.16.2/go.mod h1:BuTkw+MYWbAKJ6+ZtQ/nNmwIcjn/tysCPks4X+csBGE=
 github.com/go-vela/server v0.16.2 h1:qovjGN9ZQazjV0JTXzP6o5UPSs1D+wyUMpbG4G6aXZI=
 github.com/go-vela/server v0.16.2/go.mod h1:bf9dpkzhL2T6G6fxIwjmMjzoD+e5Xfmg3DcckP6lqHc=
-github.com/go-vela/types v0.16.2 h1:c2Kkj7OKv4sjPrsOBbnPSQqfsNpOFM2La7LfP+81EF0=
-github.com/go-vela/types v0.16.2/go.mod h1:6KoRkvXMw9DkAcLdtI7PxPqMlT2Bl0DiigQamLGGjwo=
+github.com/go-vela/types v0.16.3-0.20221209200126-e2772715208d h1:8RZaWRt/VMH69oW1EYSLHHQvf7yD899Ur235lhpAG68=
+github.com/go-vela/types v0.16.3-0.20221209200126-e2772715208d/go.mod h1:6KoRkvXMw9DkAcLdtI7PxPqMlT2Bl0DiigQamLGGjwo=
 github.com/goccy/go-json v0.9.7 h1:IcB+Aqpx/iMHu5Yooh7jEzJk1JZ7Pjtmys2ukPr7EeM=
 github.com/goccy/go-json v0.9.7/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
