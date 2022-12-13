@@ -14,7 +14,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/internal/build"
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
@@ -43,74 +42,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
-	}
-
-	// before setting up the build, enforce repo.trusted is set for pipelines containing privileged images
-	// this configuration is set as an executor flag
-	if c.enforceTrustedRepos {
-		// check if pipeline steps contain privileged images
-		// assume no privileged images are in use
-		containsPrivilegedImages := false
-
-		// group steps services and stages together
-		containers := c.pipeline.Steps
-
-		containers = append(containers, c.pipeline.Services...)
-		for _, stage := range c.pipeline.Stages {
-			containers = append(containers, stage.Steps...)
-		}
-
-		for _, container := range containers {
-			// TODO: remove hardcoded reference
-			if container.Image == "#init" {
-				continue
-			}
-
-			for _, pattern := range c.privilegedImages {
-				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
-				if err != nil {
-					return fmt.Errorf("could not verify if image %s is privileged", container.Image)
-				}
-
-				if privileged {
-					containsPrivilegedImages = true
-				}
-			}
-		}
-
-		// check if this build should be denied
-		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
-			// deny the build, clean build/steps, and return error
-			// populate the build error
-			e := "build denied, repo must be trusted in order to run privileged images"
-			c.build.SetError(e)
-			// set the build status to error
-			c.build.SetStatus(constants.StatusError)
-
-			steps := c.pipeline.Steps
-			for _, stage := range c.pipeline.Stages {
-				steps = append(containers, stage.Steps...)
-			}
-
-			// update all preconfigured steps to the correct status
-			for _, s := range steps {
-				// extract step
-				step := library.StepFromBuildContainer(c.build, s)
-				// status to use for preconfigured steps that are not ran
-				status := constants.StatusKilled
-				// set step status
-				step.SetStatus(status)
-				// send API call to update the step
-				//nolint:contextcheck // ignore passing context
-				_, _, err := c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), step)
-				if err != nil {
-					// only log any step update errors to allow the return err to run
-					c.Logger.Errorf("unable to update step %s to status %s: %s", s.Name, status, err.Error())
-				}
-			}
-
-			return fmt.Errorf("build containing privileged images %s/%d denied, repo is not trusted", c.repo.GetFullName(), c.build.GetNumber())
-		}
 	}
 
 	// setup the runtime build
@@ -262,7 +193,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 // AssembleBuild prepares the containers within a build for execution.
 //
-//nolint:funlen // ignore function length due to comments and logging messages
+//nolint:gocyclo,funlen // ignore cyclomatic complexity and function length due to comments and logging messages
 func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -418,6 +349,88 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(image)
+	}
+	// enforce repo.trusted is set for pipelines containing privileged images
+	// if not enforced, allow all that exist in the list of runtime privileged images
+	// this configuration is set as an executor flag
+	if c.enforceTrustedRepos {
+		// group steps services stages and secret origins together
+		containers := c.pipeline.Steps
+
+		containers = append(containers, c.pipeline.Services...)
+
+		for _, stage := range c.pipeline.Stages {
+			containers = append(containers, stage.Steps...)
+		}
+
+		for _, secret := range c.pipeline.Secrets {
+			containers = append(containers, secret.Origin)
+		}
+
+		// assume no privileged images are in use
+		containsPrivilegedImages := false
+
+		// verify all pipeline containers
+		for _, container := range containers {
+			// TODO: remove hardcoded reference
+			if container.Image == "#init" {
+				continue
+			}
+
+			// skip over non-plugin secrets origins
+			if container.Empty() {
+				continue
+			}
+
+			c.Logger.Infof("verifying privileges for container %s", container.Name)
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
+
+			for _, pattern := range c.privilegedImages {
+				// check if image matches privileged pattern
+				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
+				if err != nil {
+					// wrap the error
+					c.err = fmt.Errorf("unable to verify privileges for image %s: %w", container.Image, err)
+
+					// update the init log with image info
+					//
+					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
+
+					// return error and destroy the build
+					// ignore checking more images
+					return c.err
+				}
+
+				if privileged {
+					// pipeline contains at least one privileged image
+					containsPrivilegedImages = privileged
+				}
+			}
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
+		}
+
+		// ensure pipelines containing privileged images are only permitted to run by trusted repos
+		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
+			// update error
+			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted")
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
+
+			// return error and destroy the build
+			return c.err
+		}
 	}
 
 	// inspect the runtime build (eg a kubernetes pod) for the pipeline
