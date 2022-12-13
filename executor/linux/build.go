@@ -458,10 +458,17 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 // ExecBuild runs a pipeline for a build.
 func (c *client) ExecBuild(ctx context.Context) error {
-	// defer an upload of the build
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
-	defer func() { build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo) }()
+	defer func() {
+		// Exec* calls are responsible for sending StreamRequest messages.
+		// close the channel at the end of ExecBuild to signal that
+		// nothing else will send more StreamRequest messages.
+		close(c.streamRequests)
+
+		// defer an upload of the build
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
+		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
+	}()
 
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
@@ -599,7 +606,13 @@ func (c *client) StreamBuild(ctx context.Context) error {
 
 	for {
 		select {
-		case req := <-c.streamRequests:
+		case req, ok := <-c.streamRequests:
+			if !ok {
+				// ExecBuild is done requesting streams
+				c.Logger.Debug("not accepting any more stream requests as channel is closed")
+				return nil
+			}
+
 			streams.Go(func() error {
 				// update engine logger with step metadata
 				//
@@ -616,7 +629,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 				return nil
 			})
 		case <-delayedCtx.Done():
-			c.Logger.Debug("streaming context canceled")
+			c.Logger.Debug("not accepting any more stream requests as streaming context is canceled")
 			// build done or canceled
 			return nil
 		}

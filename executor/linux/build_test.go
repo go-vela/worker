@@ -918,9 +918,6 @@ func TestLinux_ExecBuild(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
-	defer done()
-
 	tests := []struct {
 		name     string
 		failure  bool
@@ -971,6 +968,9 @@ func TestLinux_ExecBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
+
+			streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
+			defer done()
 
 			_engine, err := New(
 				WithBuild(_build),
@@ -1073,13 +1073,16 @@ func TestLinux_StreamBuild(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		failure    bool
-		pipeline   string
-		messageKey string
-		ctn        *pipeline.Container
-		streamFunc func(*client) message.StreamFunc
-		planFunc   func(*client) planFuncType
+		name           string
+		failure        bool
+		earlyExecExit  bool
+		earlyBuildDone bool
+		pipeline       string
+		msgCount       int
+		messageKey     string
+		ctn            *pipeline.Container
+		streamFunc     func(*client) message.StreamFunc
+		planFunc       func(*client) planFuncType
 	}{
 		{
 			name:       "docker-basic services pipeline",
@@ -1214,6 +1217,72 @@ func TestLinux_StreamBuild(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		{
+			name:          "docker-early exit from ExecBuild",
+			failure:       false,
+			earlyExecExit: true,
+			pipeline:      "testdata/build/steps/basic.yml",
+			messageKey:    "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step_github_octocat_1_test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:           "docker-build complete before ExecBuild called",
+			failure:        false,
+			earlyBuildDone: true,
+			pipeline:       "testdata/build/steps/basic.yml",
+			messageKey:     "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step_github_octocat_1_test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:          "docker-early exit from ExecBuild and build complete signaled",
+			failure:       false,
+			earlyExecExit: true,
+			pipeline:      "testdata/build/steps/basic.yml",
+			messageKey:    "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step_github_octocat_1_test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -1255,21 +1324,38 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 			// simulate ExecBuild() which runs concurrently with StreamBuild()
 			go func() {
-				// ExecBuild calls PlanService()/PlanStep() before ExecService()/ExecStep()
-				// (ExecStage() calls PlanStep() before ExecStep()).
-				_engine.err = test.planFunc(_engine)(buildCtx, test.ctn)
-
-				// ExecService()/ExecStep()/secret.exec() send this message
-				streamRequests <- message.StreamRequest{
-					Key:       test.messageKey,
-					Stream:    test.streamFunc(_engine),
-					Container: test.ctn,
+				if test.earlyBuildDone {
+					// imitate build getting canceled or otherwise finishing before ExecBuild gets called.
+					done()
+				}
+				if test.earlyExecExit {
+					// imitate a failure after ExecBuild starts and before it sends a StreamRequest.
+					close(streamRequests)
+				}
+				if test.earlyBuildDone || test.earlyExecExit {
+					return
 				}
 
-				// simulate exec build duration
-				time.Sleep(100 * time.Microsecond)
+				// simulate two messages of the same type
+				for i := 0; i < 2; i++ {
+					// ExecBuild calls PlanService()/PlanStep() before ExecService()/ExecStep()
+					// (ExecStage() calls PlanStep() before ExecStep()).
+					_engine.err = test.planFunc(_engine)(buildCtx, test.ctn)
 
-				// signal the end of the build so StreamBuild can terminate
+					// ExecService()/ExecStep()/secret.exec() send this message
+					streamRequests <- message.StreamRequest{
+						Key:    test.messageKey,
+						Stream: test.streamFunc(_engine),
+						// in a real pipeline, the second message would be for a different container
+						Container: test.ctn,
+					}
+
+					// simulate exec build duration
+					time.Sleep(100 * time.Microsecond)
+				}
+
+				// signal the end of ExecBuild so StreamBuild can finish up
+				close(streamRequests)
 				done()
 			}()
 
