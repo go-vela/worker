@@ -167,6 +167,7 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
+
 	tests := []struct {
 		name                string
 		failure             bool
