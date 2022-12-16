@@ -107,6 +107,7 @@ func New(opts ...Opt) (*client, error) {
 	c.Logger = logrus.NewEntry(logger)
 
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
+	// messages get sent during ExecBuild, then ExecBuild closes this on exit.
 	c.streamRequests = make(chan message.StreamRequest)
 
 	// apply all provided configuration options
