@@ -5,18 +5,18 @@ go 1.19
 require (
 	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/docker/distribution v2.8.1+incompatible
-	github.com/docker/docker v20.10.21+incompatible
+	github.com/docker/docker v20.10.22+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/go-vela/sdk-go v0.17.0-rc1
-	github.com/go-vela/server v0.17.0-rc1
-	github.com/go-vela/types v0.17.0-rc1
+	github.com/go-vela/sdk-go v0.17.0-rc2
+	github.com/go-vela/server v0.17.0-rc2
+	github.com/go-vela/types v0.17.0-rc2
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.4.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/urfave/cli/v2 v2.23.6
+	github.com/urfave/cli/v2 v2.23.7
 	golang.org/x/sync v0.1.0
 	gotest.tools/v3 v3.4.0
 	k8s.io/api v0.26.0
