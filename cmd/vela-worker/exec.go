@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/go-vela/worker/executor"
@@ -91,6 +92,27 @@ func (w *Worker) exec(index int) error {
 	// add the executor to the worker
 	w.Executors[index] = _executor
 
+	// This WaitGroup delays calling DestroyBuild until the StreamBuild goroutine finishes.
+	var wg sync.WaitGroup
+
+	// this gets deferred first so that DestroyBuild runs AFTER the
+	// new contexts (buildCtx and timeoutCtx) have been canceled
+	defer func() {
+		// if exec() exits before starting StreamBuild, this returns immediately.
+		wg.Wait()
+
+		logger.Info("destroying build")
+
+		// destroy the build with the executor (pass a background
+		// context to guarantee all build resources are destroyed).
+		err = _executor.DestroyBuild(context.Background())
+		if err != nil {
+			logger.Errorf("unable to destroy build: %v", err)
+		}
+
+		logger.Info("completed build")
+	}()
+
 	// capture the configured build timeout
 	t := w.Config.Build.Timeout
 	// check if the repository has a custom timeout
@@ -109,19 +131,6 @@ func (w *Worker) exec(index int) error {
 	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
 
-	defer func() {
-		logger.Info("destroying build")
-
-		// destroy the build with the executor (pass a background
-		// context to guarantee all build resources are destroyed).
-		err = _executor.DestroyBuild(context.Background())
-		if err != nil {
-			logger.Errorf("unable to destroy build: %v", err)
-		}
-
-		logger.Info("completed build")
-	}()
-
 	logger.Info("creating build")
 	// create the build with the executor
 	err = _executor.CreateBuild(timeoutCtx)
@@ -138,8 +147,12 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
+	// add StreamBuild goroutine to WaitGroup
+	wg.Add(1)
+
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
+		defer wg.Done()
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)
