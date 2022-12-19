@@ -36,6 +36,8 @@ type (
 		logMethod           string
 		maxLogSize          uint
 		logStreamingTimeout time.Duration
+		privilegedImages    []string
+		enforceTrustedRepos bool
 		build               *library.Build
 		pipeline            *pipeline.Build
 		repo                *library.Repo
@@ -72,6 +74,8 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.init, b.init) &&
 		a.logMethod == b.logMethod &&
 		a.maxLogSize == b.maxLogSize &&
+		reflect.DeepEqual(a.privilegedImages, b.privilegedImages) &&
+		a.enforceTrustedRepos == b.enforceTrustedRepos &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
 		reflect.DeepEqual(a.repo, b.repo) &&
@@ -103,6 +107,7 @@ func New(opts ...Opt) (*client, error) {
 	c.Logger = logrus.NewEntry(logger)
 
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
+	// messages get sent during ExecBuild, then ExecBuild closes this on exit.
 	c.streamRequests = make(chan message.StreamRequest)
 
 	// apply all provided configuration options

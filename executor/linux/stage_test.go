@@ -462,7 +462,8 @@ func TestLinux_ExecStage(t *testing.T) {
 			failure: false,
 			runtime: _docker,
 			stage: &pipeline.Stage{
-				Name: "echo",
+				Independent: true,
+				Name:        "echo",
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",
@@ -500,7 +501,8 @@ func TestLinux_ExecStage(t *testing.T) {
 			failure: true,
 			runtime: _docker,
 			stage: &pipeline.Stage{
-				Name: "echo",
+				Name:        "echo",
+				Independent: true,
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",
@@ -538,7 +540,8 @@ func TestLinux_ExecStage(t *testing.T) {
 			failure: true,
 			runtime: _docker,
 			stage: &pipeline.Stage{
-				Name: "echo",
+				Name:        "echo",
+				Independent: true,
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "github_octocat_1_echo_echo",

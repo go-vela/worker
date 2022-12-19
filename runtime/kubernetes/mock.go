@@ -103,7 +103,7 @@ type MockKubernetesRuntime interface {
 	StartPodTracker(context.Context)
 	WaitForPodTrackerReady()
 	WaitForPodCreate(string, string)
-	SimulateResync()
+	SimulateResync(*v1.Pod)
 	SimulateStatusUpdate(*v1.Pod, []v1.ContainerStatus) error
 }
 
@@ -172,11 +172,15 @@ func (c *client) WaitForPodCreate(namespace, name string) {
 }
 
 // SimulateResync simulates an resync where the PodTracker refreshes its cache.
+// This resync is from oldPod to runtime.Pod. If nil, oldPod defaults to runtime.Pod.
 //
 // This function is intended for running tests only.
-func (c *client) SimulateResync() {
-	// Future: maybe allow passing in either new or old pod
-	oldPod := c.Pod.DeepCopy()
+func (c *client) SimulateResync(oldPod *v1.Pod) {
+	if oldPod == nil {
+		oldPod = c.Pod
+	}
+
+	oldPod = oldPod.DeepCopy()
 	oldPod.SetResourceVersion("older")
 
 	// simulate a re-sync/PodUpdate event

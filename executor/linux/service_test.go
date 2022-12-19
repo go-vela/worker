@@ -219,7 +219,7 @@ func TestLinux_PlanService(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker service container with nil environment",
+			name:    "docker-service container with nil environment",
 			failure: true,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -235,7 +235,7 @@ func TestLinux_PlanService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes service container with nil environment",
+			name:    "kubernetes-service container with nil environment",
 			failure: true,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -251,13 +251,13 @@ func TestLinux_PlanService(t *testing.T) {
 			},
 		},
 		{
-			name:      "docker empty service container",
+			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 		{
-			name:      "kubernetes empty service container",
+			name:      "kubernetes-empty service container",
 			failure:   true,
 			runtime:   _kubernetes,
 			container: new(pipeline.Container),
@@ -332,7 +332,7 @@ func TestLinux_ExecService(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "docker basic service container",
+			name:    "docker-basic service container",
 			failure: false,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -348,7 +348,7 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes basic service container",
+			name:    "kubernetes-basic service container",
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -364,7 +364,7 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker service container with image not found",
+			name:    "docker-service container with image not found",
 			failure: true,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -380,7 +380,7 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes service container with image not found",
+			name:    "kubernetes-service container with image not found",
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -396,7 +396,7 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
-			name:      "docker empty service container",
+			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
 			container: new(pipeline.Container),
@@ -422,7 +422,7 @@ func TestLinux_ExecService(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if !test.container.Empty() {
@@ -480,7 +480,7 @@ func TestLinux_StreamService(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "docker basic service container",
+			name:    "docker-basic service container",
 			failure: false,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -496,7 +496,7 @@ func TestLinux_StreamService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes basic service container",
+			name:    "kubernetes-basic service container",
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -512,7 +512,7 @@ func TestLinux_StreamService(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker service container with name not found",
+			name:    "docker-service container with name not found",
 			failure: true,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -528,7 +528,7 @@ func TestLinux_StreamService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes service container with name not found",
+			name:    "kubernetes-service container with name not found",
 			failure: false, // TODO: add mock to make this fail
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -544,13 +544,13 @@ func TestLinux_StreamService(t *testing.T) {
 			},
 		},
 		{
-			name:      "docker empty service container",
+			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 		{
-			name:      "kubernetes empty service container",
+			name:      "kubernetes-empty service container",
 			failure:   true,
 			runtime:   _kubernetes,
 			container: new(pipeline.Container),
@@ -569,7 +569,7 @@ func TestLinux_StreamService(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if !test.container.Empty() {
@@ -627,7 +627,7 @@ func TestLinux_DestroyService(t *testing.T) {
 		container *pipeline.Container
 	}{
 		{
-			name:    "docker basic service container",
+			name:    "docker-basic service container",
 			failure: false,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -643,7 +643,7 @@ func TestLinux_DestroyService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes basic service container",
+			name:    "kubernetes-basic service container",
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -659,7 +659,7 @@ func TestLinux_DestroyService(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker service container with ignoring name not found",
+			name:    "docker-service container with ignoring name not found",
 			failure: true,
 			runtime: _docker,
 			container: &pipeline.Container{
@@ -675,7 +675,7 @@ func TestLinux_DestroyService(t *testing.T) {
 			},
 		},
 		{
-			name:    "kubernetes service container with ignoring name not found",
+			name:    "kubernetes-service container with ignoring name not found",
 			failure: false, // TODO: add mock to make this fail
 			runtime: _kubernetes,
 			container: &pipeline.Container{
@@ -704,7 +704,7 @@ func TestLinux_DestroyService(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.DestroyService(context.Background(), test.container)

@@ -134,21 +134,21 @@ func TestLinux_Secret_create(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.secret.create(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("create should have returned err")
+					t.Errorf("%s create should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("create returned err: %v", err)
+				t.Errorf("%s create returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -337,7 +337,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// add init container info to client
@@ -357,14 +357,14 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("destroy should have returned err")
+					t.Errorf("%s destroy should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("destroy returned err: %v", err)
+				t.Errorf("%s destroy returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -469,7 +469,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			_engine.build.SetStatus(constants.StatusSuccess)
@@ -484,21 +484,21 @@ func TestLinux_Secret_exec(t *testing.T) {
 					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 				}
 
-				go _runtime.(kubernetes.MockKubernetesRuntime).SimulateResync()
+				go _runtime.(kubernetes.MockKubernetesRuntime).SimulateResync(nil)
 			}
 
 			err = _engine.secret.exec(context.Background(), &p.Secrets)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("exec should have returned err")
+					t.Errorf("%s exec should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("exec returned err: %v", err)
+				t.Errorf("%s exec returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -784,21 +784,21 @@ func TestLinux_Secret_pull(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			_, err = _engine.secret.pull(test.secret)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("pull should have returned err")
+					t.Errorf("%s pull should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("pull returned err: %v", err)
+				t.Errorf("%s pull returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -912,7 +912,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			// add init container info to client
@@ -930,14 +930,14 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("stream should have returned err")
+					t.Errorf("%s stream should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("stream returned err: %v", err)
+				t.Errorf("%s stream returned err: %v", test.name, err)
 			}
 		})
 	}
