@@ -16,6 +16,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
 
 	"github.com/go-vela/sdk-go/vela"
