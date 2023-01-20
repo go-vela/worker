@@ -245,7 +245,9 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 func TestLinux_Secret_exec(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()

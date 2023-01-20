@@ -34,7 +34,9 @@ func TestLinux_CreateStage(t *testing.T) {
 	_user := testUser()
 	_metadata := testMetadata()
 
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_pipeline, _, err := compiler.
 		Duplicate().
