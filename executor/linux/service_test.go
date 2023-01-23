@@ -402,7 +402,7 @@ func TestLinux_ExecService(t *testing.T) {
 			container: new(pipeline.Container),
 		},
 		{
-			name:      "empty service container",
+			name:      "kubernetes-empty service container",
 			failure:   true,
 			runtime:   _kubernetes,
 			container: new(pipeline.Container),
