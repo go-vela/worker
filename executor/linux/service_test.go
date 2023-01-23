@@ -10,16 +10,13 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/sdk-go/vela"
-
+	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestLinux_CreateService(t *testing.T) {
@@ -37,7 +34,7 @@ func TestLinux_CreateService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -46,11 +43,13 @@ func TestLinux_CreateService(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -66,6 +65,7 @@ func TestLinux_CreateService(t *testing.T) {
 		{
 			name:    "docker-service container with image not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -81,6 +81,7 @@ func TestLinux_CreateService(t *testing.T) {
 		{
 			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 	}
@@ -92,7 +93,7 @@ func TestLinux_CreateService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -132,7 +133,7 @@ func TestLinux_PlanService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -142,10 +143,12 @@ func TestLinux_PlanService(t *testing.T) {
 		name      string
 		failure   bool
 		container *pipeline.Container
+		runtime   runtime.Engine
 	}{
 		{
 			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -161,6 +164,7 @@ func TestLinux_PlanService(t *testing.T) {
 		{
 			name:    "docker-service container with nil environment",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -176,6 +180,7 @@ func TestLinux_PlanService(t *testing.T) {
 		{
 			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 	}
@@ -187,7 +192,7 @@ func TestLinux_PlanService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -227,7 +232,7 @@ func TestLinux_ExecService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -239,11 +244,13 @@ func TestLinux_ExecService(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -259,6 +266,7 @@ func TestLinux_ExecService(t *testing.T) {
 		{
 			name:    "docker-service container with image not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -274,6 +282,7 @@ func TestLinux_ExecService(t *testing.T) {
 		{
 			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 	}
@@ -285,7 +294,7 @@ func TestLinux_ExecService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -331,7 +340,7 @@ func TestLinux_StreamService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -340,11 +349,13 @@ func TestLinux_StreamService(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -360,6 +371,7 @@ func TestLinux_StreamService(t *testing.T) {
 		{
 			name:    "docker-service container with name not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_notfound",
 				Detach:      true,
@@ -375,6 +387,7 @@ func TestLinux_StreamService(t *testing.T) {
 		{
 			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
 			container: new(pipeline.Container),
 		},
 	}
@@ -386,7 +399,7 @@ func TestLinux_StreamService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -431,7 +444,7 @@ func TestLinux_DestroyService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -440,11 +453,13 @@ func TestLinux_DestroyService(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -460,6 +475,7 @@ func TestLinux_DestroyService(t *testing.T) {
 		{
 			name:    "docker-service container with ignoring name not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_ignorenotfound",
 				Detach:      true,
@@ -481,7 +497,7 @@ func TestLinux_DestroyService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
