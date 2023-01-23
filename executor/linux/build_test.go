@@ -255,14 +255,10 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
 	tests := []struct {
 		name                string
 		failure             bool
+		runtime             string
 		build               *library.Build
 		repo                *library.Repo
 		pipeline            string
@@ -270,8 +266,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 		enforceTrustedRepos bool
 	}{
 		{
-			name:                "enforce trusted repos enabled: privileged steps pipeline with trusted repo",
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -279,8 +276,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with untrusted repo",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -288,8 +286,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged steps pipeline with trusted repo",
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -297,8 +296,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -306,8 +306,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged steps pipeline with trusted repo",
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -315,8 +316,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged steps pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -324,8 +326,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged steps pipeline with trusted repo",
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -333,8 +336,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/basic.yml",
@@ -342,8 +346,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged steps pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -351,8 +356,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -360,8 +366,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -369,8 +376,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -378,8 +386,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged steps pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -387,8 +396,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -396,8 +406,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -405,8 +416,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
@@ -414,8 +426,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo",
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -423,8 +436,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with untrusted repo",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -432,8 +446,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with trusted repo",
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -441,8 +456,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -450,8 +466,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with trusted repo",
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -459,8 +476,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -468,8 +486,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with trusted repo",
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -477,8 +496,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/basic.yml",
@@ -486,8 +506,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
@@ -495,8 +516,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with untrusted repo and dynamic image:tag",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
@@ -504,8 +526,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
@@ -513,8 +536,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
@@ -522,26 +546,29 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
-			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
-			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
-			enforceTrustedRepos: false,
-		},
-		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with untrusted repo and dynamic image:tag",
-			failure:             false,
-			build:               _buildWithMessageAlpine,
-			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
 			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
@@ -549,8 +576,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
@@ -558,8 +586,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged stages pipeline with trusted repo",
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -567,8 +596,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged stages pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with untrusted repo",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -576,8 +606,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged stages pipeline with trusted repo",
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -585,8 +616,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -594,8 +626,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged stages pipeline with trusted repo",
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -603,8 +636,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged stages pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -612,8 +646,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged stages pipeline with trusted repo",
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with trusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -621,8 +656,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo",
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/basic.yml",
@@ -630,8 +666,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged stages pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
@@ -639,8 +676,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
@@ -648,26 +686,29 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
 			privilegedImages:    []string{}, // this matches the image from test.pipeline
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
-			build:               _buildWithMessageAlpine,
-			repo:                _untrustedRepo,
-			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
-			privilegedImages:    []string{}, // this matches the image from test.pipeline
-			enforceTrustedRepos: true,
-		},
-		{
-			name:                "enforce trusted repos disabled: privileged stages pipeline with trusted repo and dynamic image:tag",
-			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
@@ -675,8 +716,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
@@ -684,8 +726,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
@@ -693,8 +736,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _buildWithMessageAlpine,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
@@ -702,8 +746,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged steps pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -711,8 +756,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged steps pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with untrusted repo and init step name",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -720,8 +766,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -729,8 +776,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and init step name",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -738,8 +786,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged steps pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -747,8 +796,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged steps pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with untrusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -756,8 +806,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -765,8 +816,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/steps/name_init.yml",
@@ -774,8 +826,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged stages pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -783,8 +836,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged stages pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with untrusted repo and init step name",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -792,8 +846,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -801,8 +856,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and init step name",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -810,8 +866,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged stages pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -819,8 +876,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged stages pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with untrusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -828,8 +886,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -837,8 +896,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and init step name",
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and init step name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/stages/name_init.yml",
@@ -846,8 +906,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with trusted repo and init service name",
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with trusted repo and init service name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -855,8 +916,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: privileged services pipeline with untrusted repo and init service name",
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with untrusted repo and init service name",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -864,8 +926,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with trusted repo and init service name",
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with trusted repo and init service name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -873,8 +936,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and init service name",
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and init service name",
 			failure:             true,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -882,8 +946,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: true,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with trusted repo and init service name",
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with trusted repo and init service name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -891,8 +956,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: privileged services pipeline with untrusted repo and init service name",
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with untrusted repo and init service name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -900,8 +966,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with trusted repo and init service name",
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with trusted repo and init service name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _trustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -909,8 +976,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			enforceTrustedRepos: false,
 		},
 		{
-			name:                "enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and init service name",
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and init service name",
 			failure:             false,
+			runtime:             constants.DriverDocker,
 			build:               _build,
 			repo:                _untrustedRepo,
 			pipeline:            "testdata/build/services/name_init.yml",
@@ -931,6 +999,16 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+			}
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
 			}
 
 			_engine, err := New(
@@ -2090,6 +2168,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:          "docker-early exit from ExecBuild",
 			failure:       false,
 			earlyExecExit: true,
+			runtime:       constants.DriverDocker,
 			pipeline:      "testdata/build/steps/basic.yml",
 			messageKey:    "step",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -2112,6 +2191,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:           "docker-build complete before ExecBuild called",
 			failure:        false,
 			earlyBuildDone: true,
+			runtime:        constants.DriverDocker,
 			pipeline:       "testdata/build/steps/basic.yml",
 			messageKey:     "step",
 			streamFunc: func(c *client) message.StreamFunc {
@@ -2134,6 +2214,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:          "docker-early exit from ExecBuild and build complete signaled",
 			failure:       false,
 			earlyExecExit: true,
+			runtime:       constants.DriverDocker,
 			pipeline:      "testdata/build/steps/basic.yml",
 			messageKey:    "step",
 			streamFunc: func(c *client) message.StreamFunc {
