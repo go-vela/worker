@@ -1550,10 +1550,10 @@ func TestLinux_StreamBuild(t *testing.T) {
 	tests := []struct {
 		name           string
 		failure        bool
-		runtime        string
 		earlyExecExit  bool
 		earlyBuildDone bool
 		logError       bool
+		runtime        string
 		pipeline       string
 		msgCount       int
 		messageKey     string
