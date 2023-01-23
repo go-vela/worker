@@ -1864,9 +1864,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 		name           string
 		failure        bool
 		logError       bool
-		runtime        string
 		earlyExecExit  bool
 		earlyBuildDone bool
+		runtime        string
 		pipeline       string
 		msgCount       int
 		messageKey     string
