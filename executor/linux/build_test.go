@@ -1462,7 +1462,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// run create to init steps to be created properly
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
-				t.Errorf("unable to create build: %v", err)
+				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
 			// TODO: hack - remove this
