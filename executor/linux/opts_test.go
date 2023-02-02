@@ -480,7 +480,7 @@ func TestLinux_Opt_WithRepo(t *testing.T) {
 
 func TestLinux_Opt_WithRuntime(t *testing.T) {
 	// setup types
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -494,7 +494,7 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 		{
 			name:    "docker runtime",
 			failure: false,
-			runtime: _runtime,
+			runtime: _docker,
 		},
 		{
 			name:    "nil runtime",
@@ -522,8 +522,8 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 				t.Errorf("WithRuntime returned err: %v", err)
 			}
 
-			if !reflect.DeepEqual(_engine.Runtime, _runtime) {
-				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, _runtime)
+			if !reflect.DeepEqual(_engine.Runtime, test.runtime) {
+				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, test.runtime)
 			}
 		})
 	}
