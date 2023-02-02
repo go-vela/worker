@@ -1863,9 +1863,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 	tests := []struct {
 		name           string
 		failure        bool
-		logError       bool
 		earlyExecExit  bool
 		earlyBuildDone bool
+		logError       bool
 		runtime        string
 		pipeline       string
 		msgCount       int
@@ -2168,6 +2168,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:          "docker-early exit from ExecBuild",
 			failure:       false,
 			earlyExecExit: true,
+			logError:      false,
 			runtime:       constants.DriverDocker,
 			pipeline:      "testdata/build/steps/basic.yml",
 			messageKey:    "step",
@@ -2191,6 +2192,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:           "docker-build complete before ExecBuild called",
 			failure:        false,
 			earlyBuildDone: true,
+			logError:       false,
 			runtime:        constants.DriverDocker,
 			pipeline:       "testdata/build/steps/basic.yml",
 			messageKey:     "step",
@@ -2214,6 +2216,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			name:          "docker-early exit from ExecBuild and build complete signaled",
 			failure:       false,
 			earlyExecExit: true,
+			logError:      false,
 			runtime:       constants.DriverDocker,
 			pipeline:      "testdata/build/steps/basic.yml",
 			messageKey:    "step",
