@@ -9,16 +9,13 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types"
-
-	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestEqual(t *testing.T) {
@@ -40,7 +37,7 @@ func TestEqual(t *testing.T) {
 	_linux, err := New(
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
-		WithPipeline(testSteps()),
+		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithUser(testUser()),
@@ -53,7 +50,7 @@ func TestEqual(t *testing.T) {
 	_alternate, err := New(
 		WithBuild(testBuild()),
 		WithHostname("a.different.host"),
-		WithPipeline(testSteps()),
+		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithUser(testUser()),
@@ -149,7 +146,7 @@ func TestLinux_New(t *testing.T) {
 			_, err := New(
 				WithBuild(test.build),
 				WithHostname("localhost"),
-				WithPipeline(testSteps()),
+				WithPipeline(testSteps(constants.DriverDocker)),
 				WithRepo(testRepo()),
 				WithRuntime(_runtime),
 				WithUser(testUser()),
@@ -265,8 +262,8 @@ func testMetadata() *types.Metadata {
 
 // testSteps is a test helper function to create a steps
 // pipeline with fake steps.
-func testSteps() *pipeline.Build {
-	return &pipeline.Build{
+func testSteps(runtime string) *pipeline.Build {
+	steps := &pipeline.Build{
 		Version: "1",
 		ID:      "github_octocat_1",
 		Services: pipeline.ContainerSlice{
@@ -335,4 +332,7 @@ func testSteps() *pipeline.Build {
 			},
 		},
 	}
+
+	// apply any runtime-specific cleanups
+	return steps.Sanitize(runtime)
 }

@@ -12,22 +12,17 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/urfave/cli/v2"
-
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime"
-	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
 	"github.com/google/go-cmp/cmp"
+	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_Secret_create(t *testing.T) {
@@ -35,7 +30,7 @@ func TestLinux_Secret_create(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
@@ -125,7 +120,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_dockerSteps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
@@ -153,6 +148,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		runtime   runtime.Engine
 		container *pipeline.Container
 		step      *library.Step
+		steps     *pipeline.Build
 	}{
 		{
 			name:    "docker-running container-empty step",
@@ -167,7 +163,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      1,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-running container-pending step",
@@ -182,7 +179,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: _step,
+			step:  _step,
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-inspecting container failure due to invalid container id",
@@ -197,7 +195,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-removing container failure",
@@ -212,7 +211,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 	}
 
@@ -221,7 +221,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(_steps),
+				WithPipeline(test.steps),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithUser(_user),
@@ -231,6 +231,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
+			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
 
 			_engine.steps.Store(test.container.ID, test.step)
@@ -309,6 +310,9 @@ func TestLinux_Secret_exec(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
+
+			// Docker uses _ while Kubernetes uses -
+			p = p.Sanitize(test.runtime)
 
 			var _runtime runtime.Engine
 
@@ -506,7 +510,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(testSteps()),
+				WithPipeline(testSteps(constants.DriverDocker)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithUser(_user),
@@ -538,7 +542,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
