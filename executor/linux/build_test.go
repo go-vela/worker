@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
@@ -22,6 +24,7 @@ import (
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 	"github.com/sirupsen/logrus"
 	logrusTest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/urfave/cli/v2"
@@ -121,6 +124,12 @@ func TestLinux_CreateBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -1083,6 +1092,12 @@ func TestLinux_PlanBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -1281,6 +1296,12 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -1432,9 +1453,18 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
 
-			var _runtime runtime.Engine
+			var (
+				_runtime runtime.Engine
+				_pod     *v1.Pod
+			)
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod = testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -1818,6 +1848,12 @@ func TestLinux_StreamBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
@@ -2024,6 +2060,12 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(_pipeline)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
