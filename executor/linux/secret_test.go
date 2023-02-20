@@ -21,6 +21,7 @@ import (
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 	"github.com/google/go-cmp/cmp"
 	"github.com/urfave/cli/v2"
 )
@@ -317,6 +318,12 @@ func TestLinux_Secret_exec(t *testing.T) {
 			var _runtime runtime.Engine
 
 			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(p)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
 			case constants.DriverDocker:
 				_runtime, err = docker.NewMock()
 				if err != nil {
