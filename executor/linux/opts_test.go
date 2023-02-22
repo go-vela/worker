@@ -11,17 +11,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
-
-	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/runtime"
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/sdk-go/vela"
-
+	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/sirupsen/logrus"
 )
 
 func TestLinux_Opt_WithBuild(t *testing.T) {
@@ -384,7 +381,7 @@ func TestLinux_Opt_WithLogger(t *testing.T) {
 
 func TestLinux_Opt_WithPipeline(t *testing.T) {
 	// setup types
-	_steps := testSteps()
+	_steps := testSteps(constants.DriverDocker)
 
 	// setup tests
 	tests := []struct {

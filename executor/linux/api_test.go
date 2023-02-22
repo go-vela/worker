@@ -7,6 +7,8 @@ package linux
 import (
 	"reflect"
 	"testing"
+
+	"github.com/go-vela/types/constants"
 )
 
 func TestLinux_GetBuild(t *testing.T) {
@@ -64,7 +66,7 @@ func TestLinux_GetBuild(t *testing.T) {
 
 func TestLinux_GetPipeline(t *testing.T) {
 	// setup types
-	_steps := testSteps()
+	_steps := testSteps(constants.DriverDocker)
 
 	_engine, err := New(
 		WithPipeline(_steps),
