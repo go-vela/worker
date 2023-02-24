@@ -251,14 +251,24 @@ func mockPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.P
 		return nil, err
 	}
 
-	// init containerTrackers as well
-	tracker.TrackContainers(pod.Spec.Containers)
-
-	// pre-populate the podInformer cache
-	err = tracker.podInformer.Informer().GetIndexer().Add(pod)
+	err = tracker.setupMockFor(pod)
 	if err != nil {
 		return nil, err
 	}
 
 	return tracker, err
+}
+
+// setupMockFor initializes the podTracker's internal caches with the given pod.
+func (p *podTracker) setupMockFor(pod *v1.Pod) error {
+	// init containerTrackers as well
+	p.TrackContainers(pod.Spec.Containers)
+
+	// pre-populate the podInformer cache
+	err := p.podInformer.Informer().GetIndexer().Add(pod)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
