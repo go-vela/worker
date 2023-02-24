@@ -10,8 +10,6 @@ package kubernetes
 import (
 	"context"
 
-	"github.com/sirupsen/logrus"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -19,6 +17,7 @@ import (
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 	fakeVelaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/fake"
+	"github.com/sirupsen/logrus"
 )
 
 // NewMock returns an Engine implementation that

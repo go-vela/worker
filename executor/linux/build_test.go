@@ -32,7 +32,9 @@ import (
 
 func TestLinux_CreateBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -224,7 +226,9 @@ func TestLinux_CreateBuild(t *testing.T) {
 
 func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -1053,7 +1057,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 
 func TestLinux_PlanBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -1226,7 +1232,9 @@ func TestLinux_PlanBuild(t *testing.T) {
 
 func TestLinux_AssembleBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -1554,7 +1562,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 func TestLinux_ExecBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -1834,7 +1844,9 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 func TestLinux_StreamBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -2380,7 +2392,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 func TestLinux_DestroyBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
