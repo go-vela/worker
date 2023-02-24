@@ -36,6 +36,18 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
+	// GET build token from server to setup execBuildClient
+	bt, _, err := w.VelaClient.Build.GetBuildToken(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	if err != nil {
+		logrus.Errorf("Unable to GetBuildToken: %s", err)
+		return err
+	}
+	// set up build client with build token as auth
+	execBuildClient, err := setupClient(w.Config.Server, bt.GetToken())
+	if err != nil {
+		return err
+	}
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
@@ -79,7 +91,7 @@ func (w *Worker) exec(index int) error {
 		LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
 		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
 		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
-		Client:              w.VelaClient,
+		Client:              execBuildClient,
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,

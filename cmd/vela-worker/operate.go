@@ -22,8 +22,8 @@ import (
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 
-	// setup the client
-	w.VelaClient, err = setupClient(w.Config.Server)
+	// setup the vela client with the server
+	w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.Secret)
 	if err != nil {
 		return err
 	}
