@@ -12,21 +12,18 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/urfave/cli/v2"
-
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 	"github.com/google/go-cmp/cmp"
+	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_Secret_create(t *testing.T) {
@@ -34,7 +31,7 @@ func TestLinux_Secret_create(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
@@ -45,7 +42,7 @@ func TestLinux_Secret_create(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -54,11 +51,13 @@ func TestLinux_Secret_create(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-good image tag",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -72,6 +71,7 @@ func TestLinux_Secret_create(t *testing.T) {
 		{
 			name:    "docker-notfound image tag",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -91,7 +91,7 @@ func TestLinux_Secret_create(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_steps),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -121,7 +121,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_dockerSteps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
@@ -132,7 +132,7 @@ func TestLinux_Secret_delete(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -146,12 +146,15 @@ func TestLinux_Secret_delete(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 		step      *library.Step
+		steps     *pipeline.Build
 	}{
 		{
 			name:    "docker-running container-empty step",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -161,11 +164,13 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      1,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-running container-pending step",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_vault",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -175,11 +180,13 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: _step,
+			step:  _step,
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-inspecting container failure due to invalid container id",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -189,11 +196,13 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 		{
 			name:    "docker-removing container failure",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_ignorenotfound",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -203,7 +212,8 @@ func TestLinux_Secret_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step: new(library.Step),
+			step:  new(library.Step),
+			steps: _dockerSteps,
 		},
 	}
 
@@ -212,9 +222,9 @@ func TestLinux_Secret_delete(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(_steps),
+				WithPipeline(test.steps),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -222,7 +232,16 @@ func TestLinux_Secret_delete(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
+			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime.Driver() == constants.DriverKubernetes {
+				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
 
 			_engine.steps.Store(test.container.ID, test.step)
 
@@ -263,11 +282,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
-	if err != nil {
-		t.Errorf("unable to create docker runtime engine: %v", err)
-	}
-
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
@@ -275,16 +289,19 @@ func TestLinux_Secret_exec(t *testing.T) {
 	tests := []struct {
 		name     string
 		failure  bool
+		runtime  string
 		pipeline string
 	}{
 		{
 			name:     "docker-basic secrets pipeline",
 			failure:  false,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/basic.yml",
 		},
 		{
 			name:     "docker-pipeline with secret name not found",
 			failure:  true,
+			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/name_notfound.yml",
 		},
 	}
@@ -305,6 +322,25 @@ func TestLinux_Secret_exec(t *testing.T) {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
+			// Docker uses _ while Kubernetes uses -
+			p = p.Sanitize(test.runtime)
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverKubernetes:
+				_pod := testPodFor(p)
+				_runtime, err = kubernetes.NewMock(_pod)
+				if err != nil {
+					t.Errorf("unable to create kubernetes runtime engine: %v", err)
+				}
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
+			}
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(p),
@@ -322,6 +358,14 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
 
 			err = _engine.secret.exec(context.Background(), &p.Secrets)
 
@@ -355,7 +399,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -364,11 +408,13 @@ func TestLinux_Secret_pull(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
+		runtime runtime.Engine
 		secret  *pipeline.Secret
 	}{
 		{
 			name:    "docker-success with org secret",
 			failure: false,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -381,6 +427,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-failure with invalid org secret",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -393,6 +440,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-failure with org secret key not found",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -405,6 +453,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-success with repo secret",
 			failure: false,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -417,6 +466,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-failure with invalid repo secret",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -429,6 +479,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-failure with repo secret key not found",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -441,6 +492,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-success with shared secret",
 			failure: false,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -453,6 +505,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-failure with shared secret key not found",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -465,6 +518,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 		{
 			name:    "docker-failure with invalid type",
 			failure: true,
+			runtime: _docker,
 			secret: &pipeline.Secret{
 				Name:   "foo",
 				Value:  "bar",
@@ -481,9 +535,9 @@ func TestLinux_Secret_pull(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
-				WithPipeline(testSteps()),
+				WithPipeline(testSteps(constants.DriverDocker)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -513,7 +567,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_steps := testSteps()
+	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
 
@@ -524,7 +578,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
@@ -533,12 +587,14 @@ func TestLinux_Secret_stream(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		logs      *library.Log
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-container step succeeds",
 			failure: false,
+			runtime: _docker,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
@@ -553,6 +609,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		{
 			name:    "docker-container step fails because of invalid container id",
 			failure: true,
+			runtime: _docker,
 			logs:    new(library.Log),
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
@@ -573,7 +630,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_steps),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
@@ -583,6 +640,14 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime.Driver() == constants.DriverKubernetes {
+				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
 
 			err = _engine.secret.stream(context.Background(), test.container)
 

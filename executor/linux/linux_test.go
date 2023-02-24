@@ -5,20 +5,21 @@
 package linux
 
 import (
+	"math"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/gin-gonic/gin"
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types"
-
-	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestEqual(t *testing.T) {
@@ -40,7 +41,7 @@ func TestEqual(t *testing.T) {
 	_linux, err := New(
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
-		WithPipeline(testSteps()),
+		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithUser(testUser()),
@@ -53,7 +54,7 @@ func TestEqual(t *testing.T) {
 	_alternate, err := New(
 		WithBuild(testBuild()),
 		WithHostname("a.different.host"),
-		WithPipeline(testSteps()),
+		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithUser(testUser()),
@@ -149,7 +150,7 @@ func TestLinux_New(t *testing.T) {
 			_, err := New(
 				WithBuild(test.build),
 				WithHostname("localhost"),
-				WithPipeline(testSteps()),
+				WithPipeline(testSteps(constants.DriverDocker)),
 				WithRepo(testRepo()),
 				WithRuntime(_runtime),
 				WithUser(testUser()),
@@ -265,8 +266,8 @@ func testMetadata() *types.Metadata {
 
 // testSteps is a test helper function to create a steps
 // pipeline with fake steps.
-func testSteps() *pipeline.Build {
-	return &pipeline.Build{
+func testSteps(runtime string) *pipeline.Build {
+	steps := &pipeline.Build{
 		Version: "1",
 		ID:      "github_octocat_1",
 		Services: pipeline.ContainerSlice{
@@ -335,4 +336,368 @@ func testSteps() *pipeline.Build {
 			},
 		},
 	}
+
+	// apply any runtime-specific cleanups
+	return steps.Sanitize(runtime)
+}
+
+// testPod is a test helper function to create a Pod
+// type with all fields set to a fake value.
+func testPod(useStages bool) *v1.Pod {
+	// https://github.com/go-vela/worker/blob/main/runtime/kubernetes/kubernetes_test.go#L83
+	pod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "github-octocat-1",
+			Namespace: "test",
+			Labels: map[string]string{
+				"pipeline": "github-octocat-1",
+			},
+		},
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Pod",
+		},
+		Status: v1.PodStatus{
+			Phase: v1.PodRunning,
+		},
+		Spec: v1.PodSpec{},
+	}
+
+	if useStages {
+		pod.Spec.Containers = []v1.Container{
+			{
+				Name:            "github-octocat-1-clone-clone",
+				Image:           "target/vela-git:v0.6.0",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "github-octocat-1-echo-echo",
+				Image:           "alpine:latest",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "service-github-octocat-1-postgres",
+				Image:           "postgres:12-alpine",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+		}
+		pod.Status.ContainerStatuses = []v1.ContainerStatus{
+			{
+				Name: "github-octocat-1-clone-clone",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "target/vela-git:v0.6.0",
+			},
+			{
+				Name: "github-octocat-1-echo-echo",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "alpine:latest",
+			},
+		}
+	} else { // step
+		pod.Spec.Containers = []v1.Container{
+			{
+				Name:            "step-github-octocat-1-clone",
+				Image:           "target/vela-git:v0.6.0",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "step-github-octocat-1-echo",
+				Image:           "alpine:latest",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+			{
+				Name:            "service-github-octocat-1-postgres",
+				Image:           "postgres:12-alpine",
+				WorkingDir:      "/vela/src/github.com/octocat/helloworld",
+				ImagePullPolicy: v1.PullAlways,
+			},
+		}
+		pod.Status.ContainerStatuses = []v1.ContainerStatus{
+			{
+				Name: "step-github-octocat-1-clone",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "target/vela-git:v0.6.0",
+			},
+			{
+				Name: "step-github-octocat-1-echo",
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: "alpine:latest",
+			},
+		}
+	}
+
+	return pod
+}
+
+// testPodFor is a test helper function to create a Pod
+// using container names from a test pipeline.
+func testPodFor(build *pipeline.Build) *v1.Pod {
+	var (
+		pod        *v1.Pod
+		containers []v1.Container
+	)
+
+	workingDir := "/vela/src/github.com/octocat/helloworld"
+	useStages := len(build.Stages) > 0
+	pod = testPod(useStages)
+
+	for _, service := range build.Services {
+		containers = append(containers, v1.Container{
+			Name:       service.ID,
+			Image:      service.Image,
+			WorkingDir: workingDir,
+			// service.Pull should be one of: Always, Never, IfNotPresent
+			ImagePullPolicy: v1.PullPolicy(service.Pull),
+		})
+	}
+
+	if useStages {
+		containers = append(containers, v1.Container{
+			Name:            "step-github-octocat-1-clone-clone",
+			Image:           "target/vela-git:v0.6.0",
+			WorkingDir:      workingDir,
+			ImagePullPolicy: v1.PullAlways,
+		})
+	} else { // steps
+		containers = append(containers, v1.Container{
+			Name:            "step-github-octocat-1-clone",
+			Image:           "target/vela-git:v0.6.0",
+			WorkingDir:      workingDir,
+			ImagePullPolicy: v1.PullAlways,
+		})
+	}
+
+	for _, stage := range build.Stages {
+		for _, step := range stage.Steps {
+			if step.Name == "init" {
+				continue
+			}
+
+			containers = append(containers, v1.Container{
+				Name:       step.ID,
+				Image:      step.Image,
+				WorkingDir: workingDir,
+				// step.Pull should be one of: Always, Never, IfNotPresent
+				ImagePullPolicy: v1.PullPolicy(step.Pull),
+			})
+		}
+	}
+
+	for _, step := range build.Steps {
+		if step.Name == "init" {
+			continue
+		}
+
+		containers = append(containers, v1.Container{
+			Name:       step.ID,
+			Image:      step.Image,
+			WorkingDir: workingDir,
+			// step.Pull should be one of: Always, Never, IfNotPresent
+			ImagePullPolicy: v1.PullPolicy(step.Pull),
+		})
+	}
+
+	for _, secret := range build.Secrets {
+		if secret.Origin.Empty() {
+			continue
+		}
+
+		containers = append(containers, v1.Container{
+			Name:       secret.Origin.ID,
+			Image:      secret.Origin.Image,
+			WorkingDir: workingDir,
+			// secret.Origin.Pull should be one of: Always, Never, IfNotPresent
+			ImagePullPolicy: v1.PullPolicy(secret.Origin.Pull),
+		})
+	}
+
+	pod.Spec.Containers = containers
+	pod.Status.ContainerStatuses = testContainerStatuses(build, false, 0, 0)
+
+	return pod
+}
+
+// countBuildSteps counts the steps in the build.
+func countBuildSteps(build *pipeline.Build) int {
+	steps := 0
+
+	for _, stage := range build.Stages {
+		for _, step := range stage.Steps {
+			if step.Name == "init" {
+				continue
+			}
+
+			steps++
+		}
+	}
+
+	for _, step := range build.Steps {
+		if step.Name == "init" {
+			continue
+		}
+
+		steps++
+	}
+
+	return steps
+}
+
+// testContainerStatuses is a test helper function to create a ContainerStatuses list.
+func testContainerStatuses(build *pipeline.Build, servicesRunning bool, stepsRunningCount, stepsCompletedPercent int) []v1.ContainerStatus {
+	var containerStatuses []v1.ContainerStatus
+
+	useStages := len(build.Stages) > 0
+	stepsCompletedCount := 0
+
+	if stepsCompletedPercent > 0 {
+		stepsCompletedCount = int(math.Round(float64(stepsCompletedPercent) / 100 * float64(countBuildSteps(build))))
+	}
+
+	if servicesRunning {
+		for _, service := range build.Services {
+			containerStatuses = append(containerStatuses, v1.ContainerStatus{
+				Name: service.ID,
+				State: v1.ContainerState{
+					Running: &v1.ContainerStateRunning{},
+				},
+				Image: service.Image,
+			})
+		}
+	}
+
+	if useStages {
+		containerStatuses = append(containerStatuses, v1.ContainerStatus{
+			Name: "step-github-octocat-1-clone-clone",
+			State: v1.ContainerState{
+				Terminated: &v1.ContainerStateTerminated{
+					Reason:   "Completed",
+					ExitCode: 0,
+				},
+			},
+			Image: "target/vela-git:v0.6.0",
+		})
+	} else { // steps
+		containerStatuses = append(containerStatuses, v1.ContainerStatus{
+			Name: "step-github-octocat-1-clone",
+			State: v1.ContainerState{
+				Terminated: &v1.ContainerStateTerminated{
+					Reason:   "Completed",
+					ExitCode: 0,
+				},
+			},
+			Image: "target/vela-git:v0.6.0",
+		})
+	}
+
+	steps := 0
+
+	for _, stage := range build.Stages {
+		for _, step := range stage.Steps {
+			if step.Name == "init" {
+				continue
+			}
+
+			steps++
+			if steps > stepsCompletedCount+stepsRunningCount {
+				break
+			}
+
+			if stepsRunningCount > 0 && steps > stepsCompletedCount {
+				containerStatuses = append(containerStatuses, v1.ContainerStatus{
+					Name: step.ID,
+					State: v1.ContainerState{
+						Running: &v1.ContainerStateRunning{},
+					},
+					Image: step.Image,
+				})
+			} else if steps <= stepsCompletedCount {
+				containerStatuses = append(containerStatuses, v1.ContainerStatus{
+					Name: step.ID,
+					State: v1.ContainerState{
+						Terminated: &v1.ContainerStateTerminated{
+							Reason:   "Completed",
+							ExitCode: 0,
+						},
+					},
+					Image: step.Image,
+				})
+			}
+		}
+	}
+
+	for _, step := range build.Steps {
+		if step.Name == "init" {
+			continue
+		}
+
+		steps++
+		if steps > stepsCompletedCount+stepsRunningCount {
+			break
+		}
+
+		if stepsRunningCount > 0 && steps > stepsCompletedCount {
+			containerStatuses = append(containerStatuses, v1.ContainerStatus{
+				Name: step.ID,
+				State: v1.ContainerState{
+					Running: &v1.ContainerStateRunning{},
+				},
+				Image: step.Image,
+			})
+		} else if steps <= stepsCompletedCount {
+			containerStatuses = append(containerStatuses, v1.ContainerStatus{
+				Name: step.ID,
+				State: v1.ContainerState{
+					Terminated: &v1.ContainerStateTerminated{
+						Reason:   "Completed",
+						ExitCode: 0,
+					},
+				},
+				Image: step.Image,
+			})
+		}
+	}
+
+	for _, secret := range build.Secrets {
+		if secret.Origin.Empty() {
+			continue
+		}
+
+		containerStatuses = append(containerStatuses, v1.ContainerStatus{
+			Name:  secret.Origin.ID,
+			Image: secret.Origin.Image,
+			State: v1.ContainerState{
+				Terminated: &v1.ContainerStateTerminated{
+					Reason:   "Completed",
+					ExitCode: 0,
+				},
+			},
+		})
+	}
+
+	return containerStatuses
 }
