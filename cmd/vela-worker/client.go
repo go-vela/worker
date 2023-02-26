@@ -11,7 +11,7 @@ import (
 )
 
 // helper function to setup the queue from the CLI arguments.
-func setupClient(s *Server) (*vela.Client, error) {
+func setupClient(s *Server, token string) (*vela.Client, error) {
 	logrus.Debug("creating vela client from worker configuration")
 
 	// create a new Vela client from the server configuration
@@ -21,11 +21,10 @@ func setupClient(s *Server) (*vela.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	// set token for authentication with the server
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#AuthenticationService.SetTokenAuth
-	vela.Authentication.SetTokenAuth(s.Secret)
+	vela.Authentication.SetTokenAuth(token)
 
 	return vela, nil
 }
