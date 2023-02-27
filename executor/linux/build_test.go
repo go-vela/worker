@@ -1350,28 +1350,12 @@ func TestLinux_AssembleBuild(t *testing.T) {
 					// Now wait until the pod is created at the end of runtime.AssembleBuild.
 					_mockRuntime.WaitForPodCreate(_pod.GetNamespace(), _pod.GetName())
 
-					var stepsRunningCount int
-
-					percents := []int{0, 0, 50, 100}
-					lastIndex := len(percents) - 1
-					for index, stepsCompletedPercent := range percents {
-						if index == 0 || index == lastIndex {
-							stepsRunningCount = 0
-						} else {
-							stepsRunningCount = 1
-						}
-
-						err := _mockRuntime.SimulateStatusUpdate(_pod,
-							testContainerStatuses(
-								_pipeline, true, stepsRunningCount, stepsCompletedPercent,
-							),
-						)
-						if err != nil {
-							t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
-						}
-
-						// simulate exec build duration
-						time.Sleep(100 * time.Microsecond)
+					// Mark services running and secrets as completed, but no steps have started.
+					err := _mockRuntime.SimulateStatusUpdate(_pod,
+						testContainerStatuses(_pipeline, true, 0, 0),
+					)
+					if err != nil {
+						t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
 					}
 				}()
 			}
