@@ -13,6 +13,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/tools/cache"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 	fakeVelaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/fake"
@@ -99,6 +100,8 @@ type MockKubernetesRuntime interface {
 	SetupMock() error
 	MarkPodTrackerReady()
 	StartPodTracker(context.Context)
+	WaitForPodTrackerReady()
+	WaitForPodCreate(string, string)
 	SimulateResync(*v1.Pod)
 	SimulateStatusUpdate(*v1.Pod, []v1.ContainerStatus) error
 }
@@ -124,6 +127,47 @@ func (c *client) MarkPodTrackerReady() {
 // This function is intended for running tests only.
 func (c *client) StartPodTracker(ctx context.Context) {
 	c.PodTracker.Start(ctx)
+}
+
+// WaitForPodTrackerReady waits for PodTracker.Ready to be closed (which happens in AssembleBuild).
+//
+// This function is intended for running tests only.
+func (c *client) WaitForPodTrackerReady() {
+	<-c.PodTracker.Ready
+}
+
+// WaitForPodCreate waits for PodTracker.Ready to be closed (which happens in AssembleBuild).
+//
+// This function is intended for running tests only.
+func (c *client) WaitForPodCreate(namespace, name string) {
+	created := make(chan struct{})
+
+	c.PodTracker.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			select {
+			case <-created:
+				// not interested in any other create events.
+				return
+			default:
+				break
+			}
+
+			var (
+				pod *v1.Pod
+				ok  bool
+			)
+
+			if pod, ok = obj.(*v1.Pod); !ok {
+				return
+			}
+
+			if pod.GetNamespace() == namespace && pod.GetName() == name {
+				close(created)
+			}
+		},
+	})
+
+	<-created
 }
 
 // SimulateResync simulates an resync where the PodTracker refreshes its cache.
