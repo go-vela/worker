@@ -1545,6 +1545,36 @@ func TestLinux_ExecBuild(t *testing.T) {
 				if err != nil {
 					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 				}
+
+				_runtime.(kubernetes.MockKubernetesRuntime).StartPodTracker(context.Background())
+
+				go func() {
+					_runtime.(kubernetes.MockKubernetesRuntime).SimulateResync(nil)
+
+					var stepsRunningCount int
+
+					percents := []int{0, 0, 50, 100}
+					lastIndex := len(percents) - 1
+					for index, stepsCompletedPercent := range percents {
+						if index == 0 || index == lastIndex {
+							stepsRunningCount = 0
+						} else {
+							stepsRunningCount = 1
+						}
+
+						err := _runtime.(kubernetes.MockKubernetesRuntime).SimulateStatusUpdate(_pod,
+							testContainerStatuses(
+								_pipeline, true, stepsRunningCount, stepsCompletedPercent,
+							),
+						)
+						if err != nil {
+							t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
+						}
+
+						// simulate exec build duration
+						time.Sleep(100 * time.Microsecond)
+					}
+				}()
 			}
 
 			err = _engine.ExecBuild(context.Background())
@@ -1910,6 +1940,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 					if err != nil {
 						t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 					}
+
+					// Runtime.StreamBuild calls PodTracker.Start after the PodTracker is marked Ready
+					_runtime.(kubernetes.MockKubernetesRuntime).MarkPodTrackerReady()
 				}
 
 				if test.earlyBuildDone {

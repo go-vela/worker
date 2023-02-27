@@ -8,6 +8,8 @@ package kubernetes
 // It is exported for use in tests of other packages.
 
 import (
+	"context"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -84,7 +86,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	c.PodTracker = tracker
 
-	// The test is responsible for calling c.PodTracker.Start() if needed
+	// The test is responsible for calling c.PodTracker.Start(ctx) if needed.
+	// In some cases it is more convenient to call c.(MockKubernetesRuntime).StartPodTracker(ctx)
 
 	return c, nil
 }
@@ -95,7 +98,9 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 type MockKubernetesRuntime interface {
 	SetupMock() error
 	MarkPodTrackerReady()
+	StartPodTracker(context.Context)
 	SimulateResync(*v1.Pod)
+	SimulateStatusUpdate(*v1.Pod, []v1.ContainerStatus) error
 }
 
 // SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
@@ -114,6 +119,13 @@ func (c *client) MarkPodTrackerReady() {
 	close(c.PodTracker.Ready)
 }
 
+// StartPodTracker tells the podTracker it can start populating the cache.
+//
+// This function is intended for running tests only.
+func (c *client) StartPodTracker(ctx context.Context) {
+	c.PodTracker.Start(ctx)
+}
+
 // SimulateResync simulates an resync where the PodTracker refreshes its cache.
 // This resync is from oldPod to runtime.Pod. If nil, oldPod defaults to runtime.Pod.
 //
@@ -128,4 +140,23 @@ func (c *client) SimulateResync(oldPod *v1.Pod) {
 
 	// simulate a re-sync/PodUpdate event
 	c.PodTracker.HandlePodUpdate(oldPod, c.Pod)
+}
+
+// SimulateUpdate simulates an update event from the k8s API.
+//
+// This function is intended for running tests only.
+func (c *client) SimulateStatusUpdate(pod *v1.Pod, containerStatuses []v1.ContainerStatus) error {
+	// We have to have a full copy here because the k8s client Mock
+	// replaces the pod it is storing, it does not just update the status.
+	updatedPod := pod.DeepCopy()
+	updatedPod.Status.ContainerStatuses = containerStatuses
+
+	_, err := c.Kubernetes.CoreV1().Pods(pod.GetNamespace()).
+		UpdateStatus(
+			context.Background(),
+			updatedPod,
+			metav1.UpdateOptions{},
+		)
+
+	return err
 }
