@@ -100,7 +100,7 @@ func TestLinux_CreateStage(t *testing.T) {
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
 					{
-						ID:          "github_octocat_1_echo_echo",
+						ID:          "github-octocat-1-echo-echo",
 						Directory:   "/vela/src/github.com/github/octocat",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "alpine:latest",
@@ -138,7 +138,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		//		Name: "echo",
 		//		Steps: pipeline.ContainerSlice{
 		//			{
-		//				ID:          "github_octocat_1_echo_echo",
+		//				ID:          "github-octocat-1-echo-echo",
 		//				Directory:   "/vela/src/github.com/github/octocat",
 		//				Environment: map[string]string{"FOO": "bar"},
 		//				Image:       "alpine:notfound",
@@ -292,7 +292,7 @@ func TestLinux_PlanStage(t *testing.T) {
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
 					{
-						ID:          "github_octocat_1_echo_echo",
+						ID:          "github-octocat-1-echo-echo",
 						Directory:   "/vela/src/github.com/github/octocat",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "alpine:latest",
@@ -334,7 +334,7 @@ func TestLinux_PlanStage(t *testing.T) {
 				Needs: []string{"foo"},
 				Steps: pipeline.ContainerSlice{
 					{
-						ID:          "github_octocat_1_echo_echo",
+						ID:          "github-octocat-1-echo-echo",
 						Directory:   "/vela/src/github.com/github/octocat",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "alpine:latest",
@@ -376,7 +376,7 @@ func TestLinux_PlanStage(t *testing.T) {
 				Needs: []string{"foo"},
 				Steps: pipeline.ContainerSlice{
 					{
-						ID:          "github_octocat_1_echo_echo",
+						ID:          "github-octocat-1-echo-echo",
 						Directory:   "/vela/src/github.com/github/octocat",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "alpine:latest",
@@ -673,7 +673,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 				Name: "echo",
 				Steps: pipeline.ContainerSlice{
 					{
-						ID:          "github_octocat_1_echo_echo",
+						ID:          "github-octocat-1-echo-echo",
 						Directory:   "/vela/src/github.com/github/octocat",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "alpine:latest",
