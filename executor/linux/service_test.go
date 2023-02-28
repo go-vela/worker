@@ -73,7 +73,7 @@ func TestLinux_CreateService(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_postgres",
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -105,7 +105,7 @@ func TestLinux_CreateService(t *testing.T) {
 		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
 		//	container: &pipeline.Container{
-		//		ID:          "service_github_octocat_1_postgres",
+		//		ID:          "service-github-octocat-1-postgres",
 		//		Detach:      true,
 		//		Directory:   "/vela/src/github.com/github/octocat",
 		//		Environment: map[string]string{"FOO": "bar"},
@@ -215,7 +215,7 @@ func TestLinux_PlanService(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_postgres",
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -247,7 +247,7 @@ func TestLinux_PlanService(t *testing.T) {
 			failure: true,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_postgres",
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: nil,
@@ -360,7 +360,7 @@ func TestLinux_ExecService(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_postgres",
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -392,7 +392,7 @@ func TestLinux_ExecService(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_postgres",
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -508,7 +508,7 @@ func TestLinux_StreamService(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_postgres",
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -540,7 +540,7 @@ func TestLinux_StreamService(t *testing.T) {
 			failure: false, // TODO: add mock to make this fail
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_notfound",
+				ID:          "service-github-octocat-1-notfound",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -655,7 +655,7 @@ func TestLinux_DestroyService(t *testing.T) {
 			failure: false,
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_postgres",
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -687,7 +687,7 @@ func TestLinux_DestroyService(t *testing.T) {
 			failure: false, // TODO: add mock to make this fail
 			runtime: _kubernetes,
 			container: &pipeline.Container{
-				ID:          "service_github_octocat_1_ignorenotfound",
+				ID:          "service-github-octocat-1-ignorenotfound",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
