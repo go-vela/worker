@@ -1287,7 +1287,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-secrets pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/secrets/img_notfound.yml",
 		//},
@@ -1301,7 +1301,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-secrets pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
 		//},
@@ -1329,7 +1329,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-services pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/services/img_notfound.yml",
 		//},
@@ -1343,7 +1343,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-services pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		//},
@@ -1371,7 +1371,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-steps pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/steps/img_notfound.yml",
 		//},
@@ -1385,7 +1385,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-steps pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		//},
@@ -1413,7 +1413,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-stages pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/stages/img_notfound.yml",
 		//},
@@ -1427,7 +1427,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-stages pipeline with ignoring image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/stages/img_ignorenotfound.yml",
 		//},
@@ -1598,7 +1598,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-services pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/services/img_notfound.yml",
 		//},
@@ -1626,7 +1626,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-steps pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/steps/img_notfound.yml",
 		//},
@@ -1654,7 +1654,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 		//{
 		//	name:     "kubernetes-stages pipeline with image not found",
 		//	failure:  true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
-		//	logError:   false,
+		//	logError: false,
 		//	runtime:  constants.DriverKubernetes,
 		//	pipeline: "testdata/build/stages/img_notfound.yml",
 		//},
