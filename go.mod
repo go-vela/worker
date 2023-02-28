@@ -12,7 +12,7 @@ require (
 	github.com/go-vela/server v0.17.1-0.20230224163114-c4283eb079e8
 	github.com/go-vela/types v0.17.1-0.20230223155025-1c8a34f71425
 	github.com/google/go-cmp v0.5.9
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
