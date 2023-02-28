@@ -32,7 +32,9 @@ import (
 
 func TestLinux_CreateBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -184,7 +186,9 @@ func TestLinux_CreateBuild(t *testing.T) {
 
 func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -1013,7 +1017,9 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 
 func TestLinux_PlanBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -1158,7 +1164,9 @@ func TestLinux_PlanBuild(t *testing.T) {
 
 func TestLinux_AssembleBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -1297,8 +1305,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 			switch test.runtime {
 			case constants.DriverKubernetes:
-				_pod := testPodFor(_pipeline)
-				_runtime, err = kubernetes.NewMock(_pod)
+				_runtime, err = kubernetes.NewMock(&v1.Pod{}) // do not use _pod here! AssembleBuild will load it.
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
 				}
@@ -1327,6 +1334,30 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
 				t.Errorf("unable to create build: %v", err)
+			}
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				go func() {
+					_mockRuntime := _runtime.(kubernetes.MockKubernetesRuntime)
+					// This handles waiting until runtime.AssembleBuild has prepared the PodTracker.
+					_mockRuntime.WaitForPodTrackerReady()
+					// Normally, runtime.StreamBuild (which runs in a goroutine) calls PodTracker.Start.
+					_mockRuntime.StartPodTracker(context.Background())
+
+					_pod := testPodFor(_pipeline)
+
+					// Now wait until the pod is created at the end of runtime.AssembleBuild.
+					_mockRuntime.WaitForPodCreate(_pod.GetNamespace(), _pod.GetName())
+
+					// Mark services running and secrets as completed, but no steps have started.
+					err := _mockRuntime.SimulateStatusUpdate(_pod,
+						testContainerStatuses(_pipeline, true, 0, 0),
+					)
+					if err != nil {
+						t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
+					}
+				}()
 			}
 
 			err = _engine.AssembleBuild(context.Background())
@@ -1363,7 +1394,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 func TestLinux_ExecBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -1529,6 +1562,44 @@ func TestLinux_ExecBuild(t *testing.T) {
 			// go-vela/server has logic to set it to an expected state.
 			_engine.build.SetStatus("running")
 
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+
+				_runtime.(kubernetes.MockKubernetesRuntime).StartPodTracker(context.Background())
+
+				go func() {
+					_runtime.(kubernetes.MockKubernetesRuntime).SimulateResync(nil)
+
+					var stepsRunningCount int
+
+					percents := []int{0, 0, 50, 100}
+					lastIndex := len(percents) - 1
+					for index, stepsCompletedPercent := range percents {
+						if index == 0 || index == lastIndex {
+							stepsRunningCount = 0
+						} else {
+							stepsRunningCount = 1
+						}
+
+						err := _runtime.(kubernetes.MockKubernetesRuntime).SimulateStatusUpdate(_pod,
+							testContainerStatuses(
+								_pipeline, true, stepsRunningCount, stepsCompletedPercent,
+							),
+						)
+						if err != nil {
+							t.Errorf("%s - failed to simulate pod update: %s", test.name, err)
+						}
+
+						// simulate exec build duration
+						time.Sleep(100 * time.Microsecond)
+					}
+				}()
+			}
+
 			err = _engine.ExecBuild(context.Background())
 
 			if test.failure {
@@ -1563,7 +1634,9 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 func TestLinux_StreamBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -1882,8 +1955,19 @@ func TestLinux_StreamBuild(t *testing.T) {
 				t.Errorf("%s unable to create build: %v", test.name, err)
 			}
 
-			// simulate ExecBuild() which runs concurrently with StreamBuild()
+			// simulate AssembleBuild()/ExecBuild() which run concurrently with StreamBuild()
 			go func() {
+				// This Kubernetes setup would normally be called within AssembleBuild()
+				if test.runtime == constants.DriverKubernetes {
+					err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+					if err != nil {
+						t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+					}
+
+					// Runtime.StreamBuild calls PodTracker.Start after the PodTracker is marked Ready
+					_runtime.(kubernetes.MockKubernetesRuntime).MarkPodTrackerReady()
+				}
+
 				if test.earlyBuildDone {
 					// imitate build getting canceled or otherwise finishing before ExecBuild gets called.
 					done()
@@ -1953,7 +2037,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 func TestLinux_DestroyBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -2090,6 +2176,14 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			err = _engine.CreateBuild(context.Background())
 			if err != nil {
 				t.Errorf("%s unable to create build: %v", test.name, err)
+			}
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
 			}
 
 			err = _engine.DestroyBuild(context.Background())

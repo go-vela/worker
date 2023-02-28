@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// checkIn is a helper function to to phone home to the server.
+// checkIn is a helper function to phone home to the server.
 func (w *Worker) checkIn(config *library.Worker) error {
 	// check to see if the worker already exists in the database
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())

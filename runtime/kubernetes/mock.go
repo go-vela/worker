@@ -4,14 +4,20 @@
 
 package kubernetes
 
+// Everything in this file should only be used in test code.
+// It is exported for use in tests of other packages.
+
 import (
-	"github.com/sirupsen/logrus"
+	"context"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/tools/cache"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 	fakeVelaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/fake"
+	"github.com/sirupsen/logrus"
 )
 
 // NewMock returns an Engine implementation that
@@ -81,7 +87,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	c.PodTracker = tracker
 
-	// The test is responsible for calling c.PodTracker.Start() if needed
+	// The test is responsible for calling c.PodTracker.Start(ctx) if needed.
+	// In some cases it is more convenient to call c.(MockKubernetesRuntime).StartPodTracker(ctx)
 
 	return c, nil
 }
@@ -90,8 +97,22 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 //
 // This interface is intended for running tests only.
 type MockKubernetesRuntime interface {
+	SetupMock() error
 	MarkPodTrackerReady()
+	StartPodTracker(context.Context)
+	WaitForPodTrackerReady()
+	WaitForPodCreate(string, string)
 	SimulateResync(*v1.Pod)
+	SimulateStatusUpdate(*v1.Pod, []v1.ContainerStatus) error
+}
+
+// SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
+// Many tests should call this right after they call runtime.SetupBuild (or executor.CreateBuild).
+//
+// This function is intended for running tests only.
+func (c *client) SetupMock() error {
+	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
+	return c.PodTracker.setupMockFor(c.Pod)
 }
 
 // MarkPodTrackerReady signals that PodTracker has been setup with ContainerTrackers.
@@ -99,6 +120,54 @@ type MockKubernetesRuntime interface {
 // This function is intended for running tests only.
 func (c *client) MarkPodTrackerReady() {
 	close(c.PodTracker.Ready)
+}
+
+// StartPodTracker tells the podTracker it can start populating the cache.
+//
+// This function is intended for running tests only.
+func (c *client) StartPodTracker(ctx context.Context) {
+	c.PodTracker.Start(ctx)
+}
+
+// WaitForPodTrackerReady waits for PodTracker.Ready to be closed (which happens in AssembleBuild).
+//
+// This function is intended for running tests only.
+func (c *client) WaitForPodTrackerReady() {
+	<-c.PodTracker.Ready
+}
+
+// WaitForPodCreate waits for PodTracker.Ready to be closed (which happens in AssembleBuild).
+//
+// This function is intended for running tests only.
+func (c *client) WaitForPodCreate(namespace, name string) {
+	created := make(chan struct{})
+
+	c.PodTracker.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			select {
+			case <-created:
+				// not interested in any other create events.
+				return
+			default:
+				break
+			}
+
+			var (
+				pod *v1.Pod
+				ok  bool
+			)
+
+			if pod, ok = obj.(*v1.Pod); !ok {
+				return
+			}
+
+			if pod.GetNamespace() == namespace && pod.GetName() == name {
+				close(created)
+			}
+		},
+	})
+
+	<-created
 }
 
 // SimulateResync simulates an resync where the PodTracker refreshes its cache.
@@ -115,4 +184,23 @@ func (c *client) SimulateResync(oldPod *v1.Pod) {
 
 	// simulate a re-sync/PodUpdate event
 	c.PodTracker.HandlePodUpdate(oldPod, c.Pod)
+}
+
+// SimulateUpdate simulates an update event from the k8s API.
+//
+// This function is intended for running tests only.
+func (c *client) SimulateStatusUpdate(pod *v1.Pod, containerStatuses []v1.ContainerStatus) error {
+	// We have to have a full copy here because the k8s client Mock
+	// replaces the pod it is storing, it does not just update the status.
+	updatedPod := pod.DeepCopy()
+	updatedPod.Status.ContainerStatuses = containerStatuses
+
+	_, err := c.Kubernetes.CoreV1().Pods(pod.GetNamespace()).
+		UpdateStatus(
+			context.Background(),
+			updatedPod,
+			metav1.UpdateOptions{},
+		)
+
+	return err
 }

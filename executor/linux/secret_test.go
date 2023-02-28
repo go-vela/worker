@@ -235,6 +235,14 @@ func TestLinux_Secret_delete(t *testing.T) {
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
 
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime.Driver() == constants.DriverKubernetes {
+				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
+
 			_engine.steps.Store(test.container.ID, test.step)
 
 			err = _engine.secret.destroy(context.Background(), test.container)
@@ -256,7 +264,9 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 func TestLinux_Secret_exec(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 	_repo := testRepo()
@@ -348,6 +358,16 @@ func TestLinux_Secret_exec(t *testing.T) {
 
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime == constants.DriverKubernetes {
+				err = _runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+
+				go _runtime.(kubernetes.MockKubernetesRuntime).SimulateResync(nil)
+			}
 
 			err = _engine.secret.exec(context.Background(), &p.Secrets)
 
@@ -622,6 +642,14 @@ func TestLinux_Secret_stream(t *testing.T) {
 
 			// add init container info to client
 			_ = _engine.CreateBuild(context.Background())
+
+			// Kubernetes runtime needs to set up the Mock after CreateBuild is called
+			if test.runtime.Driver() == constants.DriverKubernetes {
+				err = _engine.Runtime.(kubernetes.MockKubernetesRuntime).SetupMock()
+				if err != nil {
+					t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
+				}
+			}
 
 			err = _engine.secret.stream(context.Background(), test.container)
 
