@@ -14,6 +14,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
@@ -172,6 +173,14 @@ func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumesPrune
 func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Args) (types.VolumesPruneReport, error) {
 	return types.VolumesPruneReport{}, nil
+}
+
+// VolumeUpdate is a helper function to simulate
+// a mocked call to update a Docker volume.
+//
+// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeUpdate
+func (v *VolumeService) VolumeUpdate(ctx context.Context, volumeID string, version swarm.Version, options volume.UpdateOptions) error {
+	return nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
