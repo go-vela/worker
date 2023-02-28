@@ -2185,6 +2185,30 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
+			name:          "kubernetes-early exit from ExecBuild",
+			failure:       false,
+			earlyExecExit: true,
+			logError:      false,
+			runtime:       constants.DriverKubernetes,
+			pipeline:      "testdata/build/steps/basic.yml",
+			messageKey:    "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step-github-octocat-1-test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:           "docker-build complete before ExecBuild called",
 			failure:        false,
 			earlyBuildDone: true,
@@ -2209,6 +2233,30 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 		},
 		{
+			name:           "kubernetes-build complete before ExecBuild called",
+			failure:        false,
+			earlyBuildDone: true,
+			logError:       false,
+			runtime:        constants.DriverKubernetes,
+			pipeline:       "testdata/build/steps/basic.yml",
+			messageKey:     "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step-github-octocat-1-test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:          "docker-early exit from ExecBuild and build complete signaled",
 			failure:       false,
 			earlyExecExit: true,
@@ -2224,6 +2272,30 @@ func TestLinux_StreamBuild(t *testing.T) {
 			},
 			ctn: &pipeline.Container{
 				ID:          "step_github_octocat_1_test",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "test",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:          "kubernetes-early exit from ExecBuild and build complete signaled",
+			failure:       false,
+			earlyExecExit: true,
+			logError:      false,
+			runtime:       constants.DriverKubernetes,
+			pipeline:      "testdata/build/steps/basic.yml",
+			messageKey:    "step",
+			streamFunc: func(c *client) message.StreamFunc {
+				return c.StreamStep
+			},
+			planFunc: func(c *client) planFuncType {
+				return c.PlanStep
+			},
+			ctn: &pipeline.Container{
+				ID:          "step-github-octocat-1-test",
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "alpine:latest",
