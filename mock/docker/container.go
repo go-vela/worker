@@ -357,7 +357,7 @@ func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, opti
 // a mocked call to restart a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerRestart
-func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, options container.StopOptions) error {
+func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, timeout *time.Duration) error {
 	return nil
 }
 
@@ -403,7 +403,7 @@ func (c *ContainerService) ContainerStats(ctx context.Context, ctn string, strea
 // a mocked call to stop a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerStop
-func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, options container.StopOptions) error {
+func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, timeout *time.Duration) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
