@@ -67,5 +67,6 @@ type (
 		Queue      queue.Service
 		Runtime    runtime.Engine
 		VelaClient *vela.Client
+		AuthToken  chan string
 	}
 )

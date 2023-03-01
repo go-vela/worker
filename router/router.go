@@ -108,5 +108,8 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 		ExecutorHandlers(baseAPI)
 	}
 
+	// endpoint for passing a new registration token to the deadloop running operate.go
+	r.GET("/register", api.Register)
+
 	return r
 }

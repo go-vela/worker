@@ -22,12 +22,6 @@ import (
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 
-	// setup the vela client with the server
-	w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.Secret)
-	if err != nil {
-		return err
-	}
-
 	// create the errgroup for managing operator subprocesses
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
@@ -42,6 +36,21 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
+
+	// run the deadloop
+	logrus.Info("ranging over the deadloop channel, halting operation")
+
+	// wait for registration token
+	token := <-w.AuthToken
+
+	// continue operation like normal
+	logrus.Info("deadloop channel received token, continuing operation")
+
+	// setup the vela client with the server
+	w.VelaClient, err = setupClient(w.Config.Server, token)
+	if err != nil {
+		return err
+	}
 
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
@@ -71,6 +80,9 @@ func (w *Worker) operate(ctx context.Context) error {
 			}
 		}
 	})
+
+	// ensure worker is registered before beginning to pull from queue.
+	_ = <-w.AuthToken
 
 	// setup the queue
 	//

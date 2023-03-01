@@ -34,10 +34,18 @@ func (w *Worker) checkIn(config *library.Worker) error {
 	// if we were able to GET the worker, update it
 	logrus.Infof("checking worker %s into the server", config.GetHostname())
 
-	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
+	wrkCheckIn, _, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
 	if err != nil {
 		return fmt.Errorf("unable to update worker %s on the server: %w", config.GetHostname(), err)
 	}
+
+	w.VelaClient.Authentication.SetTokenAuth(wrkCheckIn.Token.GetToken())
+
+	if len(w.AuthToken) > 0 {
+		<-w.AuthToken
+	}
+
+	w.AuthToken <- wrkCheckIn.Token.GetToken()
 
 	return nil
 }
@@ -46,11 +54,19 @@ func (w *Worker) checkIn(config *library.Worker) error {
 func (w *Worker) register(config *library.Worker) error {
 	logrus.Infof("worker %s not found, registering it with the server", config.GetHostname())
 
-	_, _, err := w.VelaClient.Worker.Add(config)
+	tkn, _, err := w.VelaClient.Worker.Add(config)
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
 		return fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
+
+	w.VelaClient.Authentication.SetTokenAuth(tkn.GetToken())
+
+	if len(w.AuthToken) > 0 {
+		<-w.AuthToken
+	}
+
+	w.AuthToken <- tkn.GetToken()
 
 	// successfully added the worker so return nil
 	return nil

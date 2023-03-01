@@ -136,11 +136,17 @@ func run(c *cli.Context) error {
 			TLSMinVersion: c.String("server.tls-min-version"),
 		},
 		Executors: make(map[int]executor.Engine),
+
+		AuthToken: make(chan string, 1),
 	}
 
 	// set the worker address if no flag was provided
 	if len(w.Config.API.Address.String()) == 0 {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
+	}
+
+	if len(c.String("worker.token")) > 0 {
+		w.AuthToken <- c.String("worker-token")
 	}
 
 	// validate the worker
