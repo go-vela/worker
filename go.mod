@@ -8,8 +8,8 @@ require (
 	github.com/docker/docker v20.10.23+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.0
-	github.com/go-vela/sdk-go v0.18.0-rc1
-	github.com/go-vela/server v0.18.0-rc1
+	github.com/go-vela/sdk-go v0.18.0-rc2
+	github.com/go-vela/server v0.18.0-rc2
 	github.com/go-vela/types v0.18.0-rc1
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.5.1
@@ -20,7 +20,7 @@ require (
 	golang.org/x/sync v0.1.0
 	gotest.tools/v3 v3.4.0
 	k8s.io/api v0.26.1
-	k8s.io/apimachinery v0.26.1
+	k8s.io/apimachinery v0.26.2
 	k8s.io/client-go v0.26.1
 	sigs.k8s.io/yaml v1.3.0
 )
