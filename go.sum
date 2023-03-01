@@ -156,10 +156,10 @@ github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91
 github.com/go-playground/validator/v10 v10.11.2 h1:q3SHpufmypg+erIExEKUmsgmhDTyhcJ38oeKGACXohU=
 github.com/go-playground/validator/v10 v10.11.2/go.mod h1:NieE624vt4SCTJtD87arVLvdmjPAeV8BQlHtMnw9D7s=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
-github.com/go-vela/sdk-go v0.18.0-rc1 h1:YSNY4l5qUqE+9cLzIJ2Dfy1rZVzml8LsVa1k/TvdehI=
-github.com/go-vela/sdk-go v0.18.0-rc1/go.mod h1:JRBduEcdVY1I0duwaIGPFK3QPBFxe7REI9mjnvnM8mg=
-github.com/go-vela/server v0.18.0-rc1 h1:UiRWd0E/e73uBnPx/ZduahuOcc8hEj1SBwFwIsfoANU=
-github.com/go-vela/server v0.18.0-rc1/go.mod h1:X6AhNghg1oEuz3aSsB8aAgBi2x52pSSKh3MAZCJqVqo=
+github.com/go-vela/sdk-go v0.18.0-rc2 h1:LR4Lt/ELT7SAQYv8fjQnfx8MjjtkLVcIGhNvlImqAdM=
+github.com/go-vela/sdk-go v0.18.0-rc2/go.mod h1:Z3YFC+6vvghCvEfwlb/PKLW0Tx8BBDz4q4KQ3mYhUK0=
+github.com/go-vela/server v0.18.0-rc2 h1:/0GGtSG6q8hdYevLT8XkUijdbwzccGHY/d2jRTxDQug=
+github.com/go-vela/server v0.18.0-rc2/go.mod h1:VQpgbboMvXK3vP9Hwr837BA5dNC1SqRpJYgl64Vz5HI=
 github.com/go-vela/types v0.18.0-rc1 h1:q93g+A/GOP56vmMi8AH1BKtgmqZy3gj5PD66Wqx8ej4=
 github.com/go-vela/types v0.18.0-rc1/go.mod h1:6MzMhLaXKSZ9wiJveieqnBd2+4ZMS7yv7+POGSITyS8=
 github.com/goccy/go-json v0.10.0 h1:mXKd9Qw4NuzShiRlOXKews24ufknHO7gx30lsDyokKA=
@@ -796,8 +796,8 @@ honnef.co/go/tools v0.0.1-2020.1.3/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 k8s.io/api v0.26.1 h1:f+SWYiPd/GsiWwVRz+NbFyCgvv75Pk9NK6dlkZgpCRQ=
 k8s.io/api v0.26.1/go.mod h1:xd/GBNgR0f707+ATNyPmQ1oyKSgndzXij81FzWGsejg=
-k8s.io/apimachinery v0.26.1 h1:8EZ/eGJL+hY/MYCNwhmDzVqq2lPl3N3Bo8rvweJwXUQ=
-k8s.io/apimachinery v0.26.1/go.mod h1:tnPmbONNJ7ByJNz9+n9kMjNP8ON+1qoAIIC70lztu74=
+k8s.io/apimachinery v0.26.2 h1:da1u3D5wfR5u2RpLhE/ZtZS2P7QvDgLZTi9wrNZl/tQ=
+k8s.io/apimachinery v0.26.2/go.mod h1:ats7nN1LExKHvJ9TmwootT00Yz05MuYqPXEXaVeOy5I=
 k8s.io/client-go v0.26.1 h1:87CXzYJnAMGaa/IDDfRdhTzxk/wzGZ+/HUQpqgVSZXU=
 k8s.io/client-go v0.26.1/go.mod h1:IWNSglg+rQ3OcvDkhY6+QLeasV4OYHDjdqeWkDQZwGE=
 k8s.io/klog/v2 v2.80.1 h1:atnLQ121W371wYYFawwYx1aEY2eUfs4l3J72wtgAwV4=
