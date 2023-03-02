@@ -96,7 +96,6 @@ func run(c *cli.Context) error {
 				Driver:              c.String("executor.driver"),
 				LogMethod:           c.String("executor.log_method"),
 				MaxLogSize:          c.Uint("executor.max_log_size"),
-				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 			},
 			// logger configuration
@@ -124,8 +123,9 @@ func run(c *cli.Context) error {
 			},
 			// server configuration
 			Server: &Server{
-				Address: c.String("server.addr"),
-				Secret:  c.String("server.secret"),
+				Address:           c.String("server.addr"),
+				Secret:            c.String("server.secret"),
+				RegistrationToken: c.String("server.registration-token"),
 			},
 			// Certificate configuration
 			Certificate: &Certificate{
@@ -136,6 +136,11 @@ func run(c *cli.Context) error {
 			TLSMinVersion: c.String("server.tls-min-version"),
 		},
 		Executors: make(map[int]executor.Engine),
+		// create a channel to receive tokens from /register
+		Deadloop:   make(chan string, 1),
+		Success:    make(chan bool, 1),
+		Registered: make(chan bool, 1),
+		Valid:      false,
 	}
 
 	// set the worker address if no flag was provided

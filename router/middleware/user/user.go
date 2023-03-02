@@ -5,7 +5,6 @@
 package user
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/go-vela/worker/router/middleware/token"
@@ -25,14 +24,10 @@ func Establish() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := new(library.User)
 
-		t, err := token.Retrieve(c.Request)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
-			return
-		}
+		t := token.Retrieve(c)
 
 		secret := c.MustGet("secret").(string)
-		if strings.EqualFold(t, secret) {
+		if strings.EqualFold(*t, secret) {
 			u.SetName("vela-server")
 			u.SetActive(true)
 			u.SetAdmin(true)

@@ -31,6 +31,7 @@ import (
 	"github.com/go-vela/worker/api"
 	"github.com/go-vela/worker/router/middleware"
 	"github.com/go-vela/worker/router/middleware/perm"
+	"github.com/go-vela/worker/router/middleware/token"
 	"github.com/go-vela/worker/router/middleware/user"
 )
 
@@ -91,6 +92,7 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 	//
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
 	r.GET("/version", api.Version)
+	r.POST("/register-worker/", token.Establish(), api.RegisterWorker)
 
 	// add a collection of endpoints for handling API related requests
 	//

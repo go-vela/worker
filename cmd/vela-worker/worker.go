@@ -34,8 +34,9 @@ type (
 
 	// Server represents the worker configuration for server information.
 	Server struct {
-		Address string
-		Secret  string
+		Address           string
+		Secret            string
+		RegistrationToken string
 	}
 
 	// Certificate represents the optional cert and key to enable TLS.
@@ -67,5 +68,9 @@ type (
 		Queue      queue.Service
 		Runtime    runtime.Engine
 		VelaClient *vela.Client
+		Deadloop   chan string
+		Success    chan bool
+		Registered chan bool
+		Valid      bool
 	}
 )

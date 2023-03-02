@@ -8,14 +8,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
 )
 
 // Start initiates all subprocesses for the Worker
@@ -70,6 +69,7 @@ func (w *Worker) Start() error {
 	g.Go(func() error {
 		var err error
 		logrus.Info("starting worker server")
+
 		if tlsCfg != nil {
 			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server
@@ -92,6 +92,7 @@ func (w *Worker) Start() error {
 	// spawn goroutine for starting the operator
 	g.Go(func() error {
 		logrus.Info("starting worker operator")
+
 		// start the operator for the worker
 		err := w.operate(gctx)
 		if err != nil {

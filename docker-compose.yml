@@ -33,7 +33,8 @@ services:
       VELA_SERVER_ADDR: 'http://server:8080'
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_ADDR: 'http://worker:8080'
-      WORKER_CHECK_IN: 5m
+      WORKER_CHECK_IN: 1m
+      WORKER_SERVER_REGISTRATION_TOKEN: ''
     restart: always
     ports:
       - "8081:8080"
@@ -42,6 +43,38 @@ services:
     depends_on:
       - server
 
+
+  worker1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker1
+    image: worker1:local
+    networks:
+      - vela
+    environment:
+      EXECUTOR_DRIVER: linux
+      EXECUTOR_LOG_METHOD: 'time-chunks'
+      QUEUE_DRIVER: redis
+      QUEUE_ADDR: 'redis://redis:6379'
+      VELA_BUILD_LIMIT: 1
+      VELA_BUILD_TIMEOUT: 30m
+      VELA_LOG_LEVEL: trace
+      VELA_RUNTIME_DRIVER: docker
+      VELA_RUNTIME_PRIVILEGED_IMAGES: 'target/vela-docker'
+      VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS: 'true'
+      VELA_SERVER_ADDR: 'http://server:8080'
+      VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
+      WORKER_ADDR: 'http://worker1:8080'
+      WORKER_CHECK_IN: 30s
+      WORKER_SERVER_REGISTRATION_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidWlsZF9pZCI6MCwiaXNfYWN0aXZlIjpmYWxzZSwiaXNfYWRtaW4iOmZhbHNlLCJyZXBvIjoiIiwidG9rZW5fdHlwZSI6IldvcmtlclJlZ2lzdGVyIiwic3ViIjoid29ya2VyMSIsImV4cCI6MTY3Nzc4OTcwNSwiaWF0IjoxNjc3Nzg5NjQ1fQ.MQ_VEhshmI1PQYbHPO60OJVb8aE5k14gSF6wIKkno0w'
+    restart: always
+    ports:
+      - "8082:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    depends_on:
+      - server
   # The `server` compose service hosts the Vela server and API.
   #
   # This component is used for processing web requests and
@@ -50,8 +83,11 @@ services:
   #
   # https://go-vela.github.io/docs/administration/server/
   server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
     container_name: server
-    image: target/vela-server:latest
+    image: server:local
     networks:
       - vela
     environment:
@@ -70,11 +106,13 @@ services:
       VELA_WEBUI_ADDR: 'http://localhost:8888'
       VELA_LOG_LEVEL: trace
       VELA_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
+      VELA_SERVER_PRIVATE_KEY: 'TimHuynh'
       VELA_REFRESH_TOKEN_DURATION: 90m
       VELA_ACCESS_TOKEN_DURATION: 60m
       VELA_DISABLE_WEBHOOK_VALIDATION: 'true'
       VELA_ENABLE_SECURE_COOKIE: 'false'
       VELA_REPO_ALLOWLIST: '*'
+
     env_file:
       - .env
     restart: always

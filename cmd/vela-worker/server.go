@@ -6,6 +6,7 @@ package main
 
 import (
 	"crypto/tls"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"strings"
@@ -33,6 +34,14 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 		middleware.Executors(w.Executors),
 		middleware.Secret(w.Config.Server.Secret),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
+		// middleware that puts the deadloop channel in the gin context
+		// this lets us send messages back to operate.go
+		func(c *gin.Context) {
+			c.Set("deadloop", w.Deadloop)
+			c.Set("success", w.Success)
+			c.Set("registered", w.Registered)
+			c.Next()
+		},
 	)
 
 	// log a message indicating the start of serving traffic

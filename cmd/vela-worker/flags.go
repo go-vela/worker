@@ -91,6 +91,11 @@ func flags() []cli.Flag {
 			Usage:   "optional TLS minimum version requirement",
 			Value:   "1.2",
 		},
+		&cli.StringFlag{
+			EnvVars: []string{"WORKER_SERVER_REGISTRATION_TOKEN", "WORKER_SERVER_REGISTRATION_TOKEN"},
+			Name:    "server.registration-token",
+			Usage:   "token used for worker to register with server",
+		},
 	}
 
 	// Executor Flags
