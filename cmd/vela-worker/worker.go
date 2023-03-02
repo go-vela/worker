@@ -68,5 +68,6 @@ type (
 		Runtime    runtime.Engine
 		VelaClient *vela.Client
 		AuthToken  chan string
+		CheckedIn  bool
 	}
 )

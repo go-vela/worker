@@ -37,24 +37,22 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
 
-	// run the deadloop
-	logrus.Info("ranging over the deadloop channel, halting operation")
-
-	// wait for registration token
-	token := <-w.AuthToken
-
-	// continue operation like normal
-	logrus.Info("deadloop channel received token, continuing operation")
-
-	// setup the vela client with the server
-	w.VelaClient, err = setupClient(w.Config.Server, token)
-	if err != nil {
-		return err
-	}
-
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
 		for {
+			logrus.Info("verifying token is present in channel")
+			// wait for token
+			token := <-w.AuthToken
+
+			// continue operation like normal
+			logrus.Info("token present, continuing operation")
+
+			// setup the vela client with the token
+			w.VelaClient, err = setupClient(w.Config.Server, token)
+			if err != nil {
+				return err
+			}
+
 			select {
 			case <-gctx.Done():
 				logrus.Info("Completed looping on worker registration")
@@ -65,14 +63,12 @@ func (w *Worker) operate(ctx context.Context) error {
 
 				// register or update the worker
 				//nolint:contextcheck // ignore passing context
-				err = w.checkIn(registryWorker)
-				if err != nil {
-					logrus.Error(err)
-				}
-
-				// if unable to update the worker, log the error but allow the worker to continue running
+				w.CheckedIn, err = w.checkIn(registryWorker)
 				if err != nil {
 					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
+					logrus.Info("waiting for registration token")
+
+					continue
 				}
 
 				// sleep for the configured time
@@ -80,9 +76,6 @@ func (w *Worker) operate(ctx context.Context) error {
 			}
 		}
 	})
-
-	// ensure worker is registered before beginning to pull from queue.
-	_ = <-w.AuthToken
 
 	// setup the queue
 	//
@@ -111,6 +104,11 @@ func (w *Worker) operate(ctx context.Context) error {
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
+				if !w.CheckedIn {
+					time.Sleep(5 * time.Second)
+					logrus.Info("worker not checked in, skipping queue read")
+					continue
+				}
 				select {
 				case <-gctx.Done():
 					logrus.WithFields(logrus.Fields{
