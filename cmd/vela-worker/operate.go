@@ -43,7 +43,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		for token := range w.Deadloop {
 			fmt.Println("received token from /register: ", token)
 			// setup the client
-			w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.Secret)
+			w.VelaClient, err = setupClient(w.Config.Server, token)
 			if err != nil {
 				return err
 			}
