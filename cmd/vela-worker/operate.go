@@ -36,7 +36,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
-	// run the deadloop
+	// run the deadloop in the event of now registration token being seeded on startup
 	// TODO if worker is already active, skip this part?
 	if len(w.Config.Server.RegistrationToken) == 0 {
 		logrus.Info("ranging over the deadloop channel, halting operation")
@@ -52,15 +52,21 @@ func (w *Worker) operate(ctx context.Context) error {
 
 			// register or update the worker
 			//nolint:contextcheck // ignore passing context
-			err = w.checkIn(registryWorker)
+			w.Valid, err = w.checkIn(registryWorker)
 			if err != nil {
 				logrus.Error(err)
 			}
-
-			// break from the deadloop only if no checkin is successful and let the worker continue operating
-			if err == nil {
+			w.Success <- w.Valid
+			// if worker is registered, break the deadloop
+			if w.Valid {
+				w.Registered <- w.Valid
 				break
 			}
+
+			// break from the deadloop only if no checkin is successful and let the worker continue operating
+			//if err == nil {
+			//	break
+			//}
 
 		}
 	} else {
@@ -83,21 +89,23 @@ func (w *Worker) operate(ctx context.Context) error {
 				logrus.Info("Completed looping on worker registration")
 				return nil
 			default:
-
+				logrus.Info("Checking worker!")
 				// set checking time to now and call the server
 				registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 				//registryWorker.GetLastCheckedIn()
 
 				// register or update the worker
 				//nolint:contextcheck // ignore passing context
-				err = w.checkIn(registryWorker)
-				if err != nil {
-					logrus.Error(err)
-				}
-
+				w.Valid, err = w.checkIn(registryWorker)
 				// if unable to update the worker, log the error but allow the worker to continue running
 				if err != nil {
 					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
+				}
+				w.Success <- w.Valid
+
+				if w.Valid {
+					w.Registered <- w.Valid
+
 				}
 				// sleep for the configured time
 				time.Sleep(w.Config.CheckIn)
@@ -125,36 +133,40 @@ func (w *Worker) operate(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 		logrus.Infof("Thread ID %d listening to queue...", id)
-
+		logrus.Infof("valid value %b", w.Valid)
 		// spawn errgroup routine for operator subprocess
 		//
 		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
-				if w.Valid {
-					select {
-					case <-gctx.Done():
-						logrus.WithFields(logrus.Fields{
-							"id": id,
-						}).Info("Completed looping on worker executor")
-						return nil
-					default:
-						// exec operator subprocess to poll and execute builds
-						// (do not pass the context to avoid errors in one
-						// executor+build inadvertently canceling other builds)
-						//nolint:contextcheck // ignore passing context
-						err = w.exec(id)
-						if err != nil {
-							// log the error received from the executor
-							//
-							// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
-							logrus.Errorf("failing worker executor: %v", err)
+				if !w.Valid {
+					//logrus.Info("worker not checked in, skipping queue read")
+					continue
+				}
+				logrus.Infof("valid in exec %b", w.Valid)
+				select {
+				case <-gctx.Done():
+					logrus.WithFields(logrus.Fields{
+						"id": id,
+					}).Info("Completed looping on worker executor")
+					return nil
+				default:
+					// exec operator subprocess to poll and execute builds
+					// (do not pass the context to avoid errors in one
+					// executor+build inadvertently canceling other builds)
+					//nolint:contextcheck // ignore passing context
+					err = w.exec(id)
+					if err != nil {
+						// log the error received from the executor
+						//
+						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+						logrus.Errorf("failing worker executor: %v", err)
 
-							return err
-						}
+						return err
 					}
 				}
+
 			}
 		})
 	}
