@@ -67,7 +67,7 @@ services:
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_ADDR: 'http://worker1:8080'
       WORKER_CHECK_IN: 30s
-      WORKER_SERVER_REGISTRATION_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidWlsZF9pZCI6MCwiaXNfYWN0aXZlIjpmYWxzZSwiaXNfYWRtaW4iOmZhbHNlLCJyZXBvIjoiIiwidG9rZW5fdHlwZSI6IldvcmtlclJlZ2lzdGVyIiwic3ViIjoid29ya2VyMSIsImV4cCI6MTY3NzgxMTA2NywiaWF0IjoxNjc3ODExMDA3fQ.yRXdRFAxr2IxPi2wBaZZS3EeQ0cRZbZMoy6q-HzhiW0'
+      WORKER_SERVER_REGISTRATION_TOKEN: ''
     restart: always
     ports:
       - "8082:8080"

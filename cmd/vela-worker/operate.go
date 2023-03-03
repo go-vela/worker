@@ -38,9 +38,53 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
 	// run the deadloop in the event of now registration token being seeded on startup
 	// TODO if worker is already active, skip this part?
-	if len(w.Config.Server.RegistrationToken) == 0 {
-		logrus.Info("ranging over the deadloop channel, halting operation")
-		for token := range w.Deadloop {
+	//if len(w.Config.Server.RegistrationToken) == 0 {
+	//	logrus.Info("verifying token is present in channel")
+	//	token := <-w.Deadloop
+	//	fmt.Println("received token from /register: ", token)
+	//	// setup the client
+	//	w.VelaClient, err = setupClient(w.Config.Server, token)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	// set checking time to now and call the server
+	//	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+	//
+	//	// register or update the worker
+	//	//nolint:contextcheck // ignore passing context
+	//	w.Valid, err = w.checkIn(registryWorker)
+	//	if err != nil {
+	//		logrus.Error(err)
+	//	}
+	//	w.Success <- w.Valid
+	//	// if worker is registered, break the deadloop
+	//	if w.Valid {
+	//		w.Registered <- w.Valid
+	//	}
+
+	// break from the deadloop only if no checkin is successful and let the worker continue operating
+	//if err == nil {
+	//	break
+	//}
+
+	//} else {
+	//	logrus.Info("Registration token was seeded! Checking in!")
+	//	// setup the client
+	//	w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.RegistrationToken)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+
+	// continue operation like normal
+	logrus.Info("deadloop channel received token, continuing operation")
+
+	// spawn goroutine for phoning home
+	executors.Go(func() error {
+		for {
+
+			logrus.Info("verifying token is present in channel")
+			token := <-w.Deadloop
 			fmt.Println("received token from /register: ", token)
 			// setup the client
 			w.VelaClient, err = setupClient(w.Config.Server, token)
@@ -60,30 +104,16 @@ func (w *Worker) operate(ctx context.Context) error {
 			// if worker is registered, break the deadloop
 			if w.Valid {
 				w.Registered <- w.Valid
-				break
+			}
+			if len(w.Config.Server.RegistrationToken) > 1 {
+				logrus.Info("Registration token was seeded! Checking in!")
+				// setup the client
+				w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.RegistrationToken)
+				if err != nil {
+					return err
+				}
 			}
 
-			// break from the deadloop only if no checkin is successful and let the worker continue operating
-			//if err == nil {
-			//	break
-			//}
-
-		}
-	} else {
-		logrus.Info("Registration token was seeded! Checking in!")
-		// setup the client
-		w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.RegistrationToken)
-		if err != nil {
-			return err
-		}
-	}
-
-	// continue operation like normal
-	logrus.Info("deadloop channel received token, continuing operation")
-
-	// spawn goroutine for phoning home
-	executors.Go(func() error {
-		for {
 			select {
 			case <-gctx.Done():
 				logrus.Info("Completed looping on worker registration")
@@ -141,7 +171,8 @@ func (w *Worker) operate(ctx context.Context) error {
 			// create an infinite loop to poll for builds
 			for {
 				if !w.Valid {
-					//logrus.Info("worker not checked in, skipping queue read")
+					time.Sleep(10 * time.Second)
+					logrus.Info("worker not checked in, skipping queue read")
 					continue
 				}
 				logrus.Infof("valid in exec %b", w.Valid)
