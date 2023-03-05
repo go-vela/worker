@@ -31,7 +31,6 @@ import (
 	"github.com/go-vela/worker/api"
 	"github.com/go-vela/worker/router/middleware"
 	"github.com/go-vela/worker/router/middleware/perm"
-	"github.com/go-vela/worker/router/middleware/token"
 	"github.com/go-vela/worker/router/middleware/user"
 )
 
@@ -92,7 +91,6 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 	//
 	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
 	r.GET("/version", api.Version)
-	r.POST("/register", token.Establish(), api.RegisterWorker)
 
 	// add a collection of endpoints for handling API related requests
 	//
@@ -109,6 +107,9 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 		// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#ExecutorHandlers
 		ExecutorHandlers(baseAPI)
 	}
+
+	// endpoint for passing a new registration token to the deadloop running operate.go
+	r.POST("/register", api.RegisterWorker)
 
 	return r
 }

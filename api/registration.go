@@ -28,13 +28,11 @@ import (
 // RegisterWorker represents the API handler to register the worker
 // by providing a registration token
 func RegisterWorker(c *gin.Context) {
-	tkn := token.Retrieve(c)
-	logrus.Infof("token %s", *tkn)
-	// extract the deadloop channel that was packed into gin context
-	d, ok := c.Get("deadloop")
+
+	// extract the auth token channel that was packed into gin context
+	v, ok := c.Get("auth-token")
 	if !ok {
-		logrus.Infof("v type is %T", d)
-		c.JSON(http.StatusInternalServerError, "no deadloop channel in the context")
+		c.JSON(http.StatusInternalServerError, "no auth token channel in the context")
 		return
 	}
 	s, ok := c.Get("success")
@@ -49,11 +47,10 @@ func RegisterWorker(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, "no registered channel in the context")
 		return
 	}
-
-	// make sure we configured it properly
-	deadloopChannel, ok := d.(chan string)
+	// make sure we configured the channel properly
+	authChannel, ok := v.(chan string)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "deadloop channel in the context is the wrong type")
+		c.JSON(http.StatusInternalServerError, "auth token channel in the context is the wrong type")
 		return
 	}
 	// make sure we configured it properly
@@ -72,9 +69,10 @@ func RegisterWorker(c *gin.Context) {
 		c.JSON(http.StatusOK, "worker is already registered")
 		return
 	}
-	// send the token
-	deadloopChannel <- *tkn
-
+	tkn, _ := token.Retrieve(c.Request)
+	logrus.Infof("token %s", tkn)
+	// write registration token to auth token channel
+	authChannel <- tkn
 	for v := range successLoopChannel {
 		fmt.Println("received token from operate: ", v)
 		if v == true {

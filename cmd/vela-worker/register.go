@@ -37,7 +37,11 @@ func (w *Worker) checkIn(config *library.Worker) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("unable to update worker %s on the server: %w", config.GetHostname(), err)
 	}
-	w.VelaClient.Authentication.SetTokenAuth(wrkCheckIn.Token.GetToken())
+	//w.VelaClient.Authentication.SetTokenAuth(wrkCheckIn.Token.GetToken())
+
+	// write the token to the auth token channel
+	w.AuthToken <- wrkCheckIn.Token.GetToken()
+
 	return true, nil
 }
 
@@ -50,7 +54,11 @@ func (w *Worker) register(config *library.Worker) (bool, error) {
 		// log the error instead of returning so the operation doesn't block worker deployment
 		return false, fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
-	w.VelaClient.Authentication.SetTokenAuth(tkn.GetToken())
+	//w.VelaClient.Authentication.SetTokenAuth(tkn.GetToken())
+
+	// write the token to the auth token channel
+	w.AuthToken <- tkn.GetToken()
+
 	// successfully added the worker so return nil
 	return true, nil
 }

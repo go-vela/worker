@@ -68,9 +68,9 @@ type (
 		Queue      queue.Service
 		Runtime    runtime.Engine
 		VelaClient *vela.Client
-		Deadloop   chan string
 		Success    chan bool
 		Registered chan bool
-		Valid      bool
+		AuthToken  chan string
+		CheckedIn  bool
 	}
 )

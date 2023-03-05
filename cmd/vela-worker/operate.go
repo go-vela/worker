@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/library"
 	"time"
@@ -83,28 +82,6 @@ func (w *Worker) operate(ctx context.Context) error {
 	executors.Go(func() error {
 		for {
 
-			logrus.Info("verifying token is present in channel")
-			token := <-w.Deadloop
-			fmt.Println("received token from /register: ", token)
-			// setup the client
-			w.VelaClient, err = setupClient(w.Config.Server, token)
-			if err != nil {
-				return err
-			}
-			// set checking time to now and call the server
-			registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-
-			// register or update the worker
-			//nolint:contextcheck // ignore passing context
-			w.Valid, err = w.checkIn(registryWorker)
-			if err != nil {
-				logrus.Error(err)
-			}
-			w.Success <- w.Valid
-			// if worker is registered, break the deadloop
-			if w.Valid {
-				w.Registered <- w.Valid
-			}
 			if len(w.Config.Server.RegistrationToken) > 1 {
 				logrus.Info("Registration token was seeded! Checking in!")
 				// setup the client
@@ -112,7 +89,52 @@ func (w *Worker) operate(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
+				// in case of an expired seeded token, should checkIn happens here?
+				// if w.CheckIn is false, it goes into the else loop and wait for a new token
+				// instead of continuing the checkIn routine
+				w.CheckedIn, err = w.checkIn(registryWorker)
+				if err != nil {
+					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
+				}
+				if !w.CheckedIn {
+					logrus.Info("verifying token is present in channel")
+					// wait for token
+					token := <-w.AuthToken
+					// continue operation like normal
+					logrus.Info("token present, continuing operation")
+					// setup the vela client with the token
+					w.VelaClient, err = setupClient(w.Config.Server, token)
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				logrus.Info("verifying token is present in channel")
+				// wait for token
+				token := <-w.AuthToken
+				// continue operation like normal
+				logrus.Info("token present, continuing operation")
+				// setup the vela client with the token
+				w.VelaClient, err = setupClient(w.Config.Server, token)
+				if err != nil {
+					return err
+				}
 			}
+
+			//// set checking time to now and call the server
+			//registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+			//
+			//// register or update the worker
+			////nolint:contextcheck // ignore passing context
+			//w.CheckedIn, err = w.checkIn(registryWorker)
+			//if err != nil {
+			//	logrus.Error(err)
+			//}
+			//w.Success <- w.CheckedIn
+			//// if worker is registered, break the deadloop
+			//if w.CheckedIn {
+			//	w.Registered <- w.CheckedIn
+			//}
 
 			select {
 			case <-gctx.Done():
@@ -126,15 +148,18 @@ func (w *Worker) operate(ctx context.Context) error {
 
 				// register or update the worker
 				//nolint:contextcheck // ignore passing context
-				w.Valid, err = w.checkIn(registryWorker)
 				// if unable to update the worker, log the error but allow the worker to continue running
+				w.CheckedIn, err = w.checkIn(registryWorker)
 				if err != nil {
 					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
-				}
-				w.Success <- w.Valid
+					logrus.Info("waiting for registration token")
 
-				if w.Valid {
-					w.Registered <- w.Valid
+					continue
+				}
+				w.Success <- w.CheckedIn
+
+				if w.CheckedIn {
+					w.Registered <- w.CheckedIn
 
 				}
 				// sleep for the configured time
@@ -163,19 +188,18 @@ func (w *Worker) operate(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
 		logrus.Infof("Thread ID %d listening to queue...", id)
-		logrus.Infof("valid value %b", w.Valid)
 		// spawn errgroup routine for operator subprocess
 		//
 		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
-				if !w.Valid {
-					time.Sleep(10 * time.Second)
+
+				if !w.CheckedIn {
+					time.Sleep(5 * time.Second)
 					logrus.Info("worker not checked in, skipping queue read")
 					continue
 				}
-				logrus.Infof("valid in exec %b", w.Valid)
 				select {
 				case <-gctx.Done():
 					logrus.WithFields(logrus.Fields{
@@ -203,7 +227,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	}
 
 	// reset w.Valid
-	w.Valid = false
+	//w.Valid = false
 	// wait for errors from operator subprocesses
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait

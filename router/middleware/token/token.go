@@ -5,8 +5,9 @@
 package token
 
 import (
-	"context"
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"net/http"
+	"strings"
 )
 
 // Retrieve gets the token from the provided request http.Request
@@ -17,16 +18,14 @@ import (
 //
 // * Bearer token in `Authorization` header
 // .
-func Retrieve(c context.Context) *string {
-	return FromContext(c)
-}
-
-// Establish sets the client in the given context.
-func Establish() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		t := c.Request.Header.Get("Authorization")
-
-		ToContext(c, &t)
-		c.Next()
+func Retrieve(r *http.Request) (string, error) {
+	// get the token from the `Authorization` header
+	token := r.Header.Get("Authorization")
+	if len(token) > 0 {
+		if strings.Contains(token, "Bearer") {
+			return strings.Split(token, "Bearer ")[1], nil
+		}
 	}
+
+	return "", fmt.Errorf("no token provided in Authorization header")
 }
