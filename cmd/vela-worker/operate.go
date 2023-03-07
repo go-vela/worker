@@ -82,7 +82,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	executors.Go(func() error {
 		for {
 
-			if len(w.Config.Server.RegistrationToken) > 1 {
+			if len(w.Config.Server.RegistrationToken) > 1 && !w.CheckedIn {
 				logrus.Info("Registration token was seeded! Checking in!")
 				// setup the client
 				w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.RegistrationToken)
@@ -160,8 +160,10 @@ func (w *Worker) operate(ctx context.Context) error {
 
 				if w.CheckedIn {
 					w.Registered <- w.CheckedIn
-
-				}
+				} //else {
+				//	// clean Registered channel for registering
+				//	<-w.Registered
+				//}
 				// sleep for the configured time
 				time.Sleep(w.Config.CheckIn)
 			}
@@ -194,7 +196,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
-
+				logrus.Info("begins queue exec")
 				if !w.CheckedIn {
 					time.Sleep(5 * time.Second)
 					logrus.Info("worker not checked in, skipping queue read")
