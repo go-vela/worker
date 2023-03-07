@@ -81,7 +81,8 @@ func (w *Worker) operate(ctx context.Context) error {
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
 		for {
-
+			//w.CheckedIn is false by default
+			// if a token was seeded and
 			if len(w.Config.Server.RegistrationToken) > 1 && !w.CheckedIn {
 				logrus.Info("Registration token was seeded! Checking in!")
 				// setup the client
@@ -96,6 +97,7 @@ func (w *Worker) operate(ctx context.Context) error {
 				if err != nil {
 					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
 				}
+				// if seeded token is expired then wait for new token to be provided
 				if !w.CheckedIn {
 					logrus.Info("verifying token is present in channel")
 					// wait for token
@@ -109,6 +111,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					}
 				}
 			} else {
+				// if no seeded token then wait for token before continuing
 				logrus.Info("verifying token is present in channel")
 				// wait for token
 				token := <-w.AuthToken
@@ -156,8 +159,10 @@ func (w *Worker) operate(ctx context.Context) error {
 
 					continue
 				}
+				// send true/false over to let user know whether registration was a success
 				w.Success <- w.CheckedIn
 
+				// Send a bool into channel to avoid double registration
 				if w.CheckedIn {
 					w.Registered <- w.CheckedIn
 				} //else {
