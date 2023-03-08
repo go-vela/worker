@@ -28,7 +28,6 @@ import (
 // RegisterWorker represents the API handler to register the worker
 // by providing a registration token
 func RegisterWorker(c *gin.Context) {
-
 	// extract the auth token channel that was packed into gin context
 	v, ok := c.Get("auth-token")
 	if !ok {
@@ -70,6 +69,8 @@ func RegisterWorker(c *gin.Context) {
 		return
 	}
 	tkn, _ := token.Retrieve(c.Request)
+
+	//vc.Authentication.SetTokenAuth(validateToken)
 	logrus.Infof("token %s", tkn)
 	// write registration token to auth token channel
 	authChannel <- tkn

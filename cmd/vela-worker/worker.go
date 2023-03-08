@@ -72,5 +72,6 @@ type (
 		Registered chan bool
 		AuthToken  chan string
 		CheckedIn  bool
+		Valid      bool
 	}
 )

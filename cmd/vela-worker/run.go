@@ -140,6 +140,7 @@ func run(c *cli.Context) error {
 		Success:    make(chan bool, 1),
 		Registered: make(chan bool, 1),
 		AuthToken:  make(chan string, 1),
+		Valid:      false,
 	}
 
 	// set the worker address if no flag was provided

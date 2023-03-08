@@ -25,7 +25,10 @@ func (w *Worker) operate(ctx context.Context) error {
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
 	executors, gctx := errgroup.WithContext(ctx)
-
+	w.VelaClient, err = setupClient(w.Config.Server, "")
+	if err != nil {
+		return err
+	}
 	// Define the database representation of the worker
 	// and register itself in the database
 	registryWorker := new(library.Worker)
@@ -35,143 +38,67 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetActive(true)
 	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
-	// run the deadloop in the event of now registration token being seeded on startup
-	// TODO if worker is already active, skip this part?
-	//if len(w.Config.Server.RegistrationToken) == 0 {
-	//	logrus.Info("verifying token is present in channel")
-	//	token := <-w.Deadloop
-	//	fmt.Println("received token from /register: ", token)
-	//	// setup the client
-	//	w.VelaClient, err = setupClient(w.Config.Server, token)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	// set checking time to now and call the server
-	//	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-	//
-	//	// register or update the worker
-	//	//nolint:contextcheck // ignore passing context
-	//	w.Valid, err = w.checkIn(registryWorker)
-	//	if err != nil {
-	//		logrus.Error(err)
-	//	}
-	//	w.Success <- w.Valid
-	//	// if worker is registered, break the deadloop
-	//	if w.Valid {
-	//		w.Registered <- w.Valid
-	//	}
-
-	// break from the deadloop only if no checkin is successful and let the worker continue operating
-	//if err == nil {
-	//	break
-	//}
-
-	//} else {
-	//	logrus.Info("Registration token was seeded! Checking in!")
-	//	// setup the client
-	//	w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.RegistrationToken)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-
-	// continue operation like normal
-	logrus.Info("deadloop channel received token, continuing operation")
+	if len(w.Config.Server.RegistrationToken) > 0 {
+		logrus.Infof("Found seeded token! Attempting to validate!")
+		w.Valid, err = w.VelaClient.Authentication.ValidateAndSetToken(w.Config.Server.RegistrationToken)
+		if err != nil {
+			logrus.Infof("seeded token %s", w.Config.Server.RegistrationToken)
+			logrus.Errorf("Expired seeded token %s", err)
+		}
+	}
+	// if seeded token is available, check if valid
+	// if valid, set w.Valid to true and do a checkIn
+	// if !valid, set w.Valid to false
+	// while !valid, wait for new token to be provided
 
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
 		for {
-			//w.CheckedIn is false by default
-			// if a token was seeded and
-			if len(w.Config.Server.RegistrationToken) > 1 && !w.CheckedIn {
-				logrus.Info("Registration token was seeded! Checking in!")
-				// setup the client
-				w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.RegistrationToken)
-				if err != nil {
-					return err
-				}
-				// in case of an expired seeded token, should checkIn happens here?
-				// if w.CheckIn is false, it goes into the else loop and wait for a new token
-				// instead of continuing the checkIn routine
-				w.CheckedIn, err = w.checkIn(registryWorker)
-				if err != nil {
-					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
-				}
-				// if seeded token is expired then wait for new token to be provided
-				if !w.CheckedIn {
-					logrus.Info("verifying token is present in channel")
-					// wait for token
-					token := <-w.AuthToken
-					// continue operation like normal
-					logrus.Info("token present, continuing operation")
-					// setup the vela client with the token
-					w.VelaClient, err = setupClient(w.Config.Server, token)
-					if err != nil {
-						return err
-					}
-				}
-			} else {
+			if !w.Valid {
 				// if no seeded token then wait for token before continuing
 				logrus.Info("verifying token is present in channel")
 				// wait for token
 				token := <-w.AuthToken
 				// continue operation like normal
 				logrus.Info("token present, continuing operation")
-				// setup the vela client with the token
-				w.VelaClient, err = setupClient(w.Config.Server, token)
-				if err != nil {
-					return err
+				w.Valid, _ = w.VelaClient.Authentication.ValidateAndSetToken(token)
+				logrus.Infof("value of Valid %b", w.Valid)
+			}
+			if w.Valid {
+				select {
+				case <-gctx.Done():
+					logrus.Info("Completed looping on worker registration")
+					return nil
+				default:
+					logrus.Info("Checking worker!")
+					// set checking time to now and call the server
+					registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+					//registryWorker.GetLastCheckedIn()
+					logrus.Infof("velaClient auth %s", w.VelaClient.Authentication.HasTokenAuth())
+					// register or update the worker
+					//nolint:contextcheck // ignore passing context
+					// if unable to update the worker, log the error but allow the worker to continue running
+					w.CheckedIn, err = w.checkIn(registryWorker)
+					if err != nil {
+						logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
+						logrus.Info("waiting for registration token")
+
+					}
+					// send true/false over to let user know whether registration was a success
+					w.Success <- w.CheckedIn
+
+					// Send a bool into channel to avoid double registration
+					if w.CheckedIn {
+						w.Registered <- w.CheckedIn
+					} //else {
+					//	// clean Registered channel for registering
+					//	<-w.Registered
+					//}
+					// sleep for the configured time
+					time.Sleep(w.Config.CheckIn)
 				}
 			}
 
-			//// set checking time to now and call the server
-			//registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-			//
-			//// register or update the worker
-			////nolint:contextcheck // ignore passing context
-			//w.CheckedIn, err = w.checkIn(registryWorker)
-			//if err != nil {
-			//	logrus.Error(err)
-			//}
-			//w.Success <- w.CheckedIn
-			//// if worker is registered, break the deadloop
-			//if w.CheckedIn {
-			//	w.Registered <- w.CheckedIn
-			//}
-
-			select {
-			case <-gctx.Done():
-				logrus.Info("Completed looping on worker registration")
-				return nil
-			default:
-				logrus.Info("Checking worker!")
-				// set checking time to now and call the server
-				registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-				//registryWorker.GetLastCheckedIn()
-
-				// register or update the worker
-				//nolint:contextcheck // ignore passing context
-				// if unable to update the worker, log the error but allow the worker to continue running
-				w.CheckedIn, err = w.checkIn(registryWorker)
-				if err != nil {
-					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
-					logrus.Info("waiting for registration token")
-
-					continue
-				}
-				// send true/false over to let user know whether registration was a success
-				w.Success <- w.CheckedIn
-
-				// Send a bool into channel to avoid double registration
-				if w.CheckedIn {
-					w.Registered <- w.CheckedIn
-				} //else {
-				//	// clean Registered channel for registering
-				//	<-w.Registered
-				//}
-				// sleep for the configured time
-				time.Sleep(w.Config.CheckIn)
-			}
 		}
 	})
 
