@@ -36,23 +36,6 @@ func WithBuild(b *library.Build) Opt {
 	}
 }
 
-// WithLogMethod sets the method used to publish logs in the executor client for Linux.
-func WithLogMethod(method string) Opt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring log streaming method in linux executor client")
-
-		// check if a method is provided
-		if len(method) == 0 {
-			return fmt.Errorf("empty log method provided")
-		}
-
-		// set the log method in the client
-		c.logMethod = method
-
-		return nil
-	}
-}
-
 // WithMaxLogSize sets the maximum log size (in bytes) in the executor client for Linux.
 func WithMaxLogSize(size uint) Opt {
 	return func(c *client) error {

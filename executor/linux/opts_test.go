@@ -69,56 +69,6 @@ func TestLinux_Opt_WithBuild(t *testing.T) {
 	}
 }
 
-func TestLinux_Opt_WithLogMethod(t *testing.T) {
-	// setup tests
-	tests := []struct {
-		name      string
-		failure   bool
-		logMethod string
-	}{
-		{
-			name:      "byte-chunks",
-			failure:   false,
-			logMethod: "byte-chunks",
-		},
-		{
-			name:      "time-chunks",
-			failure:   false,
-			logMethod: "time-chunks",
-		},
-		{
-			name:      "empty",
-			failure:   true,
-			logMethod: "",
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithLogMethod(test.logMethod),
-			)
-
-			if test.failure {
-				if err == nil {
-					t.Errorf("WithLogMethod should have returned err")
-				}
-
-				return // continue to next test
-			}
-
-			if err != nil {
-				t.Errorf("WithLogMethod returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.logMethod, test.logMethod) {
-				t.Errorf("WithLogMethod is %v, want %v", _engine.logMethod, test.logMethod)
-			}
-		})
-	}
-}
-
 func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 	// setup tests
 	tests := []struct {
