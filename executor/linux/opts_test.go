@@ -18,6 +18,7 @@ import (
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 	"github.com/sirupsen/logrus"
 )
 
@@ -432,6 +433,11 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name    string
@@ -442,6 +448,11 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 			name:    "docker runtime",
 			failure: false,
 			runtime: _docker,
+		},
+		{
+			name:    "kubernetes runtime",
+			failure: false,
+			runtime: _kubernetes,
 		},
 		{
 			name:    "nil runtime",
