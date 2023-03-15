@@ -31,7 +31,6 @@ func TestExecutor_Retrieve(t *testing.T) {
 
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
-		LogMethod:  "byte-chunks",
 		MaxLogSize: 2097152,
 		Client:     new(vela.Client),
 		Runtime:    _runtime,
@@ -67,7 +66,6 @@ func TestExecutor_Establish(t *testing.T) {
 
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
-		LogMethod:  "byte-chunks",
 		MaxLogSize: 2097152,
 		Client:     new(vela.Client),
 		Runtime:    _runtime,
