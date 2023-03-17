@@ -208,6 +208,11 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
+	_step, err := step.Load(ctn, &c.steps)
+	if err != nil {
+		return err
+	}
+
 	secretValues := getSecretValues(ctn)
 
 	defer func() {
@@ -238,6 +243,8 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		// overwrite the existing log with all bytes
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
+
+		// TODO: figure out how to retro-actively encode the timestamps and metadata into data
 		_log.SetData(data)
 
 		// mask secrets in the log data
@@ -300,6 +307,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 				default:
 					// update the existing log with the new bytes if there is new data to add
 					if len(logs.Bytes()) > 0 {
+
 						logger.Trace(logs.String())
 
 						// update the existing log with the new bytes
@@ -340,8 +348,16 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 		// scan entire container output
 		for scanner.Scan() {
+			s := scanner.Bytes()
+
+			parseCode := "##[]"
+
+			ts := fmt.Sprintf("%ds", 1+time.Now().UTC().Unix()-_step.GetStarted())
+			// wrap log withs metadata
+			s = []byte(strings.Join([]string{ts, string(s)}, parseCode))
+
 			// write all the logs from the scanner
-			logs.Write(append(scanner.Bytes(), []byte("\n")...))
+			logs.Write(append(s, []byte("\n")...))
 		}
 
 		logger.Info("finished streaming logs")
