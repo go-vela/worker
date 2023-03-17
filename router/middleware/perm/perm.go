@@ -7,10 +7,10 @@ package perm
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types"
-	"github.com/go-vela/worker/router/middleware/user"
+	"github.com/go-vela/worker/router/middleware/token"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -19,19 +19,75 @@ import (
 // MustServer ensures the user is the vela server.
 func MustServer() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		u := user.Retrieve(c)
+		tkn, err := token.Retrieve(c.Request)
+		if err != nil {
+			msg := fmt.Sprintf("error parsing token")
 
-		if strings.EqualFold(u.GetName(), "vela-server") {
+			err := c.Error(fmt.Errorf(msg))
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+
 			return
 		}
 
-		msg := fmt.Sprintf("User %s is not a platform admin", u.GetName())
+		addr, ok := c.MustGet("server-address").(string)
+		if !ok {
+			msg := fmt.Sprintf("error retrieving server address")
 
-		err := c.Error(fmt.Errorf(msg))
-		if err != nil {
-			logrus.Error(err)
+			err := c.Error(fmt.Errorf(msg))
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
+			return
 		}
 
-		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
+		vela, err := vela.NewClient(addr, "", nil)
+		if err != nil {
+			msg := fmt.Sprintf("error creating vela client")
+
+			err := c.Error(fmt.Errorf(msg))
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
+			return
+		}
+
+		vela.Authentication.SetTokenAuth(tkn)
+
+		ok, _, err = vela.Authentication.ValidateToken()
+		if err != nil {
+			msg := fmt.Sprintf("error validating token")
+
+			err := c.Error(fmt.Errorf(msg))
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
+			return
+		}
+
+		if !ok {
+			msg := fmt.Sprintf("unable to validate token")
+
+			err := c.Error(fmt.Errorf(msg))
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
+
+			return
+		}
 	}
 }
