@@ -76,18 +76,5 @@ func MustServer() gin.HandlerFunc {
 
 			return
 		}
-
-		if !ok {
-			msg := fmt.Sprintf("unable to validate token")
-
-			err := c.Error(fmt.Errorf(msg))
-			if err != nil {
-				logrus.Error(err)
-			}
-
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
-
-			return
-		}
 	}
 }
