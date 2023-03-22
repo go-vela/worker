@@ -8,15 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Secret is a middleware function that attaches the vela server secret used for
+// Server is a middleware function that attaches the vela server address used for
 // server <-> agent communication to the context of every http.Request.
-func Secret(secret string) gin.HandlerFunc {
+func Server(server string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if len(secret) == 0 {
-			return
-		}
-
-		c.Set("secret", secret)
+		c.Set("server", server)
 		c.Next()
 	}
 }

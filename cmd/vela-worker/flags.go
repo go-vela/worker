@@ -80,6 +80,7 @@ func flags() []cli.Flag {
 			EnvVars: []string{"WORKER_SERVER_SECRET", "VELA_SERVER_SECRET", "SERVER_SECRET"},
 			Name:    "server.secret",
 			Usage:   "secret used for server <-> worker communication",
+			Value:   "",
 		},
 		&cli.StringFlag{
 			EnvVars: []string{"WORKER_SERVER_CERT", "VELA_SERVER_CERT", "SERVER_CERT"},

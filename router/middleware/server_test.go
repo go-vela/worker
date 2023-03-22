@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestMiddleware_Secret(t *testing.T) {
+func TestMiddleware_Server(t *testing.T) {
 	// setup types
 	got := ""
 	want := "foobar"
@@ -28,7 +28,7 @@ func TestMiddleware_Secret(t *testing.T) {
 	// setup mock server
 	engine.Use(Server(want))
 	engine.GET("/health", func(c *gin.Context) {
-		got = c.Value("secret").(string)
+		got = c.Value("server").(string)
 
 		c.Status(http.StatusOK)
 	})
@@ -37,10 +37,10 @@ func TestMiddleware_Secret(t *testing.T) {
 	engine.ServeHTTP(context.Writer, context.Request)
 
 	if resp.Code != http.StatusOK {
-		t.Errorf("Secret returned %v, want %v", resp.Code, http.StatusOK)
+		t.Errorf("Server returned %v, want %v", resp.Code, http.StatusOK)
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Secret is %v, want %v", got, want)
+		t.Errorf("Server is %v, want %v", got, want)
 	}
 }

@@ -145,8 +145,8 @@ func run(c *cli.Context) error {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
 	}
 
-	if len(c.String("worker.token")) > 0 {
-		w.AuthToken <- c.String("worker-token")
+	if len(c.String("server.secret")) > 0 {
+		w.AuthToken <- c.String("server.secret")
 	}
 
 	// validate the worker

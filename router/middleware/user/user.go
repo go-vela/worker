@@ -5,10 +5,15 @@
 package user
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/go-vela/server/util"
 	"github.com/go-vela/worker/router/middleware/token"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/types/library"
 
@@ -31,12 +36,51 @@ func Establish() gin.HandlerFunc {
 			return
 		}
 
-		secret := c.MustGet("secret").(string)
-		if strings.EqualFold(t, secret) {
-			u.SetName("vela-server")
-			u.SetActive(true)
-			u.SetAdmin(true)
+		if secret, ok := c.Value("secret").(string); ok {
+			if strings.EqualFold(t, secret) {
+				u.SetName("vela-server")
+				u.SetActive(true)
+				u.SetAdmin(true)
+
+				ToContext(c, u)
+				c.Next()
+
+				return
+			}
 		}
+
+		// prepare the request to the worker
+		client := http.DefaultClient
+		client.Timeout = 30 * time.Second
+
+		// set the API endpoint path we send the request to
+		url := fmt.Sprintf("%s/validate-token", c.MustGet("server"))
+
+		req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+		if err != nil {
+			retErr := fmt.Errorf("unable to form a request to %s: %w", u, err)
+			util.HandleError(c, http.StatusBadRequest, retErr)
+
+			return
+		}
+
+		// add the token to authenticate to the worker
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t))
+
+		// perform the request to the server
+		resp, err := client.Do(req)
+		if err != nil {
+			logrus.Debug("token validation for server token failed, adding nil user to context")
+			ToContext(c, u)
+			c.Next()
+
+			return
+		}
+		defer resp.Body.Close()
+
+		u.SetName("vela-server")
+		u.SetActive(true)
+		u.SetAdmin(true)
 
 		ToContext(c, u)
 		c.Next()

@@ -55,6 +55,8 @@ func (w *Worker) register(config *library.Worker) (bool, error) {
 		return false, fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
 
+	logrus.Infof("register function TOKEN from add worker: %s", tkn)
+
 	// write the token to the auth token channel
 	w.AuthToken <- tkn.GetToken()
 
