@@ -32,7 +32,6 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 		middleware.RequestVersion,
 		middleware.Executors(w.Executors),
 		middleware.Server(w.Config.Server.Address),
-		middleware.Secret(w.Config.Server.Secret),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
 		middleware.AuthToken(w.AuthToken),
 	)

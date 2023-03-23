@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-vela/server/util"
@@ -36,19 +35,6 @@ func Establish() gin.HandlerFunc {
 			return
 		}
 
-		if secret, ok := c.Value("secret").(string); ok {
-			if strings.EqualFold(t, secret) {
-				u.SetName("vela-server")
-				u.SetActive(true)
-				u.SetAdmin(true)
-
-				ToContext(c, u)
-				c.Next()
-
-				return
-			}
-		}
-
 		// prepare the request to the worker
 		client := http.DefaultClient
 		client.Timeout = 30 * time.Second
@@ -68,8 +54,8 @@ func Establish() gin.HandlerFunc {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t))
 
 		// perform the request to the server
-		resp, err := client.Do(req)
-		if err != nil {
+		resp, _ := client.Do(req)
+		if resp.StatusCode != http.StatusOK {
 			logrus.Debug("token validation for server token failed, adding nil user to context")
 			ToContext(c, u)
 			c.Next()
