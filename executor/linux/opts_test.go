@@ -18,6 +18,7 @@ import (
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 	"github.com/sirupsen/logrus"
 )
 
@@ -64,56 +65,6 @@ func TestLinux_Opt_WithBuild(t *testing.T) {
 
 			if !reflect.DeepEqual(_engine.build, _build) {
 				t.Errorf("WithBuild is %v, want %v", _engine.build, _build)
-			}
-		})
-	}
-}
-
-func TestLinux_Opt_WithLogMethod(t *testing.T) {
-	// setup tests
-	tests := []struct {
-		name      string
-		failure   bool
-		logMethod string
-	}{
-		{
-			name:      "byte-chunks",
-			failure:   false,
-			logMethod: "byte-chunks",
-		},
-		{
-			name:      "time-chunks",
-			failure:   false,
-			logMethod: "time-chunks",
-		},
-		{
-			name:      "empty",
-			failure:   true,
-			logMethod: "",
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithLogMethod(test.logMethod),
-			)
-
-			if test.failure {
-				if err == nil {
-					t.Errorf("WithLogMethod should have returned err")
-				}
-
-				return // continue to next test
-			}
-
-			if err != nil {
-				t.Errorf("WithLogMethod returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.logMethod, test.logMethod) {
-				t.Errorf("WithLogMethod is %v, want %v", _engine.logMethod, test.logMethod)
 			}
 		})
 	}
@@ -482,6 +433,11 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name    string
@@ -492,6 +448,11 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 			name:    "docker runtime",
 			failure: false,
 			runtime: _docker,
+		},
+		{
+			name:    "kubernetes runtime",
+			failure: false,
+			runtime: _kubernetes,
 		},
 		{
 			name:    "nil runtime",
