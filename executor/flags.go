@@ -26,13 +26,6 @@ var Flags = []cli.Flag{
 		Usage:    "driver to be used for the executor",
 		Value:    constants.DriverLinux,
 	},
-	&cli.StringFlag{
-		EnvVars:  []string{"VELA_EXECUTOR_LOG_METHOD", "EXECUTOR_LOG_METHOD"},
-		FilePath: "/vela/executor/log_method",
-		Name:     "executor.log_method",
-		Usage:    "method used to publish logs to the server - options: (byte-chunks|time-chunks)",
-		Value:    "byte-chunks",
-	},
 	&cli.UintFlag{
 		EnvVars:  []string{"VELA_EXECUTOR_MAX_LOG_SIZE", "EXECUTOR_MAX_LOG_SIZE"},
 		FilePath: "/vela/executor/max_log_size",
