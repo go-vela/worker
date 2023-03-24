@@ -17,6 +17,7 @@ import (
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 )
 
 func TestLinux_CreateService(t *testing.T) {
@@ -37,6 +38,11 @@ func TestLinux_CreateService(t *testing.T) {
 	_docker, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -63,6 +69,22 @@ func TestLinux_CreateService(t *testing.T) {
 			},
 		},
 		{
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:    "docker-service container with image not found",
 			failure: true,
 			runtime: _docker,
@@ -78,10 +100,32 @@ func TestLinux_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		// {
+		//	name:    "kubernetes-service container with image not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "service-github-octocat-1-postgres",
+		//		Detach:      true,
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "postgres:notfound",
+		//		Name:        "postgres",
+		//		Number:      1,
+		//		Ports:       []string{"5432:5432"},
+		//		Pull:        "not_present",
+		//	},
+		// },
 		{
 			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -138,6 +182,11 @@ func TestLinux_PlanService(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name      string
@@ -151,6 +200,22 @@ func TestLinux_PlanService(t *testing.T) {
 			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -178,9 +243,31 @@ func TestLinux_PlanService(t *testing.T) {
 			},
 		},
 		{
+			name:    "kubernetes-service container with nil environment",
+			failure: true,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: nil,
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -237,6 +324,11 @@ func TestLinux_ExecService(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
@@ -264,6 +356,22 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:    "docker-service container with image not found",
 			failure: true,
 			runtime: _docker,
@@ -280,9 +388,31 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
+			name:    "kubernetes-service container with image not found",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:notfound",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
 			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -345,6 +475,11 @@ func TestLinux_StreamService(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name      string
@@ -358,6 +493,22 @@ func TestLinux_StreamService(t *testing.T) {
 			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -384,10 +535,32 @@ func TestLinux_StreamService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		//{
+		//	name:    "kubernetes-service container with name not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "service-github-octocat-1-notfound",
+		//		Detach:      true,
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "postgres:12-alpine",
+		//		Name:        "notfound",
+		//		Number:      1,
+		//		Ports:       []string{"5432:5432"},
+		//		Pull:        "not_present",
+		//	},
+		//},
 		{
 			name:      "docker-empty service container",
 			failure:   true,
 			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -449,6 +622,11 @@ func TestLinux_DestroyService(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name      string
@@ -462,6 +640,22 @@ func TestLinux_DestroyService(t *testing.T) {
 			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
 				Detach:      true,
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
@@ -488,6 +682,22 @@ func TestLinux_DestroyService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		//{
+		//	name:    "kubernetes-service container with ignoring name not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "service-github-octocat-1-ignorenotfound",
+		//		Detach:      true,
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "postgres:12-alpine",
+		//		Name:        "ignorenotfound",
+		//		Number:      1,
+		//		Ports:       []string{"5432:5432"},
+		//		Pull:        "not_present",
+		//	},
+		//},
 	}
 
 	// run tests
