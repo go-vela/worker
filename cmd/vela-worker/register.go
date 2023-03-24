@@ -39,16 +39,6 @@ func (w *Worker) checkIn(config *library.Worker) error {
 		return fmt.Errorf("unable to update worker %s on the server: %w", config.GetHostname(), err)
 	}
 
-	// refresh the worker auth token
-	logrus.Infof("refreshing worker auth %s with the server", config.GetHostname())
-
-	tkn, _, err := w.VelaClient.Worker.RefreshAuth(config.GetHostname())
-	if err != nil {
-		return fmt.Errorf("unable to refresh worker auth %s with the server: %w", config.GetHostname(), err)
-	}
-
-	w.VelaClient.Authentication.SetTokenAuth(tkn.GetToken())
-
 	return nil
 }
 
