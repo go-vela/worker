@@ -16,12 +16,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// MustServer ensures the user is the vela server.
+// MustServer ensures the caller is the vela server.
 func MustServer() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tkn, err := token.Retrieve(c.Request)
 		if err != nil {
-			msg := fmt.Sprintf("error parsing token")
+			msg := fmt.Sprintf("error parsing token: %s", err)
 
 			err := c.Error(fmt.Errorf(msg))
 			if err != nil {
@@ -35,7 +35,7 @@ func MustServer() gin.HandlerFunc {
 
 		addr, ok := c.MustGet("server-address").(string)
 		if !ok {
-			msg := fmt.Sprintf("error retrieving server address")
+			msg := "error retrieving server address"
 
 			err := c.Error(fmt.Errorf(msg))
 			if err != nil {
@@ -49,7 +49,7 @@ func MustServer() gin.HandlerFunc {
 
 		vela, err := vela.NewClient(addr, "", nil)
 		if err != nil {
-			msg := fmt.Sprintf("error creating vela client")
+			msg := fmt.Sprintf("error creating vela client: %s", err)
 
 			err := c.Error(fmt.Errorf(msg))
 			if err != nil {
