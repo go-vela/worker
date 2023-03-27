@@ -5,45 +5,33 @@
 package perm
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
 )
 
 func TestPerm_MustServer_success(t *testing.T) {
-	// setup types
-	// secret := "superSecret"
+	// setup context
+	gin.SetMode(gin.TestMode)
+	resp := httptest.NewRecorder()
+	context, engine := gin.CreateTestContext(resp)
+	context.Request, _ = http.NewRequest(http.MethodGet, "/server/users", nil)
+	// setup vela mock server
+	engine.GET("/server/users", func(c *gin.Context) {
+		c.Status(http.StatusInternalServerError)
+		c.JSON(500, nil)
+	})
+	s1 := httptest.NewServer(engine)
+	defer s1.Close()
 
-	// u := new(library.User)
-	// u.SetID(1)
-	// u.SetName("vela-server")
-	// u.SetToken("bar")
-	// u.SetHash("baz")
-	// u.SetAdmin(true)
+	// run test
+	engine.ServeHTTP(context.Writer, context.Request)
 
-	// // setup context
-	// gin.SetMode(gin.TestMode)
-
-	// resp := httptest.NewRecorder()
-	// context, engine := gin.CreateTestContext(resp)
-	// context.Request, _ = http.NewRequest(http.MethodGet, "/server/users", nil)
-	// context.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
-
-	// // setup vela mock server
-	// engine.Use(func(c *gin.Context) { c.Set("secret", secret) })
-	// // engine.Use(user.Establish())
-	// engine.Use(MustServer())
-	// engine.GET("/server/users", func(c *gin.Context) {
-	// 	c.Status(http.StatusOK)
-	// })
-
-	// s1 := httptest.NewServer(engine)
-	// defer s1.Close()
-
-	// // run test
-	// engine.ServeHTTP(context.Writer, context.Request)
-
-	// if resp.Code != http.StatusOK {
-	// 	t.Errorf("MustServer returned %v, want %v", resp.Code, http.StatusOK)
-	// }
+	if resp.Code != http.StatusOK {
+		t.Errorf("MustServer returned %v, want %v", resp.Code, http.StatusOK)
+	}
 }
 
 func TestPerm_MustServer_failure(t *testing.T) {
