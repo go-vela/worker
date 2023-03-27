@@ -156,8 +156,6 @@ github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91
 github.com/go-playground/validator/v10 v10.11.2 h1:q3SHpufmypg+erIExEKUmsgmhDTyhcJ38oeKGACXohU=
 github.com/go-playground/validator/v10 v10.11.2/go.mod h1:NieE624vt4SCTJtD87arVLvdmjPAeV8BQlHtMnw9D7s=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
-github.com/go-vela/sdk-go v0.18.1 h1:qsm8XWjr9btNDL8c58JC93sstRUybL/TklWgeeft860=
-github.com/go-vela/sdk-go v0.18.1/go.mod h1:QmfXBAdJ9prgE78TK13XJI8YjvGZA5hc+h79CbvgYGU=
 github.com/go-vela/sdk-go v0.18.2-0.20230327141933-e8d38c73b1bb h1:JXEolOu+HFktExoDFcGYIdWS9LfPAQnQMIB4Rm48WS0=
 github.com/go-vela/sdk-go v0.18.2-0.20230327141933-e8d38c73b1bb/go.mod h1:N8qFPxB0RsHrSYr01GVwgOOowtSfhvjXtJ1cRBaeTc4=
 github.com/go-vela/server v0.18.2-0.20230324155739-73f83fcfd004 h1:yJis1sso5c0ZoeZLfZ/lYsjfxU7H9cYP/VJXssRxDa8=
