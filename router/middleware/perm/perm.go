@@ -30,7 +30,7 @@ func MustServer() gin.HandlerFunc {
 				logrus.Error(err)
 			}
 
-			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+			c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 
 			return
 		}

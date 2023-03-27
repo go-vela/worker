@@ -15,7 +15,7 @@ import (
 
 func TestPerm_MustServer_ValidateToken200(t *testing.T) {
 	// setup types
-	secret := "superSecret"
+	tkn := "superSecret"
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -26,7 +26,7 @@ func TestPerm_MustServer_ValidateToken200(t *testing.T) {
 
 	// fake request made to the worker router
 	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
-	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
+	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
 	// the URL of the mock server router is injected into the mock worker router
@@ -63,7 +63,7 @@ func TestPerm_MustServer_ValidateToken200(t *testing.T) {
 
 func TestPerm_MustServer_ValidateToken401(t *testing.T) {
 	// setup types
-	secret := "superSecret"
+	tkn := "superSecret"
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -74,7 +74,7 @@ func TestPerm_MustServer_ValidateToken401(t *testing.T) {
 
 	// fake request made to the worker router
 	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
-	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
+	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
 	// the URL of the mock server router is injected into the mock worker router
@@ -111,7 +111,7 @@ func TestPerm_MustServer_ValidateToken401(t *testing.T) {
 
 func TestPerm_MustServer_ValidateToken404(t *testing.T) {
 	// setup types
-	secret := "superSecret"
+	tkn := "superSecret"
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -122,7 +122,7 @@ func TestPerm_MustServer_ValidateToken404(t *testing.T) {
 
 	// fake request made to the worker router
 	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
-	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
+	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
 	// the URL of the mock server router is injected into the mock worker router
@@ -156,7 +156,7 @@ func TestPerm_MustServer_ValidateToken404(t *testing.T) {
 
 func TestPerm_MustServer_ValidateToken500(t *testing.T) {
 	// setup types
-	secret := "superSecret"
+	tkn := "superSecret"
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -167,7 +167,7 @@ func TestPerm_MustServer_ValidateToken500(t *testing.T) {
 
 	// fake request made to the worker router
 	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
-	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
+	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
 	// the URL of the mock server router is injected into the mock worker router
@@ -204,7 +204,7 @@ func TestPerm_MustServer_ValidateToken500(t *testing.T) {
 
 func TestPerm_MustServer_BadServerAddress(t *testing.T) {
 	// setup types
-	secret := "superSecret"
+	tkn := "superSecret"
 	badServerAddress := "test.example.com"
 
 	// setup context
@@ -216,15 +216,17 @@ func TestPerm_MustServer_BadServerAddress(t *testing.T) {
 
 	// fake request made to the worker router
 	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
-	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
+	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
 	// the URL of the mock server router is injected into the mock worker router
 	serverResp := httptest.NewRecorder()
 	_, serverEngine := gin.CreateTestContext(serverResp)
 
-	// skip mocked token validation endpoint used in MustServer
-	// test that validate-token returning a 404 works as expected
+	// mocked token validation endpoint used in MustServer
+	serverEngine.GET("/validate-token", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
 
 	serverMock := httptest.NewServer(serverEngine)
 	defer serverMock.Close()
@@ -250,7 +252,7 @@ func TestPerm_MustServer_BadServerAddress(t *testing.T) {
 
 func TestPerm_MustServer_NoToken(t *testing.T) {
 	// setup types
-	secret := ""
+	tkn := ""
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -261,15 +263,61 @@ func TestPerm_MustServer_NoToken(t *testing.T) {
 
 	// fake request made to the worker router
 	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
-	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secret))
+	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
 	// the URL of the mock server router is injected into the mock worker router
 	serverResp := httptest.NewRecorder()
 	_, serverEngine := gin.CreateTestContext(serverResp)
 
-	// skip mocked token validation endpoint used in MustServer
-	// test that validate-token returning a 404 works as expected
+	// mocked token validation endpoint used in MustServer
+	serverEngine.GET("/validate-token", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	serverMock := httptest.NewServer(serverEngine)
+	defer serverMock.Close()
+
+	workerEngine.Use(func(c *gin.Context) { c.Set("server-address", serverMock.URL) })
+
+	// attach perm middleware that we are testing
+	workerEngine.Use(MustServer())
+	workerEngine.GET("/build/cancel", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	workerMock := httptest.NewServer(workerEngine)
+	defer workerMock.Close()
+
+	// run test
+	workerEngine.ServeHTTP(workerCtx.Writer, workerCtx.Request)
+
+	if workerResp.Code != http.StatusBadRequest {
+		t.Errorf("MustServer returned %v, want %v", workerResp.Code, http.StatusBadRequest)
+	}
+}
+
+func TestPerm_MustServer_NoAuth(t *testing.T) {
+	// setup context
+	gin.SetMode(gin.TestMode)
+
+	// setup mock worker router
+	workerResp := httptest.NewRecorder()
+	workerCtx, workerEngine := gin.CreateTestContext(workerResp)
+
+	// fake request made to the worker router
+	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
+	// test that skipping adding an authorization header is handled properly
+
+	// setup mock server router
+	// the URL of the mock server router is injected into the mock worker router
+	serverResp := httptest.NewRecorder()
+	_, serverEngine := gin.CreateTestContext(serverResp)
+
+	// mocked token validation endpoint used in MustServer
+	serverEngine.GET("/validate-token", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
 
 	serverMock := httptest.NewServer(serverEngine)
 	defer serverMock.Close()
