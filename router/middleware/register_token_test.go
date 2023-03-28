@@ -13,10 +13,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestMiddleware_ServerAddress(t *testing.T) {
+func TestMiddleware_RegisterToken(t *testing.T) {
 	// setup types
-	got := ""
-	want := "foobar"
+	want := make(chan string, 1)
+	got := make(chan string, 1)
+
+	want <- "foo"
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -26,9 +28,9 @@ func TestMiddleware_ServerAddress(t *testing.T) {
 	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
 
 	// setup mock server
-	engine.Use(ServerAddress(want))
+	engine.Use(RegisterToken(want))
 	engine.GET("/health", func(c *gin.Context) {
-		got = c.Value("server-address").(string)
+		got = c.Value("register-token").(chan string)
 
 		c.Status(http.StatusOK)
 	})
@@ -37,10 +39,10 @@ func TestMiddleware_ServerAddress(t *testing.T) {
 	engine.ServeHTTP(context.Writer, context.Request)
 
 	if resp.Code != http.StatusOK {
-		t.Errorf("ServerAddress returned %v, want %v", resp.Code, http.StatusOK)
+		t.Errorf("RegisterToken returned %v, want %v", resp.Code, http.StatusOK)
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("ServerAddress is %v, want %v", got, want)
+		t.Errorf("RegisterToken is %v, want foo", got)
 	}
 }

@@ -33,7 +33,7 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 		middleware.ServerAddress(w.Config.Server.Address),
 		middleware.Executors(w.Executors),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
-		middleware.AuthToken(w.RegisterToken),
+		middleware.RegisterToken(w.RegisterToken),
 	)
 
 	// log a message indicating the start of serving traffic

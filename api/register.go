@@ -13,7 +13,7 @@ import (
 
 // swagger:operation POST /register system Register
 //
-// Register the worker with the Vela server
+// Fill registration token channel in worker to continue operation
 //
 // ---
 // produces:
@@ -23,28 +23,30 @@ import (
 //   - ApiKeyAuth: []
 // responses:
 //   '200':
-//     description: Successfully registered worker
+//     description: Successfully passed token to worker
 //     schema:
 //       type: string
 
-// Health check the status of the application.
+// Register will pass the token given in the request header to the register token
+// channel of the worker. This will unblock operation if the worker has not been
+// registered and the provided registration token is valid.
 func Register(c *gin.Context) {
-	// extract the auth token channel that was packed into gin context
-	v, ok := c.Get("auth-token")
+	// extract the register token channel that was packed into gin context
+	v, ok := c.Get("register-token")
 	if !ok {
 		c.JSON(http.StatusInternalServerError, "no auth token channel in the context")
 		return
 	}
 
 	// make sure we configured the channel properly
-	authChannel, ok := v.(chan string)
+	rChan, ok := v.(chan string)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "auth token channel in the context is the wrong type")
+		c.JSON(http.StatusInternalServerError, "register token channel in the context is the wrong type")
 		return
 	}
 
 	// if auth token is present in the channel, deny registration
-	if len(authChannel) > 0 {
+	if len(rChan) > 0 {
 		c.JSON(http.StatusOK, "worker already registered")
 		return
 	}
@@ -57,9 +59,7 @@ func Register(c *gin.Context) {
 	}
 
 	// write registration token to auth token channel
-	authChannel <- token
+	rChan <- token
 
-	// somehow we need to make sure the registration worked
-	// maybe a second channel for registration results?
-	c.JSON(http.StatusOK, "successfully registered the worker")
+	c.JSON(http.StatusOK, "successfully passed token to worker")
 }
