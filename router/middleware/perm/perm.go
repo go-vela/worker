@@ -33,16 +33,7 @@ func MustServer() gin.HandlerFunc {
 		}
 
 		// retrieve the configured server address from the context
-		addr, ok := c.MustGet("server-address").(string)
-		if !ok {
-			msg := "error retrieving server address"
-
-			logrus.Error(msg)
-
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
-
-			return
-		}
+		addr := c.MustGet("server-address").(string)
 
 		// create a temporary client to validate the incoming request
 		vela, err := vela.NewClient(addr, "vela-worker", nil)
