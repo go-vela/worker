@@ -10,8 +10,8 @@ require (
 	github.com/docker/docker v20.10.23+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.0
-	github.com/go-vela/sdk-go v0.18.0-rc2
-	github.com/go-vela/server v0.18.2-0.20230323213747-5ffbe819aa29
+	github.com/go-vela/sdk-go v0.18.2-0.20230327141933-e8d38c73b1bb
+	github.com/go-vela/server v0.18.2-0.20230324155739-73f83fcfd004
 	github.com/go-vela/types v0.18.2-0.20230321015315-6c723879639c
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.5.1
@@ -36,7 +36,7 @@ require (
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/alicebob/miniredis/v2 v2.30.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/buildkite/yaml v0.0.0-20210326113714-4a3f40911396 // indirect
+	github.com/buildkite/yaml v0.0.0-20230306222819-0e4e032d4835 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect

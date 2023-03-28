@@ -33,7 +33,6 @@ type (
 
 		// private fields
 		init                *pipeline.Container
-		logMethod           string
 		maxLogSize          uint
 		logStreamingTimeout time.Duration
 		privilegedImages    []string
@@ -72,7 +71,6 @@ func Equal(a, b *client) bool {
 		a.Hostname == b.Hostname &&
 		a.Version == b.Version &&
 		reflect.DeepEqual(a.init, b.init) &&
-		a.logMethod == b.logMethod &&
 		a.maxLogSize == b.maxLogSize &&
 		reflect.DeepEqual(a.privilegedImages, b.privilegedImages) &&
 		a.enforceTrustedRepos == b.enforceTrustedRepos &&

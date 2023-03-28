@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestMiddleware_Server(t *testing.T) {
+func TestMiddleware_ServerAddress(t *testing.T) {
 	// setup types
 	got := ""
 	want := "foobar"
@@ -26,9 +26,9 @@ func TestMiddleware_Server(t *testing.T) {
 	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
 
 	// setup mock server
-	engine.Use(Server(want))
+	engine.Use(ServerAddress(want))
 	engine.GET("/health", func(c *gin.Context) {
-		got = c.Value("server").(string)
+		got = c.Value("server-address").(string)
 
 		c.Status(http.StatusOK)
 	})
@@ -37,10 +37,10 @@ func TestMiddleware_Server(t *testing.T) {
 	engine.ServeHTTP(context.Writer, context.Request)
 
 	if resp.Code != http.StatusOK {
-		t.Errorf("Server returned %v, want %v", resp.Code, http.StatusOK)
+		t.Errorf("ServerAddress returned %v, want %v", resp.Code, http.StatusOK)
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Server is %v, want %v", got, want)
+		t.Errorf("ServerAddress is %v, want %v", got, want)
 	}
 }
