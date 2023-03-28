@@ -2,8 +2,6 @@ module github.com/go-vela/worker
 
 go 1.19
 
-replace github.com/go-vela/sdk-go => ../sdk-go
-
 require (
 	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/docker/distribution v2.8.1+incompatible
