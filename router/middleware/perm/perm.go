@@ -23,14 +23,11 @@ func MustServer() gin.HandlerFunc {
 		// retrieve the callers token from the request headers
 		tkn, err := token.Retrieve(c.Request)
 		if err != nil {
-			msg := fmt.Sprintf("error parsing token: %s", err)
+			msg := fmt.Sprintf("error parsing token: %v", err)
 
-			err := c.Error(fmt.Errorf(msg))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error(msg)
 
-			c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
 
 			return
 		}
@@ -40,10 +37,7 @@ func MustServer() gin.HandlerFunc {
 		if !ok {
 			msg := "error retrieving server address"
 
-			err := c.Error(fmt.Errorf(msg))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error(msg)
 
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
@@ -55,10 +49,7 @@ func MustServer() gin.HandlerFunc {
 		if err != nil {
 			msg := fmt.Sprintf("error creating vela client: %s", err)
 
-			err := c.Error(fmt.Errorf(msg))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error(msg)
 
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
@@ -69,10 +60,7 @@ func MustServer() gin.HandlerFunc {
 		if strings.EqualFold(tkn, "") {
 			msg := "missing token"
 
-			err := c.Error(fmt.Errorf(msg))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error(msg)
 
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
 
@@ -87,10 +75,7 @@ func MustServer() gin.HandlerFunc {
 		if err != nil {
 			msg := fmt.Sprintf("error validating token: %s", err)
 
-			err := c.Error(fmt.Errorf(msg))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error(msg)
 
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
@@ -101,10 +86,7 @@ func MustServer() gin.HandlerFunc {
 		if resp.StatusCode != http.StatusOK {
 			msg := "unable to validate token"
 
-			err := c.Error(fmt.Errorf(msg))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error(msg)
 
 			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
 
