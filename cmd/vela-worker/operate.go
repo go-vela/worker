@@ -36,8 +36,8 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetActive(true)
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
 
-	// pull token from configuration if provided; wait if not
-	token := <-w.AuthToken
+	// pull registration token from configuration if provided; wait if not
+	token := <-w.RegisterToken
 
 	// setup the vela client with the token
 	w.VelaClient, err = setupClient(w.Config.Server, token)
@@ -63,7 +63,7 @@ func (w *Worker) operate(ctx context.Context) error {
 						// token has expired
 						if w.VelaClient.Authentication.IsTokenAuthExpired() && len(w.Config.Server.Secret) == 0 {
 							// wait on new registration token, return to check in attempt
-							token = <-w.AuthToken
+							token = <-w.RegisterToken
 
 							// setup the vela client with the token
 							w.VelaClient, err = setupClient(w.Config.Server, token)

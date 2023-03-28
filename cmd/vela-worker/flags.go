@@ -33,12 +33,6 @@ func flags() []cli.Flag {
 			Value:   15 * time.Minute,
 		},
 
-		&cli.StringFlag{
-			EnvVars: []string{"WORKER_REGISTRATION_TOKEN", "VELA_REGISTRATION_TOKEN", "REGISTRATION_TOKEN"},
-			Name:    "worker.token",
-			Usage:   "seed worker registration token on start up to check in with server",
-		},
-
 		// Build Flags
 
 		&cli.IntFlag{

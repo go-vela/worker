@@ -137,7 +137,7 @@ func run(c *cli.Context) error {
 		},
 		Executors: make(map[int]executor.Engine),
 
-		AuthToken: make(chan string, 1),
+		RegisterToken: make(chan string, 1),
 	}
 
 	// set the worker address if no flag was provided
@@ -145,8 +145,9 @@ func run(c *cli.Context) error {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
 	}
 
+	// if server secret is provided, use as register token on start up
 	if len(c.String("server.secret")) > 0 {
-		w.AuthToken <- c.String("server.secret")
+		w.RegisterToken <- c.String("server.secret")
 	}
 
 	// validate the worker
