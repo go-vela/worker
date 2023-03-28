@@ -34,7 +34,7 @@ func Register(c *gin.Context) {
 	// extract the register token channel that was packed into gin context
 	v, ok := c.Get("register-token")
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "no auth token channel in the context")
+		c.JSON(http.StatusInternalServerError, "no register token channel in the context")
 		return
 	}
 
@@ -45,7 +45,8 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// if auth token is present in the channel, deny registration
+	// if token is present in the channel, deny registration
+	// this will likely never happen as the channel is offloaded immediately
 	if len(rChan) > 0 {
 		c.JSON(http.StatusOK, "worker already registered")
 		return
