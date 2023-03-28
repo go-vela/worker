@@ -34,7 +34,6 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
-	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
 
 	// pull token from configuration if provided; wait if not
@@ -54,19 +53,32 @@ func (w *Worker) operate(ctx context.Context) error {
 				logrus.Info("Completed looping on worker registration")
 				return nil
 			default:
-				// set checking time to now and call the server
-				registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
-
 				// check in attempt loop
 				for {
 					// register or update the worker
 					//nolint:contextcheck // ignore passing context
-					w.CheckedIn, err = w.checkIn(registryWorker)
+					w.CheckedIn, token, err = w.checkIn(registryWorker)
+					// check in failed
 					if err != nil {
-						logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
+						// token has expired
+						if w.VelaClient.Authentication.IsTokenAuthExpired() && len(w.Config.Server.Secret) == 0 {
+							// wait on new registration token, return to check in attempt
+							token = <-w.AuthToken
+
+							// setup the vela client with the token
+							w.VelaClient, err = setupClient(w.Config.Server, token)
+							if err != nil {
+								return err
+							}
+
+							continue
+						}
+
+						// check in failed, token is still valid, retry
+						logrus.Errorf("unable to check-in worker %s on the server: %v", registryWorker.GetHostname(), err)
 						logrus.Info("retrying...")
 
-						time.Sleep(3 * time.Second)
+						time.Sleep(5 * time.Second)
 
 						continue
 					}
@@ -74,9 +86,6 @@ func (w *Worker) operate(ctx context.Context) error {
 					// successful check in breaks the loop
 					break
 				}
-
-				// pull token retrieved from check in from server
-				token := <-w.AuthToken
 
 				// setup the vela client with the token
 				w.VelaClient, err = setupClient(w.Config.Server, token)
