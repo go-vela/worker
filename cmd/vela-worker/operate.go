@@ -60,8 +60,15 @@ func (w *Worker) operate(ctx context.Context) error {
 					w.CheckedIn, token, err = w.checkIn(registryWorker)
 					// check in failed
 					if err != nil {
+						// check if token is expired
+						expired, err := w.VelaClient.Authentication.IsTokenAuthExpired()
+						if err != nil {
+							logrus.Error("unable to check token expiration")
+							return err
+						}
+
 						// token has expired
-						if w.VelaClient.Authentication.IsTokenAuthExpired() && len(w.Config.Server.Secret) == 0 {
+						if expired && len(w.Config.Server.Secret) == 0 {
 							// wait on new registration token, return to check in attempt
 							token = <-w.RegisterToken
 
