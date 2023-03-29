@@ -26,6 +26,10 @@ import (
 //     description: Successfully passed token to worker
 //     schema:
 //       type: string
+//   '500':
+//     description: Unable to pass token to worker
+//     schema:
+//       "$ref": "#/definitions/Error"
 
 // Register will pass the token given in the request header to the register token
 // channel of the worker. This will unblock operation if the worker has not been
