@@ -37,8 +37,6 @@ type Setup struct {
 
 	// specifies the executor driver to use
 	Driver string
-	// specifies the executor method used to publish logs
-	LogMethod string
 	// specifies the maximum log size
 	MaxLogSize uint
 	// specifies how long to wait after the build finishes
@@ -87,7 +85,6 @@ func (s *Setup) Linux() (Engine, error) {
 	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux?tab=doc#New
 	return linux.New(
 		linux.WithBuild(s.Build),
-		linux.WithLogMethod(s.LogMethod),
 		linux.WithMaxLogSize(s.MaxLogSize),
 		linux.WithLogStreamingTimeout(s.LogStreamingTimeout),
 		linux.WithPrivilegedImages(s.PrivilegedImages),
@@ -157,15 +154,6 @@ func (s *Setup) Validate() error {
 		// all other fields are not required
 		// for the local executor
 		return nil
-	}
-
-	// handle the executor log method provided
-	switch s.LogMethod {
-	case "byte-chunks", "time-chunks":
-	case "":
-		return fmt.Errorf("empty executor log method provided in setup")
-	default:
-		return fmt.Errorf("invalid executor log method provided in setup: %s", s.LogMethod)
 	}
 
 	// check if a Vela client was provided

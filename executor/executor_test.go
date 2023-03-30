@@ -45,7 +45,6 @@ func TestExecutor_New(t *testing.T) {
 	_linux, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithHostname("localhost"),
-		linux.WithLogMethod("byte-chunks"),
 		linux.WithMaxLogSize(2097152),
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),
@@ -103,7 +102,6 @@ func TestExecutor_New(t *testing.T) {
 				Build:      _build,
 				Client:     _client,
 				Driver:     constants.DriverLinux,
-				LogMethod:  "byte-chunks",
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
 				Repo:       _repo,

@@ -9,29 +9,79 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types"
-	"github.com/go-vela/worker/router/middleware/user"
+	"github.com/go-vela/worker/router/middleware/token"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
-// MustServer ensures the user is the vela server.
+// MustServer ensures the caller is the vela server.
 func MustServer() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		u := user.Retrieve(c)
+		// retrieve the callers token from the request headers
+		tkn, err := token.Retrieve(c.Request)
+		if err != nil {
+			msg := fmt.Sprintf("error parsing token: %v", err)
 
-		if strings.EqualFold(u.GetName(), "vela-server") {
+			logrus.Error(msg)
+
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+
 			return
 		}
 
-		msg := fmt.Sprintf("User %s is not a platform admin", u.GetName())
+		// retrieve the configured server address from the context
+		addr := c.MustGet("server-address").(string)
 
-		err := c.Error(fmt.Errorf(msg))
+		// create a temporary client to validate the incoming request
+		vela, err := vela.NewClient(addr, "vela-worker", nil)
 		if err != nil {
-			logrus.Error(err)
+			msg := fmt.Sprintf("error creating vela client: %s", err)
+
+			logrus.Error(msg)
+
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
+			return
 		}
 
-		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
+		// validate a token was provided
+		if strings.EqualFold(tkn, "") {
+			msg := "missing token"
+
+			logrus.Error(msg)
+
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+
+			return
+		}
+
+		// set the token auth provided in the callers request header
+		vela.Authentication.SetTokenAuth(tkn)
+
+		// validate the token with the configured vela server
+		resp, err := vela.Authentication.ValidateToken()
+		if err != nil {
+			msg := fmt.Sprintf("error validating token: %s", err)
+
+			logrus.Error(msg)
+
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+
+			return
+		}
+
+		// if ValidateToken returned anything other than 200 consider the token invalid
+		if resp.StatusCode != http.StatusOK {
+			msg := "unable to validate token"
+
+			logrus.Error(msg)
+
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
+
+			return
+		}
 	}
 }
