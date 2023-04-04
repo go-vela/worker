@@ -50,10 +50,10 @@ func WithPrivilegedImages(images []string) ClientOpt {
 	}
 }
 
-// WithDropCapabilities sets the privileged images in the runtime client for Docker.
+// WithDropCapabilities sets the kernel capabilities to drop from each container in the runtime client for Docker.
 func WithDropCapabilities(caps []string) ClientOpt {
 	return func(c *client) error {
-		c.Logger.Trace("configuring privileged images in docker runtime client")
+		c.Logger.Trace("configuring dropped capabilities in docker runtime client")
 
 		// set the runtime dropped kernel capabilities in the docker client
 		c.config.DropCapabilities = caps
