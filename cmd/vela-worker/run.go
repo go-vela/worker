@@ -135,11 +135,18 @@ func run(c *cli.Context) error {
 			TLSMinVersion: c.String("server.tls-min-version"),
 		},
 		Executors: make(map[int]executor.Engine),
+
+		RegisterToken: make(chan string, 1),
 	}
 
 	// set the worker address if no flag was provided
 	if len(w.Config.API.Address.String()) == 0 {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
+	}
+
+	// if server secret is provided, use as register token on start up
+	if len(c.String("server.secret")) > 0 {
+		w.RegisterToken <- c.String("server.secret")
 	}
 
 	// validate the worker
