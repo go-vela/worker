@@ -22,12 +22,6 @@ import (
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 
-	// setup the vela client with the server
-	w.VelaClient, err = setupClient(w.Config.Server, w.Config.Server.Secret)
-	if err != nil {
-		return err
-	}
-
 	// create the errgroup for managing operator subprocesses
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
@@ -40,8 +34,16 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
-	registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
+
+	// pull registration token from configuration if provided; wait if not
+	token := <-w.RegisterToken
+
+	// setup the vela client with the token
+	w.VelaClient, err = setupClient(w.Config.Server, token)
+	if err != nil {
+		return err
+	}
 
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
@@ -51,19 +53,51 @@ func (w *Worker) operate(ctx context.Context) error {
 				logrus.Info("Completed looping on worker registration")
 				return nil
 			default:
-				// set checking time to now and call the server
-				registryWorker.SetLastCheckedIn(time.Now().UTC().Unix())
+				// check in attempt loop
+				for {
+					// register or update the worker
+					//nolint:contextcheck // ignore passing context
+					w.CheckedIn, token, err = w.checkIn(registryWorker)
+					// check in failed
+					if err != nil {
+						// check if token is expired
+						expired, err := w.VelaClient.Authentication.IsTokenAuthExpired()
+						if err != nil {
+							logrus.Error("unable to check token expiration")
+							return err
+						}
 
-				// register or update the worker
-				//nolint:contextcheck // ignore passing context
-				err = w.checkIn(registryWorker)
-				if err != nil {
-					logrus.Error(err)
+						// token has expired
+						if expired && len(w.Config.Server.Secret) == 0 {
+							// wait on new registration token, return to check in attempt
+							token = <-w.RegisterToken
+
+							// setup the vela client with the token
+							w.VelaClient, err = setupClient(w.Config.Server, token)
+							if err != nil {
+								return err
+							}
+
+							continue
+						}
+
+						// check in failed, token is still valid, retry
+						logrus.Errorf("unable to check-in worker %s on the server: %v", registryWorker.GetHostname(), err)
+						logrus.Info("retrying...")
+
+						time.Sleep(5 * time.Second)
+
+						continue
+					}
+
+					// successful check in breaks the loop
+					break
 				}
 
-				// if unable to update the worker, log the error but allow the worker to continue running
+				// setup the vela client with the token
+				w.VelaClient, err = setupClient(w.Config.Server, token)
 				if err != nil {
-					logrus.Errorf("unable to update worker %s on the server: %v", registryWorker.GetHostname(), err)
+					return err
 				}
 
 				// sleep for the configured time
@@ -99,6 +133,12 @@ func (w *Worker) operate(ctx context.Context) error {
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
+				// do not pull from queue unless worker is checked in with server
+				if !w.CheckedIn {
+					time.Sleep(5 * time.Second)
+					logrus.Info("worker not checked in, skipping queue read")
+					continue
+				}
 				select {
 				case <-gctx.Done():
 					logrus.WithFields(logrus.Fields{
