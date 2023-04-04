@@ -60,4 +60,10 @@ var Flags = []cli.Flag{
 		Name:     "runtime.volumes",
 		Usage:    "list of host volumes to mount for the runtime",
 	},
+	&cli.StringSliceFlag{
+		EnvVars:  []string{"VELA_RUNTIME_DROP_CAPABILITIES", "RUNTIME_DROP_CAPABILITIES"},
+		FilePath: "/vela/runtime/drop_capabilities",
+		Name:     "runtime.drop-capabilities",
+		Usage:    "list of kernel capabilities to drop from container privileges (only used by Docker)",
+	},
 }
