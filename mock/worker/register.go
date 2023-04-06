@@ -16,7 +16,7 @@ import (
 func postRegister(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
 	if len(token) == 0 {
-		c.JSON(http.StatusInternalServerError, "no token provided in Authorization header")
+		c.JSON(http.StatusUnauthorized, "no token provided in Authorization header")
 	}
 
 	c.JSON(http.StatusOK, "successfully passed token to worker")
