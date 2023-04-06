@@ -90,7 +90,7 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 
 // hostConfig is a helper function to generate the host config
 // with Ulimit and volume specifications for a container.
-func hostConfig(logger *logrus.Entry, id string, ulimits pipeline.UlimitSlice, volumes []string) *container.HostConfig {
+func hostConfig(logger *logrus.Entry, id string, ulimits pipeline.UlimitSlice, volumes []string, dropCaps []string) *container.HostConfig {
 	logger.Tracef("creating mount for default volume %s", id)
 
 	// create default mount for pipeline volume
@@ -146,5 +146,6 @@ func hostConfig(logger *logrus.Entry, id string, ulimits pipeline.UlimitSlice, v
 		Mounts: mounts,
 		// https://pkg.go.dev/github.com/docker/docker/api/types/container#Resources.Ulimits
 		Resources: resources,
+		CapDrop:   dropCaps,
 	}
 }
