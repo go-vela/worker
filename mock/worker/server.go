@@ -31,5 +31,8 @@ func FakeHandler() http.Handler {
 	// mock endpoints for repo calls
 	e.GET("/api/v1/executors/:executor/repo", getRepo)
 
+	// mock endpoint for register call
+	e.POST("/register", postRegister)
+
 	return e
 }
