@@ -95,7 +95,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	// allocate new container config from pipeline container
 	containerConf := ctnConfig(ctn)
 	// allocate new host config with volume data
-	hostConf := hostConfig(c.Logger, b.ID, ctn.Ulimits, c.config.Volumes)
+	hostConf := hostConfig(c.Logger, b.ID, ctn.Ulimits, c.config.Volumes, c.config.DropCapabilities)
 	// allocate new network config with container name
 	networkConf := netConfig(b.ID, ctn.Name)
 

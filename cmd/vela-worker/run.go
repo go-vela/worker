@@ -112,6 +112,7 @@ func run(c *cli.Context) error {
 				PodsTemplateFile: c.Path("runtime.pods-template-file"),
 				HostVolumes:      c.StringSlice("runtime.volumes"),
 				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
+				DropCapabilities: c.StringSlice("runtime.drop-capabilities"),
 			},
 			// queue configuration
 			Queue: &queue.Setup{

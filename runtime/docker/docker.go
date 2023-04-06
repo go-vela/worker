@@ -31,6 +31,8 @@ type config struct {
 	Images []string
 	// specifies a list of host volumes to use for the Docker client
 	Volumes []string
+	// specifies a list of kernel capabilities to drop for each Docker container
+	DropCapabilities []string
 }
 
 type client struct {
