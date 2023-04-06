@@ -26,6 +26,10 @@ import (
 //     description: Successfully passed token to worker
 //     schema:
 //       type: string
+//   '401':
+//     description: No token was passed
+//     schema:
+//       "$ref": "#/definitions/Error"
 //   '500':
 //     description: Unable to pass token to worker
 //     schema:
@@ -59,7 +63,8 @@ func Register(c *gin.Context) {
 	// retrieve auth token from header
 	token, err := token.Retrieve(c.Request)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		// an error occurs when no token was passed
+		c.JSON(http.StatusUnauthorized, err)
 		return
 	}
 
