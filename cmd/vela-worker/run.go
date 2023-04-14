@@ -147,6 +147,8 @@ func run(c *cli.Context) error {
 
 	// if server secret is provided, use as register token on start up
 	if len(c.String("server.secret")) > 0 {
+		logrus.Trace("registering worker with embedded server secret")
+
 		w.RegisterToken <- c.String("server.secret")
 	}
 

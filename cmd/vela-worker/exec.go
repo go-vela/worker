@@ -36,12 +36,13 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
-	// GET build token from server to setup execBuildClient
+	// retrieve a build token from the server to setup the execBuildClient
 	bt, _, err := w.VelaClient.Build.GetBuildToken(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
 	if err != nil {
-		logrus.Errorf("Unable to GetBuildToken: %s", err)
+		logrus.Errorf("unable to retrieve build token: %s", err)
 		return err
 	}
+
 	// set up build client with build token as auth
 	execBuildClient, err := setupClient(w.Config.Server, bt.GetToken())
 	if err != nil {
