@@ -37,7 +37,11 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
 
 	// pull registration token from configuration if provided; wait if not
+	logrus.Trace("waiting for register token")
+
 	token := <-w.RegisterToken
+
+	logrus.Trace("received register token")
 
 	// setup the vela client with the token
 	w.VelaClient, err = setupClient(w.Config.Server, token)
@@ -50,7 +54,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		for {
 			select {
 			case <-gctx.Done():
-				logrus.Info("Completed looping on worker registration")
+				logrus.Info("completed looping on worker registration")
 				return nil
 			default:
 				// check in attempt loop
@@ -70,6 +74,8 @@ func (w *Worker) operate(ctx context.Context) error {
 						// token has expired
 						if expired && len(w.Config.Server.Secret) == 0 {
 							// wait on new registration token, return to check in attempt
+							logrus.Trace("check-in token has expired, waiting for new register token")
+
 							token = <-w.RegisterToken
 
 							// setup the vela client with the token
@@ -83,7 +89,7 @@ func (w *Worker) operate(ctx context.Context) error {
 
 						// check in failed, token is still valid, retry
 						logrus.Errorf("unable to check-in worker %s on the server: %v", registryWorker.GetHostname(), err)
-						logrus.Info("retrying...")
+						logrus.Info("retrying check-in...")
 
 						time.Sleep(5 * time.Second)
 
@@ -125,7 +131,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		// log a message indicating the start of an operator thread
 		//
 		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
-		logrus.Infof("Thread ID %d listening to queue...", id)
+		logrus.Infof("thread ID %d listening to queue...", id)
 
 		// spawn errgroup routine for operator subprocess
 		//
@@ -143,9 +149,13 @@ func (w *Worker) operate(ctx context.Context) error {
 				case <-gctx.Done():
 					logrus.WithFields(logrus.Fields{
 						"id": id,
-					}).Info("Completed looping on worker executor")
+					}).Info("completed looping on worker executor")
 					return nil
 				default:
+					logrus.WithFields(logrus.Fields{
+						"id": id,
+					}).Info("running worker executor exec")
+
 					// exec operator subprocess to poll and execute builds
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
