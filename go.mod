@@ -3,7 +3,7 @@ module github.com/go-vela/worker
 go 1.19
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.0
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.23+incompatible
 	github.com/docker/go-units v0.5.0
