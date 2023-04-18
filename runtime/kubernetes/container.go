@@ -234,11 +234,9 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// create object to store container logs
 	var logs io.ReadCloser
 
-	var logsFunc wait.ConditionFunc
-
 	// create function for periodically capturing
 	// the logs from the container with backoff
-	logsFunc = func() (bool, error) {
+	var logsFunc wait.ConditionFunc = func() (bool, error) {
 		// create options for capturing the logs from the container
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodLogOptions
