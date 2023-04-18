@@ -234,9 +234,11 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// create object to store container logs
 	var logs io.ReadCloser
 
+	var logsFunc wait.ConditionFunc
+
 	// create function for periodically capturing
 	// the logs from the container with backoff
-	logsFunc := func() (bool, error) {
+	logsFunc = func() (bool, error) {
 		// create options for capturing the logs from the container
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodLogOptions
@@ -298,7 +300,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// perform the function to capture logs with periodic backoff
 	//
 	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
-	err := wait.ExponentialBackoffWithContext(ctx, backoff, logsFunc)
+	err := wait.ExponentialBackoffWithContext(ctx, backoff, logsFunc.WithContext())
 	if err != nil {
 		c.Logger.Errorf("exponential backoff error while tailing container %s: %v", ctn.ID, err)
 		return nil, err
