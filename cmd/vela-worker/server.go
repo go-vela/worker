@@ -31,6 +31,7 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 	_server := router.Load(
 		middleware.RequestVersion,
 		middleware.ServerAddress(w.Config.Server.Address),
+		middleware.WorkerHostname(w.Config.API.Address.Hostname()),
 		middleware.Executors(w.Executors),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
 		middleware.RegisterToken(w.RegisterToken),

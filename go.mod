@@ -11,6 +11,7 @@ require (
 	github.com/go-vela/sdk-go v0.19.0-rc1
 	github.com/go-vela/server v0.19.0-rc1
 	github.com/go-vela/types v0.19.0-rc1
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.5.1
 	github.com/opencontainers/image-spec v1.0.2
@@ -59,7 +60,6 @@ require (
 	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-github/v51 v51.0.0 // indirect
