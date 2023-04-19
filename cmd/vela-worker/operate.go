@@ -65,10 +65,10 @@ func (w *Worker) operate(ctx context.Context) error {
 					// check in failed
 					if err != nil {
 						// check if token is expired
-						expired, err := w.VelaClient.Authentication.IsTokenAuthExpired()
-						if err != nil {
+						expired, expiredErr := w.VelaClient.Authentication.IsTokenAuthExpired()
+						if expiredErr != nil {
 							logrus.Error("unable to check token expiration")
-							return err
+							return expiredErr
 						}
 
 						// token has expired
