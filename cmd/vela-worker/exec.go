@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"sync"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
-//nolint:nilerr // ignore returning nil - don't want to crash worker
+//nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int) error {
 	var err error
 
@@ -37,9 +38,16 @@ func (w *Worker) exec(index int) error {
 	}
 
 	// retrieve a build token from the server to setup the execBuildClient
-	bt, _, err := w.VelaClient.Build.GetBuildToken(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
 	if err != nil {
 		logrus.Errorf("unable to retrieve build token: %s", err)
+
+		// build is not in pending state — user canceled build while it was in queue. Pop, discard, move on.
+		if resp != nil && resp.StatusCode == http.StatusBadRequest {
+			return nil
+		}
+
+		// something else is amiss (auth, server down, etc.) — shut down worker, will have to re-register if registration enabled.
 		return err
 	}
 
