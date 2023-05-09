@@ -43,7 +43,7 @@ func (w *Worker) exec(index int) error {
 		logrus.Errorf("unable to retrieve build token: %s", err)
 
 		// build is not in pending state — user canceled build while it was in queue. Pop, discard, move on.
-		if resp != nil && resp.StatusCode == http.StatusBadRequest {
+		if resp != nil && resp.StatusCode == http.StatusConflict {
 			return nil
 		}
 
