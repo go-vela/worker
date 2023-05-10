@@ -35,6 +35,12 @@ release/
 *.iws
 *.xml
 
+# VSCode project folder
+.vscode/
+
+# VSCode project files
+__debug_bin
+
 # Secrets environment file
 secrets.env
 
