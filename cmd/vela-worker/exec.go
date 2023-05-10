@@ -6,10 +6,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -56,6 +58,16 @@ func (w *Worker) exec(index int) error {
 	if err != nil {
 		return err
 	}
+
+	compiled, _, err := execBuildClient.Build.GetCompiled(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	if err != nil {
+		return err
+	}
+
+	pipeline := new(pipeline.Build)
+
+	// unmarshal result into queue item
+	err = json.Unmarshal(compiled.GetData(), pipeline)
 
 	// create logger with extra metadata
 	//
@@ -104,7 +116,7 @@ func (w *Worker) exec(index int) error {
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,
-		Pipeline:            item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
 		Repo:                item.Repo,
 		User:                item.User,
 		Version:             v.Semantic(),
