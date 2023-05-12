@@ -59,15 +59,19 @@ func (w *Worker) exec(index int) error {
 		return err
 	}
 
-	compiled, _, err := execBuildClient.Build.GetCompiled(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	// send request to get build itinerary from server
+	bItinerary, _, err := execBuildClient.Build.GetBuildItinerary(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
 	if err != nil {
 		return err
 	}
 
 	pipeline := new(pipeline.Build)
 
-	// unmarshal result into queue item
-	err = json.Unmarshal(compiled.GetData(), pipeline)
+	// unmarshal itinerary data to pipeline build type
+	err = json.Unmarshal(bItinerary.GetData(), pipeline)
+	if err != nil {
+		return err
+	}
 
 	// create logger with extra metadata
 	//
