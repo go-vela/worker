@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
+// Copyright (c) 2023 Target Brands, Inc. All rights reserved.
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestMiddleware_Secret(t *testing.T) {
+func TestMiddleware_WorkerHostname(t *testing.T) {
 	// setup types
 	got := ""
 	want := "foobar"
@@ -26,9 +26,9 @@ func TestMiddleware_Secret(t *testing.T) {
 	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
 
 	// setup mock server
-	engine.Use(Secret(want))
+	engine.Use(WorkerHostname(want))
 	engine.GET("/health", func(c *gin.Context) {
-		got = c.Value("secret").(string)
+		got = c.Value("worker-hostname").(string)
 
 		c.Status(http.StatusOK)
 	})
@@ -37,10 +37,10 @@ func TestMiddleware_Secret(t *testing.T) {
 	engine.ServeHTTP(context.Writer, context.Request)
 
 	if resp.Code != http.StatusOK {
-		t.Errorf("Secret returned %v, want %v", resp.Code, http.StatusOK)
+		t.Errorf("WorkerHostname returned %v, want %v", resp.Code, http.StatusOK)
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Secret is %v, want %v", got, want)
+		t.Errorf("WorkerHostname is %v, want %v", got, want)
 	}
 }

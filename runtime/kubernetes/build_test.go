@@ -431,7 +431,7 @@ func TestKubernetes_StreamBuild(t *testing.T) {
 					cancel()
 				} else if test.doReady {
 					// simulate AssembleBuild
-					close(_engine.PodTracker.Ready)
+					_engine.MarkPodTrackerReady()
 				}
 			}()
 

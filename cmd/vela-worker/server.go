@@ -30,9 +30,11 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 	// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#Load
 	_server := router.Load(
 		middleware.RequestVersion,
+		middleware.ServerAddress(w.Config.Server.Address),
+		middleware.WorkerHostname(w.Config.API.Address.Hostname()),
 		middleware.Executors(w.Executors),
-		middleware.Secret(w.Config.Server.Secret),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
+		middleware.RegisterToken(w.RegisterToken),
 	)
 
 	// log a message indicating the start of serving traffic

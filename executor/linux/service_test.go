@@ -10,16 +10,14 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/sdk-go/vela"
-
+	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 )
 
 func TestLinux_CreateService(t *testing.T) {
@@ -37,20 +35,27 @@ func TestLinux_CreateService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
-			name:    "basic service container",
+			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -64,8 +69,25 @@ func TestLinux_CreateService(t *testing.T) {
 			},
 		},
 		{
-			name:    "service container with image not found",
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker-service container with image not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -78,9 +100,32 @@ func TestLinux_CreateService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		// {
+		//	name:    "kubernetes-service container with image not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "service-github-octocat-1-postgres",
+		//		Detach:      true,
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "postgres:notfound",
+		//		Name:        "postgres",
+		//		Number:      1,
+		//		Ports:       []string{"5432:5432"},
+		//		Pull:        "not_present",
+		//	},
+		// },
 		{
-			name:      "empty service container",
+			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -92,26 +137,26 @@ func TestLinux_CreateService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.CreateService(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("CreateService should have returned err")
+					t.Errorf("%s CreateService should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("CreateService returned err: %v", err)
+				t.Errorf("%s CreateService returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -132,9 +177,14 @@ func TestLinux_PlanService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -142,10 +192,12 @@ func TestLinux_PlanService(t *testing.T) {
 		name      string
 		failure   bool
 		container *pipeline.Container
+		runtime   runtime.Engine
 	}{
 		{
-			name:    "basic service container",
+			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -159,8 +211,25 @@ func TestLinux_PlanService(t *testing.T) {
 			},
 		},
 		{
-			name:    "service container with nil environment",
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker-service container with nil environment",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -174,8 +243,31 @@ func TestLinux_PlanService(t *testing.T) {
 			},
 		},
 		{
-			name:      "empty service container",
+			name:    "kubernetes-service container with nil environment",
+			failure: true,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: nil,
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -187,26 +279,26 @@ func TestLinux_PlanService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.PlanService(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("PlanService should have returned err")
+					t.Errorf("%s PlanService should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("PlanService returned err: %v", err)
+				t.Errorf("%s PlanService returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -227,9 +319,14 @@ func TestLinux_ExecService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -239,11 +336,13 @@ func TestLinux_ExecService(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
-			name:    "basic service container",
+			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -257,8 +356,25 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
-			name:    "service container with image not found",
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker-service container with image not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -272,8 +388,31 @@ func TestLinux_ExecService(t *testing.T) {
 			},
 		},
 		{
-			name:      "empty service container",
+			name:    "kubernetes-service container with image not found",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:notfound",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -285,13 +424,13 @@ func TestLinux_ExecService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if !test.container.Empty() {
@@ -303,14 +442,14 @@ func TestLinux_ExecService(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("ExecService should have returned err")
+					t.Errorf("%s ExecService should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("ExecService returned err: %v", err)
+				t.Errorf("%s ExecService returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -331,20 +470,27 @@ func TestLinux_StreamService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
-			name:    "basic service container",
+			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -358,8 +504,25 @@ func TestLinux_StreamService(t *testing.T) {
 			},
 		},
 		{
-			name:    "service container with name not found",
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker-service container with name not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_notfound",
 				Detach:      true,
@@ -372,9 +535,32 @@ func TestLinux_StreamService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		//{
+		//	name:    "kubernetes-service container with name not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "service-github-octocat-1-notfound",
+		//		Detach:      true,
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "postgres:12-alpine",
+		//		Name:        "notfound",
+		//		Number:      1,
+		//		Ports:       []string{"5432:5432"},
+		//		Pull:        "not_present",
+		//	},
+		//},
 		{
-			name:      "empty service container",
+			name:      "docker-empty service container",
 			failure:   true,
+			runtime:   _docker,
+			container: new(pipeline.Container),
+		},
+		{
+			name:      "kubernetes-empty service container",
+			failure:   true,
+			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
 	}
@@ -386,12 +572,12 @@ func TestLinux_StreamService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			if !test.container.Empty() {
@@ -403,14 +589,14 @@ func TestLinux_StreamService(t *testing.T) {
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("StreamService should have returned err")
+					t.Errorf("%s StreamService should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("StreamService returned err: %v", err)
+				t.Errorf("%s StreamService returned err: %v", test.name, err)
 			}
 		})
 	}
@@ -431,20 +617,27 @@ func TestLinux_DestroyService(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
 	tests := []struct {
 		name      string
 		failure   bool
+		runtime   runtime.Engine
 		container *pipeline.Container
 	}{
 		{
-			name:    "basic service container",
+			name:    "docker-basic service container",
 			failure: false,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_postgres",
 				Detach:      true,
@@ -458,8 +651,25 @@ func TestLinux_DestroyService(t *testing.T) {
 			},
 		},
 		{
-			name:    "service container with ignoring name not found",
+			name:    "kubernetes-basic service container",
+			failure: false,
+			runtime: _kubernetes,
+			container: &pipeline.Container{
+				ID:          "service-github-octocat-1-postgres",
+				Detach:      true,
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "postgres:12-alpine",
+				Name:        "postgres",
+				Number:      1,
+				Ports:       []string{"5432:5432"},
+				Pull:        "not_present",
+			},
+		},
+		{
+			name:    "docker-service container with ignoring name not found",
 			failure: true,
+			runtime: _docker,
 			container: &pipeline.Container{
 				ID:          "service_github_octocat_1_ignorenotfound",
 				Detach:      true,
@@ -472,6 +682,22 @@ func TestLinux_DestroyService(t *testing.T) {
 				Pull:        "not_present",
 			},
 		},
+		//{
+		//	name:    "kubernetes-service container with ignoring name not found",
+		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
+		//	runtime: _kubernetes,
+		//	container: &pipeline.Container{
+		//		ID:          "service-github-octocat-1-ignorenotfound",
+		//		Detach:      true,
+		//		Directory:   "/vela/src/github.com/github/octocat",
+		//		Environment: map[string]string{"FOO": "bar"},
+		//		Image:       "postgres:12-alpine",
+		//		Name:        "ignorenotfound",
+		//		Number:      1,
+		//		Ports:       []string{"5432:5432"},
+		//		Pull:        "not_present",
+		//	},
+		//},
 	}
 
 	// run tests
@@ -481,26 +707,26 @@ func TestLinux_DestroyService(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
-				WithRuntime(_runtime),
+				WithRuntime(test.runtime),
 				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
-				t.Errorf("unable to create executor engine: %v", err)
+				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
 			err = _engine.DestroyService(context.Background(), test.container)
 
 			if test.failure {
 				if err == nil {
-					t.Errorf("DestroyService should have returned err")
+					t.Errorf("%s DestroyService should have returned err", test.name)
 				}
 
 				return // continue to next test
 			}
 
 			if err != nil {
-				t.Errorf("DestroyService returned err: %v", err)
+				t.Errorf("%s DestroyService returned err: %v", test.name, err)
 			}
 		})
 	}

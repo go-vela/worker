@@ -133,3 +133,40 @@ func TestDocker_ClientOpt_WithLogger(t *testing.T) {
 		})
 	}
 }
+
+func TestDocker_ClientOpt_WithDropCapabilities(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name string
+		caps []string
+		want []string
+	}{
+		{
+			name: "defined",
+			caps: []string{"CAP_CHOWN", "CAP_DAC_OVERRIDE"},
+			want: []string{"CAP_CHOWN", "CAP_DAC_OVERRIDE"},
+		},
+		{
+			name: "empty",
+			caps: []string{},
+			want: []string{},
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_service, err := New(
+				WithDropCapabilities(test.caps),
+			)
+
+			if err != nil {
+				t.Errorf("WithDropCapabilities returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_service.config.DropCapabilities, test.want) {
+				t.Errorf("WithDropCapabilities is %v, want %v", _service.config.DropCapabilities, test.want)
+			}
+		})
+	}
+}

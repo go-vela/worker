@@ -6,6 +6,7 @@ package linux
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
@@ -35,23 +36,6 @@ func WithBuild(b *library.Build) Opt {
 	}
 }
 
-// WithLogMethod sets the method used to publish logs in the executor client for Linux.
-func WithLogMethod(method string) Opt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring log streaming method in linux executor client")
-
-		// check if a method is provided
-		if len(method) == 0 {
-			return fmt.Errorf("empty log method provided")
-		}
-
-		// set the log method in the client
-		c.logMethod = method
-
-		return nil
-	}
-}
-
 // WithMaxLogSize sets the maximum log size (in bytes) in the executor client for Linux.
 func WithMaxLogSize(size uint) Opt {
 	return func(c *client) error {
@@ -59,6 +43,42 @@ func WithMaxLogSize(size uint) Opt {
 
 		// set the maximum log size in the client
 		c.maxLogSize = size
+
+		return nil
+	}
+}
+
+// WithLogStreamingTimeout sets the log streaming timeout in the executor client for Linux.
+func WithLogStreamingTimeout(timeout time.Duration) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring log streaming timeout in linux executor client")
+
+		// set the maximum log size in the client
+		c.logStreamingTimeout = timeout
+
+		return nil
+	}
+}
+
+// WithPrivilegedImages sets the privileged images in the executor client for Linux.
+func WithPrivilegedImages(images []string) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring privileged images in linux executor client")
+
+		// set the privileged images in the client
+		c.privilegedImages = images
+
+		return nil
+	}
+}
+
+// WithEnforceTrustedRepos configures trusted repo restrictions in the executor client for Linux.
+func WithEnforceTrustedRepos(enforce bool) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring trusted repo restrictions in linux executor client")
+
+		// set trusted repo restrictions in the client
+		c.enforceTrustedRepos = enforce
 
 		return nil
 	}

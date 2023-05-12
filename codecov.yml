@@ -32,6 +32,14 @@ coverage:
     # disable the changes status report
     changes: off
 
+# This section provides the configuration that tells
+# codecov to ignore files matching these files or patterns.
+#
+# https://docs.codecov.io/docs/codecovyml-reference#section-ignore
+ignore:
+  # this is only for tests, so reporting coverage is misleading.
+  - runtime/kubernetes/mock.go
+
 # This section provides the configuration for the
 # parsers codecov uses for the coverage report.
 #

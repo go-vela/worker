@@ -52,11 +52,6 @@ func (w *Worker) Validate() error {
 		return fmt.Errorf("no worker server address provided")
 	}
 
-	// verify a server secret was provided
-	if len(w.Config.Server.Secret) == 0 {
-		return fmt.Errorf("no worker server secret provided")
-	}
-
 	// verify an executor driver was provided
 	if len(w.Config.Executor.Driver) == 0 {
 		return fmt.Errorf("no worker executor driver provided")

@@ -6,9 +6,12 @@ package runtime
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/worker/runtime/kubernetes"
+
+	"github.com/docker/docker/oci/caps"
 
 	"github.com/go-vela/types/constants"
 
@@ -42,6 +45,8 @@ type Setup struct {
 	PodsTemplateFile string
 	// specifies a list of privileged images to use for the runtime client
 	PrivilegedImages []string
+	// specifies a list of kernel capabilities to drop from container (only used by Docker)
+	DropCapabilities []string
 }
 
 // Docker creates and returns a Vela engine capable of
@@ -53,6 +58,7 @@ func (s *Setup) Docker() (Engine, error) {
 		docker.WithHostVolumes(s.HostVolumes),
 		docker.WithPrivilegedImages(s.PrivilegedImages),
 		docker.WithLogger(s.Logger),
+		docker.WithDropCapabilities(s.DropCapabilities),
 	}
 
 	if s.Mock {
@@ -108,7 +114,23 @@ func (s *Setup) Validate() error {
 	// process the secret driver being provided
 	switch s.Driver {
 	case constants.DriverDocker:
-		break
+		// check to make sure drop capabilities is configured correctly
+		if len(s.DropCapabilities) != 0 {
+			for _, configCap := range s.DropCapabilities {
+				valid := false
+
+				for _, validCap := range caps.GetAllCapabilities() {
+					if strings.EqualFold(configCap, validCap) {
+						valid = true
+						break
+					}
+				}
+
+				if !valid {
+					return fmt.Errorf("invalid capability %s provided in RUNTIME_DROP_CAPABILITIES", configCap)
+				}
+			}
+		}
 	case constants.DriverKubernetes:
 		// check if a runtime namespace was provided
 		if len(s.Namespace) == 0 {

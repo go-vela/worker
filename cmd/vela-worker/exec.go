@@ -6,6 +6,8 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-vela/worker/executor"
@@ -18,7 +20,7 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
-//nolint:nilerr // ignore returning nil - don't want to crash worker
+//nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int) error {
 	var err error
 
@@ -33,6 +35,26 @@ func (w *Worker) exec(index int) error {
 
 	if item == nil {
 		return nil
+	}
+
+	// retrieve a build token from the server to setup the execBuildClient
+	bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	if err != nil {
+		logrus.Errorf("unable to retrieve build token: %s", err)
+
+		// build is not in pending state — user canceled build while it was in queue. Pop, discard, move on.
+		if resp != nil && resp.StatusCode == http.StatusConflict {
+			return nil
+		}
+
+		// something else is amiss (auth, server down, etc.) — shut down worker, will have to re-register if registration enabled.
+		return err
+	}
+
+	// set up build client with build token as auth
+	execBuildClient, err := setupClient(w.Config.Server, bt.GetToken())
+	if err != nil {
+		return err
 	}
 
 	// create logger with extra metadata
@@ -61,6 +83,7 @@ func (w *Worker) exec(index int) error {
 		PodsTemplateName: w.Config.Runtime.PodsTemplateName,
 		PodsTemplateFile: w.Config.Runtime.PodsTemplateFile,
 		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
+		DropCapabilities: w.Config.Runtime.DropCapabilities,
 	})
 	if err != nil {
 		return err
@@ -70,23 +93,46 @@ func (w *Worker) exec(index int) error {
 	//
 	// https://godoc.org/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
-		Logger:     logger,
-		Mock:       w.Config.Mock,
-		Driver:     w.Config.Executor.Driver,
-		LogMethod:  w.Config.Executor.LogMethod,
-		MaxLogSize: w.Config.Executor.MaxLogSize,
-		Client:     w.VelaClient,
-		Hostname:   w.Config.API.Address.Hostname(),
-		Runtime:    w.Runtime,
-		Build:      item.Build,
-		Pipeline:   item.Pipeline.Sanitize(w.Config.Runtime.Driver),
-		Repo:       item.Repo,
-		User:       item.User,
-		Version:    v.Semantic(),
+		Logger:              logger,
+		Mock:                w.Config.Mock,
+		Driver:              w.Config.Executor.Driver,
+		MaxLogSize:          w.Config.Executor.MaxLogSize,
+		LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
+		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
+		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
+		Client:              execBuildClient,
+		Hostname:            w.Config.API.Address.Hostname(),
+		Runtime:             w.Runtime,
+		Build:               item.Build,
+		Pipeline:            item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Repo:                item.Repo,
+		User:                item.User,
+		Version:             v.Semantic(),
 	})
 
 	// add the executor to the worker
 	w.Executors[index] = _executor
+
+	// This WaitGroup delays calling DestroyBuild until the StreamBuild goroutine finishes.
+	var wg sync.WaitGroup
+
+	// this gets deferred first so that DestroyBuild runs AFTER the
+	// new contexts (buildCtx and timeoutCtx) have been canceled
+	defer func() {
+		// if exec() exits before starting StreamBuild, this returns immediately.
+		wg.Wait()
+
+		logger.Info("destroying build")
+
+		// destroy the build with the executor (pass a background
+		// context to guarantee all build resources are destroyed).
+		err = _executor.DestroyBuild(context.Background())
+		if err != nil {
+			logger.Errorf("unable to destroy build: %v", err)
+		}
+
+		logger.Info("completed build")
+	}()
 
 	// capture the configured build timeout
 	t := w.Config.Build.Timeout
@@ -106,19 +152,6 @@ func (w *Worker) exec(index int) error {
 	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
 	defer timeout()
 
-	defer func() {
-		logger.Info("destroying build")
-
-		// destroy the build with the executor (pass a background
-		// context to guarantee all build resources are destroyed).
-		err = _executor.DestroyBuild(context.Background())
-		if err != nil {
-			logger.Errorf("unable to destroy build: %v", err)
-		}
-
-		logger.Info("completed build")
-	}()
-
 	logger.Info("creating build")
 	// create the build with the executor
 	err = _executor.CreateBuild(timeoutCtx)
@@ -135,8 +168,12 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
+	// add StreamBuild goroutine to WaitGroup
+	wg.Add(1)
+
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
+		defer wg.Done()
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)

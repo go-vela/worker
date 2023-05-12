@@ -1,0 +1,22 @@
+---
+version: "1"
+
+environment:
+  DYNAMIC_IMAGE: "postgres"
+  DYNAMIC_TAG: "latest"
+
+services:
+  - name: test
+    environment:
+      FOO: bar
+    image: "${DYNAMIC_IMAGE}:${DYNAMIC_TAG}"
+    pull: on_start
+
+steps:
+  - name: test
+    commands:
+      - echo ${FOO}
+    environment:
+      FOO: bar
+    image: alpine:latest
+    pull: true    

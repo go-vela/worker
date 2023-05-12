@@ -212,7 +212,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 	}
 
-	// setup containerTeachers now that all containers are defined.
+	// setup containerTrackers now that all containers are defined.
 	c.PodTracker.TrackContainers(c.Pod.Spec.Containers)
 
 	// send signal to StreamBuild now that PodTracker is ready to be started.

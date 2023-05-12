@@ -7,6 +7,7 @@ package linux
 import (
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/library"
@@ -31,17 +32,19 @@ type (
 		secret *secretSvc
 
 		// private fields
-		init        *pipeline.Container
-		logMethod   string
-		maxLogSize  uint
-		build       *library.Build
-		pipeline    *pipeline.Build
-		repo        *library.Repo
-		secrets     sync.Map
-		services    sync.Map
-		serviceLogs sync.Map
-		steps       sync.Map
-		stepLogs    sync.Map
+		init                *pipeline.Container
+		maxLogSize          uint
+		logStreamingTimeout time.Duration
+		privilegedImages    []string
+		enforceTrustedRepos bool
+		build               *library.Build
+		pipeline            *pipeline.Build
+		repo                *library.Repo
+		secrets             sync.Map
+		services            sync.Map
+		serviceLogs         sync.Map
+		steps               sync.Map
+		stepLogs            sync.Map
 
 		streamRequests chan message.StreamRequest
 
@@ -68,8 +71,9 @@ func Equal(a, b *client) bool {
 		a.Hostname == b.Hostname &&
 		a.Version == b.Version &&
 		reflect.DeepEqual(a.init, b.init) &&
-		a.logMethod == b.logMethod &&
 		a.maxLogSize == b.maxLogSize &&
+		reflect.DeepEqual(a.privilegedImages, b.privilegedImages) &&
+		a.enforceTrustedRepos == b.enforceTrustedRepos &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
 		reflect.DeepEqual(a.repo, b.repo) &&
@@ -101,6 +105,7 @@ func New(opts ...Opt) (*client, error) {
 	c.Logger = logrus.NewEntry(logger)
 
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
+	// messages get sent during ExecBuild, then ExecBuild closes this on exit.
 	c.streamRequests = make(chan message.StreamRequest)
 
 	// apply all provided configuration options

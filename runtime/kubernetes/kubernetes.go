@@ -5,18 +5,14 @@
 package kubernetes
 
 import (
-	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 	velaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned"
-	fakeVelaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/fake"
+	"github.com/sirupsen/logrus"
 )
 
 type config struct {
@@ -128,78 +124,6 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// set the VelaKubernetes client in the runtime client
 	c.VelaKubernetes = _velaKubernetes
-
-	return c, nil
-}
-
-// NewMock returns an Engine implementation that
-// integrates with a Kubernetes runtime.
-//
-// This function is intended for running tests only.
-//
-//nolint:revive // ignore returning unexported client
-func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
-	// create new Kubernetes client
-	c := new(client)
-
-	// create new fields
-	c.config = new(config)
-	c.Pod = new(v1.Pod)
-
-	c.containersLookup = map[string]int{}
-	for i, ctn := range _pod.Spec.Containers {
-		c.containersLookup[ctn.Name] = i
-	}
-
-	// create new logger for the client
-	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
-	logger := logrus.StandardLogger()
-
-	// create new logger for the client
-	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
-	c.Logger = logrus.NewEntry(logger)
-
-	// set the Kubernetes namespace in the runtime client
-	c.config.Namespace = "test"
-
-	// set the Kubernetes pod in the runtime client
-	c.Pod = _pod.DeepCopy()
-	c.Pod.SetResourceVersion("0")
-
-	// apply all provided configuration options
-	for _, opt := range opts {
-		err := opt(c)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// set the Kubernetes fake client in the runtime client
-	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
-	c.Kubernetes = fake.NewSimpleClientset(c.Pod)
-
-	// set the VelaKubernetes fake client in the runtime client
-	c.VelaKubernetes = fakeVelaK8sClient.NewSimpleClientset(
-		&velav1alpha1.PipelinePodsTemplate{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: c.config.Namespace,
-				Name:      "mock-pipeline-pods-template",
-			},
-		},
-	)
-
-	// set the PodTracker (normally populated in SetupBuild)
-	tracker, err := mockPodTracker(c.Logger, c.Kubernetes, c.Pod)
-	if err != nil {
-		return c, err
-	}
-
-	c.PodTracker = tracker
-
-	// The test is responsible for calling c.PodTracker.Start() if needed
 
 	return c, nil
 }
