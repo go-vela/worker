@@ -10,10 +10,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-vela/types"
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -69,6 +70,25 @@ func (w *Worker) exec(index int) error {
 		"user":     item.User.GetName(),
 		"version":  v.Semantic(),
 	})
+
+	// handle stale item queued before a Vela upgrade or downgrade.
+	if item.ItemVersion != types.ItemVersion {
+		// If the ItemVersion is older or newer than what we expect, then it might
+		// not be safe to process the build. Fail the build and loop to the next item.
+		// TODO: Ask the server to re-compile and requeue the build instead of failing it.
+		logrus.Errorf("Failing stale queued build due to wrong item version: want %d, got %d", types.ItemVersion, item.ItemVersion)
+
+		build := item.Build
+		build.SetStatus(constants.StatusFailure)
+
+		_, _, err := w.VelaClient.Build.Update(item.Repo.GetOrg(), item.Repo.GetName(), build)
+		if err != nil {
+			logrus.Errorf("Unable to set build status to %s: %s", constants.StatusFailure, err)
+			return err
+		}
+
+		return nil
+	}
 
 	// setup the runtime
 	//
