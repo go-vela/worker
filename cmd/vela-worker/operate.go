@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
@@ -118,6 +119,12 @@ func (w *Worker) operate(ctx context.Context) error {
 	//nolint:contextcheck // ignore passing context
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
+		registryWorker.SetStatus(constants.WorkerStatusError)
+		_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+		if ers != nil {
+			// log the error instead of returning so the operation doesn't block worker deployment
+			logrus.Errorf("status code: %v, unable to update worker %s status with the server: %w", res.StatusCode, registryWorker.GetHostname(), ers)
+		}
 		return err
 	}
 
@@ -166,7 +173,12 @@ func (w *Worker) operate(ctx context.Context) error {
 						//
 						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
 						logrus.Errorf("failing worker executor: %v", err)
-
+						registryWorker.SetStatus(constants.WorkerStatusError)
+						_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+						if ers != nil {
+							// log the error instead of returning so the operation doesn't block worker deployment
+							logrus.Errorf("status code: %v, unable to update worker %s status with the server: %w", res.StatusCode, registryWorker.GetHostname(), ers)
+						}
 						return err
 					}
 				}
