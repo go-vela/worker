@@ -37,7 +37,7 @@ func TestLinux_Driver(t *testing.T) {
 	_engine, err := New(
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
-		WithPipeline(testSteps()),
+		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithUser(testUser()),

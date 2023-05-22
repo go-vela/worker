@@ -8,19 +8,18 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
-
-	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/runtime"
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/sdk-go/vela"
-
+	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
+	"github.com/sirupsen/logrus"
 )
 
 func TestLinux_Opt_WithBuild(t *testing.T) {
@@ -71,56 +70,6 @@ func TestLinux_Opt_WithBuild(t *testing.T) {
 	}
 }
 
-func TestLinux_Opt_WithLogMethod(t *testing.T) {
-	// setup tests
-	tests := []struct {
-		name      string
-		failure   bool
-		logMethod string
-	}{
-		{
-			name:      "byte-chunks",
-			failure:   false,
-			logMethod: "byte-chunks",
-		},
-		{
-			name:      "time-chunks",
-			failure:   false,
-			logMethod: "time-chunks",
-		},
-		{
-			name:      "empty",
-			failure:   true,
-			logMethod: "",
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithLogMethod(test.logMethod),
-			)
-
-			if test.failure {
-				if err == nil {
-					t.Errorf("WithLogMethod should have returned err")
-				}
-
-				return // continue to next test
-			}
-
-			if err != nil {
-				t.Errorf("WithLogMethod returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.logMethod, test.logMethod) {
-				t.Errorf("WithLogMethod is %v, want %v", _engine.logMethod, test.logMethod)
-			}
-		})
-	}
-}
-
 func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 	// setup tests
 	tests := []struct {
@@ -156,6 +105,141 @@ func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 
 			if !reflect.DeepEqual(_engine.maxLogSize, test.maxLogSize) {
 				t.Errorf("WithMaxLogSize is %v, want %v", _engine.maxLogSize, test.maxLogSize)
+			}
+		})
+	}
+}
+
+func TestLinux_Opt_WithLogStreamingTimeout(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name                string
+		failure             bool
+		logStreamingTimeout time.Duration
+	}{
+		{
+			name:                "defined",
+			failure:             false,
+			logStreamingTimeout: 1 * time.Second,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithLogStreamingTimeout(test.logStreamingTimeout),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithLogStreamingTimeout should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithLogStreamingTimeout returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.logStreamingTimeout, test.logStreamingTimeout) {
+				t.Errorf("WithLogStreamingTimeout is %v, want %v", _engine.logStreamingTimeout, test.logStreamingTimeout)
+			}
+		})
+	}
+}
+
+func TestLinux_Opt_WithPrivilegedImages(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name             string
+		failure          bool
+		privilegedImages []string
+	}{
+		{
+			name:             "empty privileged images",
+			failure:          false,
+			privilegedImages: []string{},
+		},
+		{
+			name:             "with privileged image",
+			failure:          false,
+			privilegedImages: []string{"target/vela-docker"},
+		},
+		{
+			name:             "with privileged images",
+			failure:          false,
+			privilegedImages: []string{"alpine", "target/vela-docker"},
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithPrivilegedImages(test.privilegedImages),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithPrivilegedImages should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithPrivilegedImages returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.privilegedImages, test.privilegedImages) {
+				t.Errorf("WithPrivilegedImages is %v, want %v", _engine.privilegedImages, test.privilegedImages)
+			}
+		})
+	}
+}
+
+func TestLinux_Opt_WithEnforceTrustedRepos(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name                string
+		failure             bool
+		enforceTrustedRepos bool
+	}{
+		{
+			name:                "enforce trusted repos enabled",
+			failure:             false,
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "enforce trusted repos disabled",
+			failure:             false,
+			enforceTrustedRepos: false,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithEnforceTrustedRepos(test.enforceTrustedRepos),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithEnforceTrustedRepos should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithEnforceTrustedRepos returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.enforceTrustedRepos, test.enforceTrustedRepos) {
+				t.Errorf("WithEnforceTrustedRepos is %v, want %v", _engine.enforceTrustedRepos, test.enforceTrustedRepos)
 			}
 		})
 	}
@@ -248,7 +332,7 @@ func TestLinux_Opt_WithLogger(t *testing.T) {
 
 func TestLinux_Opt_WithPipeline(t *testing.T) {
 	// setup types
-	_steps := testSteps()
+	_steps := testSteps(constants.DriverDocker)
 
 	// setup tests
 	tests := []struct {
@@ -344,9 +428,14 @@ func TestLinux_Opt_WithRepo(t *testing.T) {
 
 func TestLinux_Opt_WithRuntime(t *testing.T) {
 	// setup types
-	_runtime, err := docker.NewMock()
+	_docker, err := docker.NewMock()
 	if err != nil {
-		t.Errorf("unable to create runtime engine: %v", err)
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_kubernetes, err := kubernetes.NewMock(testPod(false))
+	if err != nil {
+		t.Errorf("unable to create kubernetes runtime engine: %v", err)
 	}
 
 	// setup tests
@@ -358,7 +447,12 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 		{
 			name:    "docker runtime",
 			failure: false,
-			runtime: _runtime,
+			runtime: _docker,
+		},
+		{
+			name:    "kubernetes runtime",
+			failure: false,
+			runtime: _kubernetes,
 		},
 		{
 			name:    "nil runtime",
@@ -386,8 +480,8 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 				t.Errorf("WithRuntime returned err: %v", err)
 			}
 
-			if !reflect.DeepEqual(_engine.Runtime, _runtime) {
-				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, _runtime)
+			if !reflect.DeepEqual(_engine.Runtime, test.runtime) {
+				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, test.runtime)
 			}
 		})
 	}

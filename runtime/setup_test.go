@@ -76,7 +76,16 @@ func TestRuntime_Validate(t *testing.T) {
 			name:    "docker driver",
 			failure: false,
 			setup: &Setup{
-				Driver: constants.DriverDocker,
+				Driver:           constants.DriverDocker,
+				DropCapabilities: []string{"CAP_DAC_OVERRIDE"},
+			},
+		},
+		{
+			name:    "docker driver bad cap",
+			failure: true,
+			setup: &Setup{
+				Driver:           constants.DriverDocker,
+				DropCapabilities: []string{"BAD"},
 			},
 		},
 		{

@@ -42,6 +42,12 @@ func TestRouter_Load(t *testing.T) {
 			HandlerFunc: api.Shutdown,
 		},
 		{
+			Method:      "POST",
+			Path:        "/api/v1/register",
+			Handler:     "github.com/go-vela/worker/api.Register",
+			HandlerFunc: api.Register,
+		},
+		{
 			Method:      "GET",
 			Path:        "/api/v1/executors",
 			Handler:     "github.com/go-vela/worker/api.GetExecutors",

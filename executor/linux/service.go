@@ -224,130 +224,82 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 	// create new buffer for uploading logs
 	logs := new(bytes.Buffer)
 
-	switch c.logMethod {
-	case "time-chunks":
-		// create new channel for processing logs
-		done := make(chan bool)
+	// create new channel for processing logs
+	done := make(chan bool)
 
-		go func() {
-			logger.Debug("polling logs for container")
+	go func() {
+		logger.Debug("polling logs for container")
 
-			// spawn "infinite" loop that will upload logs
-			// from the buffer until the channel is closed
-			for {
-				// sleep for "1s" before attempting to upload logs
-				time.Sleep(1 * time.Second)
+		// spawn "infinite" loop that will upload logs
+		// from the buffer until the channel is closed
+		for {
+			// sleep for "1s" before attempting to upload logs
+			time.Sleep(1 * time.Second)
 
-				// create a non-blocking select to check if the channel is closed
-				select {
-				// after repo timeout of idle (no response) end the stream
-				//
-				// this is a safety mechanism
-				case <-time.After(time.Duration(c.repo.GetTimeout()) * time.Minute):
-					logger.Tracef("repo timeout of %d exceeded", c.repo.GetTimeout())
+			// create a non-blocking select to check if the channel is closed
+			select {
+			// after repo timeout of idle (no response) end the stream
+			//
+			// this is a safety mechanism
+			case <-time.After(time.Duration(c.repo.GetTimeout()) * time.Minute):
+				logger.Tracef("repo timeout of %d exceeded", c.repo.GetTimeout())
 
-					return
-				// channel is closed
-				case <-done:
-					logger.Trace("channel closed for polling container logs")
+				return
+			// channel is closed
+			case <-done:
+				logger.Trace("channel closed for polling container logs")
 
-					// return out of the go routine
-					return
-				// channel is not closed
-				default:
-					// update the existing log with the new bytes if there is new data to add
-					if len(logs.Bytes()) > 0 {
-						logger.Trace(logs.String())
+				// return out of the go routine
+				return
+			// channel is not closed
+			default:
+				// update the existing log with the new bytes if there is new data to add
+				if len(logs.Bytes()) > 0 {
+					logger.Trace(logs.String())
 
-						// update the existing log with the new bytes
-						//
-						// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-						_log.AppendData(logs.Bytes())
+					// update the existing log with the new bytes
+					//
+					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					_log.AppendData(logs.Bytes())
 
-						logger.Debug("appending logs")
-						// send API call to append the logs for the service
-						//
-						// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
-						_log, _, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
-						if err != nil {
-							logger.Error(err)
-						}
-
-						// flush the buffer of logs
-						logs.Reset()
+					logger.Debug("appending logs")
+					// send API call to append the logs for the service
+					//
+					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
+					_log, _, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+					if err != nil {
+						logger.Error(err)
 					}
 
-					// check whether we've reached the maximum log size
-					if c.maxLogSize > 0 && uint(len(_log.GetData())) >= c.maxLogSize {
-						logger.Trace("maximum log size reached")
-
-						return
-					}
-				}
-			}
-		}()
-
-		// create new scanner from the container output
-		scanner := bufio.NewScanner(rc)
-
-		// scan entire container output
-		for scanner.Scan() {
-			// write all the logs from the scanner
-			logs.Write(append(scanner.Bytes(), []byte("\n")...))
-		}
-
-		logger.Info("finished streaming logs")
-
-		// close channel to stop processing logs
-		close(done)
-
-		return scanner.Err()
-	case "byte-chunks":
-		fallthrough
-	default:
-		// create new scanner from the container output
-		scanner := bufio.NewScanner(rc)
-
-		// scan entire container output
-		for scanner.Scan() {
-			// write all the logs from the scanner
-			logs.Write(append(scanner.Bytes(), []byte("\n")...))
-
-			// if we have at least 1000 bytes in our buffer
-			if logs.Len() > 1000 {
-				logger.Trace(logs.String())
-
-				// update the existing log with the new bytes
-				//
-				// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
-				_log.AppendData(logs.Bytes())
-
-				logger.Debug("appending logs")
-				// send API call to append the logs for the service
-				//
-				// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
-				//nolint:contextcheck // ignore passing context
-				_log, _, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
-				if err != nil {
-					return err
+					// flush the buffer of logs
+					logs.Reset()
 				}
 
-				// flush the buffer of logs
-				logs.Reset()
-			}
+				// check whether we've reached the maximum log size
+				if c.maxLogSize > 0 && uint(len(_log.GetData())) >= c.maxLogSize {
+					logger.Trace("maximum log size reached")
 
-			// check whether we've reached the maximum log size
-			if c.maxLogSize > 0 && uint(len(_log.GetData())) >= c.maxLogSize {
-				logger.Trace("maximum log size reached")
-
-				break
+					return
+				}
 			}
 		}
+	}()
 
-		logger.Info("finished streaming logs")
+	// create new scanner from the container output
+	scanner := bufio.NewScanner(rc)
 
-		return scanner.Err()
+	// scan entire container output
+	for scanner.Scan() {
+		// write all the logs from the scanner
+		logs.Write(append(scanner.Bytes(), []byte("\n")...))
 	}
+
+	logger.Info("finished streaming logs")
+
+	// close channel to stop processing logs
+	close(done)
+
+	return scanner.Err()
 }
 
 // DestroyService cleans up services after execution.

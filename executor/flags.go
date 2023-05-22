@@ -5,6 +5,8 @@
 package executor
 
 import (
+	"time"
+
 	"github.com/go-vela/types/constants"
 
 	"github.com/urfave/cli/v2"
@@ -24,17 +26,23 @@ var Flags = []cli.Flag{
 		Usage:    "driver to be used for the executor",
 		Value:    constants.DriverLinux,
 	},
-	&cli.StringFlag{
-		EnvVars:  []string{"VELA_EXECUTOR_LOG_METHOD", "EXECUTOR_LOG_METHOD"},
-		FilePath: "/vela/executor/log_method",
-		Name:     "executor.log_method",
-		Usage:    "method used to publish logs to the server - options: (byte-chunks|time-chunks)",
-		Value:    "byte-chunks",
-	},
 	&cli.UintFlag{
 		EnvVars:  []string{"VELA_EXECUTOR_MAX_LOG_SIZE", "EXECUTOR_MAX_LOG_SIZE"},
 		FilePath: "/vela/executor/max_log_size",
 		Name:     "executor.max_log_size",
 		Usage:    "maximum log size (in bytes)",
+	},
+	&cli.DurationFlag{
+		EnvVars: []string{"WORKER_LOG_STREAMING_TIMEOUT", "VELA_LOG_STREAMING_TIMEOUT", "LOG_STREAMING_TIMEOUT"},
+		Name:    "executor.log_streaming_timeout",
+		Usage:   "maximum amount of time to wait for log streaming after build completes",
+		Value:   5 * time.Minute,
+	},
+	&cli.BoolFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS", "EXECUTOR_ENFORCE_TRUSTED_REPOS"},
+		FilePath: "/vela/executor/enforce_trusted_repos",
+		Name:     "executor.enforce-trusted-repos",
+		Usage:    "enforce trusted repo restrictions for privileged images",
+		Value:    true,
 	},
 }

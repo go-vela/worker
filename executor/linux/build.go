@@ -15,6 +15,8 @@ import (
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
+	context2 "github.com/go-vela/worker/internal/context"
+	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -191,7 +193,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 // AssembleBuild prepares the containers within a build for execution.
 //
-//nolint:funlen // ignore function length due to comments and logging messages
+//nolint:gocyclo,funlen // ignore cyclomatic complexity and function length due to comments and logging messages
 func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -348,6 +350,88 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
 		_log.AppendData(image)
 	}
+	// enforce repo.trusted is set for pipelines containing privileged images
+	// if not enforced, allow all that exist in the list of runtime privileged images
+	// this configuration is set as an executor flag
+	if c.enforceTrustedRepos {
+		// group steps services stages and secret origins together
+		containers := c.pipeline.Steps
+
+		containers = append(containers, c.pipeline.Services...)
+
+		for _, stage := range c.pipeline.Stages {
+			containers = append(containers, stage.Steps...)
+		}
+
+		for _, secret := range c.pipeline.Secrets {
+			containers = append(containers, secret.Origin)
+		}
+
+		// assume no privileged images are in use
+		containsPrivilegedImages := false
+
+		// verify all pipeline containers
+		for _, container := range containers {
+			// TODO: remove hardcoded reference
+			if container.Image == "#init" {
+				continue
+			}
+
+			// skip over non-plugin secrets origins
+			if container.Empty() {
+				continue
+			}
+
+			c.Logger.Infof("verifying privileges for container %s", container.Name)
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
+
+			for _, pattern := range c.privilegedImages {
+				// check if image matches privileged pattern
+				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
+				if err != nil {
+					// wrap the error
+					c.err = fmt.Errorf("unable to verify privileges for image %s: %w", container.Image, err)
+
+					// update the init log with image info
+					//
+					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
+
+					// return error and destroy the build
+					// ignore checking more images
+					return c.err
+				}
+
+				if privileged {
+					// pipeline contains at least one privileged image
+					containsPrivilegedImages = privileged
+				}
+			}
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
+		}
+
+		// ensure pipelines containing privileged images are only permitted to run by trusted repos
+		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
+			// update error
+			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted")
+
+			// update the init log with image info
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
+
+			// return error and destroy the build
+			return c.err
+		}
+	}
 
 	// inspect the runtime build (eg a kubernetes pod) for the pipeline
 	buildOutput, err := c.Runtime.InspectBuild(ctx, c.pipeline)
@@ -387,10 +471,17 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 // ExecBuild runs a pipeline for a build.
 func (c *client) ExecBuild(ctx context.Context) error {
-	// defer an upload of the build
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
-	defer func() { build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo) }()
+	defer func() {
+		// Exec* calls are responsible for sending StreamRequest messages.
+		// close the channel at the end of ExecBuild to signal that
+		// nothing else will send more StreamRequest messages.
+		close(c.streamRequests)
+
+		// defer an upload of the build
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
+		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
+	}()
 
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
@@ -496,10 +587,15 @@ func (c *client) ExecBuild(ctx context.Context) error {
 // StreamBuild receives a StreamRequest and then
 // runs StreamService or StreamStep in a goroutine.
 func (c *client) StreamBuild(ctx context.Context) error {
+	// cancel streaming after a timeout once the build has finished
+	delayedCtx, cancelStreaming := context2.
+		WithDelayedCancelPropagation(ctx, c.logStreamingTimeout, "streaming", c.Logger)
+	defer cancelStreaming()
+
 	// create an error group with the parent context
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
-	streams, streamCtx := errgroup.WithContext(ctx)
+	streams, streamCtx := errgroup.WithContext(delayedCtx)
 
 	defer func() {
 		c.Logger.Trace("waiting for stream functions to return")
@@ -508,6 +604,12 @@ func (c *client) StreamBuild(ctx context.Context) error {
 		if err != nil {
 			c.Logger.Errorf("error in a stream request, %v", err)
 		}
+
+		cancelStreaming()
+		// wait for context to be done before reporting that everything has returned.
+		<-delayedCtx.Done()
+		// there might be one more log message from WithDelayedCancelPropagation
+		// but there's not a good way to wait for that goroutine to finish.
 
 		c.Logger.Info("all stream functions have returned")
 	}()
@@ -521,7 +623,13 @@ func (c *client) StreamBuild(ctx context.Context) error {
 
 	for {
 		select {
-		case req := <-c.streamRequests:
+		case req, ok := <-c.streamRequests:
+			if !ok {
+				// ExecBuild is done requesting streams
+				c.Logger.Debug("not accepting any more stream requests as channel is closed")
+				return nil
+			}
+
 			streams.Go(func() error {
 				// update engine logger with step metadata
 				//
@@ -537,8 +645,8 @@ func (c *client) StreamBuild(ctx context.Context) error {
 
 				return nil
 			})
-		case <-ctx.Done():
-			c.Logger.Debug("streaming context canceled")
+		case <-delayedCtx.Done():
+			c.Logger.Debug("not accepting any more stream requests as streaming context is canceled")
 			// build done or canceled
 			return nil
 		}
