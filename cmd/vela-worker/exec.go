@@ -79,7 +79,9 @@ func (w *Worker) exec(index int) error {
 		logrus.Errorf("Failing stale queued build due to wrong item version: want %d, got %d", types.ItemVersion, item.ItemVersion)
 
 		build := item.Build
-		build.SetStatus(constants.StatusFailure)
+		build.SetError("Unable to process stale build (queued before Vela upgrade/downgrade).")
+		build.SetStatus(constants.StatusError)
+		build.SetFinished(time.Now().UTC().Unix())
 
 		_, _, err := w.VelaClient.Build.Update(item.Repo.GetOrg(), item.Repo.GetName(), build)
 		if err != nil {
