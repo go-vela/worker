@@ -7,9 +7,12 @@ package main
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -21,7 +24,7 @@ import (
 // and execute Vela pipelines for the Worker.
 //
 //nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int) error {
+func (w *Worker) exec(index int, config *library.Worker) error {
 	var err error
 
 	// setup the version
@@ -69,6 +72,24 @@ func (w *Worker) exec(index int) error {
 		"user":     item.User.GetName(),
 		"version":  v.Semantic(),
 	})
+
+	// append the build to the RunningBuildIDs list
+	w.RunningBuildIDs = append(w.RunningBuildIDs, strconv.Itoa(item.Build.GetNumber()))
+
+	config.SetRunningBuildIDs(w.RunningBuildIDs)
+
+	// set worker status
+	if len(w.RunningBuildIDs) < w.Config.Build.Limit {
+		config.SetStatus(constants.WorkerStatusAvailable)
+	} else {
+		config.SetStatus(constants.WorkerStatusBusy)
+	}
+
+	// update the database
+	_, res, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
+	if err != nil {
+		logger.Errorf("unable to update worker: %v - status code %v", err, res)
+	}
 
 	// setup the runtime
 	//
@@ -132,6 +153,31 @@ func (w *Worker) exec(index int) error {
 		}
 
 		logger.Info("completed build")
+
+		// remove the build from the RunningBuildIDs list
+		// and update the database
+		rb := w.RunningBuildIDs
+		for i, v := range rb {
+			if v == strconv.Itoa(item.Build.GetNumber()) {
+				rb = append(rb[:i], rb[i+1:]...)
+			}
+		}
+
+		config.SetRunningBuildIDs(w.RunningBuildIDs)
+
+		// set worker status
+		if len(w.RunningBuildIDs) < w.Config.Build.Limit {
+			config.SetStatus(constants.WorkerStatusAvailable)
+		} else {
+			config.SetStatus(constants.WorkerStatusIdle)
+		}
+
+		// update the database
+		_, res, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
+		if err != nil {
+			logger.Errorf("unable to update worker: %v - status code %v", err, res)
+		}
+
 	}()
 
 	// capture the configured build timeout

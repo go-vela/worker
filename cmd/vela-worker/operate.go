@@ -167,7 +167,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
 					//nolint:contextcheck // ignore passing context
-					err = w.exec(id)
+					err = w.exec(id, registryWorker)
 					if err != nil {
 						// log the error received from the executor
 						//
