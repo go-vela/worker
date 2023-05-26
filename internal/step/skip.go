@@ -57,6 +57,12 @@ func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
 		ruledata.Target = b.GetDeploy()
 	}
 
+	// check if the build event is schedule
+	if strings.EqualFold(b.GetEvent(), constants.EventSchedule) {
+		// add schedule target information to ruledata
+		ruledata.Target = b.GetDeploy()
+	}
+
 	// return the inverse of container execute
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Execute
