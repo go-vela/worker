@@ -73,19 +73,20 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		"version":  v.Semantic(),
 	})
 
-	// append the build to the RunningBuildIDs list
+	// lock and append the build to the RunningBuildIDs list
+	w.RunningBuildIDsMutex.Lock()
+
 	w.RunningBuildIDs = append(w.RunningBuildIDs, strconv.Itoa(item.Build.GetNumber()))
 
 	config.SetRunningBuildIDs(w.RunningBuildIDs)
 
-	// set worker status
-	if len(w.RunningBuildIDs) < w.Config.Build.Limit {
-		config.SetStatus(constants.WorkerStatusAvailable)
-	} else {
-		config.SetStatus(constants.WorkerStatusBusy)
-	}
+	w.RunningBuildIDsMutex.Unlock()
 
-	// update the database
+	// set worker status
+	updateStatus := w.getWorkerStatusFromConfig(config)
+	config.SetStatus(updateStatus)
+
+	// update the database (TODO: troubleshoot)
 	_, res, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
 	if err != nil {
 		logger.Errorf("unable to update worker: %v - status code %v", err, res)
@@ -154,25 +155,24 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 		logger.Info("completed build")
 
-		// remove the build from the RunningBuildIDs list
-		// and update the database
-		rb := w.RunningBuildIDs
-		for i, v := range rb {
+		// lock and remove the build from the RunningBuildIDs list
+		w.RunningBuildIDsMutex.Lock()
+
+		for i, v := range w.RunningBuildIDs {
 			if v == strconv.Itoa(item.Build.GetNumber()) {
-				rb = append(rb[:i], rb[i+1:]...)
+				w.RunningBuildIDs = append(w.RunningBuildIDs[:i], w.RunningBuildIDs[i+1:]...)
 			}
 		}
 
 		config.SetRunningBuildIDs(w.RunningBuildIDs)
 
-		// set worker status
-		if len(w.RunningBuildIDs) < w.Config.Build.Limit {
-			config.SetStatus(constants.WorkerStatusAvailable)
-		} else {
-			config.SetStatus(constants.WorkerStatusIdle)
-		}
+		w.RunningBuildIDsMutex.Unlock()
 
-		// update the database
+		// set worker status
+		updateStatus := w.getWorkerStatusFromConfig(config)
+		config.SetStatus(updateStatus)
+
+		// update the database (TODO: troubleshoot)
 		_, res, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
 		if err != nil {
 			logger.Errorf("unable to update worker: %v - status code %v", err, res)
@@ -245,4 +245,19 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	}
 
 	return nil
+}
+
+// getWorkerStatusFromConfig is a helper function
+// to determine the appropriate worker status
+func (w *Worker) getWorkerStatusFromConfig(config *library.Worker) string {
+	switch rb := len(config.GetRunningBuildIDs()); {
+	case rb == 0:
+		return constants.WorkerStatusIdle
+	case rb < w.Config.Build.Limit:
+		return constants.WorkerStatusAvailable
+	case rb == w.Config.Build.Limit:
+		return constants.WorkerStatusBusy
+	default:
+		return constants.WorkerStatusError
+	}
 }

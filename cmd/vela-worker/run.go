@@ -139,7 +139,7 @@ func run(c *cli.Context) error {
 
 		RegisterToken: make(chan string, 1),
 
-		RunningBuildIDs: make([]string, c.Int("build.limit")),
+		RunningBuildIDs: make([]string, 0),
 	}
 
 	// set the worker address if no flag was provided
