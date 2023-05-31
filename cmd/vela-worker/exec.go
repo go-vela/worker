@@ -86,10 +86,10 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	updateStatus := w.getWorkerStatusFromConfig(config)
 	config.SetStatus(updateStatus)
 
-	// update the database (TODO: troubleshoot)
-	_, res, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
+	// update worker in the database
+	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
 	if err != nil {
-		logger.Errorf("unable to update worker: %v - status code %v", err, res)
+		logger.Errorf("unable to update worker: %v", err)
 	}
 
 	// setup the runtime
@@ -172,10 +172,10 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		updateStatus := w.getWorkerStatusFromConfig(config)
 		config.SetStatus(updateStatus)
 
-		// update the database (TODO: troubleshoot)
-		_, res, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
+		// update worker in the database
+		_, _, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
 		if err != nil {
-			logger.Errorf("unable to update worker: %v - status code %v", err, res)
+			logger.Errorf("unable to update worker: %v", err)
 		}
 
 	}()
