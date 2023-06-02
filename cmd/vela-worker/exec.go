@@ -85,6 +85,8 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	// set worker status
 	updateStatus := w.getWorkerStatusFromConfig(config)
 	config.SetStatus(updateStatus)
+	config.SetLastStatusUpdateAt(time.Now().Unix())
+	config.SetLastBuildStartedAt(time.Now().Unix())
 
 	// update worker in the database
 	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
@@ -171,6 +173,8 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		// set worker status
 		updateStatus := w.getWorkerStatusFromConfig(config)
 		config.SetStatus(updateStatus)
+		config.SetLastStatusUpdateAt(time.Now().Unix())
+		config.SetLastBuildFinishedAt(time.Now().Unix())
 
 		// update worker in the database
 		_, _, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
