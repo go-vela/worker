@@ -250,7 +250,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
 		//nolint:contextcheck // ignore passing context
-		_, _, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+		_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -314,7 +314,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 					// send API call to append the logs for the step
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogStep.UpdateStep
-					_log, _, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+					_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 					if err != nil {
 						logger.Error(err)
 					}

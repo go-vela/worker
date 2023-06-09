@@ -226,7 +226,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
-		_log, _, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), c.init.Number, _log)
+		_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), c.init.Number, _log)
 		if err != nil {
 			c.Logger.Errorf("unable to upload %s logs: %v", c.init.Name, err)
 		}
