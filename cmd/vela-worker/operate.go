@@ -123,7 +123,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
 		if ers != nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Errorf("status code: %v, unable to update worker %s status with the server: %w", res.StatusCode, registryWorker.GetHostname(), ers)
+			logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
 		}
 		return err
 	}
@@ -177,7 +177,7 @@ func (w *Worker) operate(ctx context.Context) error {
 						_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
 						if ers != nil {
 							// log the error instead of returning so the operation doesn't block worker deployment
-							logrus.Errorf("status code: %v, unable to update worker %s status with the server: %w", res.StatusCode, registryWorker.GetHostname(), ers)
+							logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
 						}
 						return err
 					}
