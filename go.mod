@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/docker/distribution v2.8.1+incompatible
-	github.com/docker/docker v20.10.24+incompatible
+	github.com/docker/docker v20.10.25+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-vela/sdk-go v0.19.3-0.20230609172535-4dfd42c3640a
@@ -16,13 +16,13 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/prometheus/client_golang v1.15.0
-	github.com/sirupsen/logrus v1.9.0
-	github.com/urfave/cli/v2 v2.25.1
+	github.com/sirupsen/logrus v1.9.3
+	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/sync v0.1.0
 	gotest.tools/v3 v3.4.0
-	k8s.io/api v0.27.1
-	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.27.1
+	k8s.io/api v0.27.3
+	k8s.io/apimachinery v0.27.3
+	k8s.io/client-go v0.27.3
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -119,7 +119,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/utils v0.0.0-20230209194617-a36077c30491 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
