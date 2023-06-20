@@ -55,7 +55,7 @@ func (w *Worker) register(config *library.Worker) (bool, string, error) {
 		return false, "", fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
 
-	logrus.Infof("worker %s status updated successfully to %s", config.GetHostname(), config.GetStatus())
+	logrus.Infof("worker %q status updated successfully to %s", config.GetHostname(), config.GetStatus())
 
 	// successfully added the worker so return nil
 	return true, tkn.GetToken(), nil
