@@ -125,7 +125,7 @@ func (w *Worker) operate(ctx context.Context) error {
 			// log the error instead of returning so the operation doesn't block worker deployment
 			logrus.Error("status code is nil")
 		}
-		if ers != nil {
+		if ers != nil && res != nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
 			logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
 		}
@@ -183,7 +183,7 @@ func (w *Worker) operate(ctx context.Context) error {
 							// log the error instead of returning so the operation doesn't block worker deployment
 							logrus.Error("status code is nil")
 						}
-						if ers != nil {
+						if ers != nil && res != nil {
 							// log the error instead of returning so the operation doesn't block worker deployment
 							logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
 						}
