@@ -121,12 +121,13 @@ func (w *Worker) operate(ctx context.Context) error {
 	if err != nil {
 		registryWorker.SetStatus(constants.WorkerStatusError)
 		_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+		if res == nil {
+			// log the error instead of returning so the operation doesn't block worker deployment
+			logrus.Error("status code is nil")
+		}
 		if ers != nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
 			logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
-		}
-		if res == nil {
-			logrus.Error("status code is nil")
 		}
 		return err
 	}
@@ -178,12 +179,13 @@ func (w *Worker) operate(ctx context.Context) error {
 						logrus.Errorf("failing worker executor: %v", err)
 						registryWorker.SetStatus(constants.WorkerStatusError)
 						_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+						if res == nil {
+							// log the error instead of returning so the operation doesn't block worker deployment
+							logrus.Error("status code is nil")
+						}
 						if ers != nil {
 							// log the error instead of returning so the operation doesn't block worker deployment
 							logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
-						}
-						if res == nil {
-							logrus.Error("status code is nil")
 						}
 						return err
 					}
