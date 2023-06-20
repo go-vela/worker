@@ -120,14 +120,16 @@ func (w *Worker) operate(ctx context.Context) error {
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		registryWorker.SetStatus(constants.WorkerStatusError)
-		_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
-		if res == nil {
+		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+		if resp == nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Error("status code is nil")
+			logrus.Error("status update response is nil")
 		}
-		if ers != nil && res != nil {
-			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
+		if logErr != nil {
+			if resp != nil {
+				// log the error instead of returning so the operation doesn't block worker deployment
+				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
+			}
 		}
 		return err
 	}
@@ -178,14 +180,16 @@ func (w *Worker) operate(ctx context.Context) error {
 						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
 						logrus.Errorf("failing worker executor: %v", err)
 						registryWorker.SetStatus(constants.WorkerStatusError)
-						_, res, ers := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
-						if res == nil {
+						_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+						if resp == nil {
 							// log the error instead of returning so the operation doesn't block worker deployment
-							logrus.Error("status code is nil")
+							logrus.Error("status update response is nil")
 						}
-						if ers != nil && res != nil {
-							// log the error instead of returning so the operation doesn't block worker deployment
-							logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", res.StatusCode, registryWorker.GetHostname(), ers)
+						if logErr != nil {
+							if resp != nil {
+								// log the error instead of returning so the operation doesn't block worker deployment
+								logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
+							}
 						}
 						return err
 					}
