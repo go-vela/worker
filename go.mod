@@ -9,8 +9,8 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-vela/sdk-go v0.19.3-0.20230609172535-4dfd42c3640a
-	github.com/go-vela/server v0.19.3-0.20230609145007-f8c795f7aa03
-	github.com/go-vela/types v0.19.3-0.20230523200921-35a0d5fc088c
+	github.com/go-vela/server v0.19.3-0.20230616181003-4e5d484be2bd
+	github.com/go-vela/types v0.19.3-0.20230614134928-b1b57c0b34af
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.5.1
@@ -34,7 +34,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
-	github.com/alicebob/miniredis/v2 v2.30.2 // indirect
+	github.com/alicebob/miniredis/v2 v2.30.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/buildkite/yaml v0.0.0-20230306222819-0e4e032d4835 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
@@ -71,7 +71,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -94,7 +94,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
-	github.com/redis/go-redis/v9 v9.0.3 // indirect
+	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
