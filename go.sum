@@ -148,10 +148,10 @@ github.com/go-playground/validator/v10 v10.14.0/go.mod h1:9iXMNT7sEkjXb0I+enO7QX
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 h1:p104kn46Q8WdvHunIJ9dAyjPVtrBPhSr3KT2yUst43I=
 github.com/go-vela/sdk-go v0.19.3-0.20230609172535-4dfd42c3640a h1:8ZpMB3fYAyRGKPBq0Y8NltuDjzaD0k8oISjkP0fBP1o=
 github.com/go-vela/sdk-go v0.19.3-0.20230609172535-4dfd42c3640a/go.mod h1:4vnf8+6RVvWmMLaivX1okkA8s2YJxTcqFjIv+z3r5C0=
-github.com/go-vela/server v0.19.3-0.20230609145007-f8c795f7aa03 h1:Vi1y5faOZ5CaCjCTRfc45z+BpR5JgMpLyIxmy7pSgqE=
-github.com/go-vela/server v0.19.3-0.20230609145007-f8c795f7aa03/go.mod h1:b520o4N7ss4kHATH291Ui1LHwuC0qEgJgg/Jab6yPIQ=
-github.com/go-vela/types v0.19.3-0.20230523200921-35a0d5fc088c h1:eAApIK5e5MxFF8RzZAFsvTSdwq/AzdUrdhJHOGQ0ILc=
-github.com/go-vela/types v0.19.3-0.20230523200921-35a0d5fc088c/go.mod h1:0lsuPfGyVyTWJSi2h3NS6uaEW6DgnFvIzaZu1sXYKrs=
+github.com/go-vela/server v0.19.3-0.20230616181003-4e5d484be2bd h1:cw9iz/4xbq+/lAlHke10RMjfjlPbLk7V8xJ2hqd3dmI=
+github.com/go-vela/server v0.19.3-0.20230616181003-4e5d484be2bd/go.mod h1:Vjxxn+BP9bvr43uiQtqhDNelajsJzEuIIJTdeRlSiDU=
+github.com/go-vela/types v0.19.3-0.20230614134928-b1b57c0b34af h1:Ixsa6Ha0j9Edq4v3IooDgyUoGSp08fk9FgrYKuZSML8=
+github.com/go-vela/types v0.19.3-0.20230614134928-b1b57c0b34af/go.mod h1:1ZSmKWX9MamKogwaIb53mzzRpZMV34mJFKiGfVFadFk=
 github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
 github.com/goccy/go-json v0.10.2/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
@@ -323,8 +323,8 @@ github.com/prometheus/common v0.42.0 h1:EKsfXEYo4JpWMHH5cg+KOUWeuJSov1Id8zGR8eeI
 github.com/prometheus/common v0.42.0/go.mod h1:xBwqVerjNdUDjgODMpudtOMwlOwf2SaTr1yjz4b7Zbc=
 github.com/prometheus/procfs v0.10.1 h1:kYK1Va/YMlutzCGazswoHKo//tZVlFpKYh+PymziUAg=
 github.com/prometheus/procfs v0.10.1/go.mod h1:nwNm2aOCAYw8uTR/9bWRREkZFxAUcWzPHWJq+XBB/FM=
-github.com/redis/go-redis/v9 v9.0.3 h1:+7mmR26M0IvyLxGZUHxu4GiBkJkVDid0Un+j4ScYu4k=
-github.com/redis/go-redis/v9 v9.0.3/go.mod h1:WqMKv5vnQbRuZstUwxQI195wHy+t4PuXDOjzMvcuQHk=
+github.com/redis/go-redis/v9 v9.0.5 h1:CuQcn5HIEeK7BgElubPP8CGtE0KakrnbBSTLjathl5o=
+github.com/redis/go-redis/v9 v9.0.5/go.mod h1:WqMKv5vnQbRuZstUwxQI195wHy+t4PuXDOjzMvcuQHk=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf35Ld67mk=
