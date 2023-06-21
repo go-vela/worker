@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-vela/sdk-go v0.19.3-0.20230609172535-4dfd42c3640a
 	github.com/go-vela/server v0.19.3-0.20230609145007-f8c795f7aa03
-	github.com/go-vela/types v0.19.3-0.20230523200921-35a0d5fc088c
+	github.com/go-vela/types v0.19.3-0.20230614134928-b1b57c0b34af
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.5.1
