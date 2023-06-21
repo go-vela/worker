@@ -8,9 +8,9 @@ require (
 	github.com/docker/docker v20.10.25+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-vela/sdk-go v0.19.3-0.20230609172535-4dfd42c3640a
-	github.com/go-vela/server v0.19.3-0.20230616181003-4e5d484be2bd
-	github.com/go-vela/types v0.19.3-0.20230614134928-b1b57c0b34af
+	github.com/go-vela/sdk-go v0.20.0-rc1
+	github.com/go-vela/server v0.20.0-rc1
+	github.com/go-vela/types v0.20.0-rc1
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.5.1
@@ -63,7 +63,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-github/v52 v52.0.0 // indirect
+	github.com/google/go-github/v53 v53.2.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -105,14 +105,14 @@ require (
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yuin/gopher-lua v1.1.0 // indirect
-	go.starlark.net v0.0.0-20230302034142-4b1e35fe2254 // indirect
+	go.starlark.net v0.0.0-20230612165344-9532f5667272 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/crypto v0.10.0 // indirect
+	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/oauth2 v0.9.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/term v0.9.0 // indirect
+	golang.org/x/text v0.10.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
