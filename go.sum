@@ -58,8 +58,8 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a h1:HbKu58rmZpUGpz5+4FfNmIU+FmZg2P3Xaj2v2bfNWmk=
 github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a/go.mod h1:SGnFV6hVsYE877CKEZ6tDNTjaSXYUk6QqoIK6PrAtcc=
-github.com/alicebob/miniredis/v2 v2.30.3 h1:hrqDB4cHFSHQf4gO3xu6YKQg8PqJpNjLYsQAFYHstqw=
-github.com/alicebob/miniredis/v2 v2.30.3/go.mod h1:b25qWj4fCEsBeAAR2mlb0ufImGC6uH3VlUfb/HS5zKg=
+github.com/alicebob/miniredis/v2 v2.30.4 h1:8S4/o1/KoUArAGbGwPxcwf0krlzceva2XVOSchFS7Eo=
+github.com/alicebob/miniredis/v2 v2.30.4/go.mod h1:b25qWj4fCEsBeAAR2mlb0ufImGC6uH3VlUfb/HS5zKg=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bsm/ginkgo/v2 v2.7.0 h1:ItPMPH90RbmZJt5GtkcNvIRuGEdwlBItdNVoyzaNQao=
@@ -146,10 +146,10 @@ github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91
 github.com/go-playground/validator/v10 v10.14.0 h1:vgvQWe3XCz3gIeFDm/HnTIbj6UGmg/+t63MyGU2n5js=
 github.com/go-playground/validator/v10 v10.14.0/go.mod h1:9iXMNT7sEkjXb0I+enO7QXmzG6QCsPWY4zveKFVRSyU=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 h1:p104kn46Q8WdvHunIJ9dAyjPVtrBPhSr3KT2yUst43I=
-github.com/go-vela/sdk-go v0.20.0-rc1 h1:GNWpi4GAWUeVqDMhBjThMDFAWScQHmiO/ENCYOKz+6E=
-github.com/go-vela/sdk-go v0.20.0-rc1/go.mod h1:JWeATlJ/vEqA6gAJy0sE5+ZWBQeNmzJV6lDg5VGH8Xk=
-github.com/go-vela/server v0.20.0-rc1 h1:WgjaXZlT0O32SMm5N14BUPXz2psYJUUtHXIu3aZTYzQ=
-github.com/go-vela/server v0.20.0-rc1/go.mod h1:d5aTrrZGyiPZke1dxa/29FwravFEZ4CGhxp5ND9SGxw=
+github.com/go-vela/sdk-go v0.20.0-rc3 h1:PCMyvkxRmqJUjRqjlXLf7URUfyUq3OPH5Q3Zvfs0+J0=
+github.com/go-vela/sdk-go v0.20.0-rc3/go.mod h1:edUiPUI/E7YSWIrZt5KLVZwwWiDx2/TrMwzVITOMARw=
+github.com/go-vela/server v0.20.0-rc3 h1:eIMdNCbGJa8kpdJuCiEmAEEMRHvrDikRJQeE3hmZsdo=
+github.com/go-vela/server v0.20.0-rc3/go.mod h1:XQiU5v8ihviZaNJ5ZwwTWceojHjzlzcrT2t1P8PJxGo=
 github.com/go-vela/types v0.20.0-rc1 h1:t4tz9YjExtrFMFTq6w+0xWens8b0UPC1kcI642Ta3yc=
 github.com/go-vela/types v0.20.0-rc1/go.mod h1:1ZSmKWX9MamKogwaIb53mzzRpZMV34mJFKiGfVFadFk=
 github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
