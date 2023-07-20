@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/sirupsen/logrus"
 )
@@ -46,11 +47,15 @@ func (w *Worker) checkIn(config *library.Worker) (bool, string, error) {
 func (w *Worker) register(config *library.Worker) (bool, string, error) {
 	logrus.Infof("worker %s not found, registering it with the server", config.GetHostname())
 
+	config.SetStatus(constants.WorkerStatusIdle)
+
 	tkn, _, err := w.VelaClient.Worker.Add(config)
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
 		return false, "", fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
+
+	logrus.Infof("worker %q status updated successfully to %s", config.GetHostname(), config.GetStatus())
 
 	// successfully added the worker so return nil
 	return true, tkn.GetToken(), nil

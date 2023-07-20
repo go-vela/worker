@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
@@ -118,6 +119,18 @@ func (w *Worker) operate(ctx context.Context) error {
 	//nolint:contextcheck // ignore passing context
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
+		registryWorker.SetStatus(constants.WorkerStatusError)
+		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+		if resp == nil {
+			// log the error instead of returning so the operation doesn't block worker deployment
+			logrus.Error("status update response is nil")
+		}
+		if logErr != nil {
+			if resp != nil {
+				// log the error instead of returning so the operation doesn't block worker deployment
+				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
+			}
+		}
 		return err
 	}
 
@@ -160,13 +173,24 @@ func (w *Worker) operate(ctx context.Context) error {
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
 					//nolint:contextcheck // ignore passing context
-					err = w.exec(id)
+					err = w.exec(id, registryWorker)
 					if err != nil {
 						// log the error received from the executor
 						//
 						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
 						logrus.Errorf("failing worker executor: %v", err)
-
+						registryWorker.SetStatus(constants.WorkerStatusError)
+						_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+						if resp == nil {
+							// log the error instead of returning so the operation doesn't block worker deployment
+							logrus.Error("status update response is nil")
+						}
+						if logErr != nil {
+							if resp != nil {
+								// log the error instead of returning so the operation doesn't block worker deployment
+								logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
+							}
+						}
 						return err
 					}
 				}
