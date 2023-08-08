@@ -107,7 +107,7 @@ func SnapshotInit(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
-		_, _, err = c.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), s.GetNumber(), lg)
+		_, err = c.Log.UpdateStep(r.GetOrg(), r.GetName(), b.GetNumber(), s.GetNumber(), lg)
 		if err != nil {
 			l.Errorf("unable to upload step logs: %v", err)
 		}
