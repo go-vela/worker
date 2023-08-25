@@ -116,12 +116,12 @@ func run(c *cli.Context) error {
 			},
 			// queue configuration
 			Queue: &queue.Setup{
-				Driver:                  c.String("queue.driver"),
-				Address:                 c.String("queue.addr"),
-				Cluster:                 c.Bool("queue.cluster"),
-				Routes:                  c.StringSlice("queue.routes"),
-				Timeout:                 c.Duration("queue.pop.timeout"),
-				EncodedSigningPublicKey: c.String("queue.signing.public-key"),
+				Driver:    c.String("queue.driver"),
+				Address:   c.String("queue.addr"),
+				Cluster:   c.Bool("queue.cluster"),
+				Routes:    c.StringSlice("queue.routes"),
+				Timeout:   c.Duration("queue.pop.timeout"),
+				PublicKey: c.String("queue.public-key"),
 			},
 			// server configuration
 			Server: &Server{
