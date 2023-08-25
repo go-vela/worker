@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"sync"
@@ -14,6 +15,7 @@ import (
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -56,6 +58,17 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// set up build client with build token as auth
 	execBuildClient, err := setupClient(w.Config.Server, bt.GetToken())
+	if err != nil {
+		return err
+	}
+
+	execBuildExecutable, resp, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	if err != nil {
+		return err
+	}
+
+	var execBuildExecutablePipeline pipeline.Build
+	err = json.Unmarshal([]byte(execBuildExecutable.GetData()), &execBuildExecutablePipeline)
 	if err != nil {
 		return err
 	}
@@ -149,7 +162,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,
-		Pipeline:            item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Pipeline:            &execBuildExecutablePipeline,
 		Repo:                item.Repo,
 		User:                item.User,
 		Version:             v.Semantic(),
