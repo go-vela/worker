@@ -140,6 +140,8 @@ func run(c *cli.Context) error {
 
 		RegisterToken: make(chan string, 1),
 
+		QueueSigningKey: make(chan string, 1),
+
 		RunningBuildIDs: make([]string, 0),
 	}
 
@@ -153,6 +155,13 @@ func run(c *cli.Context) error {
 		logrus.Trace("registering worker with embedded server secret")
 
 		w.RegisterToken <- c.String("server.secret")
+	}
+
+	// if queue signing key is provided, use as queue key on start up
+	if len(c.String("queue.signing.public-key")) > 0 {
+		logrus.Trace("unlocking queue with embedded queue signing key")
+
+		w.QueueSigningKey <- c.String("queue.signing.public-key")
 	}
 
 	// validate the worker

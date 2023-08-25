@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/go-vela/server/queue"
@@ -113,10 +114,14 @@ func (w *Worker) operate(ctx context.Context) error {
 		}
 	})
 
+	// if no pubkey was embedded or provided on startup, wait here
+	logrus.Trace("wait for public key before setup queue")
+	w.Config.Queue.EncodedSigningPublicKey = <-w.QueueSigningKey //nolint:wsl
+	logrus.Trace("received public key.. setting up queue")       //nolint:wsl
 	// setup the queue
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
-	//nolint:contextcheck // ignore passing context
+	//nolint:nolintlint,contextcheck // ignore passing context
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		registryWorker.SetStatus(constants.WorkerStatusError)
@@ -173,8 +178,23 @@ func (w *Worker) operate(ctx context.Context) error {
 					// (do not pass the context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
 					//nolint:contextcheck // ignore passing context
+
 					err = w.exec(id, registryWorker)
 					if err != nil {
+						// if invalid key is provided, wait for a new one
+						if err.Error() == errors.New("unable to open signed item").Error() ||
+							err.Error() == errors.New("no valid signing public key provided").Error() {
+							// pull public key from configuration if provided; wait if not
+							logrus.Trace("waiting for queue signing public key")
+
+							qPubKey := <-w.QueueSigningKey
+
+							logrus.Trace("received queue signing public key")
+							// set Queue public key
+							w.Config.Queue.EncodedSigningPublicKey = qPubKey
+							w.Queue, _ = queue.New(w.Config.Queue)
+							continue
+						}
 						// log the error received from the executor
 						//
 						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf

@@ -69,6 +69,7 @@ type (
 		Runtime              runtime.Engine
 		VelaClient           *vela.Client
 		RegisterToken        chan string
+		QueueSigningKey      chan string
 		CheckedIn            bool
 		RunningBuildIDs      []string
 		RunningBuildIDsMutex sync.Mutex
