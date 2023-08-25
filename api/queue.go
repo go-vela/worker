@@ -12,9 +12,9 @@ import (
 	"github.com/go-vela/worker/router/middleware/token"
 )
 
-// swagger:operation POST /register system Register
+// swagger:operation POST /queue-key system
 //
-// Fill registration token channel in worker to continue operation
+// Fill public signing key channel in worker to continue operation
 //
 // ---
 // produces:
@@ -24,22 +24,21 @@ import (
 //   - ApiKeyAuth: []
 // responses:
 //   '200':
-//     description: Successfully passed token to worker
+//     description: Successfully passed public key to worker
 //     schema:
 //       type: string
 //   '401':
-//     description: No token was passed
+//     description: No public key was passed
 //     schema:
 //       "$ref": "#/definitions/Error"
 //   '500':
-//     description: Unable to pass token to worker
+//     description: Unable to pass public key to worker
 //     schema:
 //       "$ref": "#/definitions/Error"
 
-// QueueKey will pass the token given in the request header to the register token
-// channel of the worker. This will unblock operation if the worker has not been
-// registered and the provided registration token is valid.
-func QueueKey(c *gin.Context) { // extract the register token channel that was packed into gin context
+// QueueKey will pass the pubkey given in the request header to the queue-signing-key
+// channel of the worker. This will unblock operation if the queue has not been setup.
+func QueueKey(c *gin.Context) { // extract the public key channel that was packed into gin context
 	v, ok := c.Get("queue-signing-key")
 	if !ok {
 		c.JSON(http.StatusInternalServerError, "no queue signing key channel in the context")
@@ -53,14 +52,14 @@ func QueueKey(c *gin.Context) { // extract the register token channel that was p
 		return
 	}
 
-	// if token is present in the channel, deny registration
+	// if key is present in the channel, deny registration
 	// this will likely never happen as the channel is offloaded immediately
 	if len(rChan) > 0 {
 		c.JSON(http.StatusOK, "queue key already provided")
 		return
 	}
 
-	// retrieve auth token from header
+	// retrieve public key from header
 	t, err := token.Retrieve(c.Request)
 	if err != nil {
 		// an error occurs when no token was passed
@@ -78,7 +77,7 @@ func QueueKey(c *gin.Context) { // extract the register token channel that was p
 		c.JSON(http.StatusBadRequest, "Provided public key is empty")
 		return
 	}
-	// write registration token to auth token channel
+	// write pubkey token to queue-signing-key channel
 	rChan <- t
 
 	c.JSON(http.StatusOK, "successfully passed public key to worker")
