@@ -31,13 +31,11 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// setup the version
 	v := version.New()
-
 	// capture an item from the queue
 	item, err := w.Queue.Pop(context.Background())
 	if err != nil {
 		return err
 	}
-
 	if item == nil {
 		return nil
 	}
