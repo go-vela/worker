@@ -149,10 +149,11 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,
-		Pipeline:            item.Pipeline.Sanitize(w.Config.Runtime.Driver),
-		Repo:                item.Repo,
-		User:                item.User,
-		Version:             v.Semantic(),
+		// todo: implement build executables
+		// Pipeline:            item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Repo:    item.Repo,
+		User:    item.User,
+		Version: v.Semantic(),
 	})
 
 	// add the executor to the worker
