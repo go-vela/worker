@@ -62,13 +62,15 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		return err
 	}
 
+	// set up build executable
 	execBuildExecutable, resp, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
 	if err != nil {
 		return err
 	}
 
-	var execBuildExecutablePipeline pipeline.Build
-	err = json.Unmarshal([]byte(execBuildExecutable.GetData()), &execBuildExecutablePipeline)
+	// get the build pipeline from the build executable
+	pipeline := new(pipeline.Build)
+	err = json.Unmarshal((execBuildExecutable.GetData()), pipeline)
 	if err != nil {
 		return err
 	}
@@ -162,7 +164,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,
-		Pipeline:            &execBuildExecutablePipeline,
+		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
 		Repo:                item.Repo,
 		User:                item.User,
 		Version:             v.Semantic(),
