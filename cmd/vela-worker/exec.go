@@ -121,7 +121,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		build.SetStatus(constants.StatusError)
 		build.SetFinished(time.Now().UTC().Unix())
 
-		_, _, err := w.VelaClient.Build.Update(item.Repo.GetOrg(), item.Repo.GetName(), build)
+		_, _, err := execBuildClient.Build.Update(item.Repo.GetOrg(), item.Repo.GetName(), build)
 		if err != nil {
 			logrus.Errorf("Unable to set build status to %s: %s", constants.StatusFailure, err)
 			return err
