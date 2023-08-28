@@ -70,6 +70,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// get the build pipeline from the build executable
 	pipeline := new(pipeline.Build)
+
 	err = json.Unmarshal(execBuildExecutable.GetData(), pipeline)
 	if err != nil {
 		return err
