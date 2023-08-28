@@ -62,11 +62,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		return err
 	}
 
-<<<<<<< HEAD
-	// set up build executable
-=======
 	// request build executable containing pipeline.Build data using exec client
->>>>>>> d0d2dd98a0b653b7d6079d50d33bcff3170a0394
 	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
 	if err != nil {
 		return err
@@ -74,11 +70,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// get the build pipeline from the build executable
 	pipeline := new(pipeline.Build)
-<<<<<<< HEAD
-	err = json.Unmarshal((execBuildExecutable.GetData()), pipeline)
-=======
 	err = json.Unmarshal(execBuildExecutable.GetData(), pipeline)
->>>>>>> d0d2dd98a0b653b7d6079d50d33bcff3170a0394
 	if err != nil {
 		return err
 	}
