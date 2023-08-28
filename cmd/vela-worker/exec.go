@@ -63,7 +63,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	}
 
 	// set up build executable
-	execBuildExecutable, resp, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
 	if err != nil {
 		return err
 	}
