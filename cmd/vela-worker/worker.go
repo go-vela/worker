@@ -5,6 +5,7 @@
 package main
 
 import (
+	"github.com/go-vela/types/library"
 	"net/url"
 	"sync"
 	"time"
@@ -73,5 +74,6 @@ type (
 		CheckedIn            bool
 		RunningBuildIDs      []string
 		RunningBuildIDsMutex sync.Mutex
+		QueueRegistration    chan library.QueueRegistration
 	}
 )

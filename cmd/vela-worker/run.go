@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-vela/types/library"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
@@ -116,8 +117,8 @@ func run(c *cli.Context) error {
 			},
 			// queue configuration
 			Queue: &queue.Setup{
-				Driver:    c.String("queue.driver"),
-				Address:   c.String("queue.addr"),
+				Driver: c.String("queue.driver"),
+				//Address:   c.String("queue.addr"),
 				Cluster:   c.Bool("queue.cluster"),
 				Routes:    c.StringSlice("queue.routes"),
 				Timeout:   c.Duration("queue.pop.timeout"),
@@ -142,7 +143,8 @@ func run(c *cli.Context) error {
 
 		QueueSigningKey: make(chan string, 1),
 
-		RunningBuildIDs: make([]string, 0),
+		RunningBuildIDs:   make([]string, 0),
+		QueueRegistration: make(chan library.QueueRegistration, 1),
 	}
 
 	// set the worker address if no flag was provided

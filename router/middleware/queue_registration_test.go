@@ -5,6 +5,7 @@
 package middleware
 
 import (
+	"github.com/go-vela/types/library"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -13,12 +14,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestMiddleware_QueueSigningKey(t *testing.T) {
-	// setup types
-	want := make(chan string, 1)
-	got := make(chan string, 1)
+func TestMiddleware_Registration(t *testing.T) {
 
-	want <- "foo"
+	// setup types
+	want := make(chan library.QueueRegistration, 1)
+	got := make(chan library.QueueRegistration, 1)
+
+	want <- library.QueueRegistration{
+		QueuePublicKey: nil,
+		QueueAddress:   nil,
+	}
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -28,9 +33,9 @@ func TestMiddleware_QueueSigningKey(t *testing.T) {
 	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
 
 	// setup mock server
-	engine.Use(QueueSigningKey(want))
+	engine.Use(QueueRegistration(want))
 	engine.GET("/health", func(c *gin.Context) {
-		got = c.Value("queue-signing-key").(chan string)
+		got = c.Value("queue-registration").(chan library.QueueRegistration)
 
 		c.Status(http.StatusOK)
 	})
@@ -39,10 +44,10 @@ func TestMiddleware_QueueSigningKey(t *testing.T) {
 	engine.ServeHTTP(context.Writer, context.Request)
 
 	if resp.Code != http.StatusOK {
-		t.Errorf("QueueSigningKey returned %v, want %v", resp.Code, http.StatusOK)
+		t.Errorf("QueueRegistration returned %v, want %v", resp.Code, http.StatusOK)
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("QueueSigningKey is %v, want foo", got)
+		t.Errorf("QueueRegistration is %v, want foo", got)
 	}
 }

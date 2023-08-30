@@ -110,8 +110,8 @@ func Load(options ...gin.HandlerFunc) *gin.Engine {
 	// endpoint for passing a new registration token to the deadloop running operate.go
 	r.POST("/register", api.Register)
 
-	// endpoint for passing a new queue signing key to the deadloop running operate.go
-	r.POST("/queue-key", api.QueueKey)
+	// endpoint for passing a new queue details to the deadloop running operate.go
+	r.POST("/queue-registration", api.QueueRegistration)
 
 	return r
 }

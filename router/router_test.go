@@ -49,9 +49,9 @@ func TestRouter_Load(t *testing.T) {
 		},
 		{
 			Method:      "POST",
-			Path:        "/api/v1/queue-key",
-			Handler:     "github.com/go-vela/worker/api.QueueKey",
-			HandlerFunc: api.QueueKey,
+			Path:        "/api/v1/queue-registration",
+			Handler:     "github.com/go-vela/worker/api.QueueRegistration",
+			HandlerFunc: api.QueueRegistration,
 		},
 		{
 			Method:      "GET",
