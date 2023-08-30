@@ -10,7 +10,7 @@ import (
 )
 
 // QueueRegistration RegisterToken is a middleware function that attaches the
-// auth-token channel to the context of every http.Request.
+// queue-registration channel to the context of every http.Request.
 func QueueRegistration(r chan library.QueueRegistration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("queue-registration", r)

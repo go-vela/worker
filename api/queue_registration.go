@@ -15,36 +15,42 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// swagger:operation POST /register system Register
+// swagger:operation POST /queue-registration system Queue Registration
 //
-// Fill registration token channel in worker to continue operation
+// Fill queue registration channel in worker to continue operation
 //
 // ---
 // produces:
 // - application/json
 // parameters:
+// - in: body
+//   name: body
+//   description: Payload containing queue address and queue public key
+//   required: true
+//   schema:
+//     "$ref": "#/definitions/Queue"
 // security:
 //   - ApiKeyAuth: []
 // responses:
 //   '200':
-//     description: Successfully passed token to worker
+//     description: Successfully passed queue address and queue public key to worker
 //     schema:
 //       type: string
 //   '401':
-//     description: No token was passed
+//     description: No queue address and queue public key was passed
 //     schema:
 //       "$ref": "#/definitions/Error"
 //   '500':
-//     description: Unable to pass token to worker
+//     description: Unable to pass queue address and queue public key to worker
 //     schema:
 //       "$ref": "#/definitions/Error"
 
-// QueueRegistration will pass the token given in the request header to the register token
-// channel of the worker. This will unblock operation if the worker has not been
-// registered and the provided registration token is valid.
+// QueueRegistration will pass the json body of queue address and queue public key to the queue registration
+// channel of the worker. This will unblock operation if the queue configuration details are not setup
 func QueueRegistration(c *gin.Context) {
 	res := new(library.QueueRegistration)
 	v, ok := c.Get("queue-registration")
+
 	if !ok {
 		c.JSON(http.StatusInternalServerError, "no queue registration channel in the context")
 		return
@@ -115,30 +121,4 @@ func QueueRegistration(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "both public key and queue address are required")
 		return
 	}
-
 }
-
-//// getSubjectFromToken is a helper function to extract
-//// the subject from the token claims.
-//func getSubjectFromToken(token string) (string, error) {
-//	// create a new JWT parser
-//	j := jwt.NewParser()
-//
-//	// parse the payload
-//	t, _, err := j.ParseUnverified(token, jwt.MapClaims{})
-//	if err != nil {
-//		return "", fmt.Errorf("unable to parse token")
-//	}
-//
-//	sub, err := t.Claims.GetSubject()
-//	if err != nil {
-//		return "", fmt.Errorf("unable to get subject from token")
-//	}
-//
-//	// make sure there was a subject defined
-//	if len(sub) == 0 {
-//		return "", fmt.Errorf("no subject defined in token")
-//	}
-//
-//	return sub, nil
-//}

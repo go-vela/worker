@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
+// Copyright (c) 2023 Target Brands, Inc. All rights reserved.
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
@@ -117,8 +117,12 @@ func (w *Worker) operate(ctx context.Context) error {
 	*rDetails = <-w.QueueRegistration
 	// if no pubkey was embedded or provided on startup, wait here
 	w.Config.Queue.Address = rDetails.GetQueueAddress()
-	w.Config.Queue.PublicKey = rDetails.GetPublicKey() //nolint:wsl
-	logrus.Info("Validating queue details")
+	w.Config.Queue.PublicKey = rDetails.GetPublicKey()
+	logrus.Trace("Validating queue details")
+
+	// verify the queue configuration
+	//
+	// https://godoc.org/github.com/go-vela/server/queue#Setup.Validate
 	err = w.Config.Queue.Validate()
 	if err != nil {
 		return err
