@@ -5,11 +5,14 @@
 package api
 
 import (
+	"encoding/base64"
 	"fmt"
+	"github.com/go-vela/server/util"
+	"github.com/go-vela/types/library"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-vela/worker/router/middleware/token"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -41,42 +44,49 @@ import (
 // channel of the worker. This will unblock operation if the worker has not been
 // registered and the provided registration token is valid.
 func Register(c *gin.Context) {
+	res := new(library.WorkerRegistration)
 	// extract the worker hostname that was packed into gin context
+	v, ok := c.Get("worker-registration")
+
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "no worker-registrationn channel in the context")
+		return
+	}
+	// make sure we configured the channel properly
+	rChan, ok := v.(chan library.WorkerRegistration)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "worker-registration channel in the context is the wrong type")
+		return
+	}
+	// if key is present in the channel, deny registration
+	// this will likely never happen as the channel is offloaded immediately
+	if len(rChan) > 0 {
+		c.JSON(http.StatusOK, "queue details already provided")
+		return
+	}
+	// Binding request body into QueueRegistration struct
+	err := c.Bind(res)
+	if err != nil {
+		retErr := fmt.Errorf("unable to decode JSON for worker-registration details %w", err)
+
+		util.HandleError(c, http.StatusNotFound, retErr)
+
+		return
+	}
 	w, ok := c.Get("worker-hostname")
 	if !ok {
 		c.JSON(http.StatusInternalServerError, "no worker hostname in the context")
 		return
 	}
 
-	// extract the register token channel that was packed into gin context
-	v, ok := c.Get("register-token")
-	if !ok {
-		c.JSON(http.StatusInternalServerError, "no register token channel in the context")
-		return
-	}
-
-	// make sure we configured the channel properly
-	rChan, ok := v.(chan string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, "register token channel in the context is the wrong type")
-		return
-	}
-
-	// if token is present in the channel, deny registration
-	// this will likely never happen as the channel is offloaded immediately
-	if len(rChan) > 0 {
-		c.JSON(http.StatusOK, "worker already registered")
-		return
-	}
-
 	// retrieve auth token from header
-	token, err := token.Retrieve(c.Request)
-	if err != nil {
-		// an error occurs when no token was passed
-		c.JSON(http.StatusUnauthorized, err)
-		return
-	}
-
+	//token, err := token.Retrieve(c.Request)
+	//if err != nil {
+	//	// an error occurs when no token was passed
+	//	c.JSON(http.StatusUnauthorized, err)
+	//	return
+	//}
+	token := res.GetRegistrationToken()
 	// extract the subject from the token
 	sub, err := getSubjectFromToken(token)
 	if err != nil {
@@ -97,10 +107,23 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// write registration token to auth token channel
-	rChan <- token
+	// validate encoded public key from the JSON body
+	err = validatePubKey(res.GetPublicKey())
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, err)
+		return
+	}
+	// validate encoded public key from the JSON body
+	err = validateQueueAddress(res.GetQueueAddress())
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, err)
+		return
+	}
 
-	c.JSON(http.StatusOK, "successfully passed token to worker")
+	// write registration token to auth token channel
+	rChan <- *res
+
+	c.JSON(http.StatusOK, "successfully passed registration details to worker")
 }
 
 // getSubjectFromToken is a helper function to extract
@@ -126,4 +149,44 @@ func getSubjectFromToken(token string) (string, error) {
 	}
 
 	return sub, nil
+}
+
+// validateQueueAddress is a helper function to validate
+// the provided pubkey
+func validatePubKey(s string) error {
+	// Decode public key to validate if key is base64 encoded
+	publicKeyDecoded, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return fmt.Errorf("bad public key was provided")
+	}
+
+	if len(publicKeyDecoded) == 0 {
+		return fmt.Errorf("provided public key is empty")
+	}
+	// validate decoded public key length
+	if len(publicKeyDecoded) != 32 {
+		return fmt.Errorf("no valid signing public key provided")
+	}
+	return nil
+}
+
+// validateQueueAddress is a helper function to validate
+// the provided
+func validateQueueAddress(s string) error {
+	// verify a queue address was provided
+	if len(s) == 0 {
+		return fmt.Errorf("no queue address provided")
+	}
+
+	// check if the queue address has a scheme
+	if !strings.Contains(s, "://") {
+		return fmt.Errorf("queue address must be fully qualified (<scheme>://<host>)")
+	}
+
+	// check if the queue address has a trailing slash
+	if strings.HasSuffix(s, "/") {
+		return fmt.Errorf("queue address must not have trailing slash")
+
+	}
+	return nil
 }

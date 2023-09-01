@@ -133,6 +133,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
 	//nolint:nolintlint,contextcheck // ignore passing context
+
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		registryWorker.SetStatus(constants.WorkerStatusError)

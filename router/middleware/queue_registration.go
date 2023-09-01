@@ -9,11 +9,11 @@ import (
 	"github.com/go-vela/types/library"
 )
 
-// QueueRegistration RegisterToken is a middleware function that attaches the
-// queue-registration channel to the context of every http.Request.
-func QueueRegistration(r chan library.QueueRegistration) gin.HandlerFunc {
+// WorkerRegistration is a middleware function that attaches the
+// queue-address channel to the context of every http.Request.
+func WorkerRegistration(r chan library.WorkerRegistration) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("queue-registration", r)
+		c.Set("worker-registration", r)
 		c.Next()
 	}
 }

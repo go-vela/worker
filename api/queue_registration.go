@@ -5,14 +5,11 @@
 package api
 
 import (
-	"encoding/base64"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/go-vela/server/util"
 	"github.com/go-vela/types/library"
 	"net/http"
-	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 // swagger:operation POST /queue-registration system Queue Registration
@@ -75,40 +72,6 @@ func QueueRegistration(c *gin.Context) {
 
 		util.HandleError(c, http.StatusNotFound, retErr)
 
-		return
-	}
-	// Decode public key to validate if key is base64 encoded
-	publicKeyDecoded, err := base64.StdEncoding.DecodeString(res.GetPublicKey())
-	if err != nil {
-		c.JSON(http.StatusBadRequest, "Bad public key was provided")
-		return
-	}
-
-	if len(publicKeyDecoded) == 0 {
-		c.JSON(http.StatusBadRequest, "Provided public key is empty")
-		return
-	}
-	// validate decoded public key length
-	if len(publicKeyDecoded) != 32 {
-		c.JSON(http.StatusBadRequest, "no valid signing public key provided")
-		return
-	}
-
-	// verify a queue address was provided
-	if len(res.GetQueueAddress()) == 0 {
-		c.JSON(http.StatusBadRequest, "no queue address provided")
-		return
-	}
-
-	// check if the queue address has a scheme
-	if !strings.Contains(res.GetQueueAddress(), "://") {
-		c.JSON(http.StatusBadRequest, "queue address must be fully qualified (<scheme>://<host>)")
-		return
-	}
-
-	// check if the queue address has a trailing slash
-	if strings.HasSuffix(res.GetQueueAddress(), "/") {
-		c.JSON(http.StatusBadRequest, "queue address must not have trailing slash")
 		return
 	}
 

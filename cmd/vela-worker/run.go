@@ -141,10 +141,8 @@ func run(c *cli.Context) error {
 
 		RegisterToken: make(chan string, 1),
 
-		QueueSigningKey: make(chan string, 1),
-
-		RunningBuildIDs:   make([]string, 0),
-		QueueRegistration: make(chan library.QueueRegistration, 1),
+		RunningBuildIDs:    make([]string, 0),
+		WorkerRegistration: make(chan library.WorkerRegistration, 1),
 	}
 
 	// set the worker address if no flag was provided
@@ -152,18 +150,15 @@ func run(c *cli.Context) error {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
 	}
 
-	// if server secret is provided, use as register token on start up
-	if len(c.String("server.secret")) > 0 {
-		logrus.Trace("registering worker with embedded server secret")
-
-		w.RegisterToken <- c.String("server.secret")
-	}
-
-	// if queue signing key is provided, use as queue key on start up
-	if len(c.String("queue.signing.public-key")) > 0 {
-		logrus.Trace("unlocking queue with embedded queue signing key")
-
-		w.QueueSigningKey <- c.String("queue.signing.public-key")
+	// if all the registration details are provided, use as register token on start up
+	if len(c.String("server.secret")) > 0 && len(c.String("queue.signing.public-key")) > 0 &&
+		len(c.String("queue.addr")) > 0 {
+		logrus.Trace("registering worker with embedded secrets")
+		wr := new(library.WorkerRegistration)
+		wr.SetRegistrationToken(c.String("server.secret"))
+		wr.SetPublicKey(c.String("queue.signing.public-key"))
+		wr.SetQueueAddress(c.String("queue.addr"))
+		w.WorkerRegistration <- *wr
 	}
 
 	// validate the worker
