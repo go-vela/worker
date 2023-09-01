@@ -31,8 +31,17 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// setup the version
 	v := version.New()
+
+	// get worker from database
+	worker, _, err := w.VelaClient.Worker.Get(w.Config.API.Address.Hostname())
+	if err != nil {
+		logrus.Errorf("unable to retrieve worker from server: %s", err)
+
+		return err
+	}
+
 	// capture an item from the queue
-	item, err := w.Queue.Pop(context.Background())
+	item, err := w.Queue.Pop(context.Background(), worker.GetRoutes())
 	if err != nil {
 		return err
 	}

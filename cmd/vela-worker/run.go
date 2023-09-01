@@ -17,8 +17,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/urfave/cli/v2"
-
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -117,8 +115,8 @@ func run(c *cli.Context) error {
 			},
 			// queue configuration
 			Queue: &queue.Setup{
-				Driver: c.String("queue.driver"),
-				//Address:   c.String("queue.addr"),
+				Driver:    c.String("queue.driver"),
+				Address:   c.String("queue.addr"),
 				Cluster:   c.Bool("queue.cluster"),
 				Routes:    c.StringSlice("queue.routes"),
 				Timeout:   c.Duration("queue.pop.timeout"),
