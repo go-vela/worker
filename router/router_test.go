@@ -48,12 +48,6 @@ func TestRouter_Load(t *testing.T) {
 			HandlerFunc: api.Register,
 		},
 		{
-			Method:      "POST",
-			Path:        "/api/v1/queue-registration",
-			Handler:     "github.com/go-vela/worker/api.QueueRegistration",
-			HandlerFunc: api.QueueRegistration,
-		},
-		{
 			Method:      "GET",
 			Path:        "/api/v1/executors",
 			Handler:     "github.com/go-vela/worker/api.GetExecutors",

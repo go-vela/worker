@@ -40,7 +40,8 @@ func (w *Worker) operate(ctx context.Context) error {
 	// pull registration token from configuration if provided; wait if not
 	logrus.Trace("waiting for register token")
 
-	token := <-w.RegisterToken
+	t := <-w.WorkerRegistration
+	token := t.GetRegistrationToken()
 
 	logrus.Trace("received register token")
 
@@ -77,7 +78,8 @@ func (w *Worker) operate(ctx context.Context) error {
 							// wait on new registration token, return to check in attempt
 							logrus.Trace("check-in token has expired, waiting for new register token")
 
-							token = <-w.RegisterToken
+							t = <-w.WorkerRegistration
+							token = t.GetRegistrationToken()
 
 							// setup the vela client with the token
 							w.VelaClient, err = setupClient(w.Config.Server, token)
@@ -113,8 +115,8 @@ func (w *Worker) operate(ctx context.Context) error {
 		}
 	})
 	logrus.Trace("wait for queue details before setup queue")
-	rDetails := new(library.QueueRegistration)
-	*rDetails = <-w.QueueRegistration
+	rDetails := new(library.WorkerRegistration)
+	*rDetails = <-w.WorkerRegistration
 	// if no pubkey was embedded or provided on startup, wait here
 	w.Config.Queue.Address = rDetails.GetQueueAddress()
 	w.Config.Queue.PublicKey = rDetails.GetPublicKey()

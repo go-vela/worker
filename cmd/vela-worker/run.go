@@ -138,7 +138,7 @@ func run(c *cli.Context) error {
 		},
 		Executors: make(map[int]executor.Engine),
 
-		RegisterToken: make(chan string, 1),
+		//RegisterToken: make(chan string, 1),
 
 		RunningBuildIDs:    make([]string, 0),
 		WorkerRegistration: make(chan library.WorkerRegistration, 1),
