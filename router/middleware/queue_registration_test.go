@@ -5,6 +5,7 @@
 package middleware
 
 import (
+	"github.com/go-vela/types/library"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -16,10 +17,10 @@ import (
 func TestMiddleware_Registration(t *testing.T) {
 
 	// setup types
-	want := make(chan string, 1)
-	got := make(chan string, 1)
+	want := make(chan library.WorkerRegistration, 1)
+	got := make(chan library.WorkerRegistration, 1)
 
-	want <- "foo"
+	want <- library.WorkerRegistration{}
 
 	// setup context
 	gin.SetMode(gin.TestMode)
@@ -29,9 +30,9 @@ func TestMiddleware_Registration(t *testing.T) {
 	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
 
 	// setup mock server
-	engine.Use(QueueRegistration(want, "queue-registration"))
+	engine.Use(WorkerRegistration(want))
 	engine.GET("/health", func(c *gin.Context) {
-		got = c.Value("queue-registration").(chan string)
+		got = c.Value("worker-registration").(chan library.WorkerRegistration)
 		c.Status(http.StatusOK)
 	})
 

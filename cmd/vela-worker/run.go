@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-vela/types/library"
+	"github.com/urfave/cli/v2"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
