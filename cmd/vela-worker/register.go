@@ -49,13 +49,11 @@ func (w *Worker) register(config *library.Worker) (bool, string, error) {
 
 	config.SetStatus(constants.WorkerStatusIdle)
 
-	// TODO handle resp here and set the queue config?
-	tkn, resp, err := w.VelaClient.Worker.Add(config)
+	tkn, _, err := w.VelaClient.Worker.Add(config)
 	if err != nil {
 		// log the error instead of returning so the operation doesn't block worker deployment
 		return false, "", fmt.Errorf("unable to register worker %s with the server: %w", config.GetHostname(), err)
 	}
-	logrus.Infof("register worker resp body %v", resp.Body)
 
 	logrus.Infof("worker %q status updated successfully to %s", config.GetHostname(), config.GetStatus())
 

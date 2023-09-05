@@ -115,14 +115,10 @@ func (w *Worker) operate(ctx context.Context) error {
 		}
 	})
 	logrus.Trace("wait for queue details before setup queue")
-	//rDetails := new(library.WorkerRegistration)
-	//*rDetails = <-w.WorkerRegistration
-
-	// if no pubkey was embedded or provided on startup, wait here
+	// once worker created/check in, queue details are used to setup queue here.
 	w.Config.Queue.Address = t.GetQueueAddress()
 	w.Config.Queue.PublicKey = t.GetPublicKey()
 	logrus.Trace("Validating queue details")
-
 	// verify the queue configuration
 	//
 	// https://godoc.org/github.com/go-vela/server/queue#Setup.Validate
@@ -141,10 +137,12 @@ func (w *Worker) operate(ctx context.Context) error {
 	if err != nil {
 		registryWorker.SetStatus(constants.WorkerStatusError)
 		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+
 		if resp == nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
 			logrus.Error("status update response is nil")
 		}
+
 		if logErr != nil {
 			if resp != nil {
 				// log the error instead of returning so the operation doesn't block worker deployment
