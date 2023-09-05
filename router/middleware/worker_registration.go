@@ -10,7 +10,7 @@ import (
 )
 
 // WorkerRegistration is a middleware function that attaches the
-// queue-address channel to the context of every http.Request.
+// worker-registration channel to the context of every http.Request.
 func WorkerRegistration(r chan library.WorkerRegistration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("worker-registration", r)

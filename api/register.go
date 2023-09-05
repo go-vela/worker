@@ -79,19 +79,12 @@ func Register(c *gin.Context) {
 
 		return
 	}
+
 	w, ok := c.Get("worker-hostname")
 	if !ok {
 		c.JSON(http.StatusInternalServerError, "no worker hostname in the context")
 		return
 	}
-
-	// retrieve auth token from header
-	//token, err := token.Retrieve(c.Request)
-	//if err != nil {
-	//	// an error occurs when no token was passed
-	//	c.JSON(http.StatusUnauthorized, err)
-	//	return
-	//}
 	token := res.GetRegistrationToken()
 	// extract the subject from the token
 	sub, err := getSubjectFromToken(token)
@@ -156,7 +149,7 @@ func getSubjectFromToken(token string) (string, error) {
 	return sub, nil
 }
 
-// validateQueueAddress is a helper function to validate
+// validatePubKey is a helper function to validate
 // the provided pubkey
 func validatePubKey(s string) error {
 	// Decode public key to validate if key is base64 encoded
@@ -176,7 +169,7 @@ func validatePubKey(s string) error {
 }
 
 // validateQueueAddress is a helper function to validate
-// the provided
+// the provided queue address
 func validateQueueAddress(s string) error {
 	// verify a queue address was provided
 	if len(s) == 0 {

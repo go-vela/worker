@@ -194,20 +194,6 @@ func (w *Worker) operate(ctx context.Context) error {
 
 					err = w.exec(id, registryWorker)
 					if err != nil {
-						// if invalid key is provided, wait for a new one
-						//if err.Error() == errors.New("unable to open signed item").Error() ||
-						//	err.Error() == errors.New("no valid signing public key provided").Error() {
-						//	// pull public key from configuration if provided; wait if not
-						//	logrus.Trace("waiting for queue signing public key")
-						//
-						//	qPubKey := <-w.QueueSigningKey
-						//
-						//	logrus.Trace("received queue signing public key")
-						//	// set Queue public key
-						//	w.Config.Queue.PublicKey = qPubKey
-						//	w.Queue, _ = queue.New(w.Config.Queue)
-						//	continue
-						//}
 						// log the error received from the executor
 						//
 						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
