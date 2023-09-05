@@ -34,7 +34,6 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 		middleware.WorkerHostname(w.Config.API.Address.Hostname()),
 		middleware.Executors(w.Executors),
 		middleware.Logger(logrus.StandardLogger(), time.RFC3339, true),
-		middleware.RegisterToken(w.RegisterToken),
 		middleware.WorkerRegistration(w.WorkerRegistration),
 	)
 

@@ -115,11 +115,12 @@ func (w *Worker) operate(ctx context.Context) error {
 		}
 	})
 	logrus.Trace("wait for queue details before setup queue")
-	rDetails := new(library.WorkerRegistration)
-	*rDetails = <-w.WorkerRegistration
+	//rDetails := new(library.WorkerRegistration)
+	//*rDetails = <-w.WorkerRegistration
+
 	// if no pubkey was embedded or provided on startup, wait here
-	w.Config.Queue.Address = rDetails.GetQueueAddress()
-	w.Config.Queue.PublicKey = rDetails.GetPublicKey()
+	w.Config.Queue.Address = t.GetQueueAddress()
+	w.Config.Queue.PublicKey = t.GetPublicKey()
 	logrus.Trace("Validating queue details")
 
 	// verify the queue configuration

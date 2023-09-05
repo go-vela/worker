@@ -24,19 +24,25 @@ import (
 // produces:
 // - application/json
 // parameters:
+// - in: body
+//   name: body
+//   description: Payload containing the details to register worker
+//   required: true
+//   schema:
+//     "$ref": "#/definitions/WorkerRegistration"
 // security:
 //   - ApiKeyAuth: []
 // responses:
 //   '200':
-//     description: Successfully passed token to worker
+//     description: Successfully passed details to worker
 //     schema:
 //       type: string
 //   '401':
-//     description: No token was passed
+//     description: No details was passed
 //     schema:
 //       "$ref": "#/definitions/Error"
 //   '500':
-//     description: Unable to pass token to worker
+//     description: Unable to pass details to worker
 //     schema:
 //       "$ref": "#/definitions/Error"
 
@@ -93,7 +99,6 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, err)
 		return
 	}
-
 	// make sure we configured the hostname properly
 	hostname, ok := w.(string)
 	if !ok {

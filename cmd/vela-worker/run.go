@@ -116,12 +116,12 @@ func run(c *cli.Context) error {
 			},
 			// queue configuration
 			Queue: &queue.Setup{
-				Driver:    c.String("queue.driver"),
-				Address:   c.String("queue.addr"),
-				Cluster:   c.Bool("queue.cluster"),
-				Routes:    c.StringSlice("queue.routes"),
-				Timeout:   c.Duration("queue.pop.timeout"),
-				PublicKey: c.String("queue.public-key"),
+				Driver: c.String("queue.driver"),
+				//Address:   c.String("queue.addr"),
+				Cluster: c.Bool("queue.cluster"),
+				Routes:  c.StringSlice("queue.routes"),
+				Timeout: c.Duration("queue.pop.timeout"),
+				//PublicKey: c.String("queue.public-key"),
 			},
 			// server configuration
 			Server: &Server{
@@ -149,17 +149,18 @@ func run(c *cli.Context) error {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
 	}
 
+	logrus.Info("registering worker with embedded secrets")
 	// if all the registration details are provided, use as register token on start up
-	if len(c.String("server.secret")) > 0 && len(c.String("queue.signing.public-key")) > 0 &&
+	if len(c.String("server.secret")) > 0 && len(c.String("queue.public-key")) > 0 &&
 		len(c.String("queue.addr")) > 0 {
-		logrus.Trace("registering worker with embedded secrets")
+		logrus.Info("registering worker with embedded secrets")
+
 		wr := new(library.WorkerRegistration)
 		wr.SetRegistrationToken(c.String("server.secret"))
-		wr.SetPublicKey(c.String("queue.signing.public-key"))
+		wr.SetPublicKey(c.String("queue.public-key"))
 		wr.SetQueueAddress(c.String("queue.addr"))
 		w.WorkerRegistration <- *wr
 	}
-
 	// validate the worker
 	err = w.Validate()
 	if err != nil {
