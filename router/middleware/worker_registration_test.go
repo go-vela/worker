@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestMiddleware_Registration(t *testing.T) {
+func TestMiddleware_WorkerRegistration(t *testing.T) {
 
 	// setup types
 	want := make(chan library.WorkerRegistration, 1)
