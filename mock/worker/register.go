@@ -21,7 +21,7 @@ import (
 func postRegister(c *gin.Context) {
 	res := new(library.WorkerRegistration)
 	// Binding request body into QueueRegistration struct
-	err := c.Bind(res)
+	err := c.BindJSON(res)
 	if err != nil {
 		retErr := fmt.Errorf("unable to decode JSON for worker-registration details %w", err)
 

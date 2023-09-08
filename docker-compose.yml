@@ -35,7 +35,6 @@ services:
 #      QUEUE_PUBLIC_KEY: 'DXsJkoTSkHlG26d75LyHJG+KQsXPr8VKPpmH/78zmko='
       WORKER_ADDR: 'http://worker:8080'
       WORKER_CHECK_IN: 2m
-#      VELA_QUEUE_SIGNING_PUBLIC_KEY: 'DXsJkoTSkHlG26d75LyHJG+KQsXPr8VKPpmH/78zmko='
     restart: always
     ports:
       - "8081:8080"
@@ -52,6 +51,7 @@ services:
   #
   # https://go-vela.github.io/docs/administration/server/
   server:
+    # comment the 5 lines below to use local server built image
 #    build:
 #      context: ../server
 #      dockerfile: Dockerfile

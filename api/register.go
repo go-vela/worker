@@ -71,7 +71,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	// Binding request body into WorkerRegistration struct
-	err := c.Bind(res)
+	err := c.BindJSON(res)
 	if err != nil {
 		retErr := fmt.Errorf("unable to decode JSON for worker-registration details %w", err)
 
