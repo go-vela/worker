@@ -70,7 +70,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusOK, "queue details already provided")
 		return
 	}
-	// Binding request body into QueueRegistration struct
+	// Binding request body into WorkerRegistration struct
 	err := c.Bind(res)
 	if err != nil {
 		retErr := fmt.Errorf("unable to decode JSON for worker-registration details %w", err)
@@ -85,6 +85,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, "no worker hostname in the context")
 		return
 	}
+
 	token := res.GetRegistrationToken()
 	// extract the subject from the token
 	sub, err := getSubjectFromToken(token)
@@ -165,6 +166,7 @@ func validatePubKey(s string) error {
 	if len(publicKeyDecoded) != 32 {
 		return fmt.Errorf("no valid signing public key provided")
 	}
+
 	return nil
 }
 
@@ -184,7 +186,7 @@ func validateQueueAddress(s string) error {
 	// check if the queue address has a trailing slash
 	if strings.HasSuffix(s, "/") {
 		return fmt.Errorf("queue address must not have trailing slash")
-
 	}
+
 	return nil
 }
