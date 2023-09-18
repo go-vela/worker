@@ -6,9 +6,9 @@ package main
 
 import (
 	"context"
+	"github.com/go-vela/server/queue"
 	"time"
 
-	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 
@@ -43,10 +43,49 @@ func (w *Worker) operate(ctx context.Context) error {
 	token := <-w.RegisterToken
 
 	logrus.Trace("received register token")
-
+	logrus.Trace("setting up vela client")
 	// setup the vela client with the token
 	w.VelaClient, err = setupClient(w.Config.Server, token)
 	if err != nil {
+		return err
+	}
+	logrus.Trace("getting queue creds")
+	creds, r, err := w.VelaClient.Admin.Worker.GetQueueCreds()
+	if err != nil {
+		logrus.Trace("error getting creds")
+		logrus.Errorf("unable to retrieve queue credentials with status code %v", r.StatusCode)
+		return err
+	}
+	logrus.Trace("wait for queue details before setup queue")
+	// once worker created/check in, queue details are used to setup queue here.
+	w.Config.Queue.Address = creds.GetQueueAddress()
+	w.Config.Queue.PublicKey = creds.GetPublicKey()
+	logrus.Trace("Validating queue details")
+	// verify the queue configuration
+	//
+	// https://godoc.org/github.com/go-vela/server/queue#Setup.Validate
+	err = w.Config.Queue.Validate()
+	if err != nil {
+		return err
+	}
+	// setup the queue
+	//
+	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
+	//nolint:contextcheck // ignore passing context
+	w.Queue, err = queue.New(w.Config.Queue)
+	if err != nil {
+		registryWorker.SetStatus(constants.WorkerStatusError)
+		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+		if resp == nil {
+			// log the error instead of returning so the operation doesn't block worker deployment
+			logrus.Error("status update response is nil")
+		}
+		if logErr != nil {
+			if resp != nil {
+				// log the error instead of returning so the operation doesn't block worker deployment
+				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
+			}
+		}
 		return err
 	}
 
@@ -112,27 +151,6 @@ func (w *Worker) operate(ctx context.Context) error {
 			}
 		}
 	})
-
-	// setup the queue
-	//
-	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
-	//nolint:contextcheck // ignore passing context
-	w.Queue, err = queue.New(w.Config.Queue)
-	if err != nil {
-		registryWorker.SetStatus(constants.WorkerStatusError)
-		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
-		if resp == nil {
-			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Error("status update response is nil")
-		}
-		if logErr != nil {
-			if resp != nil {
-				// log the error instead of returning so the operation doesn't block worker deployment
-				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
-			}
-		}
-		return err
-	}
 
 	// iterate till the configured build limit
 	for i := 0; i < w.Config.Build.Limit; i++ {
