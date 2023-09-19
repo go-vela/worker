@@ -98,6 +98,9 @@ func (c *client) PlanBuild(ctx context.Context) error {
 		return err
 	}
 
+	// put worker information into init logs
+	_log.AppendData([]byte(fmt.Sprintf("> Worker Information:\n Host: %s\n Version: %s\n Runtime: %s\n", c.Hostname, c.Version, c.Runtime.Driver())))
+
 	// defer taking a snapshot of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#SnapshotInit
