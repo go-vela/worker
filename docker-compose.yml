@@ -29,7 +29,7 @@ services:
       VELA_RUNTIME_PRIVILEGED_IMAGES: 'target/vela-docker'
       VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS: 'true'
       VELA_SERVER_ADDR: 'http://server:8080'
-      # comment the 3 lines below to use registration flow
+      # comment the VELA_SERVER_SECRET line below to use registration flow
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_ADDR: 'http://worker:8080'
       WORKER_CHECK_IN: 2m
@@ -49,14 +49,8 @@ services:
   #
   # https://go-vela.github.io/docs/administration/server/
   server:
-    # comment the 5 lines below to use local server built image
-    build:
-      context: ../server
-      dockerfile: Dockerfile
     container_name: server
-    image: server:local
-#    container_name: server
-#    image: target/vela-server:latest
+    image: target/vela-server:latest
     networks:
       - vela
     environment:
