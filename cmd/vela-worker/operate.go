@@ -22,12 +22,10 @@ import (
 // queue and execute Vela pipelines.
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
-
 	// create the errgroup for managing operator subprocesses
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
 	executors, gctx := errgroup.WithContext(ctx)
-
 	// Define the database representation of the worker
 	// and register itself in the database
 	registryWorker := new(library.Worker)
@@ -49,18 +47,24 @@ func (w *Worker) operate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	logrus.Trace("getting queue creds")
+
 	creds, r, err := w.VelaClient.Queue.GetInfo()
 	if err != nil {
 		logrus.Trace("error getting creds")
 		logrus.Errorf("unable to retrieve queue credentials with status code %v", r.StatusCode)
 		return err
 	}
+
 	logrus.Trace("wait for queue details before setup queue")
+
 	// once worker created/check in, queue details are used to setup queue here.
 	w.Config.Queue.Address = creds.GetQueueAddress()
 	w.Config.Queue.PublicKey = creds.GetPublicKey()
+
 	logrus.Trace("Validating queue details")
+
 	// verify the queue configuration
 	//
 	// https://godoc.org/github.com/go-vela/server/queue#Setup.Validate

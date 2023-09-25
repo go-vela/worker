@@ -226,7 +226,6 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		if err != nil {
 			logger.Errorf("unable to update worker: %v", err)
 		}
-
 	}()
 
 	// capture the configured build timeout
@@ -297,7 +296,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 }
 
 // getWorkerStatusFromConfig is a helper function
-// to determine the appropriate worker status
+// to determine the appropriate worker status.
 func (w *Worker) getWorkerStatusFromConfig(config *library.Worker) string {
 	switch rb := len(config.GetRunningBuildIDs()); {
 	case rb == 0:
