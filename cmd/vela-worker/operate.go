@@ -51,10 +51,10 @@ func (w *Worker) operate(ctx context.Context) error {
 	logrus.Trace("getting queue creds")
 
 	// fetching queue credentials using registration token
-	creds, r, err := w.VelaClient.Queue.GetInfo()
+	creds, _, err := w.VelaClient.Queue.GetInfo()
 	if err != nil {
 		logrus.Trace("error getting creds")
-		logrus.Errorf("unable to retrieve queue credentials with status code %v", r.StatusCode)
+
 		return err
 	}
 
