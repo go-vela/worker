@@ -6,9 +6,9 @@ package main
 
 import (
 	"context"
-	"github.com/go-vela/server/queue"
 	"time"
 
+	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 
@@ -50,7 +50,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		return err
 	}
 	logrus.Trace("getting queue creds")
-	creds, r, err := w.VelaClient.Admin.Worker.GetQueueCreds()
+	creds, r, err := w.VelaClient.Queue.GetInfo()
 	if err != nil {
 		logrus.Trace("error getting creds")
 		logrus.Errorf("unable to retrieve queue credentials with status code %v", r.StatusCode)

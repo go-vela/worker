@@ -145,12 +145,12 @@ github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91
 github.com/go-playground/validator/v10 v10.14.0 h1:vgvQWe3XCz3gIeFDm/HnTIbj6UGmg/+t63MyGU2n5js=
 github.com/go-playground/validator/v10 v10.14.0/go.mod h1:9iXMNT7sEkjXb0I+enO7QXmzG6QCsPWY4zveKFVRSyU=
 github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 h1:tfuBGBXKqDEevZMzYi5KSi8KkcZtzBcTgAUUtapy0OI=
-github.com/go-vela/sdk-go v0.20.2-0.20230824133536-0b0212b996f5 h1:PfGWo9Yzv6xfHYSYYArlsrWfs3cvOlBopCjHyHi/SPs=
-github.com/go-vela/sdk-go v0.20.2-0.20230824133536-0b0212b996f5/go.mod h1:j7DFviaUd+XArpFr9KoHLWwUXRyFYAiZvPPF42gktoA=
-github.com/go-vela/server v0.20.1-0.20230831135557-46337cfce67d h1:xgrejztRM+VM2uOLNGZubkIk11wbsg0qTcyAHO5Kpbo=
-github.com/go-vela/server v0.20.1-0.20230831135557-46337cfce67d/go.mod h1:h4i/+HUpfh+kViIpf2016fJXZxVFz6B9EECA28qp/fg=
-github.com/go-vela/types v0.20.2-0.20230918203823-feb196d7ad3f h1:C0vyhTc3f01mVSaCdglw6+d9fov7SUA88wD9YbRD4dw=
-github.com/go-vela/types v0.20.2-0.20230918203823-feb196d7ad3f/go.mod h1:fVmUP4y7Cw8cG6CBWTdjIdgXNNrpVo25yoE9NmNBdOg=
+github.com/go-vela/sdk-go v0.20.2-0.20230925160153-e6031fe704d7 h1:VdWX61yJZ0+NFQvzrskISSF3hZvCbpCX54O7gK6mz2U=
+github.com/go-vela/sdk-go v0.20.2-0.20230925160153-e6031fe704d7/go.mod h1:l2ZvSlZICJiKqDxkeGvXXmWebUsFcacvEt4PVMLqV5Y=
+github.com/go-vela/server v0.20.1-0.20230925142408-ab85e96f27c4 h1:SZBRTSE2RWutnzz1PN+n05YwoVI4gIFJc/xEb2KUklc=
+github.com/go-vela/server v0.20.1-0.20230925142408-ab85e96f27c4/go.mod h1:Ey05oMaWSYmMnajDCBtBYvCbx34N9o3PBf+pGJlp6hE=
+github.com/go-vela/types v0.20.2-0.20230922185343-b83bcddfa60d h1:PoGQfHM1Lq3cCttrQ9s5Cp9bHc1xXNWNYLGArPvHqRo=
+github.com/go-vela/types v0.20.2-0.20230922185343-b83bcddfa60d/go.mod h1:fVmUP4y7Cw8cG6CBWTdjIdgXNNrpVo25yoE9NmNBdOg=
 github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
 github.com/goccy/go-json v0.10.2/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
@@ -323,7 +323,7 @@ github.com/prometheus/procfs v0.10.1/go.mod h1:nwNm2aOCAYw8uTR/9bWRREkZFxAUcWzPH
 github.com/redis/go-redis/v9 v9.1.0 h1:137FnGdk+EQdCbye1FW+qOEcY5S+SpY9T0NiuqvtfMY=
 github.com/redis/go-redis/v9 v9.1.0/go.mod h1:urWj3He21Dj5k4TK1y59xH8Uj6ATueP8AH1cY3lZl4c=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
-github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
+github.com/rogpeppe/go-internal v1.11.0 h1:cWPaGQEPrBb5/AsnsZesgZZ9yb1OQ+GOISoDNXVBh4M=
 github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf35Ld67mk=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/shopspring/decimal v1.2.0 h1:abSATXmQEYyShuxI4/vyW3tV1MrKAJzCZ/0zLUXYbsQ=
