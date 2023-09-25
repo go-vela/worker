@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
+// Copyright (c) 2023 Target Brands, Inc. All rights reserved.
 //
 // Use of this source code is governed by the LICENSE file in this repository.
 
@@ -67,7 +67,6 @@ func (w *Worker) operate(ctx context.Context) error {
 	// setup the queue
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
-	//nolint:contextcheck // ignore passing context
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		registryWorker.SetStatus(constants.WorkerStatusError)
@@ -99,7 +98,6 @@ func (w *Worker) operate(ctx context.Context) error {
 				// check in attempt loop
 				for {
 					// register or update the worker
-					//nolint:contextcheck // ignore passing context
 					w.CheckedIn, token, err = w.checkIn(registryWorker)
 					// check in failed
 					if err != nil {
