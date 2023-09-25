@@ -50,13 +50,13 @@ func (w *Worker) operate(ctx context.Context) error {
 
 	logrus.Trace("getting queue creds")
 
+	// fetching queue credentials using registration token
 	creds, r, err := w.VelaClient.Queue.GetInfo()
 	if err != nil {
 		logrus.Trace("error getting creds")
 		logrus.Errorf("unable to retrieve queue credentials with status code %v", r.StatusCode)
 		return err
 	}
-
 
 	// set queue address and public key using credentials received from server
 	w.Config.Queue.Address = creds.GetQueueAddress()
@@ -71,6 +71,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	// setup the queue
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
@@ -79,16 +80,19 @@ func (w *Worker) operate(ctx context.Context) error {
 	if err != nil {
 		registryWorker.SetStatus(constants.WorkerStatusError)
 		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+
 		if resp == nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
 			logrus.Error("status update response is nil")
 		}
+
 		if logErr != nil {
 			if resp != nil {
 				// log the error instead of returning so the operation doesn't block worker deployment
 				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
 			}
 		}
+
 		return err
 	}
 
