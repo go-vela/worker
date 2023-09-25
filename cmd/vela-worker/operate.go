@@ -62,8 +62,6 @@ func (w *Worker) operate(ctx context.Context) error {
 	w.Config.Queue.Address = creds.GetQueueAddress()
 	w.Config.Queue.PublicKey = creds.GetPublicKey()
 
-	logrus.Trace("Validating queue details")
-
 	// setup the queue
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
