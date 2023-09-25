@@ -58,7 +58,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	}
 
 
-	// once worker created/check in, queue details are used to setup queue here.
+	// set queue address and public key using credentials received from server
 	w.Config.Queue.Address = creds.GetQueueAddress()
 	w.Config.Queue.PublicKey = creds.GetPublicKey()
 
