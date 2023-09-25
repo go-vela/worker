@@ -57,7 +57,6 @@ func (w *Worker) operate(ctx context.Context) error {
 		return err
 	}
 
-	logrus.Trace("wait for queue details before setup queue")
 
 	// once worker created/check in, queue details are used to setup queue here.
 	w.Config.Queue.Address = creds.GetQueueAddress()
