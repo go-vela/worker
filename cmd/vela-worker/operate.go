@@ -64,13 +64,6 @@ func (w *Worker) operate(ctx context.Context) error {
 
 	logrus.Trace("Validating queue details")
 
-	// verify the queue configuration
-	//
-	// https://godoc.org/github.com/go-vela/server/queue#Setup.Validate
-	err = w.Config.Queue.Validate()
-	if err != nil {
-		return err
-	}
 
 	// setup the queue
 	//
