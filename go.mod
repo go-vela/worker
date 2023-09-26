@@ -8,9 +8,9 @@ require (
 	github.com/docker/docker v20.10.25+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-vela/sdk-go v0.20.2-0.20230925160153-e6031fe704d7
-	github.com/go-vela/server v0.20.1-0.20230925142408-ab85e96f27c4
-	github.com/go-vela/types v0.20.2-0.20230922185343-b83bcddfa60d
+	github.com/go-vela/sdk-go v0.20.2-0.20230926162005-fe9cd4fb6060
+	github.com/go-vela/server v0.20.1-0.20230926163613-a22924dc271b
+	github.com/go-vela/types v0.20.2-0.20230926151838-42959d67d753
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
 	github.com/joho/godotenv v1.5.1
@@ -19,10 +19,10 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/sync v0.3.0
-	gotest.tools/v3 v3.5.0
-	k8s.io/api v0.28.1
-	k8s.io/apimachinery v0.28.1
-	k8s.io/client-go v0.28.1
+	gotest.tools/v3 v3.5.1
+	k8s.io/api v0.28.2
+	k8s.io/apimachinery v0.28.2
+	k8s.io/client-go v0.28.2
 	sigs.k8s.io/yaml v1.3.0
 )
 
