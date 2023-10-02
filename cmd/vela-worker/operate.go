@@ -65,12 +65,14 @@ func (w *Worker) operate(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
+		logrus.Error("queue setup failed")
+
 		registryWorker.SetStatus(constants.WorkerStatusError)
 		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
 
 		if resp == nil {
 			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Error("status update response is nil")
+			logrus.Error("worker status update response is nil")
 		}
 
 		if logErr != nil {
