@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/docker/distribution v2.8.2+incompatible
-	github.com/docker/docker v20.10.25+incompatible
+	github.com/docker/docker v20.10.26+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-vela/sdk-go v0.21.0-rc1
