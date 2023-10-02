@@ -41,7 +41,15 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	// capture an item from the queue
 	item, err := w.Queue.Pop(context.Background(), worker.GetRoutes())
 	if err != nil {
-		return err
+		logrus.Errorf("queue pop failed: %v", err)
+
+		// returning immediately on queue pop fail will attempt
+		// to pop in quick succession, so we honor the configured timeout
+		time.Sleep(w.Config.Queue.Timeout)
+
+		// returning nil to avoid unregistering the worker on pop failure;
+		// sometimes queue could be unavailable due to blip or maintenance
+		return nil
 	}
 
 	if item == nil {
