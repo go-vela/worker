@@ -22,7 +22,7 @@ const (
   "commit": "48afb5bdc41ad69bf22588491333f7cf71135163",
   "flavor": "",
   "platform": "",
-  "ref": "refs/heads/master",
+  "ref": "refs/heads/main",
   "type": "yaml",
   "version": "1",
   "external_secrets": false,
