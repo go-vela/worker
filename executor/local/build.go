@@ -13,6 +13,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
 	"github.com/go-vela/worker/internal/step"
+	"github.com/sirupsen/logrus"
 )
 
 // CreateBuild configures the build for execution.
@@ -274,6 +275,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
 		if step.Skip(_step, c.build, c.repo) {
+			logrus.Infof("Skipping step %s due to ruleset", _step.Name)
 			continue
 		}
 

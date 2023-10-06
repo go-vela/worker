@@ -10,6 +10,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
+	"github.com/sirupsen/logrus"
 )
 
 // CreateStage prepares the stage for execution.
@@ -141,6 +142,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
 		if step.Skip(_step, c.build, c.repo) {
+			logrus.Infof("Skipping step %s due to ruleset", _step.Name)
 			continue
 		}
 
