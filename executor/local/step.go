@@ -31,18 +31,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
-	// create a library step object to facilitate injecting environment as early as possible
-	// (PlanStep is too late to inject environment vars for the kubernetes runtime).
-	_step := library.StepFromBuildContainer(c.build, ctn)
-
-	// update the step container environment
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment
-	err = step.Environment(ctn, c.build, c.repo, _step, c.Version)
-	if err != nil {
-		return err
-	}
-
 	// substitute container configuration
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
@@ -56,18 +44,15 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 
 // PlanStep prepares the step for execution.
 func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
+	// early exit if container is nil
+	if ctn.Empty() {
+		return fmt.Errorf("empty container provided")
+	}
+
 	// create the library step object
 	_step := library.StepFromBuildContainer(c.build, ctn)
 	_step.SetStatus(constants.StatusRunning)
 	_step.SetStarted(time.Now().UTC().Unix())
-
-	// update the step container environment
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment
-	err := step.Environment(ctn, c.build, c.repo, _step, c.Version)
-	if err != nil {
-		return err
-	}
 
 	// add the step to the client map
 	c.steps.Store(ctn.ID, _step)

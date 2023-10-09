@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
+	"github.com/sirupsen/logrus"
 )
 
 // create a stage logging pattern.
@@ -90,6 +91,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
 		if step.Skip(_step, c.build, c.repo) {
+			logrus.Infof("Skipping step %s due to ruleset", _step.Name)
 			continue
 		}
 
