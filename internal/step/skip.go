@@ -8,6 +8,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/sirupsen/logrus"
 )
 
 // Skip creates the ruledata from the build and repository
@@ -64,5 +65,11 @@ func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
 	// return the inverse of container execute
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Execute
-	return !c.Execute(ruledata)
+	execute, err := c.Execute(ruledata)
+	if err != nil {
+		logrus.Debug("error determining if step should skip: %w", err)
+		return false
+	}
+
+	return !execute
 }
