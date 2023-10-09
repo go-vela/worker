@@ -154,6 +154,8 @@ github.com/go-vela/sdk-go v0.21.0 h1:Hedak1Yk9rGn3ZBOvLvxLrMcyvBf3+RB6/wMgHNxyxw
 github.com/go-vela/sdk-go v0.21.0/go.mod h1:fNMQxSqBCXQH6bK3Ej0aCj/iugEDZNEIWW3Xj/m22AQ=
 github.com/go-vela/server v0.21.0 h1:tBSUMp1rni2i1wOzP2uxh7o6uTkzjrYfRe0fKJBOcNA=
 github.com/go-vela/server v0.21.0/go.mod h1:3pp/hg5NUZ6VbbDC6JO97H7Ry7vv/qKA8GpWsaUpZ1M=
+github.com/go-vela/types v0.21.0 h1:yZrVUw4jKO0JHaUBkOIZZdniDGyDOpTMbKriemdm1jg=
+github.com/go-vela/types v0.21.0/go.mod h1:Jn8K28uj7mACc55fkFgaIzL0q45iXydOFGEeoSeHUtQ=
 github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
 github.com/goccy/go-json v0.10.2/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
