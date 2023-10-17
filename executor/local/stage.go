@@ -90,13 +90,18 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		if step.Skip(_step, c.build, c.repo) {
+		skip, err := step.Skip(_step, c.build, c.repo)
+		if err != nil {
+			return fmt.Errorf("unable to plan step: %w", c.err)
+		}
+
+		if skip {
 			logrus.Infof("Skipping step %s due to ruleset", _step.Name)
 			continue
 		}
 
 		// plan the step
-		err := c.PlanStep(ctx, _step)
+		err = c.PlanStep(ctx, _step)
 		if err != nil {
 			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}

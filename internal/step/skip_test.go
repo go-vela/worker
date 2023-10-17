@@ -270,7 +270,10 @@ func TestStep_Skip(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := Skip(test.container, test.build, test.repo)
+			got, err := Skip(test.container, test.build, test.repo)
+			if err != nil {
+				t.Errorf("Skip returned error: %s", err)
+			}
 
 			if got != test.want {
 				t.Errorf("Skip is %v, want %v", got, test.want)
