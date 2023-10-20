@@ -122,6 +122,25 @@ func (w *Worker) operate(ctx context.Context) error {
 							continue
 						}
 
+						pErr := w.Queue.Ping(ctx)
+						if pErr != nil {
+							logrus.Errorf("worker %s unable to conteact the queue: %v", registryWorker.GetHostname(), err)
+							registryWorker.SetStatus(constants.WorkerStatusError)
+							_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+
+							if resp == nil {
+								// log the error instead of returning so the operation doesn't block worker deployment
+								logrus.Error("worker status update response is nil")
+							}
+
+							if logErr != nil {
+								if resp != nil {
+									// log the error instead of returning so the operation doesn't block worker deployment
+									logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
+								}
+							}
+
+						}
 						// check in failed, token is still valid, retry
 						logrus.Errorf("unable to check-in worker %s on the server: %v", registryWorker.GetHostname(), err)
 						logrus.Info("retrying check-in...")

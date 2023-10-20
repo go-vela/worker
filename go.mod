@@ -2,6 +2,8 @@ module github.com/go-vela/worker
 
 go 1.21
 
+replace github.com/go-vela/server => ../server
+
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/docker/distribution v2.8.2+incompatible
