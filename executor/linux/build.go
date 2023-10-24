@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -165,9 +166,13 @@ func (c *client) PlanBuild(ctx context.Context) error {
 		}
 
 		// only pull in secrets that are set to be pulled in at the start
-		//if secret.Pull == constants.PullAlways {
-		//continue
-		//}
+		if strings.EqualFold(secret.Pull, constants.PullOnStart) {
+			c.Logger.Infof("PULLALWAYS")
+			_log.AppendData([]byte(
+				fmt.Sprintf("> Skipping pull: secret <%s> lazy loaded\n",
+					secret.Name)))
+			continue
+		}
 		c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
 
 		//nolint:contextcheck // ignore passing context
@@ -423,6 +428,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 		}
 
+		// TODO
 		// ensure pipelines containing privileged images are only permitted to run by trusted repos
 		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
 			// update error
@@ -543,6 +549,67 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
 		if step.Skip(_step, c.build, c.repo) {
 			continue
+		}
+
+		// LAZY SECRETS
+		// iterate through each secret provided in the pipeline
+		for _, secret := range c.pipeline.Secrets {
+			_log, err := step.LoadLogs(c.init, &c.stepLogs)
+			if err != nil {
+				return err
+			}
+
+			_log.SetData([]byte(""))
+
+			// ignore pulling secrets coming from plugins
+			if !secret.Origin.Empty() {
+				continue
+			}
+
+			// only pull in secrets that are set to be pulled in at the start
+			if strings.EqualFold(secret.Pull, constants.PullAlways) {
+				continue
+			}
+
+			//nolint:contextcheck // ignore passing context
+			s, err := c.secret.pull(secret)
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to pull secrets: %w", err)
+			}
+
+			_log.AppendData([]byte(
+				fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
+					secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
+
+			sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to decode secret: %w", err)
+			}
+
+			c.Logger.Infof("ONE %d service", strings.Index(string(sRaw), "id"))
+			c.Logger.Infof("TWO %d service", strings.Index(string(sRaw), "name"))
+			c.Logger.Infof("HELLO %d service", strings.Index(string(sRaw), "name")-2)
+			c.Logger.Infof("HEY %d service", strings.Index(string(sRaw), "images")-1)
+			c.Logger.Infof("THREE %s service", string(sRaw)[strings.Index(string(sRaw), "name")-2:strings.Index(string(sRaw), "value")-2])
+
+			_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "name")-2 : strings.Index(string(sRaw), "value")-2]))
+			_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "images")-2 : strings.Index(string(sRaw), "created_at")-2]))
+
+			_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
+			if err != nil {
+				return err
+			}
+
+			// add secret to the map
+			c.Secrets[secret.Name] = s
+		}
+
+		// inject secrets for container
+		err := injectSecrets(_step, c.Secrets)
+		if err != nil {
+			return err
 		}
 
 		c.Logger.Infof("planning %s step", _step.Name)

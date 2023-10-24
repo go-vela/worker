@@ -1,6 +1,8 @@
 module github.com/go-vela/worker
 
-go 1.19
+go 1.21
+
+toolchain go1.21.0
 
 replace github.com/go-vela/types => ../types
 
