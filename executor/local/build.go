@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package local
 
@@ -15,6 +13,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
 	"github.com/go-vela/worker/internal/step"
+	"github.com/sirupsen/logrus"
 )
 
 // CreateBuild configures the build for execution.
@@ -275,7 +274,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		if step.Skip(_step, c.build, c.repo) {
+		skip, err := step.Skip(_step, c.build, c.repo)
+		if err != nil {
+			return fmt.Errorf("unable to plan step: %w", c.err)
+		}
+
+		if skip {
+			logrus.Infof("Skipping step %s due to ruleset", _step.Name)
 			continue
 		}
 

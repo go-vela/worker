@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -57,18 +55,10 @@ func (w *Worker) Validate() error {
 		return fmt.Errorf("no worker executor driver provided")
 	}
 
-	// verify the queue configuration
-	//
-	// https://godoc.org/github.com/go-vela/server/queue#Setup.Validate
-	err := w.Config.Queue.Validate()
-	if err != nil {
-		return err
-	}
-
 	// verify the runtime configuration
 	//
 	// https://godoc.org/github.com/go-vela/worker/runtime#Setup.Validate
-	err = w.Config.Runtime.Validate()
+	err := w.Config.Runtime.Validate()
 	if err != nil {
 		return err
 	}

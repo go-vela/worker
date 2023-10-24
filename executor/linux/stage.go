@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package linux
 
@@ -142,13 +140,18 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		if step.Skip(_step, c.build, c.repo) {
+		skip, err := step.Skip(_step, c.build, c.repo)
+		if err != nil {
+			return fmt.Errorf("unable to plan step: %w", c.err)
+		}
+
+		if skip {
 			continue
 		}
 
 		logger.Debugf("planning %s step", _step.Name)
 		// plan the step
-		err := c.PlanStep(ctx, _step)
+		err = c.PlanStep(ctx, _step)
 		if err != nil {
 			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}

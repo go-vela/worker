@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -22,12 +20,10 @@ import (
 // queue and execute Vela pipelines.
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
-
 	// create the errgroup for managing operator subprocesses
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
 	executors, gctx := errgroup.WithContext(ctx)
-
 	// Define the database representation of the worker
 	// and register itself in the database
 	registryWorker := new(library.Worker)
@@ -43,10 +39,49 @@ func (w *Worker) operate(ctx context.Context) error {
 	token := <-w.RegisterToken
 
 	logrus.Trace("received register token")
-
+	logrus.Trace("setting up vela client")
 	// setup the vela client with the token
 	w.VelaClient, err = setupClient(w.Config.Server, token)
 	if err != nil {
+		return err
+	}
+
+	logrus.Trace("getting queue creds")
+
+	// fetching queue credentials using registration token
+	creds, _, err := w.VelaClient.Queue.GetInfo()
+	if err != nil {
+		logrus.Trace("error getting creds")
+
+		return err
+	}
+
+	// set queue address and public key using credentials received from server
+	w.Config.Queue.Address = creds.GetQueueAddress()
+	w.Config.Queue.PublicKey = creds.GetPublicKey()
+
+	// setup the queue
+	//
+	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
+	w.Queue, err = queue.New(w.Config.Queue)
+	if err != nil {
+		logrus.Error("queue setup failed")
+
+		registryWorker.SetStatus(constants.WorkerStatusError)
+		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+
+		if resp == nil {
+			// log the error instead of returning so the operation doesn't block worker deployment
+			logrus.Error("worker status update response is nil")
+		}
+
+		if logErr != nil {
+			if resp != nil {
+				// log the error instead of returning so the operation doesn't block worker deployment
+				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
+			}
+		}
+
 		return err
 	}
 
@@ -61,7 +96,6 @@ func (w *Worker) operate(ctx context.Context) error {
 				// check in attempt loop
 				for {
 					// register or update the worker
-					//nolint:contextcheck // ignore passing context
 					w.CheckedIn, token, err = w.checkIn(registryWorker)
 					// check in failed
 					if err != nil {
@@ -112,27 +146,6 @@ func (w *Worker) operate(ctx context.Context) error {
 			}
 		}
 	})
-
-	// setup the queue
-	//
-	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
-	//nolint:contextcheck // ignore passing context
-	w.Queue, err = queue.New(w.Config.Queue)
-	if err != nil {
-		registryWorker.SetStatus(constants.WorkerStatusError)
-		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
-		if resp == nil {
-			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Error("status update response is nil")
-		}
-		if logErr != nil {
-			if resp != nil {
-				// log the error instead of returning so the operation doesn't block worker deployment
-				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
-			}
-		}
-		return err
-	}
 
 	// iterate till the configured build limit
 	for i := 0; i < w.Config.Build.Limit; i++ {

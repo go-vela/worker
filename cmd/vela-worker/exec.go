@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -43,7 +41,15 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	// capture an item from the queue
 	item, err := w.Queue.Pop(context.Background(), worker.GetRoutes())
 	if err != nil {
-		return err
+		logrus.Errorf("queue pop failed: %v", err)
+
+		// returning immediately on queue pop fail will attempt
+		// to pop in quick succession, so we honor the configured timeout
+		time.Sleep(w.Config.Queue.Timeout)
+
+		// returning nil to avoid unregistering the worker on pop failure;
+		// sometimes queue could be unavailable due to blip or maintenance
+		return nil
 	}
 
 	if item == nil {
@@ -226,7 +232,6 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		if err != nil {
 			logger.Errorf("unable to update worker: %v", err)
 		}
-
 	}()
 
 	// capture the configured build timeout
@@ -297,7 +302,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 }
 
 // getWorkerStatusFromConfig is a helper function
-// to determine the appropriate worker status
+// to determine the appropriate worker status.
 func (w *Worker) getWorkerStatusFromConfig(config *library.Worker) string {
 	switch rb := len(config.GetRunningBuildIDs()); {
 	case rb == 0:

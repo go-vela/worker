@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package linux
 
@@ -1010,104 +1008,104 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			name: "secret with matching push event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "push"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "push"},
 			},
 		},
 		{
 			name: "secret with non-matching push event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 			},
 		},
 		{ // pull_request event checks
 			name: "secret with matching pull_request event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "pull_request"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"pull_request"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "pull_request"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "pull_request"},
 			},
 		},
 		{
 			name: "secret with non-matching pull_request event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "pull_request"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "pull_request"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "pull_request"},
 			},
 		},
 		{ // tag event checks
 			name: "secret with matching tag event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "tag"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "tag"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "tag"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "tag"},
 			},
 		},
 		{
 			name: "secret with non-matching tag event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "tag"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "tag"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "tag"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "tag"},
 			},
 		},
 		{ // deployment event checks
 			name: "secret with matching deployment event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "deployment"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "deployment"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "deployment"},
 			},
 		},
 		{
 			name: "secret with non-matching deployment event ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "deployment"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "deployment"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment"},
 			},
 		},
 
@@ -1116,39 +1114,39 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			name: "secret with matching event ACL and non-matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 			},
 		},
 		{
 			name: "secret with non-matching event ACL and matching image ACL not injected",
 			step: &pipeline.Container{
 				Image:       "centos:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"pull_request"}, Images: &[]string{"centos"}}},
 			want: &pipeline.Container{
 				Image:       "centos:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 			},
 		},
 		{
 			name: "secret with matching event ACL and matching image ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"BUILD_EVENT": "push"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo", "BUILD_EVENT": "push"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "push"},
 			},
 		},
 	}
