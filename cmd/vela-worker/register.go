@@ -20,7 +20,7 @@ func (w *Worker) checkIn(config *library.Worker) (bool, string, error) {
 	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
 	if err != nil {
 		respErr := fmt.Errorf("unable to retrieve worker %s from the server: %w", config.GetHostname(), err)
-		// in the event of server is down, the worker status will not be updated
+		// if server is down, the worker status will not be updated
 		if resp == nil {
 			return false, "", respErr
 		}
