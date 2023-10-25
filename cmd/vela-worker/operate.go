@@ -165,7 +165,7 @@ func (w *Worker) operate(ctx context.Context) error {
 				// do not pull from queue unless queue setup is done and connected
 				if !w.QueueCheckIn {
 					time.Sleep(5 * time.Second)
-					logrus.Info("queue ping fails, skipping queue read")
+					logrus.Info("queue ping failed, skipping queue read")
 					continue
 				}
 				select {
