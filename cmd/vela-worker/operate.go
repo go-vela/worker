@@ -4,12 +4,11 @@ package main
 
 import (
 	"context"
-	"github.com/go-vela/server/queue"
 	"time"
 
+	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
-
 	"github.com/sirupsen/logrus"
 
 	"golang.org/x/sync/errgroup"
