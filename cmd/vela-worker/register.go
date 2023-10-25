@@ -37,7 +37,7 @@ func (w *Worker) checkIn(config *library.Worker) (bool, string, error) {
 
 	tkn, _, err := w.VelaClient.Worker.RefreshAuth(config.GetHostname())
 	if err != nil {
-		// set to error as check in fails
+		// set to error when check in fails
 		w.updateWorkerStatus(config, constants.WorkerStatusError)
 		return false, "", fmt.Errorf("unable to refresh auth for worker %s on the server: %w", config.GetHostname(), err)
 	}
