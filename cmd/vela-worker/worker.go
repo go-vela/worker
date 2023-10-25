@@ -68,7 +68,7 @@ type (
 		VelaClient           *vela.Client
 		RegisterToken        chan string
 		CheckedIn            bool
-		QueueCheckIn         bool
+		QueueCheckedIn       bool
 		RunningBuildIDs      []string
 		RunningBuildIDsMutex sync.Mutex
 	}

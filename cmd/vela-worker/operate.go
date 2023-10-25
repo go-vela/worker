@@ -51,6 +51,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	creds, _, err := w.VelaClient.Queue.GetInfo()
 	if err != nil {
 		logrus.Trace("error getting creds")
+		return err
 	}
 
 	// set queue address and public key using credentials received from server
@@ -112,7 +113,7 @@ func (w *Worker) operate(ctx context.Context) error {
 
 						continue
 					}
-					w.QueueCheckIn, err = w.queueCheckIn(gctx, registryWorker)
+					w.QueueCheckedIn, err = w.queueCheckIn(gctx, registryWorker)
 					if err != nil {
 						// queue check in failed, retry
 						logrus.Errorf("unable to ping queue %v", err)
@@ -163,7 +164,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					continue
 				}
 				// do not pull from queue unless queue setup is done and connected
-				if !w.QueueCheckIn {
+				if !w.QueueCheckedIn {
 					time.Sleep(5 * time.Second)
 					logrus.Info("queue ping failed, skipping queue read")
 					continue
