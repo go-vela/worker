@@ -154,6 +154,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	if err != nil {
 		_step.SetStatus(constants.StatusError)
 		_step.SetError(err.Error())
+
 		return err
 	}
 
