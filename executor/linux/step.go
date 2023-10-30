@@ -240,7 +240,6 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
 		_log.SetData(append(existingLog.GetData(), data...))
 
-		logger.Tracef("HELPME %s", append(existingLog.GetData(), data...))
 		// mask secrets in the log data
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
@@ -311,7 +310,6 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 					_log.MaskData(secretValues)
 
 					logger.Debug("appending logs")
-					c.Logger.Infof("HELPING %s\n", _log)
 					// send API call to append the logs for the step
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogStep.UpdateStep
@@ -319,11 +317,6 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 					if err != nil {
 						logger.Error(err)
 					}
-
-					c.Logger.Infof("HELPING2 %s\n", _log)
-					c.Logger.Infof("HELPING3 %s\n", logs)
-					help := string(_log.GetData()) + logs.String()
-					c.Logger.Infof("HELPING3 %s\n", help)
 
 					// flush the buffer of logs
 					logs.Reset()
