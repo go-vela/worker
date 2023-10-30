@@ -152,6 +152,10 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// run the runtime container
 	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
 	if err != nil {
+		// set step status to error and step error
+		_step.SetStatus(constants.StatusError)
+		_step.SetError(err.Error())
+
 		return err
 	}
 
