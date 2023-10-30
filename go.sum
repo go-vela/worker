@@ -156,6 +156,8 @@ github.com/go-vela/server v0.21.1-0.20231017135815-bb35e76f6056 h1:TqLmvWRU3sqfl
 github.com/go-vela/server v0.21.1-0.20231017135815-bb35e76f6056/go.mod h1:SFAAje/TsPxW+9iDo38CotLX0ralvPRLxbaS9fffT+A=
 github.com/go-vela/types v0.21.1-0.20231012142227-0c0b890487af h1:qiP6pXFDyPDDP+hy8zY+nhmoWv9aoQrrnNmfAAT6yCA=
 github.com/go-vela/types v0.21.1-0.20231012142227-0c0b890487af/go.mod h1:Jn8K28uj7mACc55fkFgaIzL0q45iXydOFGEeoSeHUtQ=
+github.com/go-vela/types v0.21.1-0.20231024201126-19101a5b1346 h1:8VqRJ02KcAxV+gHuxLzuPuNaf7EOE/zfBomEV+UPj/E=
+github.com/go-vela/types v0.21.1-0.20231024201126-19101a5b1346/go.mod h1:Jn8K28uj7mACc55fkFgaIzL0q45iXydOFGEeoSeHUtQ=
 github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
 github.com/goccy/go-json v0.10.2/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
