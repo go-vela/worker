@@ -101,5 +101,10 @@ func (w *Worker) updateWorkerStatus(config *library.Worker, status string) {
 			logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v",
 				resp.StatusCode, config.GetHostname(), logErr)
 		}
+		if resp == nil {
+			// log the error instead of returning so the operation doesn't block worker deployment
+			logrus.Errorf("worker status update response is nil, unable to update worker %s status with the server: %v",
+				config.GetHostname(), logErr)
+		}
 	}
 }
