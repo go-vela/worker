@@ -423,7 +423,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// ensure pipelines containing privileged images are only permitted to run by trusted repos
 		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
-			// update error
+			// update error including privileged image
 			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted. privileged image: %s", privImage)
 
 			// update the init log with image info
