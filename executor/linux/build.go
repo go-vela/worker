@@ -165,6 +165,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			continue
 		}
 
+		c.Logger.Infof("pulling secret %s", secret.Name)
 		// only pull in secrets that are set to be pulled in at the start
 		if strings.EqualFold(secret.Pull, constants.SecretPullStep) {
 			c.Logger.Infof("SecretPullBuild")
@@ -427,7 +428,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 		}
 
-		// TODO
 		// ensure pipelines containing privileged images are only permitted to run by trusted repos
 		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
 			// update error
@@ -543,6 +543,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 				continue
 			}
 
+			c.Logger.Infof("pulling secret %s", secret.Name)
 			// only pull in secrets that are set to be pulled in at the start
 			if strings.EqualFold(secret.Pull, constants.SecretPullBuild) {
 				continue
