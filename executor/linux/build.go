@@ -165,7 +165,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.Logger.Infof("pulling secret %s", secret.Name)
+		c.Logger.Infof("pulling secret: %s", secret.Name)
 		// only pull in secrets that are set to be pulled in at the start
 		if strings.EqualFold(secret.Pull, constants.SecretPullStep) {
 			c.Logger.Infof("SecretPullBuild")
