@@ -165,7 +165,6 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.Logger.Infof("pulling secret: %s", secret.Name)
 		// only pull in secrets that are set to be pulled in at the start
 		if strings.EqualFold(secret.Pull, constants.SecretPullStep) {
 			c.Logger.Infof("SecretPullBuild")
@@ -174,6 +173,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 					secret.Name)))
 			continue
 		}
+		c.Logger.Infof("pulling secret: %s", secret.Name)
 
 		//nolint:contextcheck // ignore passing context
 		s, err := c.secret.pull(secret)
@@ -549,11 +549,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 				continue
 			}
 
-			c.Logger.Infof("pulling secret %s", secret.Name)
 			// only pull in secrets that are set to be pulled in at the start
 			if strings.EqualFold(secret.Pull, constants.SecretPullBuild) {
 				continue
 			}
+			c.Logger.Infof("pulling secret %s", secret.Name)
 
 			//nolint:contextcheck // ignore passing context
 			s, err := c.secret.pull(secret)
