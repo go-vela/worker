@@ -535,14 +535,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
+		_log, err := step.LoadLogs(c.init, &c.stepLogs)
+		_log.SetData([]byte(""))
+
 		// iterate through each secret provided in the pipeline
 		for _, secret := range c.pipeline.Secrets {
-			_log, err := step.LoadLogs(c.init, &c.stepLogs)
 			if err != nil {
 				return err
 			}
-
-			_log.SetData([]byte(""))
 
 			// ignore pulling secrets coming from plugins
 			if !secret.Origin.Empty() {
