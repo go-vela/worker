@@ -370,7 +370,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// assume no privileged images are in use
 		containsPrivilegedImages := false
-		privImage := []string{""}
+		privImage := []string{}
 
 		// verify all pipeline containers
 		for _, container := range containers {
