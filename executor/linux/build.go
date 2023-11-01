@@ -192,7 +192,13 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to decode secret: %w", err)
 		}
 
-		_log.AppendData(append(sRaw, "\n"...))
+		if (strings.Index(string(sRaw), "name")-2) < 0 || (strings.Index(string(sRaw), "value")-2) < 0 || (strings.Index(string(sRaw), "images")-2) < 0 || (strings.Index(string(sRaw), "created_at")-2) < 0 {
+			_log.AppendData(append(sRaw, "\n"...))
+		} else {
+			_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "name")-2 : strings.Index(string(sRaw), "value")-2]))
+			_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "images")-2 : strings.Index(string(sRaw), "created_at")-4]))
+			_log.AppendData([]byte("\n"))
+		}
 
 		// add secret to the map
 		c.Secrets[secret.Name] = s
@@ -566,8 +572,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 				return fmt.Errorf("unable to decode secret: %w", err)
 			}
 
-			_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "name")-2 : strings.Index(string(sRaw), "value")-2]))
-			_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "images")-2 : strings.Index(string(sRaw), "created_at")-2]))
+			if (strings.Index(string(sRaw), "name")-2) < 0 || (strings.Index(string(sRaw), "value")-2) < 0 || (strings.Index(string(sRaw), "images")-2) < 0 || (strings.Index(string(sRaw), "created_at")-2) < 0 {
+				_log.AppendData(append(sRaw, "\n"...))
+			} else {
+				_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "name")-2 : strings.Index(string(sRaw), "value")-2]))
+				_log.AppendData([]byte(string(sRaw)[strings.Index(string(sRaw), "images")-2 : strings.Index(string(sRaw), "created_at")-4]))
+				_log.AppendData([]byte("\n"))
+			}
 
 			_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
 			if err != nil {
