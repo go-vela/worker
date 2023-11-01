@@ -212,7 +212,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		w.RunningBuildIDsMutex.Lock()
 
 		for i, v := range w.RunningBuildIDs {
-			if v == strconv.Itoa(item.Build.GetNumber()) {
+			if v == strconv.FormatInt(item.Build.GetID(), 10) {
 				w.RunningBuildIDs = append(w.RunningBuildIDs[:i], w.RunningBuildIDs[i+1:]...)
 			}
 		}
