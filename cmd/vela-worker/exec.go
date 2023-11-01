@@ -106,7 +106,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	// lock and append the build to the RunningBuildIDs list
 	w.RunningBuildIDsMutex.Lock()
 
-	w.RunningBuildIDs = append(w.RunningBuildIDs, strconv.Itoa(item.Build.GetNumber()))
+	w.RunningBuildIDs = append(w.RunningBuildIDs, strconv.Itoa(item.Build.GetID()))
 
 	config.SetRunningBuildIDs(w.RunningBuildIDs)
 
