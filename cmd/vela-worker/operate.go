@@ -6,9 +6,9 @@ import (
 	"context"
 	"time"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 
 	"github.com/sirupsen/logrus"
 
@@ -26,7 +26,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	executors, gctx := errgroup.WithContext(ctx)
 	// Define the database representation of the worker
 	// and register itself in the database
-	registryWorker := new(library.Worker)
+	registryWorker := new(api.Worker)
 	registryWorker.SetHostname(w.Config.API.Address.Hostname())
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetRoutes(w.Config.Queue.Routes)

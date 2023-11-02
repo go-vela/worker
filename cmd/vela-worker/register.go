@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"net/http"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/sirupsen/logrus"
 )
 
 // checkIn is a helper function to phone home to the server.
-func (w *Worker) checkIn(config *library.Worker) (bool, string, error) {
+func (w *Worker) checkIn(config *api.Worker) (bool, string, error) {
 	// check to see if the worker already exists in the database
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())
 
@@ -42,7 +42,7 @@ func (w *Worker) checkIn(config *library.Worker) (bool, string, error) {
 }
 
 // register is a helper function to register the worker with the server.
-func (w *Worker) register(config *library.Worker) (bool, string, error) {
+func (w *Worker) register(config *api.Worker) (bool, string, error) {
 	logrus.Infof("worker %s not found, registering it with the server", config.GetHostname())
 
 	config.SetStatus(constants.WorkerStatusIdle)

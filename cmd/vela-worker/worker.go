@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -68,7 +69,7 @@ type (
 		VelaClient           *vela.Client
 		RegisterToken        chan string
 		CheckedIn            bool
-		RunningBuildIDs      []string
+		RunningBuilds        []*library.Build
 		RunningBuildIDsMutex sync.Mutex
 	}
 )
