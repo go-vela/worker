@@ -37,7 +37,6 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// send API call to update the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
-	//nolint:contextcheck // ignore passing context
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
@@ -174,7 +173,6 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 		c.Logger.Infof("pulling secret: %s", secret.Name)
 
-		//nolint:contextcheck // ignore passing context
 		s, err := c.secret.pull(secret)
 		if err != nil {
 			c.err = err
@@ -481,6 +479,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 }
 
 // ExecBuild runs a pipeline for a build.
+//
+//nolint:contextcheck // ignore passing context
 func (c *client) ExecBuild(ctx context.Context) error {
 	defer func() {
 		// Exec* calls are responsible for sending StreamRequest messages.
@@ -551,7 +551,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 			c.Logger.Infof("pulling secret %s", secret.Name)
 
-			//nolint:contextcheck // ignore passing context
 			s, err := c.secret.pull(secret)
 			if err != nil {
 				c.err = err
