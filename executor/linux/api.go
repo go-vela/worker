@@ -45,6 +45,8 @@ func (c *client) GetRepo() (*library.Repo, error) {
 }
 
 // CancelBuild cancels the current build in execution.
+//
+//nolint:funlen // process of going through steps/services/stages is verbose and could be funcitonalized
 func (c *client) CancelBuild() (*library.Build, error) {
 	// get the current build from the client
 	b, err := c.GetBuild()

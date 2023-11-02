@@ -480,7 +480,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 // ExecBuild runs a pipeline for a build.
 //
-//nolint:contextcheck // ignore passing context
+//nolint:funlen
 func (c *client) ExecBuild(ctx context.Context) error {
 	defer func() {
 		// Exec* calls are responsible for sending StreamRequest messages.
