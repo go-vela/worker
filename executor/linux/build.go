@@ -370,6 +370,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// assume no privileged images are in use
 		containsPrivilegedImages := false
+		privImages := []string{}
 
 		// verify all pipeline containers
 		for _, container := range containers {
@@ -410,6 +411,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 				if privileged {
 					// pipeline contains at least one privileged image
 					containsPrivilegedImages = privileged
+					privImages = append(privImages, container.Image)
 				}
 			}
 
@@ -421,8 +423,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// ensure pipelines containing privileged images are only permitted to run by trusted repos
 		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
-			// update error
-			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted")
+			// update error including privileged image
+			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted. privileged image: %v", privImages)
 
 			// update the init log with image info
 			//

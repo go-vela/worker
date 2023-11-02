@@ -9,7 +9,6 @@ import (
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
-
 	"github.com/sirupsen/logrus"
 
 	"golang.org/x/sync/errgroup"
@@ -47,12 +46,10 @@ func (w *Worker) operate(ctx context.Context) error {
 	}
 
 	logrus.Trace("getting queue creds")
-
 	// fetching queue credentials using registration token
 	creds, _, err := w.VelaClient.Queue.GetInfo()
 	if err != nil {
 		logrus.Trace("error getting creds")
-
 		return err
 	}
 
@@ -66,23 +63,8 @@ func (w *Worker) operate(ctx context.Context) error {
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		logrus.Error("queue setup failed")
-
-		registryWorker.SetStatus(constants.WorkerStatusError)
-		_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
-
-		if resp == nil {
-			// log the error instead of returning so the operation doesn't block worker deployment
-			logrus.Error("worker status update response is nil")
-		}
-
-		if logErr != nil {
-			if resp != nil {
-				// log the error instead of returning so the operation doesn't block worker deployment
-				logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
-			}
-		}
-
-		return err
+		// set to error as queue setup fails
+		w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
 	}
 
 	// spawn goroutine for phoning home
@@ -130,6 +112,15 @@ func (w *Worker) operate(ctx context.Context) error {
 
 						continue
 					}
+					w.QueueCheckedIn, err = w.queueCheckIn(gctx, registryWorker)
+					if err != nil {
+						// queue check in failed, retry
+						logrus.Errorf("unable to ping queue %v", err)
+						logrus.Info("retrying check-in...")
+
+						time.Sleep(5 * time.Second)
+						continue
+					}
 
 					// successful check in breaks the loop
 					break
@@ -169,6 +160,12 @@ func (w *Worker) operate(ctx context.Context) error {
 				if !w.CheckedIn {
 					time.Sleep(5 * time.Second)
 					logrus.Info("worker not checked in, skipping queue read")
+					continue
+				}
+				// do not pull from queue unless queue setup is done and connected
+				if !w.QueueCheckedIn {
+					time.Sleep(5 * time.Second)
+					logrus.Info("queue ping failed, skipping queue read")
 					continue
 				}
 				select {
