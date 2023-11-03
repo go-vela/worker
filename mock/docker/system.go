@@ -20,7 +20,7 @@ type SystemService struct{}
 // from the Docker daemon.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.DiskUsage
-func (s *SystemService) DiskUsage(ctx context.Context) (types.DiskUsage, error) {
+func (s *SystemService) DiskUsage(ctx context.Context, opts types.DiskUsageOptions) (types.DiskUsage, error) {
 	return types.DiskUsage{}, nil
 }
 

@@ -48,10 +48,10 @@ func (c *ContainerService) ContainerCommit(ctx context.Context, ctn string, opti
 // a mocked call to create a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerCreate
-func (c *ContainerService) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, p *v1.Platform, ctn string) (container.ContainerCreateCreatedBody, error) {
+func (c *ContainerService) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, p *v1.Platform, ctn string) (container.CreateResponse, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			errors.New("no container provided")
 	}
 
@@ -59,7 +59,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	// check if the notfound should be ignored
 	if strings.Contains(ctn, "notfound") &&
 		!strings.Contains(ctn, "ignorenotfound") {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
@@ -68,7 +68,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	// check if the not-found should be ignored
 	if strings.Contains(ctn, "not-found") &&
 		!strings.Contains(ctn, "ignore-not-found") {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
@@ -76,7 +76,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	// check if the image is not found
 	if strings.Contains(config.Image, "notfound") ||
 		strings.Contains(config.Image, "not-found") {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			errdefs.NotFound(
 				//nolint:stylecheck // messsage is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", config.Image),
@@ -84,7 +84,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	}
 
 	// create response object to return
-	response := container.ContainerCreateCreatedBody{
+	response := container.CreateResponse{
 		ID: stringid.GenerateRandomID(),
 	}
 
@@ -355,7 +355,7 @@ func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, opti
 // a mocked call to restart a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerRestart
-func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, timeout *time.Duration) error {
+func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, opts container.StopOptions) error {
 	return nil
 }
 
@@ -401,7 +401,7 @@ func (c *ContainerService) ContainerStats(ctx context.Context, ctn string, strea
 // a mocked call to stop a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerStop
-func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, timeout *time.Duration) error {
+func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, opts container.StopOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
@@ -446,8 +446,8 @@ func (c *ContainerService) ContainerUpdate(ctx context.Context, ctn string, upda
 // container to finish.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerWait
-func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condition container.WaitCondition) (<-chan container.ContainerWaitOKBody, <-chan error) {
-	ctnCh := make(chan container.ContainerWaitOKBody, 1)
+func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condition container.WaitCondition) (<-chan container.WaitResponse, <-chan error) {
+	ctnCh := make(chan container.WaitResponse, 1)
 	errCh := make(chan error, 1)
 
 	// verify a container was provided
@@ -470,7 +470,7 @@ func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condit
 	// create goroutine for responding to call
 	go func() {
 		// create response object to return
-		response := container.ContainerWaitOKBody{
+		response := container.WaitResponse{
 			StatusCode: 15,
 		}
 

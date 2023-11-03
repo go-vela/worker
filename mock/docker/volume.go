@@ -12,6 +12,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
@@ -26,17 +27,17 @@ type VolumeService struct{}
 // a mocked call to create a Docker volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeCreate
-func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.VolumeCreateBody) (types.Volume, error) {
+func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(options.Name) == 0 {
-		return types.Volume{}, errors.New("no volume provided")
+		return volume.Volume{}, errors.New("no volume provided")
 	}
 
 	// check if the volume is notfound and
 	// check if the notfound should be ignored
 	if strings.Contains(options.Name, "notfound") &&
 		!strings.Contains(options.Name, "ignorenotfound") {
-		return types.Volume{},
+		return volume.Volume{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
 	}
@@ -45,13 +46,13 @@ func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.VolumeC
 	// check if the not-found should be ignored
 	if strings.Contains(options.Name, "not-found") &&
 		!strings.Contains(options.Name, "ignore-not-found") {
-		return types.Volume{},
+		return volume.Volume{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
 	}
 
 	// create response object to return
-	response := types.Volume{
+	response := volume.Volume{
 		CreatedAt:  time.Now().String(),
 		Driver:     options.Driver,
 		Labels:     options.Labels,
@@ -68,28 +69,28 @@ func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.VolumeC
 // a mocked call to inspect a Docker volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeInspect
-func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (types.Volume, error) {
+func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
-		return types.Volume{}, errors.New("no volume provided")
+		return volume.Volume{}, errors.New("no volume provided")
 	}
 
 	// check if the volume is notfound
 	if strings.Contains(volumeID, "notfound") {
-		return types.Volume{},
+		return volume.Volume{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
 	if strings.Contains(volumeID, "not-found") {
-		return types.Volume{},
+		return volume.Volume{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// create response object to return
-	response := types.Volume{
+	response := volume.Volume{
 		CreatedAt:  time.Now().String(),
 		Driver:     "local",
 		Mountpoint: fmt.Sprintf("/var/lib/docker/volumes/%s/_data", stringid.GenerateRandomID()),
@@ -105,28 +106,28 @@ func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (typ
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeInspectWithRaw
-func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID string) (types.Volume, []byte, error) {
+func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID string) (volume.Volume, []byte, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
-		return types.Volume{}, nil, errors.New("no volume provided")
+		return volume.Volume{}, nil, errors.New("no volume provided")
 	}
 
 	// check if the volume is notfound
 	if strings.Contains(volumeID, "notfound") {
-		return types.Volume{}, nil,
+		return volume.Volume{}, nil,
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
 	if strings.Contains(volumeID, "not-found") {
-		return types.Volume{}, nil,
+		return volume.Volume{}, nil,
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// create response object to return
-	response := types.Volume{
+	response := volume.Volume{
 		CreatedAt:  time.Now().String(),
 		Driver:     "local",
 		Mountpoint: fmt.Sprintf("/var/lib/docker/volumes/%s/_data", stringid.GenerateRandomID()),
@@ -137,7 +138,7 @@ func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID strin
 	// marshal response into raw bytes
 	b, err := json.Marshal(response)
 	if err != nil {
-		return types.Volume{}, nil, err
+		return volume.Volume{}, nil, err
 	}
 
 	return response, b, nil
@@ -147,8 +148,8 @@ func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID strin
 // a mocked call to list Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeList
-func (v *VolumeService) VolumeList(ctx context.Context, filter filters.Args) (volume.VolumeListOKBody, error) {
-	return volume.VolumeListOKBody{}, nil
+func (v *VolumeService) VolumeList(ctx context.Context, opts volume.ListOptions) (volume.ListResponse, error) {
+	return volume.ListResponse{}, nil
 }
 
 // VolumeRemove is a helper function to simulate
@@ -170,6 +171,14 @@ func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force
 // https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumesPrune
 func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Args) (types.VolumesPruneReport, error) {
 	return types.VolumesPruneReport{}, nil
+}
+
+// VolumesUpdate is a helper function to simulate
+// a mocked call to update Docker volumes.
+//
+// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumesUpdate
+func (v *VolumeService) VolumeUpdate(ctx context.Context, volumeID string, version swarm.Version, options volume.UpdateOptions) error {
+	return nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
