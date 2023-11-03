@@ -173,7 +173,6 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		//nolint:contextcheck // ignore passing context
 		_, _, err = s.client.Vela.Step.Update(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
 			s.client.Logger.Errorf("unable to upload init state: %v", err)
@@ -185,7 +184,6 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 
 // pull defines a function that pulls the secrets from the server for a given pipeline.
 func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
-	//nolint:staticcheck // reports the value is never used but we return it
 	_secret := new(library.Secret)
 
 	switch secret.Type {
@@ -313,7 +311,6 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 			// send API call to append the logs for the init step
 			//
 			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-			//nolint:contextcheck // ignore passing context
 			_, err = s.client.Vela.Log.UpdateStep(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
 			if err != nil {
 				return err
