@@ -82,7 +82,6 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	// send API call to update the service
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#SvcService.Update
-	//nolint:contextcheck // ignore passing context
 	_service, _, err = c.Vela.Svc.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service)
 	if err != nil {
 		return err
@@ -104,7 +103,6 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	// send API call to capture the service log
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.GetService
-	//nolint:contextcheck // ignore passing context
 	_log, _, err := c.Vela.Log.GetService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service.GetNumber())
 	if err != nil {
 		return err
@@ -154,8 +152,6 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 }
 
 // StreamService tails the output for a service.
-//
-//nolint:funlen // ignore function length
 func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with service metadata
 	//
@@ -204,7 +200,6 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		// send API call to update the logs for the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
-		//nolint:contextcheck // ignore passing context
 		_, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
