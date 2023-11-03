@@ -117,7 +117,7 @@ func (s *Setup) Validate() error {
 			for _, configCap := range s.DropCapabilities {
 				valid := false
 
-				for _, validCap := range caps.GetAllCapabilities() {
+				for _, validCap := range caps.DefaultCapabilities() {
 					if strings.EqualFold(configCap, validCap) {
 						valid = true
 						break
