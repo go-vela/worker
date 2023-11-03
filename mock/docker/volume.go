@@ -26,7 +26,7 @@ type VolumeService struct{}
 // VolumeCreate is a helper function to simulate
 // a mocked call to create a Docker volume.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeCreate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeCreate
 func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(options.Name) == 0 {
@@ -68,7 +68,7 @@ func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateO
 // VolumeInspect is a helper function to simulate
 // a mocked call to inspect a Docker volume.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeInspect
+// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspect
 func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
@@ -105,7 +105,7 @@ func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (vol
 // a mocked call to inspect a Docker volume and return
 // the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspectWithRaw
 func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID string) (volume.Volume, []byte, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
@@ -147,7 +147,7 @@ func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID strin
 // VolumeList is a helper function to simulate
 // a mocked call to list Docker volumes.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeList
 func (v *VolumeService) VolumeList(ctx context.Context, opts volume.ListOptions) (volume.ListResponse, error) {
 	return volume.ListResponse{}, nil
 }
@@ -155,7 +155,7 @@ func (v *VolumeService) VolumeList(ctx context.Context, opts volume.ListOptions)
 // VolumeRemove is a helper function to simulate
 // a mocked call to remove Docker a volume.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumeRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeRemove
 func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force bool) error {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
@@ -168,7 +168,7 @@ func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force
 // VolumesPrune is a helper function to simulate
 // a mocked call to prune Docker volumes.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumesPrune
+// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumesPrune
 func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Args) (types.VolumesPruneReport, error) {
 	return types.VolumesPruneReport{}, nil
 }
@@ -176,7 +176,7 @@ func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Ar
 // VolumesUpdate is a helper function to simulate
 // a mocked call to update Docker volumes.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.VolumesUpdate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeUpdate
 func (v *VolumeService) VolumeUpdate(ctx context.Context, volumeID string, version swarm.Version, options volume.UpdateOptions) error {
 	return nil
 }
@@ -187,5 +187,5 @@ func (v *VolumeService) VolumeUpdate(ctx context.Context, volumeID string, versi
 // VolumeService satisfies the VolumeAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#VolumeAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#VolumeAPIClient
 var _ client.VolumeAPIClient = (*VolumeService)(nil)

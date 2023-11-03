@@ -19,7 +19,7 @@ type SystemService struct{}
 // a mocked call to capture the data usage
 // from the Docker daemon.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.DiskUsage
+// https://pkg.go.dev/github.com/docker/docker/client#Client.DiskUsage
 func (s *SystemService) DiskUsage(ctx context.Context, opts types.DiskUsageOptions) (types.DiskUsage, error) {
 	return types.DiskUsage{}, nil
 }
@@ -28,7 +28,7 @@ func (s *SystemService) DiskUsage(ctx context.Context, opts types.DiskUsageOptio
 // a mocked call to capture the events
 // from the Docker daemon.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.Events
+// https://pkg.go.dev/github.com/docker/docker/client#Client.Events
 func (s *SystemService) Events(ctx context.Context, options types.EventsOptions) (<-chan events.Message, <-chan error) {
 	return nil, nil
 }
@@ -37,7 +37,7 @@ func (s *SystemService) Events(ctx context.Context, options types.EventsOptions)
 // a mocked call to capture the system
 // information from the Docker daemon.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.Info
+// https://pkg.go.dev/github.com/docker/docker/client#Client.Info
 func (s *SystemService) Info(ctx context.Context) (types.Info, error) {
 	return types.Info{}, nil
 }
@@ -46,7 +46,7 @@ func (s *SystemService) Info(ctx context.Context) (types.Info, error) {
 // a mocked call to ping the Docker
 // daemon and return version information.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.Ping
+// https://pkg.go.dev/github.com/docker/docker/client#Client.Ping
 func (s *SystemService) Ping(ctx context.Context) (types.Ping, error) {
 	return types.Ping{}, nil
 }
@@ -55,7 +55,7 @@ func (s *SystemService) Ping(ctx context.Context) (types.Ping, error) {
 // a mocked call to authenticate the Docker
 // daemon against a Docker registry.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.RegistryLogin
+// https://pkg.go.dev/github.com/docker/docker/client#Client.RegistryLogin
 func (s *SystemService) RegistryLogin(ctx context.Context, auth types.AuthConfig) (registry.AuthenticateOKBody, error) {
 	return registry.AuthenticateOKBody{}, nil
 }
@@ -66,5 +66,5 @@ func (s *SystemService) RegistryLogin(ctx context.Context, auth types.AuthConfig
 // SystemService satisfies the SystemAPIClient interface that
 // the Docker client expects.
 //
-// hhttps://pkg.go.dev/github.com/docker/docker/client?tab=doc#SystemAPIClient
+// hhttps://pkg.go.dev/github.com/docker/docker/client#SystemAPIClient
 var _ client.NetworkAPIClient = (*NetworkService)(nil)

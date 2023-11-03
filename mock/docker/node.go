@@ -18,7 +18,7 @@ type NodeService struct{}
 // a mocked call to inspect a node for a Docker swarm
 // cluster and return the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NodeInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NodeInspectWithRaw
 func (n *NodeService) NodeInspectWithRaw(ctx context.Context, nodeID string) (swarm.Node, []byte, error) {
 	return swarm.Node{}, nil, nil
 }
@@ -27,7 +27,7 @@ func (n *NodeService) NodeInspectWithRaw(ctx context.Context, nodeID string) (sw
 // a mocked call to list the nodes for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NodeList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NodeList
 func (n *NodeService) NodeList(ctx context.Context, options types.NodeListOptions) ([]swarm.Node, error) {
 	return nil, nil
 }
@@ -36,7 +36,7 @@ func (n *NodeService) NodeList(ctx context.Context, options types.NodeListOption
 // a mocked call to remove a node from a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NodeRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NodeRemove
 func (n *NodeService) NodeRemove(ctx context.Context, nodeID string, options types.NodeRemoveOptions) error {
 	return nil
 }
@@ -45,7 +45,7 @@ func (n *NodeService) NodeRemove(ctx context.Context, nodeID string, options typ
 // a mocked call to update a node for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NodeUpdate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NodeUpdate
 func (n *NodeService) NodeUpdate(ctx context.Context, nodeID string, version swarm.Version, node swarm.NodeSpec) error {
 	return nil
 }
@@ -56,5 +56,5 @@ func (n *NodeService) NodeUpdate(ctx context.Context, nodeID string, version swa
 // NodeService satisfies the NodeAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#NodeAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#NodeAPIClient
 var _ client.NodeAPIClient = (*NodeService)(nil)

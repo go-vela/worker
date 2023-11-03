@@ -20,12 +20,12 @@ import (
 func (w *Worker) server() (http.Handler, *tls.Config) {
 	// log a message indicating the setup of the server handlers
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Trace
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Trace
 	logrus.Trace("loading router with server handlers")
 
 	// create the worker router to listen and serve traffic
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#Load
+	// https://pkg.go.dev/github.com/go-vela/worker/router#Load
 	_server := router.Load(
 		middleware.RequestVersion,
 		middleware.ServerAddress(w.Config.Server.Address),
@@ -37,7 +37,7 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 
 	// log a message indicating the start of serving traffic
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Tracef
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Tracef
 	logrus.Tracef("serving traffic on %s", w.Config.API.Address.Port())
 
 	// if running with HTTPS, check certs are provided and run with TLS.
@@ -84,6 +84,6 @@ func (w *Worker) server() (http.Handler, *tls.Config) {
 	}
 
 	// else serve over http
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Run
+	// https://pkg.go.dev/github.com/gin-gonic/gin#Engine.Run
 	return _server, nil
 }

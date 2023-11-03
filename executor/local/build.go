@@ -299,7 +299,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// create an error group with the context for each stage
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	stages, stageCtx := errgroup.WithContext(ctx)
 	// create a map to track the progress of each stage
 	stageMap := new(sync.Map)
@@ -319,7 +319,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		// spawn errgroup routine for the stage
 		//
-		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
+		// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Go
 		stages.Go(func() error {
 			// plan the stage
 			c.err = c.PlanStage(stageCtx, stage, stageMap)
@@ -339,7 +339,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// wait for the stages to complete or return an error
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Wait
 	c.err = stages.Wait()
 	if c.err != nil {
 		return fmt.Errorf("unable to wait for stages: %w", c.err)
@@ -353,7 +353,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 func (c *client) StreamBuild(ctx context.Context) error {
 	// create an error group with the parent context
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	streams, streamCtx := errgroup.WithContext(ctx)
 
 	defer func() {

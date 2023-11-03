@@ -17,12 +17,12 @@ import (
 func RepoHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling repo related requests
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.Group
 	repo := base.Group("/repo")
 	{
 		// add an endpoint for capturing the repo
 		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+		// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 		repo.GET("", api.GetRepo)
 	}
 }

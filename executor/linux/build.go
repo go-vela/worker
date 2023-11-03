@@ -35,7 +35,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	c.Logger.Info("uploading build state")
 	// send API call to update the build
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
 	//nolint:contextcheck // ignore passing context
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
@@ -113,7 +113,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Inspecting runtime network...\n"))
 
 	// inspect the runtime network for the pipeline
@@ -125,7 +125,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with network information
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData(network)
 
 	c.Logger.Info("creating volume")
@@ -137,7 +137,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Inspecting runtime volume...\n"))
 
 	// inspect the runtime volume for the pipeline
@@ -149,12 +149,12 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with volume information
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData(volume)
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing secrets...\n"))
 
 	// iterate through each secret provided in the pipeline
@@ -226,7 +226,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		c.Logger.Infof("uploading %s step logs", c.init.Name)
 		// send API call to update the logs for the step
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
 		_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), c.init.Number, _log)
 		if err != nil {
 			c.Logger.Errorf("unable to upload %s logs: %v", c.init.Name, err)
@@ -235,7 +235,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing service images...\n"))
 
 	// create the services for the pipeline
@@ -260,13 +260,13 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// update the init log with service image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing stage images...\n"))
 
 	// create the stages for the pipeline
@@ -288,7 +288,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing step images...\n"))
 
 	// create the steps for the pipeline
@@ -315,13 +315,13 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// update the init log with step image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing secret images...\n"))
 
 	// create the secrets for the pipeline
@@ -348,7 +348,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// update the init log with secret image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 	// enforce repo.trusted is set for pipelines containing privileged images
@@ -387,7 +387,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 			// update the init log with image info
 			//
-			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
 
 			for _, pattern := range c.privilegedImages {
@@ -399,7 +399,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 					// update the init log with image info
 					//
-					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 					_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
 
 					// return error and destroy the build
@@ -415,7 +415,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 			// update the init log with image info
 			//
-			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 		}
 
@@ -426,7 +426,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 			// update the init log with image info
 			//
-			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
 
 			// return error and destroy the build
@@ -445,7 +445,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// update the init log with progress
 		// (an empty value allows the runtime to opt out of providing this)
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(buildOutput)
 	}
 
@@ -457,7 +457,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Executing secret images...\n"))
 
 	c.Logger.Info("executing secret images")
@@ -537,7 +537,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// create an error group with the context for each stage
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	stages, stageCtx := errgroup.WithContext(ctx)
 
 	// create a map to track the progress of each stage
@@ -558,7 +558,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		// spawn errgroup routine for the stage
 		//
-		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
+		// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Go
 		stages.Go(func() error {
 			c.Logger.Infof("planning %s stage", stage.Name)
 			// plan the stage
@@ -581,7 +581,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	c.Logger.Debug("waiting for stages completion")
 	// wait for the stages to complete or return an error
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Wait
 	c.err = stages.Wait()
 	if c.err != nil {
 		return fmt.Errorf("unable to wait for stages: %w", c.err)
@@ -600,7 +600,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 
 	// create an error group with the parent context
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	streams, streamCtx := errgroup.WithContext(delayedCtx)
 
 	defer func() {
@@ -639,7 +639,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 			streams.Go(func() error {
 				// update engine logger with step metadata
 				//
-				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+				// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 				logger := c.Logger.WithField(req.Key, req.Container.Name)
 
 				logger.Debugf("streaming %s container %s", req.Key, req.Container.ID)

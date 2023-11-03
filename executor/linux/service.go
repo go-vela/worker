@@ -21,7 +21,7 @@ import (
 func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with service metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
 	logger.Debug("setting up container")
@@ -64,7 +64,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 
 	// update engine logger with service metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
 	// create the library service object
@@ -81,7 +81,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	logger.Debug("uploading service state")
 	// send API call to update the service
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#SvcService.Update
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SvcService.Update
 	//nolint:contextcheck // ignore passing context
 	_service, _, err = c.Vela.Svc.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service)
 	if err != nil {
@@ -103,7 +103,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	logger.Debug("retrieve service log")
 	// send API call to capture the service log
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.GetService
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.GetService
 	//nolint:contextcheck // ignore passing context
 	_log, _, err := c.Vela.Log.GetService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service.GetNumber())
 	if err != nil {
@@ -120,7 +120,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with service metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
 	// load the service from the client
@@ -159,7 +159,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with service metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
 	// load the logs for the service from the client
@@ -197,13 +197,13 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 
 		// overwrite the existing log with all bytes
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.SetData
 		_log.SetData(data)
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the service
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
 		//nolint:contextcheck // ignore passing context
 		_, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
@@ -257,13 +257,13 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 
 					// update the existing log with the new bytes
 					//
-					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 					_log.AppendData(logs.Bytes())
 
 					logger.Debug("appending logs")
 					// send API call to append the logs for the service
 					//
-					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
+					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
 					_, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 					if err != nil {
 						logger.Error(err)
@@ -304,7 +304,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with service metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
 	// load the service from the client

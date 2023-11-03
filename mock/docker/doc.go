@@ -2,7 +2,7 @@
 
 // Package docker provides a mock for using the Docker API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc
+// https://pkg.go.dev/github.com/docker/docker/client
 //
 // Usage:
 //

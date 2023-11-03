@@ -68,7 +68,7 @@ func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus
 	if l == nil {
 		// create new logger
 		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+		// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 		l = logrus.NewEntry(logrus.StandardLogger())
 	}
 
@@ -78,7 +78,7 @@ func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus
 
 		// send API call to update the service
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#SvcService.Update
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SvcService.Update
 		_, _, err := c.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
 		if err != nil {
 			l.Errorf("unable to upload service snapshot: %v", err)

@@ -28,7 +28,7 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 	//   * https://kubernetes.io/docs/concepts/workloads/pods/pod/
 	//   * https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#HostAlias
+	// https://pkg.go.dev/k8s.io/api/core/v1#HostAlias
 	network := v1.HostAlias{
 		IP:        "127.0.0.1",
 		Hostnames: []string{},
@@ -76,7 +76,7 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 
 	// add the network definition to the pod spec
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
+	// https://pkg.go.dev/k8s.io/api/core/v1#PodSpec
 	c.Pod.Spec.HostAliases = append(c.Pod.Spec.HostAliases, network)
 
 	return nil
@@ -112,7 +112,7 @@ func (c *client) RemoveNetwork(ctx context.Context, b *pipeline.Build) error {
 
 	// remove the network definition from the pod spec
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
+	// https://pkg.go.dev/k8s.io/api/core/v1#PodSpec
 	c.Pod.Spec.HostAliases = []v1.HostAlias{}
 
 	return nil

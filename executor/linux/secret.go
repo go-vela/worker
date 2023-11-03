@@ -37,7 +37,7 @@ var (
 func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with secret metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := s.client.Logger.WithField("secret", ctn.Name)
 
 	ctn.Environment["VELA_DISTRIBUTION"] = s.client.build.GetDistribution()
@@ -74,7 +74,7 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container) error {
 func (s *secretSvc) destroy(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with secret metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := s.client.Logger.WithField("secret", ctn.Name)
 
 	logger.Debug("inspecting container")
@@ -108,7 +108,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		s.client.Logger.Infof("uploading %s step state", _init.GetName())
 		// send API call to update the build
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#StepService.Update
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
 		_, _, err = s.client.Vela.Step.Update(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
 			s.client.Logger.Errorf("unable to upload init state: %v", err)
@@ -124,7 +124,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 
 		// update engine logger with secret metadata
 		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+		// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 		logger := s.client.Logger.WithField("secret", _secret.Origin.Name)
 
 		logger.Debug("running container")
@@ -172,7 +172,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 
 		// send API call to update the build
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#StepService.Update
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
 		//nolint:contextcheck // ignore passing context
 		_, _, err = s.client.Vela.Step.Update(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
@@ -198,7 +198,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 
 		// send API call to capture the org secret
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#SecretService.Get
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, "*", key)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
@@ -215,7 +215,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 
 		// send API call to capture the repo secret
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#SecretService.Get
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, repo, key)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
@@ -232,7 +232,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 
 		// send API call to capture the repo secret
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#SecretService.Get
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, team, key)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
@@ -257,7 +257,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 
 	// update engine logger with secret metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := s.client.Logger.WithField("secret", ctn.Name)
 
 	// create new buffer for uploading logs
@@ -271,13 +271,13 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 
 		// update the existing log with the last bytes
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(logs.Bytes())
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the service
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateService
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
 		_, err = s.client.Vela.Log.UpdateStep(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
@@ -306,13 +306,13 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 
 			// update the existing log with the new bytes
 			//
-			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData(logs.Bytes())
 
 			logger.Debug("appending logs")
 			// send API call to append the logs for the init step
 			//
-			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
+			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
 			//nolint:contextcheck // ignore passing context
 			_, err = s.client.Vela.Log.UpdateStep(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
 			if err != nil {

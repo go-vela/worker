@@ -14,7 +14,7 @@ import (
 func (w *Worker) Validate() error {
 	// log a message indicating the configuration verification
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Info
 	logrus.Info("validating worker configuration")
 
 	// check that hostname was properly populated

@@ -12,7 +12,7 @@ import (
 func Parse(_image string) string {
 	// parse the image provided into a fully qualified canonical reference
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime/internal/image?tab=doc#ParseWithError
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime/internal/image#ParseWithError
 	_canonical, err := ParseWithError(_image)
 	if err != nil {
 		return _image
@@ -29,7 +29,7 @@ func ParseWithError(_image string) (string, error) {
 	// parse the image provided into a
 	// named, fully qualified reference
 	//
-	// https://pkg.go.dev/github.com/docker/distribution/reference?tab=doc#ParseAnyReference
+	// https://pkg.go.dev/github.com/docker/distribution/reference#ParseAnyReference
 	_reference, err := reference.ParseAnyReference(_image)
 	if err != nil {
 		return _image, err
@@ -37,7 +37,7 @@ func ParseWithError(_image string) (string, error) {
 
 	// ensure we have the canonical form of the named reference
 	//
-	// https://pkg.go.dev/github.com/docker/distribution/reference?tab=doc#ParseNamed
+	// https://pkg.go.dev/github.com/docker/distribution/reference#ParseNamed
 	_canonical, err := reference.ParseNamed(_reference.String())
 	if err != nil {
 		return _reference.String(), err
@@ -45,7 +45,7 @@ func ParseWithError(_image string) (string, error) {
 
 	// ensure the canonical reference has a tag
 	//
-	// https://pkg.go.dev/github.com/docker/distribution/reference?tab=doc#TagNameOnly
+	// https://pkg.go.dev/github.com/docker/distribution/reference#TagNameOnly
 	return reference.TagNameOnly(_canonical).String(), nil
 }
 
@@ -56,7 +56,7 @@ func IsPrivilegedImage(image, privileged string) (bool, error) {
 	// parse the image provided into a
 	// named, fully qualified reference
 	//
-	// https://pkg.go.dev/github.com/docker/distribution/reference?tab=doc#ParseAnyReference
+	// https://pkg.go.dev/github.com/docker/distribution/reference#ParseAnyReference
 	_refImg, err := reference.ParseAnyReference(image)
 	if err != nil {
 		return false, err
@@ -64,7 +64,7 @@ func IsPrivilegedImage(image, privileged string) (bool, error) {
 
 	// ensure we have the canonical form of the named reference
 	//
-	// https://pkg.go.dev/github.com/docker/distribution/reference?tab=doc#ParseNamed
+	// https://pkg.go.dev/github.com/docker/distribution/reference#ParseNamed
 	_canonical, err := reference.ParseNamed(_refImg.String())
 	if err != nil {
 		return false, err

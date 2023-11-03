@@ -13,7 +13,7 @@ import (
 // Flags represents all supported command line
 // interface (CLI) flags for the executor.
 //
-// https://pkg.go.dev/github.com/urfave/cli?tab=doc#Flag
+// https://pkg.go.dev/github.com/urfave/cli#Flag
 var Flags = []cli.Flag{
 	// Executor Flags
 
