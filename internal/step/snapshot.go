@@ -18,6 +18,7 @@ import (
 func Snapshot(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Step) {
 	// check if the build is not in a canceled status or error status
 	logrus.Debugf("Snapshot s: %s %s", s.GetName(), s.GetStatus())
+
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) &&
 		!strings.EqualFold(s.GetStatus(), constants.StatusError) {
 		// check if the container is running in headless mode

@@ -3,7 +3,7 @@
 package image
 
 import (
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 )
 
 // Parse digests the provided image into a fully

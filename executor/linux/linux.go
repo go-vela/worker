@@ -51,6 +51,7 @@ type (
 	}
 
 	svc struct {
+		//nolint:structcheck // false positive
 		client *client
 	}
 )

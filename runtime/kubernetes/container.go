@@ -70,7 +70,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
+func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
 	// parse image from step
 	_image, err := image.ParseWithError(ctn.Image)

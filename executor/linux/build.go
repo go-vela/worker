@@ -417,6 +417,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 				if privileged {
 					// pipeline contains at least one privileged image
 					containsPrivilegedImages = privileged
+
 					privImages = append(privImages, container.Image)
 				}
 			}
@@ -480,7 +481,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 // ExecBuild runs a pipeline for a build.
 //
-//nolint:funlen
+//nolint:funlen // refactor candidate
 func (c *client) ExecBuild(ctx context.Context) error {
 	defer func() {
 		// Exec* calls are responsible for sending StreamRequest messages.
