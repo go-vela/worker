@@ -549,7 +549,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 				// lazy loading not supported with Kubernetes, log info and continue
 				if strings.EqualFold(constants.DriverKubernetes, c.Runtime.Driver()) {
 					_log.AppendData([]byte(
-						fmt.Sprintf("unable to pull secret %s: lazy loading secrets not availabe with Kubernetes runtime\n", s.Source)))
+						fmt.Sprintf("unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source)))
 
 					_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
 					if err != nil {
