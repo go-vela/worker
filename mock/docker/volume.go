@@ -173,7 +173,7 @@ func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Ar
 	return types.VolumesPruneReport{}, nil
 }
 
-// VolumesUpdate is a helper function to simulate
+// VolumeUpdate is a helper function to simulate
 // a mocked call to update Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeUpdate
