@@ -92,7 +92,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// create logger with extra metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
+	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
 	logger := logrus.WithFields(logrus.Fields{
 		"build":    item.Build.GetNumber(),
 		"executor": w.Config.Executor.Driver,
@@ -147,7 +147,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// setup the runtime
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime#New
 	w.Runtime, err = runtime.New(&runtime.Setup{
 		Logger:           logger,
 		Mock:             w.Config.Mock,

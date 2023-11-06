@@ -17,11 +17,13 @@ import (
 // operate is a helper function to initiate all
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
+//
+//nolint:funlen // refactor candidate
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 	// create the errgroup for managing operator subprocesses
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group
 	executors, gctx := errgroup.WithContext(ctx)
 	// Define the database representation of the worker
 	// and register itself in the database
@@ -59,7 +61,7 @@ func (w *Worker) operate(ctx context.Context) error {
 
 	// setup the queue
 	//
-	// https://pkg.go.dev/github.com/go-vela/server/queue?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/server/queue#New
 	w.Queue, err = queue.New(w.Config.Queue)
 	if err != nil {
 		logrus.Error("queue setup failed")
@@ -147,12 +149,12 @@ func (w *Worker) operate(ctx context.Context) error {
 
 		// log a message indicating the start of an operator thread
 		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
+		// https://pkg.go.dev/github.com/sirupsen/logrus#Info
 		logrus.Infof("thread ID %d listening to queue...", id)
 
 		// spawn errgroup routine for operator subprocess
 		//
-		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
+		// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Go
 		executors.Go(func() error {
 			// create an infinite loop to poll for builds
 			for {
@@ -187,7 +189,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					if err != nil {
 						// log the error received from the executor
 						//
-						// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+						// https://pkg.go.dev/github.com/sirupsen/logrus#Errorf
 						logrus.Errorf("failing worker executor: %v", err)
 						registryWorker.SetStatus(constants.WorkerStatusError)
 						_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
@@ -210,6 +212,6 @@ func (w *Worker) operate(ctx context.Context) error {
 
 	// wait for errors from operator subprocesses
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Wait
 	return executors.Wait()
 }

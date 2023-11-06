@@ -31,7 +31,7 @@ type ContainerService struct{}
 // a mocked call to attach a connection to a
 // Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerAttach
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerAttach
 func (c *ContainerService) ContainerAttach(ctx context.Context, ctn string, options types.ContainerAttachOptions) (types.HijackedResponse, error) {
 	return types.HijackedResponse{}, nil
 }
@@ -39,7 +39,7 @@ func (c *ContainerService) ContainerAttach(ctx context.Context, ctn string, opti
 // ContainerCommit is a helper function to simulate
 // a mocked call to apply changes to a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerCommit
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCommit
 func (c *ContainerService) ContainerCommit(ctx context.Context, ctn string, options types.ContainerCommitOptions) (types.IDResponse, error) {
 	return types.IDResponse{}, nil
 }
@@ -47,11 +47,11 @@ func (c *ContainerService) ContainerCommit(ctx context.Context, ctn string, opti
 // ContainerCreate is a helper function to simulate
 // a mocked call to create a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerCreate
-func (c *ContainerService) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, p *v1.Platform, ctn string) (container.ContainerCreateCreatedBody, error) {
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCreate
+func (c *ContainerService) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, p *v1.Platform, ctn string) (container.CreateResponse, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			errors.New("no container provided")
 	}
 
@@ -59,7 +59,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	// check if the notfound should be ignored
 	if strings.Contains(ctn, "notfound") &&
 		!strings.Contains(ctn, "ignorenotfound") {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
@@ -68,7 +68,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	// check if the not-found should be ignored
 	if strings.Contains(ctn, "not-found") &&
 		!strings.Contains(ctn, "ignore-not-found") {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
@@ -76,7 +76,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	// check if the image is not found
 	if strings.Contains(config.Image, "notfound") ||
 		strings.Contains(config.Image, "not-found") {
-		return container.ContainerCreateCreatedBody{},
+		return container.CreateResponse{},
 			errdefs.NotFound(
 				//nolint:stylecheck // messsage is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", config.Image),
@@ -84,7 +84,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	}
 
 	// create response object to return
-	response := container.ContainerCreateCreatedBody{
+	response := container.CreateResponse{
 		ID: stringid.GenerateRandomID(),
 	}
 
@@ -95,7 +95,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 // a mocked call to show the differences in the
 // filesystem between two Docker containers.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerDiff
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerDiff
 func (c *ContainerService) ContainerDiff(ctx context.Context, ctn string) ([]container.ContainerChangeResponseItem, error) {
 	return nil, nil
 }
@@ -104,7 +104,7 @@ func (c *ContainerService) ContainerDiff(ctx context.Context, ctn string) ([]con
 // a mocked call to attach a connection to a process
 // running inside a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerExecAttach
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecAttach
 func (c *ContainerService) ContainerExecAttach(ctx context.Context, execID string, config types.ExecStartCheck) (types.HijackedResponse, error) {
 	return types.HijackedResponse{}, nil
 }
@@ -113,7 +113,7 @@ func (c *ContainerService) ContainerExecAttach(ctx context.Context, execID strin
 // a mocked call to create a process to run inside a
 // Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerExecCreate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecCreate
 func (c *ContainerService) ContainerExecCreate(ctx context.Context, ctn string, config types.ExecConfig) (types.IDResponse, error) {
 	return types.IDResponse{}, nil
 }
@@ -122,7 +122,7 @@ func (c *ContainerService) ContainerExecCreate(ctx context.Context, ctn string, 
 // a mocked call to inspect a process running inside a
 // Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerExecInspect
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecInspect
 func (c *ContainerService) ContainerExecInspect(ctx context.Context, execID string) (types.ContainerExecInspect, error) {
 	return types.ContainerExecInspect{}, nil
 }
@@ -131,7 +131,7 @@ func (c *ContainerService) ContainerExecInspect(ctx context.Context, execID stri
 // a mocked call to resize the tty for a process running
 // inside a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerExecResize
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecResize
 func (c *ContainerService) ContainerExecResize(ctx context.Context, execID string, options types.ResizeOptions) error {
 	return nil
 }
@@ -140,7 +140,7 @@ func (c *ContainerService) ContainerExecResize(ctx context.Context, execID strin
 // a mocked call to start a process inside a Docker
 // container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerExecStart
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecStart
 func (c *ContainerService) ContainerExecStart(ctx context.Context, execID string, config types.ExecStartCheck) error {
 	return nil
 }
@@ -149,7 +149,7 @@ func (c *ContainerService) ContainerExecStart(ctx context.Context, execID string
 // a mocked call to expore the contents of a Docker
 // container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerExport
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExport
 func (c *ContainerService) ContainerExport(ctx context.Context, ctn string) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -157,7 +157,7 @@ func (c *ContainerService) ContainerExport(ctx context.Context, ctn string) (io.
 // ContainerInspect is a helper function to simulate
 // a mocked call to inspect a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerInspect
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspect
 func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (types.ContainerJSON, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
@@ -202,7 +202,7 @@ func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (ty
 // a mocked call to inspect a Docker container and return
 // the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspectWithRaw
 func (c *ContainerService) ContainerInspectWithRaw(ctx context.Context, ctn string, getSize bool) (types.ContainerJSON, []byte, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
@@ -243,7 +243,7 @@ func (c *ContainerService) ContainerInspectWithRaw(ctx context.Context, ctn stri
 // ContainerKill is a helper function to simulate
 // a mocked call to kill a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerKill
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerKill
 func (c *ContainerService) ContainerKill(ctx context.Context, ctn, signal string) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
@@ -263,7 +263,7 @@ func (c *ContainerService) ContainerKill(ctx context.Context, ctn, signal string
 // ContainerList is a helper function to simulate
 // a mocked call to list Docker containers.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerList
 func (c *ContainerService) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
 	return nil, nil
 }
@@ -272,7 +272,7 @@ func (c *ContainerService) ContainerList(ctx context.Context, options types.Cont
 // a mocked call to capture the logs from a
 // Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerLogs
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerLogs
 func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
@@ -311,7 +311,7 @@ func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, option
 // ContainerPause is a helper function to simulate
 // a mocked call to pause a running Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerPause
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerPause
 func (c *ContainerService) ContainerPause(ctx context.Context, ctn string) error {
 	return nil
 }
@@ -319,7 +319,7 @@ func (c *ContainerService) ContainerPause(ctx context.Context, ctn string) error
 // ContainerRemove is a helper function to simulate
 // a mocked call to remove a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRemove
 func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, options types.ContainerRemoveOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
@@ -338,7 +338,7 @@ func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, opti
 // ContainerRename is a helper function to simulate
 // a mocked call to rename a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerRename
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRename
 func (c *ContainerService) ContainerRename(ctx context.Context, container, newContainerName string) error {
 	return nil
 }
@@ -346,7 +346,7 @@ func (c *ContainerService) ContainerRename(ctx context.Context, container, newCo
 // ContainerResize is a helper function to simulate
 // a mocked call to resize a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerResize
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerResize
 func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, options types.ResizeOptions) error {
 	return nil
 }
@@ -354,15 +354,15 @@ func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, opti
 // ContainerRestart is a helper function to simulate
 // a mocked call to restart a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerRestart
-func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, timeout *time.Duration) error {
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRestart
+func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, opts container.StopOptions) error {
 	return nil
 }
 
 // ContainerStart is a helper function to simulate
 // a mocked call to start a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerStart
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStart
 func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, options types.ContainerStartOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
@@ -383,7 +383,7 @@ func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, optio
 // a mocked call to capture information about a path
 // inside a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerStatPath
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStatPath
 func (c *ContainerService) ContainerStatPath(ctx context.Context, container, path string) (types.ContainerPathStat, error) {
 	return types.ContainerPathStat{}, nil
 }
@@ -392,7 +392,7 @@ func (c *ContainerService) ContainerStatPath(ctx context.Context, container, pat
 // a mocked call to capture information about a
 // Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerStats
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStats
 func (c *ContainerService) ContainerStats(ctx context.Context, ctn string, stream bool) (types.ContainerStats, error) {
 	return types.ContainerStats{}, nil
 }
@@ -400,8 +400,8 @@ func (c *ContainerService) ContainerStats(ctx context.Context, ctn string, strea
 // ContainerStop is a helper function to simulate
 // a mocked call to stop a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerStop
-func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, timeout *time.Duration) error {
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStop
+func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, opts container.StopOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
@@ -420,7 +420,7 @@ func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, timeou
 // a mocked call to show running processes inside
 // a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerTop
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerTop
 func (c *ContainerService) ContainerTop(ctx context.Context, ctn string, arguments []string) (container.ContainerTopOKBody, error) {
 	return container.ContainerTopOKBody{}, nil
 }
@@ -428,7 +428,7 @@ func (c *ContainerService) ContainerTop(ctx context.Context, ctn string, argumen
 // ContainerUnpause is a helper function to simulate
 // a mocked call to unpause a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerUnpause
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerUnpause
 func (c *ContainerService) ContainerUnpause(ctx context.Context, ctn string) error {
 	return nil
 }
@@ -436,7 +436,7 @@ func (c *ContainerService) ContainerUnpause(ctx context.Context, ctn string) err
 // ContainerUpdate is a helper function to simulate
 // a mocked call to update a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerUpdate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerUpdate
 func (c *ContainerService) ContainerUpdate(ctx context.Context, ctn string, updateConfig container.UpdateConfig) (container.ContainerUpdateOKBody, error) {
 	return container.ContainerUpdateOKBody{}, nil
 }
@@ -445,9 +445,9 @@ func (c *ContainerService) ContainerUpdate(ctx context.Context, ctn string, upda
 // a mocked call to wait for a running Docker
 // container to finish.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainerWait
-func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condition container.WaitCondition) (<-chan container.ContainerWaitOKBody, <-chan error) {
-	ctnCh := make(chan container.ContainerWaitOKBody, 1)
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerWait
+func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condition container.WaitCondition) (<-chan container.WaitResponse, <-chan error) {
+	ctnCh := make(chan container.WaitResponse, 1)
 	errCh := make(chan error, 1)
 
 	// verify a container was provided
@@ -470,7 +470,7 @@ func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condit
 	// create goroutine for responding to call
 	go func() {
 		// create response object to return
-		response := container.ContainerWaitOKBody{
+		response := container.WaitResponse{
 			StatusCode: 15,
 		}
 
@@ -490,7 +490,7 @@ func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condit
 // ContainersPrune is a helper function to simulate
 // a mocked call to prune Docker containers.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ContainersPrune
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainersPrune
 func (c *ContainerService) ContainersPrune(ctx context.Context, pruneFilters filters.Args) (types.ContainersPruneReport, error) {
 	return types.ContainersPruneReport{}, nil
 }
@@ -498,7 +498,7 @@ func (c *ContainerService) ContainersPrune(ctx context.Context, pruneFilters fil
 // ContainerStatsOneShot is a helper function to simulate
 // a mocked call to return near realtime stats for a given container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.CopyFromContainer
+// https://pkg.go.dev/github.com/docker/docker/client#Client.CopyFromContainer
 func (c *ContainerService) ContainerStatsOneShot(ctx context.Context, containerID string) (types.ContainerStats, error) {
 	return types.ContainerStats{}, nil
 }
@@ -506,7 +506,7 @@ func (c *ContainerService) ContainerStatsOneShot(ctx context.Context, containerI
 // CopyFromContainer is a helper function to simulate
 // a mocked call to copy content from a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.CopyFromContainer
+// https://pkg.go.dev/github.com/docker/docker/client#Client.CopyFromContainer
 func (c *ContainerService) CopyFromContainer(ctx context.Context, container, srcPath string) (io.ReadCloser, types.ContainerPathStat, error) {
 	return nil, types.ContainerPathStat{}, nil
 }
@@ -514,7 +514,7 @@ func (c *ContainerService) CopyFromContainer(ctx context.Context, container, src
 // CopyToContainer is a helper function to simulate
 // a mocked call to copy content to a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.CopyToContainer
+// https://pkg.go.dev/github.com/docker/docker/client#Client.CopyToContainer
 func (c *ContainerService) CopyToContainer(ctx context.Context, container, path string, content io.Reader, options types.CopyToContainerOptions) error {
 	return nil
 }
@@ -525,5 +525,5 @@ func (c *ContainerService) CopyToContainer(ctx context.Context, container, path 
 // ContainerService satisfies the ContainerAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#ContainerAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#ContainerAPIClient
 var _ client.ContainerAPIClient = (*ContainerService)(nil)

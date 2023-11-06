@@ -24,12 +24,12 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte(fmt.Sprintf("> Preparing step images for stage %s...\n", s.Name)))
 
 	// create the steps for the stage
@@ -53,7 +53,7 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 
 		// update the init log with step image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
@@ -64,7 +64,7 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	logger.Debug("gathering stage dependency tree")
@@ -99,7 +99,7 @@ func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	// close the stage channel at the end
@@ -177,7 +177,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 func (c *client) DestroyStage(ctx context.Context, s *pipeline.Stage) error {
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	var err error

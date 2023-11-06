@@ -18,17 +18,17 @@ import (
 func BuildHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling build related requests
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.Group
 	build := base.Group("/build")
 	{
 		// add an endpoint for capturing the build
 		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+		// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 		build.GET("", api.GetBuild)
 
 		// add an endpoint for canceling the build
 		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.DELETE
+		// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.DELETE
 		build.DELETE("/cancel", api.CancelBuild)
 	}
 }

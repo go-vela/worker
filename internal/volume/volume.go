@@ -21,7 +21,7 @@ type Volume struct {
 func Parse(_volume string) *Volume {
 	// parse the image provided into a fully qualified canonical reference
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime/internal/image?tab=doc#ParseWithError
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime/internal/image#ParseWithError
 	v, err := ParseWithError(_volume)
 	if err != nil {
 		return nil

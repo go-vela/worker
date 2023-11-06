@@ -25,8 +25,8 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// create options for creating volume
 	//
-	// https://godoc.org/github.com/docker/docker/api/types/volume#VolumeCreateBody
-	opts := volume.VolumeCreateBody{
+	// https://godoc.org/github.com/docker/docker/api/types/volume#CreateOptions
+	opts := volume.CreateOptions{
 		Name:   b.ID,
 		Driver: "local",
 	}

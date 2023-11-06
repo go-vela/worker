@@ -80,7 +80,7 @@ func (s *Setup) Linux() (Engine, error) {
 
 	// create new Linux executor engine
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux#New
 	return linux.New(
 		linux.WithBuild(s.Build),
 		linux.WithMaxLogSize(s.MaxLogSize),
@@ -105,7 +105,7 @@ func (s *Setup) Local() (Engine, error) {
 
 	// create new Local executor engine
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/local?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/local#New
 	return local.New(
 		local.WithBuild(s.Build),
 		local.WithHostname(s.Hostname),
