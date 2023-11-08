@@ -590,6 +590,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 		}
 
+		c.Logger.Debug("escaping newlines in secrets")
+		escapeNewlineSecrets(c.Secrets)
+
 		// inject secrets for container
 		err = injectSecrets(_step, c.Secrets)
 		if err != nil {
