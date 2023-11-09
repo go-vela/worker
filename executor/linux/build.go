@@ -587,16 +587,25 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 				// add secret to the map
 				c.Secrets[secret.Name] = s
+
+				c.Logger.Debug("escaping newlines in secrets")
+				escapeNewlineSecrets(c.Secrets)
+
+				// inject secrets for container
+				err = injectSecrets(_step, c.Secrets)
+				if err != nil {
+					return err
+				}
+
+				c.Logger.Debug("substituting container configuration")
+				// substitute container configuration
+				//
+				// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+				err = _step.Substitute()
+				if err != nil {
+					return fmt.Errorf("unable to substitute container configuration")
+				}
 			}
-		}
-
-		c.Logger.Debug("escaping newlines in secrets")
-		escapeNewlineSecrets(c.Secrets)
-
-		// inject secrets for container
-		err = injectSecrets(_step, c.Secrets)
-		if err != nil {
-			return err
 		}
 
 		c.Logger.Infof("planning %s step", _step.Name)
