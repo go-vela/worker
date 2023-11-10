@@ -590,13 +590,27 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 		}
 
-		c.Logger.Debug("escaping newlines in secrets")
-		escapeNewlineSecrets(c.Secrets)
+		// for runtimes other than K8s, we can process secrets at this time.
+		// its mirror location is in CreateStep (executor/linux/step.go)
+		if !strings.EqualFold(constants.DriverKubernetes, c.Runtime.Driver()) {
+			c.Logger.Debug("escaping newlines in secrets")
+			escapeNewlineSecrets(c.Secrets)
 
-		// inject secrets for container
-		err = injectSecrets(_step, c.Secrets)
-		if err != nil {
-			return err
+			c.Logger.Debug("injecting secrets")
+			// inject secrets for container
+			err = injectSecrets(_step, c.Secrets)
+			if err != nil {
+				return err
+			}
+
+			c.Logger.Debug("substituting container configuration")
+			// substitute container configuration
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+			err = _step.Substitute()
+			if err != nil {
+				return err
+			}
 		}
 
 		c.Logger.Infof("planning %s step", _step.Name)
