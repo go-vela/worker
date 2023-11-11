@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/internal/build"
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
@@ -194,6 +195,9 @@ func (c *client) PlanBuild(ctx context.Context) error {
 		// add secret to the map
 		c.Secrets[secret.Name] = s
 	}
+
+	// escape newlines in secrets loaded on build_start
+	escapeNewlineSecrets(c.Secrets)
 
 	return nil
 }
@@ -538,6 +542,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		_log.SetData([]byte(""))
 
+		// temporary holder for tracking lazy secrets
+		lazySecrets := make(map[string]*library.Secret)
+
 		// iterate through step secrets
 		for _, s := range _step.Secrets {
 			// iterate through each secret provided in the pipeline
@@ -585,18 +592,39 @@ func (c *client) ExecBuild(ctx context.Context) error {
 					return err
 				}
 
-				// add secret to the map
-				c.Secrets[secret.Name] = s
+				// add secret to the temp map
+				lazySecrets[secret.Name] = s
 			}
 		}
 
-		c.Logger.Debug("escaping newlines in secrets")
-		escapeNewlineSecrets(c.Secrets)
+		// if we had lazy secrets, escape and inject them
+		if len(lazySecrets) > 0 {
+			c.Logger.Debug("escaping newlines in lazy loaded secrets")
+			// escape newlines for secrets loaded on step_start
+			escapeNewlineSecrets(lazySecrets)
 
-		// inject secrets for container
-		err = injectSecrets(_step, c.Secrets)
-		if err != nil {
-			return err
+			c.Logger.Debug("injecting lazy loaded secrets")
+			// inject secrets for container
+			err = injectSecrets(_step, lazySecrets)
+			if err != nil {
+				return err
+			}
+
+			c.Logger.Debug("substituting container configuration after lazy loaded secret injection")
+			// ℹ️ this is a repeat call for substitute which has been
+			// called already in CreateStep (executor/linux/step.go)
+			//
+			// since this method can (inadvertently?) modify secrets
+			// we have to call it again to treat lazy loaded secrets
+			// the same way as regular secrets
+			//
+			// substitute container configuration
+			//
+			// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+			err = _step.Substitute()
+			if err != nil {
+				return err
+			}
 		}
 
 		c.Logger.Infof("planning %s step", _step.Name)
