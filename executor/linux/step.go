@@ -49,9 +49,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
-	logger.Debug("escaping newlines in secrets")
-	escapeNewlineSecrets(c.Secrets)
-
 	logger.Debug("injecting secrets")
 	// inject secrets for container
 	err = injectSecrets(ctn, c.Secrets)
