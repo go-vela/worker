@@ -55,8 +55,12 @@ func (w *Worker) operate(ctx context.Context) error {
 		return err
 	}
 
-	// set queue address and public key using credentials received from server
-	w.Config.Queue.Address = creds.GetQueueAddress()
+	// if an address was given at start up, use that — else use what is returned from server
+	if len(w.Config.Queue.Address) == 0 {
+		w.Config.Queue.Address = creds.GetQueueAddress()
+	}
+
+	// set public key in queue config
 	w.Config.Queue.PublicKey = creds.GetPublicKey()
 
 	// setup the queue
