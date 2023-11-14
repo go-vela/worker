@@ -114,6 +114,7 @@ func run(c *cli.Context) error {
 			},
 			// queue configuration
 			Queue: &queue.Setup{
+				Address: c.String("queue.addr"),
 				Driver:  c.String("queue.driver"),
 				Cluster: c.Bool("queue.cluster"),
 				Routes:  c.StringSlice("queue.routes"),
