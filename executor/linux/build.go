@@ -104,7 +104,13 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#SnapshotInit
-	defer func() { step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, c.repo, _init, _log) }()
+	defer func() {
+		if c.err != nil {
+			_init.SetStatus(constants.StatusFailure)
+		}
+
+		step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, c.repo, _init, _log)
+	}()
 
 	c.Logger.Info("creating network")
 	// create the runtime network for the pipeline
@@ -231,7 +237,13 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer an upload of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
-	defer func() { step.Upload(c.init, c.build, c.Vela, c.Logger, c.repo, _init) }()
+	defer func() {
+		if c.err != nil {
+			_init.SetStatus(constants.StatusFailure)
+		}
+
+		step.Upload(c.init, c.build, c.Vela, c.Logger, c.repo, _init)
+	}()
 
 	defer func() {
 		c.Logger.Infof("uploading %s step logs", c.init.Name)
@@ -266,6 +278,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		image, err := c.Runtime.InspectImage(ctx, s)
 		if err != nil {
 			c.err = err
+
 			return fmt.Errorf("unable to inspect %s service: %w", s.Name, err)
 		}
 
