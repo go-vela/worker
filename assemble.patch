@@ -1,0 +1,71 @@
+diff --git a/cmd/vela-worker/exec.go b/cmd/vela-worker/exec.go
+index 8c69ba6..a26ddd5 100644
+--- a/cmd/vela-worker/exec.go
++++ b/cmd/vela-worker/exec.go
+@@ -268,6 +268,14 @@ func (w *Worker) exec(index int, config *library.Worker) error {
+ 		return nil
+ 	}
+ 
++	logger.Info("assembling build")
++	// assemble the build with the executor
++	err = _executor.AssembleBuild(timeoutCtx)
++	if err != nil {
++		logger.Errorf("unable to assemble build: %v", err)
++		return nil
++	}
++
+ 	// add StreamBuild goroutine to WaitGroup
+ 	wg.Add(1)
+ 
+@@ -282,14 +290,6 @@ func (w *Worker) exec(index int, config *library.Worker) error {
+ 		}
+ 	}()
+ 
+-	logger.Info("assembling build")
+-	// assemble the build with the executor
+-	err = _executor.AssembleBuild(timeoutCtx)
+-	if err != nil {
+-		logger.Errorf("unable to assemble build: %v", err)
+-		return nil
+-	}
+-
+ 	logger.Info("executing build")
+ 	// execute the build with the executor
+ 	err = _executor.ExecBuild(timeoutCtx)
+diff --git a/executor/linux/build.go b/executor/linux/build.go
+index fd25069..47b2e52 100644
+--- a/executor/linux/build.go
++++ b/executor/linux/build.go
+@@ -469,18 +469,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
+ 		return fmt.Errorf("unable to assemble runtime build %s: %w", c.pipeline.ID, c.err)
+ 	}
+ 
+-	// update the init log with progress
+-	//
+-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
+-	_log.AppendData([]byte("> Executing secret images...\n"))
+-
+-	c.Logger.Info("executing secret images")
+-	// execute the secret
+-	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
+-	if c.err != nil {
+-		return fmt.Errorf("unable to execute secret: %w", c.err)
+-	}
+-
+ 	return c.err
+ }
+ 
+@@ -500,6 +488,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
+ 		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
+ 	}()
+ 
++	c.Logger.Info("executing secret images")
++	// execute the secret
++	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
++	if c.err != nil {
++		return fmt.Errorf("unable to execute secret: %w", c.err)
++	}
++
+ 	// execute the services for the pipeline
+ 	for _, _service := range c.pipeline.Services {
+ 		c.Logger.Infof("planning %s service", _service.Name)
