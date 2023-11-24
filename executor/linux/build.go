@@ -469,6 +469,11 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to assemble runtime build %s: %w", c.pipeline.ID, c.err)
 	}
 
+	// update the init log with progress
+	//
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
+	_log.AppendData([]byte("> Executing secret images...\n"))
+
 	return c.err
 }
 
