@@ -487,13 +487,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Executing secret images...\n"))
 
-	c.Logger.Info("executing secret images")
-	// execute the secret
-	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
-	if c.err != nil {
-		return fmt.Errorf("unable to execute secret: %w", c.err)
-	}
-
 	return c.err
 }
 
@@ -512,6 +505,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
 		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
 	}()
+
+	c.Logger.Info("executing secret images")
+	// execute the secret
+	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
+	if c.err != nil {
+		return fmt.Errorf("unable to execute secret: %w", c.err)
+	}
 
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
