@@ -69,19 +69,19 @@ func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]b
 		fmt.Sprintf("$ docker image inspect %s\n", ctn.Image),
 	)
 
+	// check if the container pull policy is on start
+	if strings.EqualFold(ctn.Pull, constants.PullOnStart) || strings.EqualFold(ctn.Pull, constants.PullNever) {
+		return []byte(
+			fmt.Sprintf("skipped for container %s due to pull policy %s\n", ctn.ID, ctn.Pull),
+		), nil
+	}
+
 	// parse image from container
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/image#ParseWithError
 	_image, err := image.ParseWithError(ctn.Image)
 	if err != nil {
 		return output, err
-	}
-
-	// check if the container pull policy is on start
-	if strings.EqualFold(ctn.Pull, constants.PullOnStart) {
-		return []byte(
-			fmt.Sprintf("skipped for container %s due to pull policy %s\n", ctn.ID, ctn.Pull),
-		), nil
 	}
 
 	// send API call to inspect the image

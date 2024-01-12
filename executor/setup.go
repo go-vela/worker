@@ -53,6 +53,8 @@ type Setup struct {
 	// engine used for creating runtime resources
 	Runtime runtime.Engine
 
+	OutputCtn *pipeline.Container
+
 	// Vela Resource Configuration
 
 	// resource for storing build information in Vela
@@ -95,6 +97,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithVelaClient(s.Client),
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
+		linux.WithOutputCtn(s.OutputCtn),
 	)
 }
 

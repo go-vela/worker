@@ -43,6 +43,7 @@ type Engine interface {
 	// InspectContainer defines a function that inspects
 	// the pipeline container.
 	InspectContainer(context.Context, *pipeline.Container) error
+	PollOutputsContainer(context.Context, *pipeline.Container, string) ([]byte, error)
 	// RemoveContainer defines a function that deletes
 	// (kill, remove) the pipeline container.
 	RemoveContainer(context.Context, *pipeline.Container) error
@@ -84,7 +85,7 @@ type Engine interface {
 
 	// CreateVolume defines a function that
 	// creates the pipeline volume.
-	CreateVolume(context.Context, *pipeline.Build) error
+	CreateVolume(context.Context, *pipeline.Build) (string, error)
 	// InspectVolume defines a function that
 	// inspects the pipeline volume.
 	InspectVolume(context.Context, *pipeline.Build) ([]byte, error)

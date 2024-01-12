@@ -20,7 +20,7 @@ import (
 )
 
 // CreateVolume creates the pipeline volume.
-func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
+func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) (string, error) {
 	c.Logger.Tracef("creating volume for pipeline %s", b.ID)
 
 	// create options for creating volume
@@ -34,12 +34,14 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 	// send API call to create the volume
 	//
 	// https://godoc.org/github.com/docker/docker/client#Client.VolumeCreate
-	_, err := c.Docker.VolumeCreate(ctx, opts)
+	v, err := c.Docker.VolumeCreate(ctx, opts)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	logrus.Infof("VOLUME MOUNT LOCATION: %s", v.Mountpoint)
+
+	return v.Mountpoint, nil
 }
 
 // InspectVolume inspects the pipeline volume.

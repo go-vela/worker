@@ -218,6 +218,17 @@ func WithVersion(version string) Opt {
 	}
 }
 
+func WithOutputCtn(ctn *pipeline.Container) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring output container in linux executor client")
+
+		// set the version in the client
+		c.OutputCtn = ctn
+
+		return nil
+	}
+}
+
 // withStreamRequests sets the streamRequests channel in the executor client for Linux
 // (primarily used for tests).
 func withStreamRequests(s chan message.StreamRequest) Opt {

@@ -16,7 +16,7 @@ import (
 )
 
 // CreateVolume creates the pipeline volume.
-func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
+func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) (string, error) {
 	c.Logger.Tracef("creating volume for pipeline %s", b.ID)
 
 	// create the workspace volume for the pod
@@ -85,7 +85,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// TODO: extend c.config.Volumes to include container-specific volumes (container.Volumes)
 
-	return nil
+	return "", nil
 }
 
 // InspectVolume inspects the pipeline volume.

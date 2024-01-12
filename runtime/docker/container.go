@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	"github.com/go-vela/types/constants"
@@ -294,6 +295,32 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	}
 
 	return nil
+}
+
+// PollOutputsContainer
+func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
+	execConfig := types.ExecConfig{
+		Tty:          true,
+		Cmd:          []string{"sh", "-c", fmt.Sprintf("cat %s", path)},
+		AttachStderr: true,
+		AttachStdout: true,
+	}
+
+	responseExec, err := c.Docker.ContainerExecCreate(ctx, ctn.ID, execConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, types.ExecStartCheck{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer hijackedResponse.Close()
+
+	result, _ := io.ReadAll(hijackedResponse.Reader)
+
+	return result, nil
 }
 
 // ctnConfig is a helper function to

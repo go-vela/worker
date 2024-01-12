@@ -108,7 +108,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	fmt.Fprintln(c.stdout, _pattern, string(network))
 
 	// create the runtime volume for the pipeline
-	err = c.Runtime.CreateVolume(ctx, c.pipeline)
+	_, err = c.Runtime.CreateVolume(ctx, c.pipeline)
 	if err != nil {
 		c.err = err
 		return fmt.Errorf("unable to create volume: %w", err)

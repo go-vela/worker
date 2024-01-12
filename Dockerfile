@@ -4,7 +4,7 @@ FROM alpine:3.18.4@sha256:eece025e432126ce23f223450a0326fbebde39cdf496a85d8c0162
 
 RUN apk add --update --no-cache ca-certificates
 
-FROM scratch
+FROM alpine
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 

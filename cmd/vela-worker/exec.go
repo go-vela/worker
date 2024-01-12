@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
@@ -83,9 +84,9 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	}
 
 	// get the build pipeline from the build executable
-	pipeline := new(pipeline.Build)
+	p := new(pipeline.Build)
 
-	err = json.Unmarshal(execBuildExecutable.GetData(), pipeline)
+	err = json.Unmarshal(execBuildExecutable.GetData(), p)
 	if err != nil {
 		return err
 	}
@@ -164,6 +165,13 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		return err
 	}
 
+	outputCtn := &pipeline.Container{
+		ID:          fmt.Sprintf("outputs_%s", p.ID),
+		Detach:      true,
+		Image:       "alpine:latest",
+		Environment: make(map[string]string),
+	}
+
 	// setup the executor
 	//
 	// https://godoc.org/github.com/go-vela/worker/executor#New
@@ -179,10 +187,11 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,
-		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
+		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Repo:                item.Repo,
 		User:                item.User,
 		Version:             v.Semantic(),
+		OutputCtn:           outputCtn,
 	})
 
 	// add the executor to the worker

@@ -69,6 +69,12 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 	return nil
 }
 
+func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
+	c.Logger.Tracef("no-op: removing container %s", ctn.ID)
+
+	return nil, nil
+}
+
 // RunContainer creates and starts the pipeline container.
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)

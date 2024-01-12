@@ -19,15 +19,17 @@ type (
 	// client manages communication with the pipeline resources.
 	client struct {
 		// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
-		Logger   *logrus.Entry
-		Vela     *vela.Client
-		Runtime  runtime.Engine
-		Secrets  map[string]*library.Secret
-		Hostname string
-		Version  string
+		Logger    *logrus.Entry
+		Vela      *vela.Client
+		Runtime   runtime.Engine
+		Secrets   map[string]*library.Secret
+		Hostname  string
+		Version   string
+		OutputCtn *pipeline.Container
 
 		// clients for build actions
-		secret *secretSvc
+		secret  *secretSvc
+		outputs *outputSvc
 
 		// private fields
 		init                *pipeline.Container
@@ -43,6 +45,7 @@ type (
 		serviceLogs         sync.Map
 		steps               sync.Map
 		stepLogs            sync.Map
+		workspacePath       string
 
 		streamRequests chan message.StreamRequest
 
@@ -120,6 +123,7 @@ func New(opts ...Opt) (*client, error) {
 
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}
+	c.outputs = &outputSvc{client: c}
 
 	return c, nil
 }

@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +20,7 @@ import (
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/step"
+	"github.com/sirupsen/logrus"
 )
 
 // CreateBuild configures the build for execution.
@@ -138,7 +140,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	c.Logger.Info("creating volume")
 	// create the runtime volume for the pipeline
-	c.err = c.Runtime.CreateVolume(ctx, c.pipeline)
+	c.workspacePath, c.err = c.Runtime.CreateVolume(ctx, c.pipeline)
 	if c.err != nil {
 		return fmt.Errorf("unable to create volume: %w", c.err)
 	}
@@ -506,11 +508,33 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
 	}()
 
+	var opEnv, maskEnv map[string]string
+
+	// fire up output container to run with the build
+
+	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
+
+	c.err = c.outputs.create(ctx, c.OutputCtn)
+	if c.err != nil {
+		return fmt.Errorf("unable to create outputs container: %w", c.err)
+	}
+
+	c.err = c.outputs.exec(ctx, c.OutputCtn)
+	if c.err != nil {
+		return fmt.Errorf("unable to exec outputs container: %w", c.err)
+	}
+
 	c.Logger.Info("executing secret images")
 	// execute the secret
 	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
 	if c.err != nil {
 		return fmt.Errorf("unable to execute secret: %w", c.err)
+	}
+
+	// poll outputs container for any updates
+	opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+	if c.err != nil {
+		return fmt.Errorf("unable to exec outputs container: %w", c.err)
 	}
 
 	// execute the services for the pipeline
@@ -527,6 +551,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		c.err = c.ExecService(ctx, _service)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute service: %w", c.err)
+		}
+
+		// poll outputs container
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
 	}
 
@@ -714,12 +744,56 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
+		err = _step.MergeEnv(opEnv)
+		if err != nil {
+			return fmt.Errorf("failed to merge environment")
+		}
+
+		err = _step.MergeEnv(maskEnv)
+		if err != nil {
+			return fmt.Errorf("failed to merge mask environment")
+		}
+
+		// add masked outputs to secret map so they can be masked in logs
+		for key := range maskEnv {
+			sec := &pipeline.StepSecret{
+				Target: key,
+			}
+			_step.Secrets = append(_step.Secrets, sec)
+		}
+
+		err = _step.Substitute()
+		if err != nil {
+			return err
+		}
+
 		c.Logger.Infof("executing %s step", _step.Name)
 		// execute the step
 		c.err = c.ExecStep(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute step: %w", c.err)
 		}
+
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
+		files, err := os.ReadDir(c.workspacePath)
+		if err != nil {
+			logrus.Infof("failed to read directory: %s", err)
+		}
+
+		for _, file := range files {
+			logrus.Info(file.Name())
+		}
+
+		dat, err := os.ReadFile(c.workspacePath + constants.WorkspaceMount + "/outputs.env")
+		if err != nil {
+			logrus.Infof("unable to read outputs file: %s", err)
+		}
+
+		logrus.Infof("OUTPUTS ENV: %s", string(dat))
 	}
 
 	// create an error group with the context for each stage
@@ -912,6 +986,12 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		if err != nil {
 			c.Logger.Errorf("unable to destroy secret: %v", err)
 		}
+	}
+
+	// destroy output container
+	err = c.outputs.destroy(ctx, c.OutputCtn)
+	if err != nil {
+		c.Logger.Errorf("unable to destroy output container: %v", err)
 	}
 
 	c.Logger.Info("deleting volume")
