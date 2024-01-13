@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package linux
 
@@ -53,6 +51,7 @@ type (
 	}
 
 	svc struct {
+		//nolint:structcheck // false positive
 		client *client
 	}
 )
@@ -96,12 +95,12 @@ func New(opts ...Opt) (*client, error) {
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
+	// https://pkg.go.dev/github.com/sirupsen/logrus#StandardLogger
 	logger := logrus.StandardLogger()
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+	// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 	c.Logger = logrus.NewEntry(logger)
 
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).

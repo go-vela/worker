@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package linux
 
@@ -26,12 +24,12 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte(fmt.Sprintf("> Preparing step images for stage %s...\n", s.Name)))
 
 	// create the steps for the stage
@@ -55,7 +53,7 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 
 		// update the init log with step image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
@@ -66,7 +64,7 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	logger.Debug("gathering stage dependency tree")
@@ -101,7 +99,7 @@ func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	// close the stage channel at the end
@@ -142,13 +140,18 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		if step.Skip(_step, c.build, c.repo) {
+		skip, err := step.Skip(_step, c.build, c.repo)
+		if err != nil {
+			return fmt.Errorf("unable to plan step: %w", c.err)
+		}
+
+		if skip {
 			continue
 		}
 
 		logger.Debugf("planning %s step", _step.Name)
 		// plan the step
-		err := c.PlanStep(ctx, _step)
+		err = c.PlanStep(ctx, _step)
 		if err != nil {
 			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}
@@ -174,7 +177,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 func (c *client) DestroyStage(ctx context.Context, s *pipeline.Stage) error {
 	// update engine logger with stage metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("stage", s.Name)
 
 	var err error

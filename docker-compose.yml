@@ -1,6 +1,4 @@
-# Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-#
-# Use of this source code is governed by the LICENSE file in this repository.
+# SPDX-License-Identifier: Apache-2.0
 
 version: '3'
 services:
@@ -22,6 +20,7 @@ services:
     environment:
       EXECUTOR_DRIVER: linux
       QUEUE_DRIVER: redis
+      # comment the line below to source Redis address from server
       QUEUE_ADDR: 'redis://redis:6379'
       VELA_BUILD_LIMIT: 1
       VELA_BUILD_TIMEOUT: 30m
@@ -30,7 +29,7 @@ services:
       VELA_RUNTIME_PRIVILEGED_IMAGES: 'target/vela-docker'
       VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS: 'true'
       VELA_SERVER_ADDR: 'http://server:8080'
-      # comment the line below to use registration flow
+      # comment the VELA_SERVER_SECRET line below to use registration flow
       VELA_SERVER_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
       WORKER_ADDR: 'http://worker:8080'
       WORKER_CHECK_IN: 2m
@@ -61,6 +60,7 @@ services:
       DATABASE_ENCRYPTION_KEY: 'C639A572E14D5075C526FDDD43E4ECF6'
       QUEUE_DRIVER: redis
       QUEUE_ADDR: 'redis://redis:6379'
+      QUEUE_PRIVATE_KEY: 'tCIevHOBq6DdN5SSBtteXUusjjd0fOqzk2eyi0DMq04NewmShNKQeUbbp3vkvIckb4pCxc+vxUo+mYf/vzOaSg=='
       SCM_DRIVER: github
       SCM_CONTEXT: 'continuous-integration/vela'
       SECRET_VAULT: 'true'
@@ -71,6 +71,7 @@ services:
       VELA_LOG_LEVEL: trace
       # comment the line below to use registration flow
       VELA_SECRET: 'zB7mrKDTZqNeNTD8z47yG4DHywspAh'
+      QUEUE_PUBLIC_KEY: 'DXsJkoTSkHlG26d75LyHJG+KQsXPr8VKPpmH/78zmko='
       VELA_SERVER_PRIVATE_KEY: 'F534FF2A080E45F38E05DC70752E6787'
       VELA_USER_REFRESH_TOKEN_DURATION: 90m
       VELA_USER_ACCESS_TOKEN_DURATION: 60m
@@ -143,7 +144,7 @@ services:
   #
   # https://www.vaultproject.io/
   vault:
-    image: vault:latest
+    image: hashicorp/vault:latest
     container_name: vault
     command: server -dev
     networks:

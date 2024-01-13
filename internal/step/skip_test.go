@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package step
 
@@ -34,8 +32,8 @@ func TestStep_Skip(t *testing.T) {
 		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
 		Sender:       vela.String("OctoKitty"),
 		Author:       vela.String("OctoKitty"),
-		Branch:       vela.String("master"),
-		Ref:          vela.String("refs/heads/master"),
+		Branch:       vela.String("main"),
+		Ref:          vela.String("refs/heads/main"),
 		BaseRef:      vela.String(""),
 		Host:         vela.String("example.company.com"),
 		Runtime:      vela.String("docker"),
@@ -62,8 +60,8 @@ func TestStep_Skip(t *testing.T) {
 		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
 		Sender:       vela.String("OctoKitty"),
 		Author:       vela.String("OctoKitty"),
-		Branch:       vela.String("master"),
-		Ref:          vela.String("refs/heads/master"),
+		Branch:       vela.String("main"),
+		Ref:          vela.String("refs/heads/main"),
 		BaseRef:      vela.String(""),
 		Host:         vela.String("example.company.com"),
 		Runtime:      vela.String("docker"),
@@ -90,8 +88,8 @@ func TestStep_Skip(t *testing.T) {
 		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
 		Sender:       vela.String("OctoKitty"),
 		Author:       vela.String("OctoKitty"),
-		Branch:       vela.String("master"),
-		Ref:          vela.String("refs/heads/master"),
+		Branch:       vela.String("main"),
+		Ref:          vela.String("refs/heads/main"),
 		BaseRef:      vela.String(""),
 		Host:         vela.String("example.company.com"),
 		Runtime:      vela.String("docker"),
@@ -118,8 +116,36 @@ func TestStep_Skip(t *testing.T) {
 		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
 		Sender:       vela.String("OctoKitty"),
 		Author:       vela.String("OctoKitty"),
-		Branch:       vela.String("master"),
+		Branch:       vela.String("main"),
 		Ref:          vela.String("refs/tags/v1.0.0"),
+		BaseRef:      vela.String(""),
+		Host:         vela.String("example.company.com"),
+		Runtime:      vela.String("docker"),
+		Distribution: vela.String("linux"),
+	}
+
+	_schedule := &library.Build{
+		ID:           vela.Int64(1),
+		Number:       vela.Int(1),
+		Parent:       vela.Int(1),
+		Event:        vela.String("schedule"),
+		EventAction:  vela.String(""),
+		Status:       vela.String("success"),
+		Error:        vela.String(""),
+		Enqueued:     vela.Int64(1563474077),
+		Created:      vela.Int64(1563474076),
+		Started:      vela.Int64(1563474077),
+		Finished:     vela.Int64(0),
+		Deploy:       vela.String(""),
+		Clone:        vela.String("https://github.com/github/octocat.git"),
+		Source:       vela.String("https://github.com/github/octocat/abcdefghi123456789"),
+		Title:        vela.String("push received from https://github.com/github/octocat"),
+		Message:      vela.String("First commit..."),
+		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
+		Sender:       vela.String("OctoKitty"),
+		Author:       vela.String("OctoKitty"),
+		Branch:       vela.String("main"),
+		Ref:          vela.String("refs/heads/main"),
 		BaseRef:      vela.String(""),
 		Host:         vela.String("example.company.com"),
 		Runtime:      vela.String("docker"),
@@ -146,8 +172,8 @@ func TestStep_Skip(t *testing.T) {
 		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
 		Sender:       vela.String("OctoKitty"),
 		Author:       vela.String("OctoKitty"),
-		Branch:       vela.String("master"),
-		Ref:          vela.String("refs/heads/master"),
+		Branch:       vela.String("main"),
+		Ref:          vela.String("refs/heads/main"),
 		BaseRef:      vela.String(""),
 		Host:         vela.String("example.company.com"),
 		Runtime:      vela.String("docker"),
@@ -171,7 +197,7 @@ func TestStep_Skip(t *testing.T) {
 		FullName:    vela.String("github/octocat"),
 		Link:        vela.String("https://github.com/github/octocat"),
 		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("master"),
+		Branch:      vela.String("main"),
 		Timeout:     vela.Int64(60),
 		Visibility:  vela.String("public"),
 		Private:     vela.Bool(false),
@@ -219,6 +245,13 @@ func TestStep_Skip(t *testing.T) {
 			want:      false,
 		},
 		{
+			name:      "schedule",
+			build:     _schedule,
+			container: _container,
+			repo:      _repo,
+			want:      false,
+		},
+		{
 			name:      "tag",
 			build:     _tag,
 			container: _container,
@@ -237,7 +270,10 @@ func TestStep_Skip(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := Skip(test.container, test.build, test.repo)
+			got, err := Skip(test.container, test.build, test.repo)
+			if err != nil {
+				t.Errorf("Skip returned error: %s", err)
+			}
 
 			if got != test.want {
 				t.Errorf("Skip is %v, want %v", got, test.want)

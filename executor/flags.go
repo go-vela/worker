@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package executor
 
@@ -15,7 +13,7 @@ import (
 // Flags represents all supported command line
 // interface (CLI) flags for the executor.
 //
-// https://pkg.go.dev/github.com/urfave/cli?tab=doc#Flag
+// https://pkg.go.dev/github.com/urfave/cli#Flag
 var Flags = []cli.Flag{
 	// Executor Flags
 

@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 // Package router Vela worker
 //
@@ -43,67 +41,67 @@ const (
 func Load(options ...gin.HandlerFunc) *gin.Engine {
 	// create an empty gin engine with no middleware
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#New
+	// https://pkg.go.dev/github.com/gin-gonic/gin#New
 	r := gin.New()
 
 	// attach a middleware that recovers from any panics
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Recovery
+	// https://pkg.go.dev/github.com/gin-gonic/gin#Recovery
 	r.Use(gin.Recovery())
 
 	// attach a middleware that injects the Vela version into the request
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#RequestVersion
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware#RequestVersion
 	r.Use(middleware.RequestVersion)
 
 	// attach a middleware that prevents the client from caching
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#NoCache
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware#NoCache
 	r.Use(middleware.NoCache)
 
 	// attach a middleware capable of handling options requests
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#Options
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware#Options
 	r.Use(middleware.Options)
 
 	// attach a middleware for adding extra security measures
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware?tab=doc#Secure
+	// https://pkg.go.dev/github.com/go-vela/worker/router/middleware#Secure
 	r.Use(middleware.Secure)
 
 	// attach all other provided middleware
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Engine.Use
+	// https://pkg.go.dev/github.com/gin-gonic/gin#Engine.Use
 	r.Use(options...)
 
 	// add an endpoint for reporting the health of the worker
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 	r.GET("/health", api.Health)
 
 	// add an endpoint for reporting metrics for the worker
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 	r.GET("/metrics", gin.WrapH(api.Metrics()))
 
 	// add an endpoint for reporting version information for the worker
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 	r.GET("/version", api.Version)
 
 	// add a collection of endpoints for handling API related requests
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.Group
 	baseAPI := r.Group(base, perm.MustServer())
 	{
 		// add an endpoint for shutting down the worker
 		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.POST
+		// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.POST
 		baseAPI.POST("/shutdown", api.Shutdown)
 
 		// add a collection of endpoints for handling executor related requests
 		//
-		// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#ExecutorHandlers
+		// https://pkg.go.dev/github.com/go-vela/worker/router#ExecutorHandlers
 		ExecutorHandlers(baseAPI)
 	}
 

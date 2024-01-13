@@ -1,10 +1,8 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 // Package docker provides a mock for using the Docker API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc
+// https://pkg.go.dev/github.com/docker/docker/client
 //
 // Usage:
 //

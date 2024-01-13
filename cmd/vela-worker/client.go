@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -16,14 +14,14 @@ func setupClient(s *Server, token string) (*vela.Client, error) {
 
 	// create a new Vela client from the server configuration
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#NewClient
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#NewClient
 	vela, err := vela.NewClient(s.Address, "", nil)
 	if err != nil {
 		return nil, err
 	}
 	// set token for authentication with the server
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#AuthenticationService.SetTokenAuth
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#AuthenticationService.SetTokenAuth
 	vela.Authentication.SetTokenAuth(token)
 
 	return vela, nil

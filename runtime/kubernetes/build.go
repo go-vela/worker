@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package kubernetes
 
@@ -78,7 +76,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 
 	// create the object metadata for the pod
 	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1?tab=doc#ObjectMeta
+	// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta
 	c.Pod.ObjectMeta = metav1.ObjectMeta{
 		Name:        b.ID,
 		Namespace:   c.config.Namespace, // this is used by the podTracker
@@ -102,7 +100,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 
 	// create the restart policy for the pod
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#RestartPolicy
+	// https://pkg.go.dev/k8s.io/api/core/v1#RestartPolicy
 	c.Pod.Spec.RestartPolicy = v1.RestartPolicyNever
 
 	if len(c.PipelinePodTemplate.Spec.DNSPolicy) > 0 {
@@ -231,7 +229,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	c.Logger.Infof("creating pod %s", c.Pod.ObjectMeta.Name)
 	// send API call to create the pod
 	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
+	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1#PodInterface
 	_, err = c.Kubernetes.CoreV1().
 		Pods(c.config.Namespace).
 		Create(ctx, c.Pod, metav1.CreateOptions{})
@@ -272,10 +270,10 @@ func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
 
 	// create options for removing the pod
 	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1?tab=doc#DeleteOptions
+	// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#DeleteOptions
 	opts := metav1.DeleteOptions{
 		GracePeriodSeconds: &period,
-		// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1?tab=doc#DeletionPropagation
+		// https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#DeletionPropagation
 		PropagationPolicy: &policy,
 	}
 

@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package docker
 
@@ -35,7 +33,7 @@ type mock struct {
 // ClientVersion is a helper function to return
 // the version string associated with the mock.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ClientVersion
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ClientVersion
 func (m *mock) ClientVersion() string {
 	return m.Version
 }
@@ -43,7 +41,7 @@ func (m *mock) ClientVersion() string {
 // Close is a helper function to simulate
 // closing the transport client for the mock.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.Close
+// https://pkg.go.dev/github.com/docker/docker/client#Client.Close
 func (m *mock) Close() error {
 	return nil
 }
@@ -97,7 +95,7 @@ func (m *mock) NegotiateAPIVersionPing(types.Ping) {}
 // a mocked call to return information on the
 // Docker client and server host.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ServerVersion
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ServerVersion
 func (m *mock) ServerVersion(ctx context.Context) (types.Version, error) {
 	return types.Version{}, nil
 }
@@ -108,5 +106,5 @@ func (m *mock) ServerVersion(ctx context.Context) (types.Version, error) {
 // that our mock satisfies the Go interface that the
 // Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#CommonAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#CommonAPIClient
 var _ client.CommonAPIClient = (*mock)(nil)

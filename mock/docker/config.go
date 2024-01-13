@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 //nolint:dupl // ignore similar code
 package docker
@@ -56,5 +54,5 @@ func (c *ConfigService) ConfigUpdate(ctx context.Context, id string, version swa
 // ImageService satisfies the ImageAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#ConfigAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#ConfigAPIClient
 var _ client.ConfigAPIClient = (*ConfigService)(nil)

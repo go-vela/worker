@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -29,7 +27,7 @@ func (w *Worker) Start() error {
 	ctx, done := context.WithCancel(context.Background())
 	// create the errgroup for managing worker subprocesses
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group
 	g, gctx := errgroup.WithContext(ctx)
 
 	httpHandler, tlsCfg := w.server()
@@ -74,14 +72,14 @@ func (w *Worker) Start() error {
 			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server
 				//
-				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
+				// https://pkg.go.dev/github.com/sirupsen/logrus#Info
 				logrus.Errorf("failing worker server: %v", err)
 			}
 		} else {
 			if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server
 				//
-				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Info
+				// https://pkg.go.dev/github.com/sirupsen/logrus#Info
 				logrus.Errorf("failing worker server: %v", err)
 			}
 		}
@@ -97,7 +95,7 @@ func (w *Worker) Start() error {
 		if err != nil {
 			// log the error received from the operator
 			//
-			// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Errorf
+			// https://pkg.go.dev/github.com/sirupsen/logrus#Errorf
 			logrus.Errorf("failing worker operator: %v", err)
 			return err
 		}
@@ -107,6 +105,6 @@ func (w *Worker) Start() error {
 
 	// wait for errors from worker subprocesses
 	//
-	// https://pkg.go.dev/gopkg.in/tomb.v2?tab=doc#Tomb.Wait
+	// https://pkg.go.dev/gopkg.in/tomb.v2#Tomb.Wait
 	return g.Wait()
 }

@@ -1,11 +1,10 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
 import (
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -62,12 +61,15 @@ type (
 	// Worker represents all configuration and
 	// system processes for the worker.
 	Worker struct {
-		Config        *Config
-		Executors     map[int]executor.Engine
-		Queue         queue.Service
-		Runtime       runtime.Engine
-		VelaClient    *vela.Client
-		RegisterToken chan string
-		CheckedIn     bool
+		Config               *Config
+		Executors            map[int]executor.Engine
+		Queue                queue.Service
+		Runtime              runtime.Engine
+		VelaClient           *vela.Client
+		RegisterToken        chan string
+		CheckedIn            bool
+		QueueCheckedIn       bool
+		RunningBuildIDs      []string
+		RunningBuildIDsMutex sync.Mutex
 	}
 )

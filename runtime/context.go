@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package runtime
 
@@ -35,7 +33,7 @@ func FromContext(c context.Context) Engine {
 func FromGinContext(c *gin.Context) Engine {
 	// get runtime value from gin.Context
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Context.Get
+	// https://pkg.go.dev/github.com/gin-gonic/gin#Context.Get
 	v, ok := c.Get(key)
 	if !ok {
 		return nil
@@ -62,6 +60,6 @@ func WithContext(c context.Context, e Engine) context.Context {
 func WithGinContext(c *gin.Context, e Engine) {
 	// set the runtime Engine in the gin.Context
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#Context.Set
+	// https://pkg.go.dev/github.com/gin-gonic/gin#Context.Set
 	c.Set(key, e)
 }

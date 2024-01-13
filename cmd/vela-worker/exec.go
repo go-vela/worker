@@ -1,19 +1,22 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/go-vela/types"
+	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,16 +24,32 @@ import (
 // and execute Vela pipelines for the Worker.
 //
 //nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int) error {
+func (w *Worker) exec(index int, config *library.Worker) error {
 	var err error
 
 	// setup the version
 	v := version.New()
 
-	// capture an item from the queue
-	item, err := w.Queue.Pop(context.Background())
+	// get worker from database
+	worker, _, err := w.VelaClient.Worker.Get(w.Config.API.Address.Hostname())
 	if err != nil {
+		logrus.Errorf("unable to retrieve worker from server: %s", err)
+
 		return err
+	}
+
+	// capture an item from the queue
+	item, err := w.Queue.Pop(context.Background(), worker.GetRoutes())
+	if err != nil {
+		logrus.Errorf("queue pop failed: %v", err)
+
+		// returning immediately on queue pop fail will attempt
+		// to pop in quick succession, so we honor the configured timeout
+		time.Sleep(w.Config.Queue.Timeout)
+
+		// returning nil to avoid unregistering the worker on pop failure;
+		// sometimes queue could be unavailable due to blip or maintenance
+		return nil
 	}
 
 	if item == nil {
@@ -57,9 +76,23 @@ func (w *Worker) exec(index int) error {
 		return err
 	}
 
+	// request build executable containing pipeline.Build data using exec client
+	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	if err != nil {
+		return err
+	}
+
+	// get the build pipeline from the build executable
+	pipeline := new(pipeline.Build)
+
+	err = json.Unmarshal(execBuildExecutable.GetData(), pipeline)
+	if err != nil {
+		return err
+	}
+
 	// create logger with extra metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
+	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
 	logger := logrus.WithFields(logrus.Fields{
 		"build":    item.Build.GetNumber(),
 		"executor": w.Config.Executor.Driver,
@@ -70,9 +103,51 @@ func (w *Worker) exec(index int) error {
 		"version":  v.Semantic(),
 	})
 
+	// lock and append the build to the RunningBuildIDs list
+	w.RunningBuildIDsMutex.Lock()
+
+	w.RunningBuildIDs = append(w.RunningBuildIDs, strconv.FormatInt(item.Build.GetID(), 10))
+
+	config.SetRunningBuildIDs(w.RunningBuildIDs)
+
+	w.RunningBuildIDsMutex.Unlock()
+
+	// set worker status
+	updateStatus := w.getWorkerStatusFromConfig(config)
+	config.SetStatus(updateStatus)
+	config.SetLastStatusUpdateAt(time.Now().Unix())
+	config.SetLastBuildStartedAt(time.Now().Unix())
+
+	// update worker in the database
+	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
+	if err != nil {
+		logger.Errorf("unable to update worker: %v", err)
+	}
+
+	// handle stale item queued before a Vela upgrade or downgrade.
+	if item.ItemVersion != types.ItemVersion {
+		// If the ItemVersion is older or newer than what we expect, then it might
+		// not be safe to process the build. Fail the build and loop to the next item.
+		// TODO: Ask the server to re-compile and requeue the build instead of failing it.
+		logrus.Errorf("Failing stale queued build due to wrong item version: want %d, got %d", types.ItemVersion, item.ItemVersion)
+
+		build := item.Build
+		build.SetError("Unable to process stale build (queued before Vela upgrade/downgrade).")
+		build.SetStatus(constants.StatusError)
+		build.SetFinished(time.Now().UTC().Unix())
+
+		_, _, err := execBuildClient.Build.Update(item.Repo.GetOrg(), item.Repo.GetName(), build)
+		if err != nil {
+			logrus.Errorf("Unable to set build status to %s: %s", constants.StatusFailure, err)
+			return err
+		}
+
+		return nil
+	}
+
 	// setup the runtime
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime#New
 	w.Runtime, err = runtime.New(&runtime.Setup{
 		Logger:           logger,
 		Mock:             w.Config.Mock,
@@ -104,7 +179,7 @@ func (w *Worker) exec(index int) error {
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,
-		Pipeline:            item.Pipeline.Sanitize(w.Config.Runtime.Driver),
+		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
 		Repo:                item.Repo,
 		User:                item.User,
 		Version:             v.Semantic(),
@@ -132,6 +207,31 @@ func (w *Worker) exec(index int) error {
 		}
 
 		logger.Info("completed build")
+
+		// lock and remove the build from the RunningBuildIDs list
+		w.RunningBuildIDsMutex.Lock()
+
+		for i, v := range w.RunningBuildIDs {
+			if v == strconv.FormatInt(item.Build.GetID(), 10) {
+				w.RunningBuildIDs = append(w.RunningBuildIDs[:i], w.RunningBuildIDs[i+1:]...)
+			}
+		}
+
+		config.SetRunningBuildIDs(w.RunningBuildIDs)
+
+		w.RunningBuildIDsMutex.Unlock()
+
+		// set worker status
+		updateStatus := w.getWorkerStatusFromConfig(config)
+		config.SetStatus(updateStatus)
+		config.SetLastStatusUpdateAt(time.Now().Unix())
+		config.SetLastBuildFinishedAt(time.Now().Unix())
+
+		// update worker in the database
+		_, _, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
+		if err != nil {
+			logger.Errorf("unable to update worker: %v", err)
+		}
 	}()
 
 	// capture the configured build timeout
@@ -168,6 +268,14 @@ func (w *Worker) exec(index int) error {
 		return nil
 	}
 
+	logger.Info("assembling build")
+	// assemble the build with the executor
+	err = _executor.AssembleBuild(timeoutCtx)
+	if err != nil {
+		logger.Errorf("unable to assemble build: %v", err)
+		return nil
+	}
+
 	// add StreamBuild goroutine to WaitGroup
 	wg.Add(1)
 
@@ -182,14 +290,6 @@ func (w *Worker) exec(index int) error {
 		}
 	}()
 
-	logger.Info("assembling build")
-	// assemble the build with the executor
-	err = _executor.AssembleBuild(timeoutCtx)
-	if err != nil {
-		logger.Errorf("unable to assemble build: %v", err)
-		return nil
-	}
-
 	logger.Info("executing build")
 	// execute the build with the executor
 	err = _executor.ExecBuild(timeoutCtx)
@@ -199,4 +299,19 @@ func (w *Worker) exec(index int) error {
 	}
 
 	return nil
+}
+
+// getWorkerStatusFromConfig is a helper function
+// to determine the appropriate worker status.
+func (w *Worker) getWorkerStatusFromConfig(config *library.Worker) string {
+	switch rb := len(config.GetRunningBuildIDs()); {
+	case rb == 0:
+		return constants.WorkerStatusIdle
+	case rb < w.Config.Build.Limit:
+		return constants.WorkerStatusAvailable
+	case rb == w.Config.Build.Limit:
+		return constants.WorkerStatusBusy
+	default:
+		return constants.WorkerStatusError
+	}
 }

@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package linux
 
@@ -24,7 +22,7 @@ import (
 func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error {
 	// update engine logger with step metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// TODO: remove hardcoded reference
@@ -51,9 +49,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
-	logger.Debug("escaping newlines in secrets")
-	escapeNewlineSecrets(c.Secrets)
-
 	logger.Debug("injecting secrets")
 	// inject secrets for container
 	err = injectSecrets(ctn, c.Secrets)
@@ -79,7 +74,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	// update engine logger with step metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// create the library step object
@@ -90,8 +85,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	logger.Debug("uploading step state")
 	// send API call to update the step
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#StepService.Update
-	//nolint:contextcheck // ignore passing context
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
 	_step, _, err = c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
 	if err != nil {
 		return err
@@ -112,8 +106,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	logger.Debug("retrieve step log")
 	// send API call to capture the step log
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.GetStep
-	//nolint:contextcheck // ignore passing context
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.GetStep
 	_log, _, err := c.Vela.Log.GetStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.GetNumber())
 	if err != nil {
 		return err
@@ -134,7 +127,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	// update engine logger with step metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// load the step from the client
@@ -154,6 +147,10 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// run the runtime container
 	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
 	if err != nil {
+		// set step status to error and step error
+		_step.SetStatus(constants.StatusError)
+		_step.SetError(err.Error())
+
 		return err
 	}
 
@@ -187,8 +184,6 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 }
 
 // StreamStep tails the output for a step.
-//
-//nolint:funlen // ignore function length
 func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
@@ -197,7 +192,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	// update engine logger with step metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// load the logs for the step from the client
@@ -207,6 +202,8 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 	if err != nil {
 		return err
 	}
+
+	existingLog := *_log
 
 	secretValues := getSecretValues(ctn)
 
@@ -237,20 +234,19 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 		// overwrite the existing log with all bytes
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.SetData
-		_log.SetData(data)
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.SetData
+		_log.SetData(append(existingLog.GetData(), data...))
 
 		// mask secrets in the log data
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.MaskData
 		_log.MaskData(secretValues)
 
 		logger.Debug("uploading logs")
 		// send API call to update the logs for the step
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
-		//nolint:contextcheck // ignore passing context
-		_, _, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
+		_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -302,19 +298,18 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 
 					// update the existing log with the new bytes
 					//
-					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 					_log.AppendData(logs.Bytes())
-
 					// mask secrets within the logs before updating database
 					//
-					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.MaskData
+					// https://pkg.go.dev/github.com/go-vela/types/library#Log.MaskData
 					_log.MaskData(secretValues)
 
 					logger.Debug("appending logs")
 					// send API call to append the logs for the step
 					//
-					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogStep.UpdateStep
-					_log, _, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogStep.UpdateStep
+					_, err := c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
 					if err != nil {
 						logger.Error(err)
 					}
@@ -359,7 +354,7 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 
 	// update engine logger with step metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// load the step from the client

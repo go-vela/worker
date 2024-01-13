@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package docker
 
@@ -20,7 +18,7 @@ type PluginService struct{}
 // PluginCreate is a helper function to simulate
 // a mocked call to create a Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginCreate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginCreate
 func (p *PluginService) PluginCreate(ctx context.Context, createContext io.Reader, options types.PluginCreateOptions) error {
 	return nil
 }
@@ -28,7 +26,7 @@ func (p *PluginService) PluginCreate(ctx context.Context, createContext io.Reade
 // PluginDisable is a helper function to simulate
 // a mocked call to disable a Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginDisable
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginDisable
 func (p *PluginService) PluginDisable(ctx context.Context, name string, options types.PluginDisableOptions) error {
 	return nil
 }
@@ -36,7 +34,7 @@ func (p *PluginService) PluginDisable(ctx context.Context, name string, options 
 // PluginEnable is a helper function to simulate
 // a mocked call to enable a Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginEnable
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginEnable
 func (p *PluginService) PluginEnable(ctx context.Context, name string, options types.PluginEnableOptions) error {
 	return nil
 }
@@ -45,7 +43,7 @@ func (p *PluginService) PluginEnable(ctx context.Context, name string, options t
 // a mocked call to inspect a Docker plugin and return
 // the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginInspectWithRaw
 func (p *PluginService) PluginInspectWithRaw(ctx context.Context, name string) (*types.Plugin, []byte, error) {
 	return nil, nil, nil
 }
@@ -53,7 +51,7 @@ func (p *PluginService) PluginInspectWithRaw(ctx context.Context, name string) (
 // PluginInstall is a helper function to simulate
 // a mocked call to install a Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginInstall
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginInstall
 func (p *PluginService) PluginInstall(ctx context.Context, name string, options types.PluginInstallOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -61,7 +59,7 @@ func (p *PluginService) PluginInstall(ctx context.Context, name string, options 
 // PluginList is a helper function to simulate
 // a mocked call to list Docker plugins.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginList
 func (p *PluginService) PluginList(ctx context.Context, filter filters.Args) (types.PluginsListResponse, error) {
 	return types.PluginsListResponse{}, nil
 }
@@ -69,7 +67,7 @@ func (p *PluginService) PluginList(ctx context.Context, filter filters.Args) (ty
 // PluginPush is a helper function to simulate
 // a mocked call to push a Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginPush
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginPush
 func (p *PluginService) PluginPush(ctx context.Context, name string, registryAuth string) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -77,7 +75,7 @@ func (p *PluginService) PluginPush(ctx context.Context, name string, registryAut
 // PluginRemove is a helper function to simulate
 // a mocked call to remove a Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginRemove
 func (p *PluginService) PluginRemove(ctx context.Context, name string, options types.PluginRemoveOptions) error {
 	return nil
 }
@@ -86,7 +84,7 @@ func (p *PluginService) PluginRemove(ctx context.Context, name string, options t
 // a mocked call to update settings for a
 // Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginSet
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginSet
 func (p *PluginService) PluginSet(ctx context.Context, name string, args []string) error {
 	return nil
 }
@@ -94,7 +92,7 @@ func (p *PluginService) PluginSet(ctx context.Context, name string, args []strin
 // PluginUpgrade is a helper function to simulate
 // a mocked call to upgrade a Docker plugin.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.PluginUpgrade
+// https://pkg.go.dev/github.com/docker/docker/client#Client.PluginUpgrade
 func (p *PluginService) PluginUpgrade(ctx context.Context, name string, options types.PluginInstallOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -105,5 +103,5 @@ func (p *PluginService) PluginUpgrade(ctx context.Context, name string, options 
 // PluginService satisfies the PluginAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#PluginAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#PluginAPIClient
 var _ client.PluginAPIClient = (*PluginService)(nil)

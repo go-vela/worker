@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package docker
 
@@ -21,7 +19,7 @@ type ServiceService struct{}
 // a mocked call to create a service for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ServiceCreate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceCreate
 func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options types.ServiceCreateOptions) (types.ServiceCreateResponse, error) {
 	return types.ServiceCreateResponse{}, nil
 }
@@ -30,7 +28,7 @@ func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.Servic
 // a mocked call to inspect a Docker service and return
 // the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ServiceInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceInspectWithRaw
 func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID string, options types.ServiceInspectOptions) (swarm.Service, []byte, error) {
 	return swarm.Service{}, nil, nil
 }
@@ -39,7 +37,7 @@ func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID st
 // a mocked call to list services for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ServiceList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceList
 func (s *ServiceService) ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error) {
 	return nil, nil
 }
@@ -48,7 +46,7 @@ func (s *ServiceService) ServiceList(ctx context.Context, options types.ServiceL
 // a mocked call to capture the logs from a
 // service for a Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ServiceLogs
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceLogs
 func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -57,7 +55,7 @@ func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, opti
 // a mocked call to remove a service for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ServiceRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceRemove
 func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) error {
 	return nil
 }
@@ -66,7 +64,7 @@ func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) er
 // a mocked call to update a service for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ServiceUpdate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceUpdate
 func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options types.ServiceUpdateOptions) (types.ServiceUpdateResponse, error) {
 	return types.ServiceUpdateResponse{}, nil
 }
@@ -75,7 +73,7 @@ func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, ve
 // a mocked call to inspect a task for a Docker swarm
 // cluster and return the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.TaskInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.TaskInspectWithRaw
 func (s *ServiceService) TaskInspectWithRaw(ctx context.Context, taskID string) (swarm.Task, []byte, error) {
 	return swarm.Task{}, nil, nil
 }
@@ -84,7 +82,7 @@ func (s *ServiceService) TaskInspectWithRaw(ctx context.Context, taskID string) 
 // a mocked call to list tasks for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.TaskList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.TaskList
 func (s *ServiceService) TaskList(ctx context.Context, options types.TaskListOptions) ([]swarm.Task, error) {
 	return nil, nil
 }
@@ -102,5 +100,5 @@ func (s *ServiceService) TaskLogs(ctx context.Context, taskID string, options ty
 // ServiceService satisfies the ServiceAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#ServiceAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#ServiceAPIClient
 var _ client.ServiceAPIClient = (*ServiceService)(nil)

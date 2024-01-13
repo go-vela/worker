@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package linux
 
@@ -194,8 +192,8 @@ func testBuild() *library.Build {
 		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
 		Sender:       vela.String("OctoKitty"),
 		Author:       vela.String("OctoKitty"),
-		Branch:       vela.String("master"),
-		Ref:          vela.String("refs/heads/master"),
+		Branch:       vela.String("main"),
+		Ref:          vela.String("refs/heads/main"),
 		BaseRef:      vela.String(""),
 		Host:         vela.String("example.company.com"),
 		Runtime:      vela.String("docker"),
@@ -213,7 +211,7 @@ func testRepo() *library.Repo {
 		FullName:    vela.String("github/octocat"),
 		Link:        vela.String("https://github.com/github/octocat"),
 		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("master"),
+		Branch:      vela.String("main"),
 		Timeout:     vela.Int64(60),
 		Visibility:  vela.String("public"),
 		Private:     vela.Bool(false),

@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package runtime
 
@@ -22,7 +20,7 @@ import (
 func New(s *Setup) (Engine, error) {
 	// validate the setup being provided
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#Setup.Validate
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime#Setup.Validate
 	err := s.Validate()
 	if err != nil {
 		return nil, err
@@ -34,12 +32,12 @@ func New(s *Setup) (Engine, error) {
 	case constants.DriverDocker:
 		// handle the Docker runtime driver being provided
 		//
-		// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#Setup.Docker
+		// https://pkg.go.dev/github.com/go-vela/worker/runtime#Setup.Docker
 		return s.Docker()
 	case constants.DriverKubernetes:
 		// handle the Kubernetes runtime driver being provided
 		//
-		// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#Setup.Kubernetes
+		// https://pkg.go.dev/github.com/go-vela/worker/runtime#Setup.Kubernetes
 		return s.Kubernetes()
 	default:
 		// handle an invalid runtime driver being provided

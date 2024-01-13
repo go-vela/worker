@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package volume
 
@@ -23,7 +21,7 @@ type Volume struct {
 func Parse(_volume string) *Volume {
 	// parse the image provided into a fully qualified canonical reference
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime/internal/image?tab=doc#ParseWithError
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime/internal/image#ParseWithError
 	v, err := ParseWithError(_volume)
 	if err != nil {
 		return nil

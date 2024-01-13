@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package docker
 
@@ -27,7 +25,7 @@ type NetworkService struct{}
 // NetworkConnect is a helper function to simulate
 // a mocked call to connect to a Docker network.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworkConnect
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkConnect
 func (n *NetworkService) NetworkConnect(ctx context.Context, network, container string, config *network.EndpointSettings) error {
 	return nil
 }
@@ -35,7 +33,7 @@ func (n *NetworkService) NetworkConnect(ctx context.Context, network, container 
 // NetworkCreate is a helper function to simulate
 // a mocked call to create a Docker network.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworkCreate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkCreate
 func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options types.NetworkCreate) (types.NetworkCreateResponse, error) {
 	// verify a network was provided
 	if len(name) == 0 {
@@ -71,7 +69,7 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 // NetworkDisconnect is a helper function to simulate
 // a mocked call to disconnect from a Docker network.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworkDisconnect
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkDisconnect
 func (n *NetworkService) NetworkDisconnect(ctx context.Context, network, container string, force bool) error {
 	return nil
 }
@@ -79,7 +77,7 @@ func (n *NetworkService) NetworkDisconnect(ctx context.Context, network, contain
 // NetworkInspect is a helper function to simulate
 // a mocked call to inspect a Docker network.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworkInspect
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspect
 func (n *NetworkService) NetworkInspect(ctx context.Context, network string, options types.NetworkInspectOptions) (types.NetworkResource, error) {
 	// verify a network was provided
 	if len(network) == 0 {
@@ -120,7 +118,7 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, network string, opt
 // a mocked call to inspect a Docker network and return
 // the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworkInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspectWithRaw
 func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, network string, options types.NetworkInspectOptions) (types.NetworkResource, []byte, error) {
 	// verify a network was provided
 	if len(network) == 0 {
@@ -152,7 +150,7 @@ func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, network stri
 // NetworkList is a helper function to simulate
 // a mocked call to list Docker networks.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworkList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkList
 func (n *NetworkService) NetworkList(ctx context.Context, options types.NetworkListOptions) ([]types.NetworkResource, error) {
 	return nil, nil
 }
@@ -160,7 +158,7 @@ func (n *NetworkService) NetworkList(ctx context.Context, options types.NetworkL
 // NetworkRemove is a helper function to simulate
 // a mocked call to remove Docker a network.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworkRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkRemove
 func (n *NetworkService) NetworkRemove(ctx context.Context, network string) error {
 	// verify a network was provided
 	if len(network) == 0 {
@@ -173,7 +171,7 @@ func (n *NetworkService) NetworkRemove(ctx context.Context, network string) erro
 // NetworksPrune is a helper function to simulate
 // a mocked call to prune Docker networks.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.NetworksPrune
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworksPrune
 func (n *NetworkService) NetworksPrune(ctx context.Context, pruneFilter filters.Args) (types.NetworksPruneReport, error) {
 	return types.NetworksPruneReport{}, nil
 }
@@ -184,5 +182,5 @@ func (n *NetworkService) NetworksPrune(ctx context.Context, pruneFilter filters.
 // NetworkService satisfies the NetworkAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#NetworkAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#NetworkAPIClient
 var _ client.NetworkAPIClient = (*NetworkService)(nil)

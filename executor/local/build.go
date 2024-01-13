@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package local
 
@@ -15,6 +13,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
 	"github.com/go-vela/worker/internal/step"
+	"github.com/sirupsen/logrus"
 )
 
 // CreateBuild configures the build for execution.
@@ -275,7 +274,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		if step.Skip(_step, c.build, c.repo) {
+		skip, err := step.Skip(_step, c.build, c.repo)
+		if err != nil {
+			return fmt.Errorf("unable to plan step: %w", c.err)
+		}
+
+		if skip {
+			logrus.Infof("Skipping step %s due to ruleset", _step.Name)
 			continue
 		}
 
@@ -294,7 +299,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// create an error group with the context for each stage
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	stages, stageCtx := errgroup.WithContext(ctx)
 	// create a map to track the progress of each stage
 	stageMap := new(sync.Map)
@@ -314,7 +319,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		// spawn errgroup routine for the stage
 		//
-		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
+		// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Go
 		stages.Go(func() error {
 			// plan the stage
 			c.err = c.PlanStage(stageCtx, stage, stageMap)
@@ -334,7 +339,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// wait for the stages to complete or return an error
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Wait
 	c.err = stages.Wait()
 	if c.err != nil {
 		return fmt.Errorf("unable to wait for stages: %w", c.err)
@@ -348,7 +353,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 func (c *client) StreamBuild(ctx context.Context) error {
 	// create an error group with the parent context
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	streams, streamCtx := errgroup.WithContext(ctx)
 
 	defer func() {

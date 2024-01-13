@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package step
 
@@ -15,10 +13,10 @@ import (
 // Skip creates the ruledata from the build and repository
 // information and returns true if the data does not match
 // the ruleset for the given container.
-func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
+func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) (bool, error) {
 	// check if the container provided is empty
 	if c == nil {
-		return true
+		return true, nil
 	}
 
 	event := b.GetEvent()
@@ -57,8 +55,16 @@ func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) bool {
 		ruledata.Target = b.GetDeploy()
 	}
 
+	// check if the build event is schedule
+	if strings.EqualFold(b.GetEvent(), constants.EventSchedule) {
+		// add schedule target information to ruledata
+		ruledata.Target = b.GetDeploy()
+	}
+
 	// return the inverse of container execute
 	//
 	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Execute
-	return !c.Execute(ruledata)
+	exec, err := c.Execute(ruledata)
+
+	return !exec, err
 }

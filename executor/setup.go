@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package executor
 
@@ -82,7 +80,7 @@ func (s *Setup) Linux() (Engine, error) {
 
 	// create new Linux executor engine
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux#New
 	return linux.New(
 		linux.WithBuild(s.Build),
 		linux.WithMaxLogSize(s.MaxLogSize),
@@ -107,7 +105,7 @@ func (s *Setup) Local() (Engine, error) {
 
 	// create new Local executor engine
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/local?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/local#New
 	return local.New(
 		local.WithBuild(s.Build),
 		local.WithHostname(s.Hostname),

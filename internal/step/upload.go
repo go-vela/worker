@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package step
 
@@ -70,7 +68,7 @@ func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus
 	if l == nil {
 		// create new logger
 		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+		// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 		l = logrus.NewEntry(logrus.StandardLogger())
 	}
 
@@ -80,7 +78,7 @@ func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus
 
 		// send API call to update the step
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#StepService.Update
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
 		_, _, err := c.Step.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
 		if err != nil {
 			l.Errorf("unable to upload final step state: %v", err)

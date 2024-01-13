@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package build
 
@@ -32,7 +30,7 @@ func Snapshot(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *lib
 	if l == nil {
 		// create new logger
 		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+		// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 		l = logrus.NewEntry(logrus.StandardLogger())
 	}
 
@@ -42,7 +40,7 @@ func Snapshot(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *lib
 
 		// send API call to update the build
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
 		_, _, err := c.Build.Update(r.GetOrg(), r.GetName(), b)
 		if err != nil {
 			l.Errorf("unable to upload build snapshot: %v", err)

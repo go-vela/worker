@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package router
 
@@ -24,37 +22,37 @@ import (
 func ExecutorHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling executors related requests
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.Group
 	executors := base.Group("/executors")
 	{
 		// add an endpoint for capturing the executors
 		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+		// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 		executors.GET("", api.GetExecutors)
 
 		// add a collection of endpoints for handling executor related requests
 		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
+		// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.Group
 		executor := executors.Group("/:executor", executor.Establish())
 		{
 			// add an endpoint for capturing a executor
 			//
-			// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+			// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 			executor.GET("", api.GetExecutor)
 
 			// add a collection of endpoints for handling build related requests
 			//
-			// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#BuildHandlers
+			// https://pkg.go.dev/github.com/go-vela/worker/router#BuildHandlers
 			BuildHandlers(executor)
 
 			// add a collection of endpoints for handling pipeline related requests
 			//
-			// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#PipelineHandlers
+			// https://pkg.go.dev/github.com/go-vela/worker/router#PipelineHandlers
 			PipelineHandlers(executor)
 
 			// add a collection of endpoints for handling repo related requests
 			//
-			// https://pkg.go.dev/github.com/go-vela/worker/router?tab=doc#RepoHandlers
+			// https://pkg.go.dev/github.com/go-vela/worker/router#RepoHandlers
 			RepoHandlers(executor)
 		}
 	}

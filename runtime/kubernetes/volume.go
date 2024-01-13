@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package kubernetes
 
@@ -35,7 +33,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 	//   * https://kubernetes.io/docs/concepts/workloads/pods/pod/
 	//   * https://kubernetes.io/docs/concepts/storage/volumes/#emptydir
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#Volume
+	// https://pkg.go.dev/k8s.io/api/core/v1#Volume
 	workspaceVolume := v1.Volume{
 		Name: b.ID,
 		VolumeSource: v1.VolumeSource{
@@ -45,7 +43,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// create the workspace volumeMount for the pod
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#VolumeMount
+	// https://pkg.go.dev/k8s.io/api/core/v1#VolumeMount
 	workspaceVolumeMount := v1.VolumeMount{
 		Name:      b.ID,
 		MountPath: constants.WorkspaceMount,
@@ -53,7 +51,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// add the volume definition to the pod spec
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
+	// https://pkg.go.dev/k8s.io/api/core/v1#PodSpec
 	c.Pod.Spec.Volumes = append(c.Pod.Spec.Volumes, workspaceVolume)
 
 	// save the volumeMount to add to each of the containers in the pod spec later
@@ -120,7 +118,7 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// remove the volume definition from the pod spec
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
+	// https://pkg.go.dev/k8s.io/api/core/v1#PodSpec
 	c.Pod.Spec.Volumes = []v1.Volume{}
 	c.commonVolumeMounts = []v1.VolumeMount{}
 

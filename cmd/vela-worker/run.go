@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -63,7 +61,7 @@ func run(c *cli.Context) error {
 
 	// create a log entry with extra metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
+	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
 	logrus.WithFields(logrus.Fields{
 		"code":     "https://github.com/go-vela/worker/",
 		"docs":     "https://go-vela.github.io/docs/concepts/infrastructure/worker/",
@@ -116,8 +114,8 @@ func run(c *cli.Context) error {
 			},
 			// queue configuration
 			Queue: &queue.Setup{
-				Driver:  c.String("queue.driver"),
 				Address: c.String("queue.addr"),
+				Driver:  c.String("queue.driver"),
 				Cluster: c.Bool("queue.cluster"),
 				Routes:  c.StringSlice("queue.routes"),
 				Timeout: c.Duration("queue.pop.timeout"),
@@ -138,6 +136,8 @@ func run(c *cli.Context) error {
 		Executors: make(map[int]executor.Engine),
 
 		RegisterToken: make(chan string, 1),
+
+		RunningBuildIDs: make([]string, 0),
 	}
 
 	// set the worker address if no flag was provided

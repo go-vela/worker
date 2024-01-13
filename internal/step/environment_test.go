@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package step
 
@@ -37,8 +35,8 @@ func TestStep_Environment(t *testing.T) {
 	b.SetAuthor("OctoKitty")
 	b.SetEmail("OctoKitty@github.com")
 	b.SetLink("https://example.company.com/github/octocat/1")
-	b.SetBranch("master")
-	b.SetRef("refs/heads/master")
+	b.SetBranch("main")
+	b.SetRef("refs/heads/main")
 	b.SetBaseRef("")
 	b.SetHeadRef("changes")
 	b.SetHost("example.company.com")
@@ -62,7 +60,7 @@ func TestStep_Environment(t *testing.T) {
 	r.SetFullName("github/octocat")
 	r.SetLink("https://github.com/github/octocat")
 	r.SetClone("https://github.com/github/octocat.git")
-	r.SetBranch("master")
+	r.SetBranch("main")
 	r.SetTimeout(30)
 	r.SetVisibility("public")
 	r.SetPrivate(false)

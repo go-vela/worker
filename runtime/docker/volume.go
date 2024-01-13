@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Target Brands, Inc. All rights reserved.
-//
-// Use of this source code is governed by the LICENSE file in this repository.
+// SPDX-License-Identifier: Apache-2.0
 
 package docker
 
@@ -27,8 +25,8 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// create options for creating volume
 	//
-	// https://godoc.org/github.com/docker/docker/api/types/volume#VolumeCreateBody
-	opts := volume.VolumeCreateBody{
+	// https://godoc.org/github.com/docker/docker/api/types/volume#CreateOptions
+	opts := volume.CreateOptions{
 		Name:   b.ID,
 		Driver: "local",
 	}
