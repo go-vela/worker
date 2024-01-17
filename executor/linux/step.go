@@ -286,7 +286,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 				return
 			// channel is closed
 			case <-done:
-				logger.Trace("channel closed for polling container logs")
+				logger.Trace("channel closed for polling container logs step")
 
 				// return out of the go routine
 				return
@@ -305,7 +305,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 					// https://pkg.go.dev/github.com/go-vela/types/library#Log.MaskData
 					_log.MaskData(secretValues)
 
-					logger.Debug("appending logs")
+					logger.Debug("appending logs step")
 					// send API call to append the logs for the step
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogStep.UpdateStep
@@ -337,7 +337,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		logs.Write(append(scanner.Bytes(), []byte("\n")...))
 	}
 
-	logger.Info("finished streaming logs")
+	logger.Info("finished streaming logs step")
 
 	// close channel to stop processing logs
 	close(done)

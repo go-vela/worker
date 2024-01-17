@@ -307,7 +307,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData(logs.Bytes())
 
-			logger.Debug("appending logs")
+			logger.Debug("appending logs secret")
 			// send API call to append the logs for the init step
 			//
 			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
@@ -321,7 +321,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 		}
 	}
 
-	logger.Info("finished streaming logs")
+	logger.Info("finished streaming logs secret")
 
 	return scanner.Err()
 }

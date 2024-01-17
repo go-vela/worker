@@ -784,6 +784,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	delayedCtx, cancelStreaming := context2.
 		WithDelayedCancelPropagation(ctx, c.logStreamingTimeout, "streaming", c.Logger)
 	defer cancelStreaming()
+	c.Logger.Infof("CURRENT STATUS at 787is %s", c.build.GetStatus())
 
 	// create an error group with the parent context
 	//
@@ -791,14 +792,21 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	streams, streamCtx := errgroup.WithContext(delayedCtx)
 
 	defer func() {
+		c.Logger.Infof("CURRENT STATUS at 795 is %s", c.build.GetStatus())
 		c.Logger.Trace("waiting for stream functions to return")
-
-		err := streams.Wait()
-		if err != nil {
-			c.Logger.Errorf("error in a stream request, %v", err)
+		if c.build.GetStatus() == constants.StatusSuccess {
+			ctx.Done()
 		}
+		context2.Status = c.build.GetStatus()
 
-		cancelStreaming()
+		//err := streams.Wait()
+		//c.Logger.Infof("CURRENT STATUS at 802 is %s", c.build.GetStatus())
+		//if err != nil {
+		//	c.Logger.Errorf("error in a stream request, %v", err)
+		//}
+
+		c.Logger.Infof("CURRENT STATUS at 807 is %s", c.build.GetStatus())
+		//cancelStreaming()
 		// wait for context to be done before reporting that everything has returned.
 		<-delayedCtx.Done()
 		// there might be one more log message from WithDelayedCancelPropagation
@@ -809,6 +817,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 
 	// allow the runtime to do log/event streaming setup at build-level
 	streams.Go(func() error {
+		c.Logger.Infof("CURRENT STATUS at 814 is %s", c.build.GetStatus())
 		// If needed, the runtime should handle synchronizing with
 		// AssembleBuild which runs concurrently with StreamBuild.
 		return c.Runtime.StreamBuild(streamCtx, c.pipeline)
@@ -828,17 +837,21 @@ func (c *client) StreamBuild(ctx context.Context) error {
 				//
 				// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 				logger := c.Logger.WithField(req.Key, req.Container.Name)
-
+				c.Logger.Infof("CURRENT STATUS at 834 is %s", c.build.GetStatus())
 				logger.Debugf("streaming %s container %s", req.Key, req.Container.ID)
 
 				err := req.Stream(streamCtx, req.Container)
 				if err != nil {
 					logger.Error(err)
 				}
-
+				c.Logger.Infof("CURRENT STATUS at 841 is %s", c.build.GetStatus())
 				return nil
 			})
+
+			c.Logger.Infof("CURRENT STATUS at 845 is %s", c.build.GetStatus())
+
 		case <-delayedCtx.Done():
+			c.Logger.Infof("CURRENT STATUS at 850 is %s", c.build.GetStatus())
 			c.Logger.Debug("not accepting any more stream requests as streaming context is canceled")
 			// build done or canceled
 			return nil
