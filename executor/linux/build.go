@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +19,6 @@ import (
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/step"
-	"github.com/sirupsen/logrus"
 )
 
 // CreateBuild configures the build for execution.
@@ -377,6 +375,13 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
+
+	// create outputs container with a timeout equal to the repo timeout
+	c.err = c.outputs.create(ctx, c.OutputCtn, (int64(60) * c.repo.GetTimeout()))
+	if c.err != nil {
+		return fmt.Errorf("unable to create outputs container: %w", c.err)
+	}
+
 	// enforce repo.trusted is set for pipelines containing privileged images
 	// if not enforced, allow all that exist in the list of runtime privileged images
 	// this configuration is set as an executor flag
@@ -511,13 +516,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	var opEnv, maskEnv map[string]string
 
 	// fire up output container to run with the build
-
 	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
-
-	c.err = c.outputs.create(ctx, c.OutputCtn)
-	if c.err != nil {
-		return fmt.Errorf("unable to create outputs container: %w", c.err)
-	}
 
 	c.err = c.outputs.exec(ctx, c.OutputCtn)
 	if c.err != nil {
@@ -744,11 +743,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
+		// merge env from outputs
 		err = _step.MergeEnv(opEnv)
 		if err != nil {
 			return fmt.Errorf("failed to merge environment")
 		}
 
+		// merge env from masked outputs
 		err = _step.MergeEnv(maskEnv)
 		if err != nil {
 			return fmt.Errorf("failed to merge mask environment")
@@ -762,6 +763,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			_step.Secrets = append(_step.Secrets, sec)
 		}
 
+		// perform any substitution on dynamic variables
 		err = _step.Substitute()
 		if err != nil {
 			return err
@@ -774,26 +776,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to execute step: %w", c.err)
 		}
 
+		// poll outputs
 		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
-
-		files, err := os.ReadDir(c.workspacePath)
-		if err != nil {
-			logrus.Infof("failed to read directory: %s", err)
-		}
-
-		for _, file := range files {
-			logrus.Info(file.Name())
-		}
-
-		dat, err := os.ReadFile(c.workspacePath + constants.WorkspaceMount + "/outputs.env")
-		if err != nil {
-			logrus.Infof("unable to read outputs file: %s", err)
-		}
-
-		logrus.Infof("OUTPUTS ENV: %s", string(dat))
 	}
 
 	// create an error group with the context for each stage

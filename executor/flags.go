@@ -43,4 +43,10 @@ var Flags = []cli.Flag{
 		Usage:    "enforce trusted repo restrictions for privileged images",
 		Value:    true,
 	},
+	&cli.StringFlag{
+		EnvVars:  []string{"VELA_EXECUTOR_OUTPUTS_IMAGE", "EXECUTOR_OUTPUTS_IMAGE"},
+		FilePath: "/vela/executor/outputs_image",
+		Name:     "executor.outputs-image",
+		Usage:    "image used for the outputs container sidecar",
+	},
 }

@@ -24,14 +24,19 @@ echo $ %s
 `
 
 // create configures the outputs plugin for execution.
-func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container) error {
+func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container, timeout int64) error {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return nil
+	}
+
 	// update engine logger with secret metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := o.client.Logger.WithField("outputs", "outputs")
 
 	// generate script from commands
-	script := generateScriptPosix([]string{"sleep 5400"})
+	script := generateScriptPosix([]string{fmt.Sprintf("sleep %d", timeout)})
 
 	// set the entrypoint for the ctn
 	ctn.Entrypoint = []string{"/bin/sh", "-c"}
@@ -61,6 +66,11 @@ func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container) error {
 
 // destroy cleans up secret plugin after execution.
 func (o *outputSvc) destroy(ctx context.Context, ctn *pipeline.Container) error {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return nil
+	}
+
 	// update engine logger with secret metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
@@ -112,6 +122,11 @@ func generateScriptPosix(commands []string) string {
 
 // exec runs a secret plugins for a pipeline.
 func (o *outputSvc) exec(ctx context.Context, _outputs *pipeline.Container) error {
+	// exit if outputs container has not been configured
+	if len(_outputs.Image) == 0 {
+		return nil
+	}
+
 	logrus.Debug("running container")
 	// run the runtime container
 	err := o.client.Runtime.RunContainer(ctx, _outputs, o.client.pipeline)
@@ -131,6 +146,11 @@ func (o *outputSvc) exec(ctx context.Context, _outputs *pipeline.Container) erro
 
 // poll tails the output for a secret plugin.
 func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[string]string, map[string]string, error) {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return nil, nil, nil
+	}
+
 	// update engine logger with secret metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField

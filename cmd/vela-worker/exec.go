@@ -165,12 +165,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		return err
 	}
 
-	outputCtn := &pipeline.Container{
-		ID:          fmt.Sprintf("outputs_%s", p.ID),
-		Detach:      true,
-		Image:       "alpine:latest",
-		Environment: make(map[string]string),
-	}
+	w.Config.Executor.OutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
 	// setup the executor
 	//
@@ -191,7 +186,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		Repo:                item.Repo,
 		User:                item.User,
 		Version:             v.Semantic(),
-		OutputCtn:           outputCtn,
+		OutputCtn:           w.Config.Executor.OutputCtn,
 	})
 
 	// add the executor to the worker
