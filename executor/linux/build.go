@@ -696,6 +696,10 @@ func (c *client) StreamBuild(ctx context.Context) error {
 // into the container right before execution, rather than
 // during build planning. It is only available for the Docker runtime.
 func loadLazySecrets(c *client, _step *pipeline.Container) error {
+	_log := new(library.Log)
+
+	lazySecrets := make(map[string]*library.Secret)
+
 	// this requires a small preface and brief description on
 	// how normal secrets make it into a container:
 	//
@@ -744,10 +748,7 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 	// the same value as they would as regular secrets
 	// and also keep this process isolated to lazy secrets
 	// create a temporary map akin to c.Secrets
-
-	_log := new(library.Log)
-
-	lazySecrets := make(map[string]*library.Secret)
+	// ---- END ----
 
 	// iterate through step secrets
 	for _, s := range _step.Secrets {
