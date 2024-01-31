@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 	"github.com/sirupsen/logrus"
@@ -116,6 +118,18 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
 	if ctn.Name == "init" {
 		return nil
+	}
+
+	// verify step is allowed to run
+	if c.enforceTrustedRepos {
+		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
+		if err != nil {
+			return err
+		}
+
+		if priv && !c.repo.GetTrusted() {
+			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
+		}
 	}
 
 	// update engine logger with step metadata

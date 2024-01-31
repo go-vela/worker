@@ -96,7 +96,7 @@ func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 }
 
 // ExecStage runs a stage.
-func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
+func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, opEnv, maskEnv map[string]string) error {
 	// update engine logger with stage metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
@@ -156,11 +156,41 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}
 
+		// merge env from outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(opEnv)
+
+		// merge env from masked outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(maskEnv)
+
+		// add masked outputs to secret map so they can be masked in logs
+		for key := range maskEnv {
+			sec := &pipeline.StepSecret{
+				Target: key,
+			}
+			_step.Secrets = append(_step.Secrets, sec)
+		}
+
+		// perform any substitution on dynamic variables
+		err = _step.Substitute()
+		if err != nil {
+			return err
+		}
+
 		logger.Infof("executing %s step", _step.Name)
 		// execute the step
 		err = c.ExecStep(ctx, _step)
 		if err != nil {
 			return fmt.Errorf("unable to exec step %s: %w", _step.Name, err)
+		}
+
+		// poll outputs
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
 
 		// failed steps within the stage should set the stop value to true unless

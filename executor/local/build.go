@@ -108,7 +108,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	fmt.Fprintln(c.stdout, _pattern, string(network))
 
 	// create the runtime volume for the pipeline
-	_, err = c.Runtime.CreateVolume(ctx, c.pipeline)
+	err = c.Runtime.CreateVolume(ctx, c.pipeline)
 	if err != nil {
 		c.err = err
 		return fmt.Errorf("unable to create volume: %w", err)
@@ -328,7 +328,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 
 			// execute the stage
-			c.err = c.ExecStage(stageCtx, stage, stageMap)
+			c.err = c.ExecStage(stageCtx, stage, stageMap, nil, nil)
 			if c.err != nil {
 				return fmt.Errorf("unable to execute stage: %w", c.err)
 			}

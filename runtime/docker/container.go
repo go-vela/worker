@@ -139,21 +139,19 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	}
 
 	// check if the image is allowed to run privileged
-	for _, pattern := range c.config.Images {
-		privileged, err := image.IsPrivilegedImage(ctn.Image, pattern)
-		if err != nil {
-			return err
-		}
+	privileged, err := image.IsPrivilegedImage(ctn.Image, c.config.Images)
+	if err != nil {
+		return err
+	}
 
-		if privileged {
-			hostConf.Privileged = true
-		}
+	if privileged {
+		hostConf.Privileged = true
 	}
 
 	// send API call to create the container
 	//
 	// https://godoc.org/github.com/docker/docker/client#Client.ContainerCreate
-	_, err := c.Docker.ContainerCreate(
+	_, err = c.Docker.ContainerCreate(
 		ctx,
 		containerConf,
 		hostConf,

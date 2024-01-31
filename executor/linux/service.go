@@ -13,6 +13,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
 )
@@ -120,6 +121,18 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
+
+	// verify service is allowed to run
+	if c.enforceTrustedRepos {
+		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
+		if err != nil {
+			return err
+		}
+
+		if priv && !c.repo.GetTrusted() {
+			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
+		}
+	}
 
 	// load the service from the client
 	//

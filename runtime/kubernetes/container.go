@@ -164,14 +164,13 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	container.VolumeMounts = volumeMounts
 
 	// check if the image is allowed to run privileged
-	for _, pattern := range c.config.Images {
-		privileged, err := image.IsPrivilegedImage(ctn.Image, pattern)
-		if err != nil {
-			return err
-		}
 
-		container.SecurityContext.Privileged = &privileged
+	privileged, err := image.IsPrivilegedImage(ctn.Image, c.config.Images)
+	if err != nil {
+		return err
 	}
+
+	container.SecurityContext.Privileged = &privileged
 
 	if c.PipelinePodTemplate != nil && c.PipelinePodTemplate.Spec.Container != nil {
 		securityContext := c.PipelinePodTemplate.Spec.Container.SecurityContext

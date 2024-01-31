@@ -86,7 +86,7 @@ type Engine interface {
 	PlanStage(context.Context, *pipeline.Stage, *sync.Map) error
 	// ExecStage defines a function that
 	// runs a stage.
-	ExecStage(context.Context, *pipeline.Stage, *sync.Map) error
+	ExecStage(context.Context, *pipeline.Stage, *sync.Map, map[string]string, map[string]string) error
 	// DestroyStage defines a function that
 	// cleans up the stage after execution.
 	DestroyStage(context.Context, *pipeline.Stage) error

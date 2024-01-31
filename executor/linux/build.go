@@ -138,7 +138,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	c.Logger.Info("creating volume")
 	// create the runtime volume for the pipeline
-	c.workspacePath, c.err = c.Runtime.CreateVolume(ctx, c.pipeline)
+	c.err = c.Runtime.CreateVolume(ctx, c.pipeline)
 	if c.err != nil {
 		return fmt.Errorf("unable to create volume: %w", c.err)
 	}
@@ -355,6 +355,18 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
+		// verify secret image is allowed to run
+		if c.enforceTrustedRepos {
+			priv, err := image.IsPrivilegedImage(s.Origin.Image, c.privilegedImages)
+			if err != nil {
+				return err
+			}
+
+			if priv && !c.repo.GetTrusted() {
+				return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", s.Origin.Image)
+			}
+		}
+
 		c.Logger.Infof("creating %s secret", s.Origin.Name)
 		// create the service
 		c.err = c.secret.create(ctx, s.Origin)
@@ -380,92 +392,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	c.err = c.outputs.create(ctx, c.OutputCtn, (int64(60) * c.repo.GetTimeout()))
 	if c.err != nil {
 		return fmt.Errorf("unable to create outputs container: %w", c.err)
-	}
-
-	// enforce repo.trusted is set for pipelines containing privileged images
-	// if not enforced, allow all that exist in the list of runtime privileged images
-	// this configuration is set as an executor flag
-	if c.enforceTrustedRepos {
-		// group steps services stages and secret origins together
-		containers := c.pipeline.Steps
-
-		containers = append(containers, c.pipeline.Services...)
-
-		for _, stage := range c.pipeline.Stages {
-			containers = append(containers, stage.Steps...)
-		}
-
-		for _, secret := range c.pipeline.Secrets {
-			containers = append(containers, secret.Origin)
-		}
-
-		// assume no privileged images are in use
-		containsPrivilegedImages := false
-		privImages := []string{}
-
-		// verify all pipeline containers
-		for _, container := range containers {
-			// TODO: remove hardcoded reference
-			if container.Image == "#init" {
-				continue
-			}
-
-			// skip over non-plugin secrets origins
-			if container.Empty() {
-				continue
-			}
-
-			c.Logger.Infof("verifying privileges for container %s", container.Name)
-
-			// update the init log with image info
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
-
-			for _, pattern := range c.privilegedImages {
-				// check if image matches privileged pattern
-				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
-				if err != nil {
-					// wrap the error
-					c.err = fmt.Errorf("unable to verify privileges for image %s: %w", container.Image, err)
-
-					// update the init log with image info
-					//
-					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-					_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
-
-					// return error and destroy the build
-					// ignore checking more images
-					return c.err
-				}
-
-				if privileged {
-					// pipeline contains at least one privileged image
-					containsPrivilegedImages = privileged
-
-					privImages = append(privImages, container.Image)
-				}
-			}
-
-			// update the init log with image info
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
-		}
-
-		// ensure pipelines containing privileged images are only permitted to run by trusted repos
-		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
-			// update error including privileged image
-			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted. privileged image: %v", privImages)
-
-			// update the init log with image info
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
-
-			// return error and destroy the build
-			return c.err
-		}
 	}
 
 	// inspect the runtime build (eg a kubernetes pod) for the pipeline
@@ -744,16 +670,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 
 		// merge env from outputs
-		err = _step.MergeEnv(opEnv)
-		if err != nil {
-			return fmt.Errorf("failed to merge environment")
-		}
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(opEnv)
 
 		// merge env from masked outputs
-		err = _step.MergeEnv(maskEnv)
-		if err != nil {
-			return fmt.Errorf("failed to merge mask environment")
-		}
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(maskEnv)
 
 		// add masked outputs to secret map so they can be masked in logs
 		for key := range maskEnv {
@@ -817,7 +741,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 			c.Logger.Infof("executing %s stage", stage.Name)
 			// execute the stage
-			c.err = c.ExecStage(stageCtx, stage, stageMap)
+			c.err = c.ExecStage(stageCtx, stage, stageMap, opEnv, maskEnv)
 			if c.err != nil {
 				return fmt.Errorf("unable to execute stage: %w", c.err)
 			}

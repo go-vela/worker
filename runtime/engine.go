@@ -85,7 +85,7 @@ type Engine interface {
 
 	// CreateVolume defines a function that
 	// creates the pipeline volume.
-	CreateVolume(context.Context, *pipeline.Build) (string, error)
+	CreateVolume(context.Context, *pipeline.Build) error
 	// InspectVolume defines a function that
 	// inspects the pipeline volume.
 	InspectVolume(context.Context, *pipeline.Build) ([]byte, error)

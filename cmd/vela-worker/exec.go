@@ -91,6 +91,9 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		return err
 	}
 
+	// set the outputs container ID
+	w.Config.Executor.OutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -164,8 +167,6 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	if err != nil {
 		return err
 	}
-
-	w.Config.Executor.OutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
 	// setup the executor
 	//
