@@ -15,6 +15,7 @@ import (
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
+	"github.com/go-vela/types/library/actions"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
@@ -941,6 +942,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 func TestLinux_Secret_injectSecret(t *testing.T) {
 	// name and value of secret
 	v := "foo"
+	tBool := true
 
 	// setup types
 	tests := []struct {
@@ -967,26 +969,48 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			name: "secret with matching image ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: make(map[string]string),
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"alpine"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:   &v,
+					Value:  &v,
+					Images: &[]string{"alpine"},
+					AllowEvents: &library.Events{
+						Push: &actions.Push{
+							Branch: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "push"},
 			},
 		},
 		{
 			name: "secret with matching image:tag ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: make(map[string]string),
+				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Images: &[]string{"alpine:latest"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:   &v,
+					Value:  &v,
+					Images: &[]string{"alpine:latest"},
+					AllowEvents: &library.Events{
+						Push: &actions.Push{
+							Branch: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "push"},
 			},
 		},
 		{
@@ -1011,7 +1035,18 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:   &v,
+					Value:  &v,
+					Images: &[]string{"alpine:latest"},
+					AllowEvents: &library.Events{
+						Push: &actions.Push{
+							Branch: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "push"},
@@ -1034,13 +1069,24 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			name: "secret with matching pull_request event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"VELA_BUILD_EVENT": "pull_request"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "pull_request", "VELA_BUILD_EVENT_ACTION": "opened"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"pull_request"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:   &v,
+					Value:  &v,
+					Images: &[]string{"alpine:latest"},
+					AllowEvents: &library.Events{
+						PullRequest: &actions.Pull{
+							Opened: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "pull_request"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "pull_request", "VELA_BUILD_EVENT_ACTION": "opened"},
 			},
 		},
 		{
@@ -1063,7 +1109,18 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "tag"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:   &v,
+					Value:  &v,
+					Images: &[]string{"alpine:latest"},
+					AllowEvents: &library.Events{
+						Push: &actions.Push{
+							Tag: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "tag"},
@@ -1089,7 +1146,18 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:   &v,
+					Value:  &v,
+					Images: &[]string{"alpine:latest"},
+					AllowEvents: &library.Events{
+						Deployment: &actions.Deploy{
+							Created: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "deployment"},
@@ -1143,7 +1211,18 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"alpine"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:   &v,
+					Value:  &v,
+					Images: &[]string{"alpine:latest"},
+					AllowEvents: &library.Events{
+						Push: &actions.Push{
+							Branch: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "push"},
