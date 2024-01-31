@@ -8,6 +8,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/registry"
+	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/client"
 )
 
@@ -38,8 +39,8 @@ func (s *SystemService) Events(ctx context.Context, options types.EventsOptions)
 // information from the Docker daemon.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.Info
-func (s *SystemService) Info(ctx context.Context) (types.Info, error) {
-	return types.Info{}, nil
+func (s *SystemService) Info(ctx context.Context) (system.Info, error) {
+	return system.Info{}, nil
 }
 
 // Ping is a helper function to simulate
@@ -56,7 +57,7 @@ func (s *SystemService) Ping(ctx context.Context) (types.Ping, error) {
 // daemon against a Docker registry.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.RegistryLogin
-func (s *SystemService) RegistryLogin(ctx context.Context, auth types.AuthConfig) (registry.AuthenticateOKBody, error) {
+func (s *SystemService) RegistryLogin(ctx context.Context, auth registry.AuthConfig) (registry.AuthenticateOKBody, error) {
 	return registry.AuthenticateOKBody{}, nil
 }
 
