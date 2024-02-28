@@ -3,6 +3,7 @@
 package main
 
 import (
+	"github.com/prometheus/client_golang/prometheus"
 	"net/url"
 	"sync"
 	"time"
@@ -29,6 +30,12 @@ type (
 	Logger struct {
 		Format string
 		Level  string
+	}
+
+	// Usage represents the worker metrics per build.
+	Usage struct {
+		cpuUsage    prometheus.GaugeVec
+		memoryUsage prometheus.GaugeVec
 	}
 
 	// Server represents the worker configuration for server information.
@@ -71,5 +78,6 @@ type (
 		QueueCheckedIn       bool
 		RunningBuildIDs      []string
 		RunningBuildIDsMutex sync.Mutex
+		Usage                *Usage
 	}
 )

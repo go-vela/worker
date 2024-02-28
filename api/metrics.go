@@ -3,9 +3,8 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
 )
 
 // swagger:operation GET /metrics system Metrics

@@ -5,6 +5,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 	"net/http"
 	"strconv"
 	"sync"
@@ -247,6 +250,8 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	buildCtx, done := context.WithCancel(context.Background())
 	defer done()
 
+	go w.collectMetrics(item, buildCtx)
+
 	// add to the background context with a timeout
 	// built in for ensuring a build doesn't run forever
 	timeoutCtx, timeout := context.WithTimeout(buildCtx, t)
@@ -314,4 +319,49 @@ func (w *Worker) getWorkerStatusFromConfig(config *library.Worker) string {
 	default:
 		return constants.WorkerStatusError
 	}
+}
+
+func (w *Worker) collectMetrics(item *types.Item, ctx context.Context) {
+	go func() {
+		ticker := time.NewTicker(1 * time.Second) // Update interval: 5 seconds
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				w.resetMetrics()
+				logrus.Info("build ctx is done, stop timer")
+				ticker.Stop()
+				return
+			case <-ticker.C:
+				w.updateCPUUsage(item)
+				w.updateMemoryUsage(item)
+			}
+		}
+	}()
+
+}
+
+func (w *Worker) resetMetrics() {
+	w.Usage.cpuUsage.Reset()
+	w.Usage.memoryUsage.Reset()
+}
+
+func (w *Worker) updateCPUUsage(item *types.Item) {
+	cpuPercent, err := cpu.Percent(time.Second, false)
+	if err != nil {
+		fmt.Println("Error getting CPU percent:", err)
+		return
+	}
+	w.Usage.cpuUsage.WithLabelValues(item.Repo.GetOrg(), item.Repo.GetName(),
+		strconv.Itoa(item.Build.GetNumber())).Set(cpuPercent[0])
+}
+
+func (w *Worker) updateMemoryUsage(item *types.Item) {
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		fmt.Println("Error getting memory info:", err)
+		return
+	}
+	w.Usage.memoryUsage.WithLabelValues(item.Repo.GetOrg(), item.Repo.GetName(),
+		strconv.Itoa(item.Build.GetNumber())).Set(float64(memInfo.Used))
 }
