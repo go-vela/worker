@@ -149,6 +149,12 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, 
 			continue
 		}
 
+		// load any lazy secrets and inject them into container environment
+		err = loadLazySecrets(c, _step)
+		if err != nil {
+			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
+		}
+
 		logger.Debugf("planning %s step", _step.Name)
 		// plan the step
 		err = c.PlanStep(ctx, _step)

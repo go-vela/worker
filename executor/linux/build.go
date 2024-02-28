@@ -424,8 +424,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 }
 
 // ExecBuild runs a pipeline for a build.
-//
-//nolint:funlen // refactor candidate
 func (c *client) ExecBuild(ctx context.Context) error {
 	defer func() {
 		// Exec* calls are responsible for sending StreamRequest messages.
@@ -504,163 +502,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
-		_log, err := step.LoadLogs(c.init, &c.stepLogs)
+		// load any lazy secrets into the container environment
+		c.err = loadLazySecrets(c, _step)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
-
-		_log.SetData([]byte(""))
-
-		// -------------- Lazy Loading Secrets [start] --------------
-		//
-		// this requires a small preface and brief description on
-		// how normal secrets make it into a container:
-		//
-		// 1. pull secrets
-		// 2. add them to the internal secrets map @ c.Secrets
-		// 3. call escapeNewlineSecrets() on c.Secrets
-		// 4. inject them into the container via injectSecrets()
-		// 5. call container.Substitute()
-		//
-		// 1-3 happens in PlanBuild. 4 and 5 happens in
-		// CreateStep and CreateService and for secrets added
-		// via plugin.
-		//
-		// it's important to call out that container.Substitute()
-		// can inadvertently(?) tweak the value of secrets,
-		// particularly multiline secrets and/or secrets with
-		// escaped newlines (for example). even worse, calling it
-		// multiple times on the same container can tweak
-		// them further. this is due to the json marshal/unmarshal
-		// dance that happens during the substitution process.
-		//
-		// we can't move .Substitute() here because other aspects
-		// of the build process depend on variables being
-		// substituted earlier.
-		//
-		// so, to ensure lazy loaded secrets get the same
-		// (mis)treatment and value (!) as regular secrets,
-		// we will do the following here:
-		//
-		//  1. create a temporary map for lazy loaded secrets
-		//  2. pull the lazy loaded secrets
-		//  3. add them to temporary map
-		//  4. call escapeNewlineSecrets() on temp map
-		//  5. IF there are no lazy secrets, we stop here
-		//  6. create a temporary copy of the step/container
-		//  7. remove all existing environment variables except
-		//     those needed for secret injection from the temp
-		//     copy of the step/container
-		//  8. inject the lazy loaded secrets into the
-		//     temp step/container
-		//  9. call .Substitute on the temp step/container
-		// 10. move the lazy loaded secrets over to the
-		//     actual step/container
-		//
-		// this will ensure the lazy loaded secrets return
-		// the same value as they would as regular secrets
-		// and also keep this process isolated to lazy secrets
-
-		// create a temporary map akin to c.Secrets
-		lazySecrets := make(map[string]*library.Secret)
-
-		// iterate through step secrets
-		for _, s := range _step.Secrets {
-			// iterate through each secret provided in the pipeline
-			for _, secret := range c.pipeline.Secrets {
-				// only lazy load non-plugin, step_start secrets
-				if !secret.Origin.Empty() || !strings.EqualFold(s.Source, secret.Name) || strings.EqualFold(secret.Pull, constants.SecretPullBuild) {
-					continue
-				}
-
-				// lazy loading not supported with Kubernetes, log info and continue
-				if strings.EqualFold(constants.DriverKubernetes, c.Runtime.Driver()) {
-					_log.AppendData([]byte(
-						fmt.Sprintf("unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source)))
-
-					_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
-					if err != nil {
-						return err
-					}
-
-					continue
-				}
-
-				c.Logger.Infof("pulling secret %s", secret.Name)
-
-				s, err := c.secret.pull(secret)
-				if err != nil {
-					c.err = err
-					return fmt.Errorf("unable to pull secrets: %w", err)
-				}
-
-				_log.AppendData([]byte(
-					fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
-						secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
-
-				sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
-				if err != nil {
-					c.err = err
-					return fmt.Errorf("unable to decode secret: %w", err)
-				}
-
-				_log.AppendData(append(sRaw, "\n"...))
-
-				_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
-				if err != nil {
-					return err
-				}
-
-				// add secret to the temp map
-				lazySecrets[secret.Name] = s
-			}
-		}
-
-		// if we had lazy secrets, get them into the container
-		if len(lazySecrets) > 0 {
-			// create a copy of the current step/container
-			tmpStep := new(pipeline.Container)
-			*tmpStep = *_step
-
-			c.Logger.Debug("clearing environment in temp step/container")
-			// empty the environment
-			tmpStep.Environment = map[string]string{}
-			// but keep VELA_BUILD_EVENT as it's used in injectSecrets
-			if _, ok := _step.Environment["VELA_BUILD_EVENT"]; ok {
-				tmpStep.Environment["VELA_BUILD_EVENT"] = _step.Environment["VELA_BUILD_EVENT"]
-			}
-
-			c.Logger.Debug("escaping newlines in lazy loaded secrets")
-			// escape newlines for secrets loaded on step_start
-			escapeNewlineSecrets(lazySecrets)
-
-			c.Logger.Debug("injecting lazy loaded secrets")
-			// inject secrets for container
-			err = injectSecrets(tmpStep, lazySecrets)
-			if err != nil {
-				return err
-			}
-
-			c.Logger.Debug("substituting container configuration after lazy loaded secret injection")
-			// substitute container configuration
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
-			err = tmpStep.Substitute()
-			if err != nil {
-				return err
-			}
-
-			c.Logger.Debug("merge lazy loaded secrets into container")
-			// merge lazy load secrets into original container
-			err = _step.MergeEnv(tmpStep.Environment)
-			if err != nil {
-				return fmt.Errorf("failed to merge environment")
-			}
-
-			// clear out temporary var
-			tmpStep = nil
-		}
-		// -------------- Lazy Loading Secrets [end] --------------
 
 		c.Logger.Infof("planning %s step", _step.Name)
 		// plan the step
@@ -829,6 +675,164 @@ func (c *client) StreamBuild(ctx context.Context) error {
 			return nil
 		}
 	}
+}
+
+// loadLazySecrets is a helper function that injects secrets
+// into the container right before execution, rather than
+// during build planning. It is only available for the Docker runtime.
+func loadLazySecrets(c *client, _step *pipeline.Container) error {
+	_log := new(library.Log)
+
+	lazySecrets := make(map[string]*library.Secret)
+
+	// this requires a small preface and brief description on
+	// how normal secrets make it into a container:
+	//
+	// 1. pull secrets
+	// 2. add them to the internal secrets map @ c.Secrets
+	// 3. call escapeNewlineSecrets() on c.Secrets
+	// 4. inject them into the container via injectSecrets()
+	// 5. call container.Substitute()
+	//
+	// 1-3 happens in PlanBuild. 4 and 5 happens in
+	// CreateStep and CreateService and for secrets added
+	// via plugin.
+	//
+	// it's important to call out that container.Substitute()
+	// can inadvertently(?) tweak the value of secrets,
+	// particularly multiline secrets and/or secrets with
+	// escaped newlines (for example). even worse, calling it
+	// multiple times on the same container can tweak
+	// them further. this is due to the json marshal/unmarshal
+	// dance that happens during the substitution process.
+	//
+	// we can't move .Substitute() here because other aspects
+	// of the build process depend on variables being
+	// substituted earlier.
+	//
+	// so, to ensure lazy loaded secrets get the same
+	// (mis)treatment and value (!) as regular secrets,
+	// we will do the following here:
+	//
+	//  1. create a temporary map for lazy loaded secrets
+	//  2. pull the lazy loaded secrets
+	//  3. add them to temporary map
+	//  4. call escapeNewlineSecrets() on temp map
+	//  5. IF there are no lazy secrets, we stop here
+	//  6. create a temporary copy of the step/container
+	//  7. remove all existing environment variables except
+	//     those needed for secret injection from the temp
+	//     copy of the step/container
+	//  8. inject the lazy loaded secrets into the
+	//     temp step/container
+	//  9. call .Substitute on the temp step/container
+	//  10. move the lazy loaded secrets over to the
+	//     actual step/container
+	//
+	// this will ensure the lazy loaded secrets return
+	// the same value as they would as regular secrets
+	// and also keep this process isolated to lazy secrets
+	// create a temporary map akin to c.Secrets
+	// ---- END ----
+
+	// iterate through step secrets
+	for _, s := range _step.Secrets {
+		// iterate through each secret provided in the pipeline
+		for _, secret := range c.pipeline.Secrets {
+			// only lazy load non-plugin, step_start secrets
+			if !secret.Origin.Empty() || !strings.EqualFold(s.Source, secret.Name) || strings.EqualFold(secret.Pull, constants.SecretPullBuild) {
+				continue
+			}
+
+			// lazy loading not supported with Kubernetes, log info and continue
+			if strings.EqualFold(constants.DriverKubernetes, c.Runtime.Driver()) {
+				_log.AppendData([]byte(
+					fmt.Sprintf("unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source)))
+
+				_, err := c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
+				if err != nil {
+					return err
+				}
+
+				continue
+			}
+
+			c.Logger.Infof("pulling secret %s", secret.Name)
+
+			s, err := c.secret.pull(secret)
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to pull secrets: %w", err)
+			}
+
+			_log.AppendData([]byte(
+				fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
+					secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
+
+			sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to decode secret: %w", err)
+			}
+
+			_log.AppendData(append(sRaw, "\n"...))
+
+			_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
+			if err != nil {
+				return err
+			}
+
+			// add secret to the temp map
+			lazySecrets[secret.Name] = s
+		}
+	}
+
+	// if we had lazy secrets, get them into the container
+	if len(lazySecrets) > 0 {
+		// create a copy of the current step/container
+		tmpStep := new(pipeline.Container)
+		*tmpStep = *_step
+
+		c.Logger.Debug("clearing environment in temp step/container")
+		// empty the environment
+		tmpStep.Environment = map[string]string{}
+		// but keep VELA_BUILD_EVENT as it's used in injectSecrets
+		if _, ok := _step.Environment["VELA_BUILD_EVENT"]; ok {
+			tmpStep.Environment["VELA_BUILD_EVENT"] = _step.Environment["VELA_BUILD_EVENT"]
+		}
+
+		c.Logger.Debug("escaping newlines in lazy loaded secrets")
+		// escape newlines for secrets loaded on step_start
+		escapeNewlineSecrets(lazySecrets)
+
+		c.Logger.Debug("injecting lazy loaded secrets")
+		// inject secrets for container
+		err := injectSecrets(tmpStep, lazySecrets)
+		if err != nil {
+			return err
+		}
+
+		c.Logger.Debug("substituting container configuration after lazy loaded secret injection")
+		// substitute container configuration
+		//
+		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+		err = tmpStep.Substitute()
+		if err != nil {
+			return err
+		}
+
+		c.Logger.Debug("merge lazy loaded secrets into container")
+		// merge lazy load secrets into original container
+		err = _step.MergeEnv(tmpStep.Environment)
+		if err != nil {
+			return fmt.Errorf("failed to merge environment")
+		}
+
+		// clear out temporary var
+		tmpStep = nil
+	}
+
+	return nil
 }
 
 // DestroyBuild cleans up the build after execution.
