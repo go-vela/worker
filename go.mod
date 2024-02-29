@@ -8,21 +8,21 @@ require (
 	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-vela/sdk-go v0.23.0
-	github.com/go-vela/server v0.23.0
-	github.com/go-vela/types v0.23.0
+	github.com/go-vela/sdk-go v0.23.1
+	github.com/go-vela/server v0.23.1
+	github.com/go-vela/types v0.23.1
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/opencontainers/image-spec v1.1.0-rc6
+	github.com/opencontainers/image-spec v1.1.0
 	github.com/prometheus/client_golang v1.18.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli/v2 v2.27.1
 	golang.org/x/sync v0.6.0
 	gotest.tools/v3 v3.5.1
-	k8s.io/api v0.29.1
-	k8s.io/apimachinery v0.29.1
-	k8s.io/client-go v0.29.1
+	k8s.io/api v0.29.2
+	k8s.io/apimachinery v0.29.2
+	k8s.io/client-go v0.29.2
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -94,7 +94,7 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.45.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/redis/go-redis/v9 v9.4.0 // indirect
+	github.com/redis/go-redis/v9 v9.5.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
