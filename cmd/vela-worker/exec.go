@@ -328,9 +328,12 @@ func (w *Worker) collectMetrics(item *types.Item, ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				w.resetMetrics()
+				//
 				logrus.Info("build ctx is done, stop timer")
+				// sleep for 5 secs to send off all the metrics
+				time.Sleep(5 * time.Second)
 				ticker.Stop()
+				w.resetMetrics()
 				return
 			case <-ticker.C:
 				w.updateCPUUsage(item)
