@@ -2,6 +2,11 @@ module github.com/go-vela/worker
 
 go 1.21
 
+replace (
+	github.com/go-vela/sdk-go => ../sdk-go
+	github.com/go-vela/types => ../types
+)
+
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/distribution/reference v0.5.0

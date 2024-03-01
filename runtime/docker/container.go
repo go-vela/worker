@@ -3,6 +3,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -316,9 +317,19 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 
 	defer hijackedResponse.Close()
 
-	result, _ := io.ReadAll(hijackedResponse.Reader)
+	outputStdout := new(bytes.Buffer)
+	outputStderr := new(bytes.Buffer)
 
-	return result, nil
+	stdcopy.StdCopy(outputStdout, outputStderr, hijackedResponse.Reader)
+
+	if outputStderr.Len() > 0 {
+		fmt.Println("Error: ", outputStderr.String())
+		return nil, fmt.Errorf("Error: %s", outputStderr.String())
+	}
+
+	data := outputStdout.Bytes()
+
+	return data, nil
 }
 
 // ctnConfig is a helper function to

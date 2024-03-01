@@ -17,7 +17,6 @@ import (
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
-	"github.com/sirupsen/logrus"
 )
 
 // CreateStep configures the step for execution.
@@ -151,8 +150,6 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, c.repo, _step) }()
 
 	logger.Debug("running container")
-
-	logrus.Infof("BEFORE RUN CONTAINER: %s", ctn.Environment["NEW"])
 
 	// run the runtime container
 	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)

@@ -6,9 +6,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +38,7 @@ func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container, timeout
 	logger := o.client.Logger.WithField("outputs", "outputs")
 
 	// generate script from commands
-	script := generateScriptPosix([]string{fmt.Sprintf("sleep %d", timeout)})
+	script := generateScriptPosix([]string{"mkdir /vela/outputs", fmt.Sprintf("sleep %d", timeout)})
 
 	// set the entrypoint for the ctn
 	ctn.Entrypoint = []string{"/bin/sh", "-c"}
@@ -145,10 +147,10 @@ func (o *outputSvc) exec(ctx context.Context, _outputs *pipeline.Container) erro
 }
 
 // poll tails the output for a secret plugin.
-func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[string]string, map[string]string, error) {
+func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container, stepCtn *pipeline.Container) (map[string]string, map[string]string, *library.Report, error) {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
-		return nil, nil, nil
+		return nil, nil, nil, nil
 	}
 
 	// update engine logger with secret metadata
@@ -159,27 +161,44 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	logger.Debug("tailing container")
 
 	// grab outputs
-	outputBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs.env")
+	outputBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/.env")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	// grab masked outputs
-	maskedBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/masked_outputs.env")
+	maskedBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/masked.env")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	return toMap(outputBytes), toMap(maskedBytes), nil
+	var report library.Report
+
+	// grab report if report path specified
+	if stepCtn != nil && len(stepCtn.ReportPath) > 0 {
+		logger.Infof("polling report.json file from outputs container %s", ctn.ID)
+
+		reportPath := fmt.Sprintf("/vela/outputs/%s", stepCtn.ReportPath)
+
+		reportBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, reportPath)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+
+		err = json.Unmarshal(reportBytes, &report)
+		if err != nil {
+			logger.Infof("ERROR ERROR ERROR: %s", err)
+		}
+	}
+
+	return toMap(outputBytes), toMap(maskedBytes), &report, nil
 }
 
 // toMap is a helper function that turns raw docker exec output bytes into a map
 // by splitting on carriage returns + newlines and once more on `=`.
 func toMap(input []byte) map[string]string {
-	str := string(input[8:]) // Ignore first 8 bytes of Docker output.
-
-	logrus.Infof("string to split: %s", str)
-	lines := strings.Split(str, "\r\n")
+	logrus.Infof("string to split: %s", string(input))
+	lines := strings.Split(string(input), "\r\n")
 
 	m := make(map[string]string)
 

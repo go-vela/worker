@@ -437,7 +437,10 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
 	}()
 
-	var opEnv, maskEnv map[string]string
+	var (
+		opEnv, maskEnv map[string]string
+		report         *library.Report
+	)
 
 	// fire up output container to run with the build
 	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
@@ -455,7 +458,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	}
 
 	// poll outputs container for any updates
-	opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+	opEnv, maskEnv, report, c.err = c.outputs.poll(ctx, c.OutputCtn, nil)
 	if c.err != nil {
 		return fmt.Errorf("unable to exec outputs container: %w", c.err)
 	}
@@ -477,7 +480,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 
 		// poll outputs container
-		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		opEnv, maskEnv, report, c.err = c.outputs.poll(ctx, c.OutputCtn, _service)
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
@@ -547,10 +550,29 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 
 		// poll outputs
-		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		opEnv, maskEnv, report, c.err = c.outputs.poll(ctx, c.OutputCtn, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
+
+		if _step.ReportStatus {
+			libStep, err := step.Load(_step, &c.steps)
+			if err != nil {
+				return fmt.Errorf("unable to load step %s", _step.Name)
+			}
+
+			c.Logger.Infof("REPORTY %v", report)
+
+			libStep.SetReport(report)
+
+			c.Logger.Infof("REPORT REPORT REPORT %v", libStep.GetReport())
+
+			_, _, err = c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), libStep)
+			if err != nil {
+				return fmt.Errorf("unable to update step %s", _step.Name)
+			}
+		}
+
 	}
 
 	// create an error group with the context for each stage

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -193,10 +194,23 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, 
 			return fmt.Errorf("unable to exec step %s: %w", _step.Name, err)
 		}
 
+		var report *library.Report
+
 		// poll outputs
-		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		opEnv, maskEnv, report, c.err = c.outputs.poll(ctx, c.OutputCtn, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
+		if _step.ReportStatus {
+			libStep, err := step.Load(_step, &c.steps)
+			if err != nil {
+				return fmt.Errorf("unable to load step %s", _step.Name)
+			}
+
+			libStep.SetReport(report)
+
+			_, _, err = c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), libStep)
 		}
 
 		// failed steps within the stage should set the stop value to true unless
