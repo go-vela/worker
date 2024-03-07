@@ -816,22 +816,22 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 			tmpStep.Environment["VELA_BUILD_EVENT"] = _step.Environment["VELA_BUILD_EVENT"]
 		}
 
+		c.Logger.Debug("substituting container configuration after lazy loaded secret injection")
+		// substitute container configuration
+		//
+		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+		err := tmpStep.Substitute()
+		if err != nil {
+			return err
+		}
+
 		c.Logger.Debug("escaping newlines in lazy loaded secrets")
 		// escape newlines for secrets loaded on step_start
 		escapeNewlineSecrets(lazySecrets)
 
 		c.Logger.Debug("injecting lazy loaded secrets")
 		// inject secrets for container
-		err := injectSecrets(tmpStep, lazySecrets)
-		if err != nil {
-			return err
-		}
-
-		c.Logger.Debug("substituting container configuration after lazy loaded secret injection")
-		// substitute container configuration
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
-		err = tmpStep.Substitute()
+		err = injectSecrets(tmpStep, lazySecrets)
 		if err != nil {
 			return err
 		}

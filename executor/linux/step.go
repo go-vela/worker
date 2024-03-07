@@ -49,13 +49,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
-	logger.Debug("injecting secrets")
-	// inject secrets for container
-	err = injectSecrets(ctn, c.Secrets)
-	if err != nil {
-		return err
-	}
-
 	logger.Debug("substituting container configuration")
 	// substitute container configuration
 	//
@@ -63,6 +56,13 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	err = ctn.Substitute()
 	if err != nil {
 		return fmt.Errorf("unable to substitute container configuration")
+	}
+
+	logger.Debug("injecting secrets")
+	// inject secrets for container
+	err = injectSecrets(ctn, c.Secrets)
+	if err != nil {
+		return err
 	}
 
 	return nil
