@@ -640,17 +640,47 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	defer func() {
 		c.Logger.Infof("CURRENT STATUS at 795 is %s", c.build.GetStatus())
 		c.Logger.Trace("waiting for stream functions to return")
-		if c.build.GetStatus() == constants.StatusSuccess {
-			ctx.Done()
+
+		// Logic applies to only streamService
+		// if stream service
+		// wait for 10 secs
+		// tailContainer for any logs
+		// if nothing and buildIsFinished and Status is finite
+		// cancelStreaming()
+		// if there's logs, continue to wait until logStreaming timeout is done
+		//go func() {
+		//	err := streams.Wait()
+		//	if err != nil {
+		//		c.Logger.Errorf("error in a stream request, %v", err)
+		//	}
+		//}()
+		//time.Now().UTC().Unix()
+		// Create a ticker to check stdout periodically
+
+		// Start a goroutine to periodically check buildInfo
+		go func() {
+			for {
+				select {
+				case <-delayedCtx.Done():
+					c.Logger.Debug("Ctx is done. Cancelling status update!")
+					// Ctx is done. Cancels status update
+					return
+				default:
+					context2.Status = c.build.GetStatus()
+					context2.TimeFinished = c.build.GetFinished()
+				}
+			}
+		}()
+
+		err := streams.Wait()
+		if err != nil {
+			c.Logger.Errorf("error in a stream request, %v", err)
 		}
-		context2.Status = c.build.GetStatus()
 
-		//err := streams.Wait()
-		//c.Logger.Infof("CURRENT STATUS at 802 is %s", c.build.GetStatus())
-		//if err != nil {
-		//	c.Logger.Errorf("error in a stream request, %v", err)
-		//}
+		cancelStreaming()
 
+		//
+		//cancelStreaming()
 		c.Logger.Infof("CURRENT STATUS at 807 is %s", c.build.GetStatus())
 		//cancelStreaming()
 		// wait for context to be done before reporting that everything has returned.
@@ -677,7 +707,6 @@ func (c *client) StreamBuild(ctx context.Context) error {
 				c.Logger.Debug("not accepting any more stream requests as channel is closed")
 				return nil
 			}
-
 			streams.Go(func() error {
 				// update engine logger with step metadata
 				//
