@@ -199,8 +199,12 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 		_log.AppendData(append(sRaw, "\n"...))
 
-		// add secret to the map
-		c.Secrets[secret.Name] = s
+		// add secret to the appropriate map
+		if s.GetAllowSubstitution() {
+			c.Secrets[secret.Name] = s
+		} else {
+			c.NoSubSecrets[secret.Name] = s
+		}
 	}
 
 	// escape newlines in secrets loaded on build_start
@@ -699,6 +703,7 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 	_log := new(library.Log)
 
 	lazySecrets := make(map[string]*library.Secret)
+	lazyNoSubSecrets := make(map[string]*library.Secret)
 
 	// this requires a small preface and brief description on
 	// how normal secrets make it into a container:
@@ -797,8 +802,12 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 				return err
 			}
 
-			// add secret to the temp map
-			lazySecrets[secret.Name] = s
+			// add secret to the appropriate temp map
+			if s.GetAllowSubstitution() {
+				lazySecrets[secret.Name] = s
+			} else {
+				lazyNoSubSecrets[secret.Name] = s
+			}
 		}
 	}
 
@@ -832,6 +841,13 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
 		err = tmpStep.Substitute()
+		if err != nil {
+			return err
+		}
+
+		c.Logger.Debug("injecting no-sub lazy loaded secrets")
+		// inject secrets for container
+		err = injectSecrets(tmpStep, lazyNoSubSecrets)
 		if err != nil {
 			return err
 		}

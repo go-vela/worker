@@ -67,6 +67,13 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container) error {
 		return fmt.Errorf("unable to substitute container configuration")
 	}
 
+	logger.Debug("injecting non-substituted secrets")
+	// inject no-substitution secrets for container
+	err = injectSecrets(ctn, s.client.NoSubSecrets)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
