@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"net/http"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/sirupsen/logrus"
 )
 
 // checkIn is a helper function to phone home to the server.
-func (w *Worker) checkIn(config *library.Worker) (bool, string, error) {
+func (w *Worker) checkIn(config *api.Worker) (bool, string, error) {
 	// check to see if the worker already exists in the database
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())
 
@@ -48,7 +48,7 @@ func (w *Worker) checkIn(config *library.Worker) (bool, string, error) {
 }
 
 // register is a helper function to register the worker with the server.
-func (w *Worker) register(config *library.Worker) (bool, string, error) {
+func (w *Worker) register(config *api.Worker) (bool, string, error) {
 	logrus.Infof("worker %s not found, registering it with the server", config.GetHostname())
 
 	// status Idle will be set for worker upon first time registration
@@ -68,7 +68,7 @@ func (w *Worker) register(config *library.Worker) (bool, string, error) {
 }
 
 // queueCheckIn is a helper function to phone home to the redis.
-func (w *Worker) queueCheckIn(ctx context.Context, registryWorker *library.Worker) (bool, error) {
+func (w *Worker) queueCheckIn(ctx context.Context, registryWorker *api.Worker) (bool, error) {
 	pErr := w.Queue.Ping(ctx)
 	if pErr != nil {
 		logrus.Errorf("worker %s unable to contact the queue: %v", registryWorker.GetHostname(), pErr)
@@ -86,7 +86,7 @@ func (w *Worker) queueCheckIn(ctx context.Context, registryWorker *library.Worke
 
 // updateWorkerStatus is a helper function to update worker status
 // logs the error if it can't update status.
-func (w *Worker) updateWorkerStatus(config *library.Worker, status string) {
+func (w *Worker) updateWorkerStatus(config *api.Worker, status string) {
 	config.SetStatus(status)
 	_, resp, logErr := w.VelaClient.Worker.Update(config.GetHostname(), config)
 

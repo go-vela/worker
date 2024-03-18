@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 
@@ -137,7 +138,7 @@ func run(c *cli.Context) error {
 
 		RegisterToken: make(chan string, 1),
 
-		RunningBuildIDs: make([]string, 0),
+		RunningBuilds: make([]*library.Build, 0),
 	}
 
 	// set the worker address if no flag was provided
