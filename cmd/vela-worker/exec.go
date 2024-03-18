@@ -102,14 +102,14 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		"version":  v.Semantic(),
 	})
 
-	// lock and append the build to the RunningBuildIDs list
-	w.RunningBuildIDsMutex.Lock()
+	// lock and append the build to the list
+	w.RunningBuildsMutex.Lock()
 
 	w.RunningBuilds = append(w.RunningBuilds, item.Build)
 
 	config.SetRunningBuilds(w.RunningBuilds)
 
-	w.RunningBuildIDsMutex.Unlock()
+	w.RunningBuildsMutex.Unlock()
 
 	// set worker status
 	updateStatus := w.getWorkerStatusFromConfig(config)
@@ -207,8 +207,8 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 		logger.Info("completed build")
 
-		// lock and remove the build from the RunningBuildIDs list
-		w.RunningBuildIDsMutex.Lock()
+		// lock and remove the build from the list
+		w.RunningBuildsMutex.Lock()
 
 		for i, v := range w.RunningBuilds {
 			if v.GetID() == item.Build.GetID() {
@@ -218,7 +218,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 		config.SetRunningBuilds(w.RunningBuilds)
 
-		w.RunningBuildIDsMutex.Unlock()
+		w.RunningBuildsMutex.Unlock()
 
 		// set worker status
 		updateStatus := w.getWorkerStatusFromConfig(config)
