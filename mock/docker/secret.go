@@ -19,7 +19,7 @@ type SecretService struct{}
 // a mocked call to create a secret for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.SecretCreate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.SecretCreate
 func (s *SecretService) SecretCreate(ctx context.Context, secret swarm.SecretSpec) (types.SecretCreateResponse, error) {
 	return types.SecretCreateResponse{}, nil
 }
@@ -28,7 +28,7 @@ func (s *SecretService) SecretCreate(ctx context.Context, secret swarm.SecretSpe
 // a mocked call to inspect a Docker secret and return
 // the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.SecretInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.SecretInspectWithRaw
 func (s *SecretService) SecretInspectWithRaw(ctx context.Context, name string) (swarm.Secret, []byte, error) {
 	return swarm.Secret{}, nil, nil
 }
@@ -37,7 +37,7 @@ func (s *SecretService) SecretInspectWithRaw(ctx context.Context, name string) (
 // a mocked call to list secrets for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.SecretList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.SecretList
 func (s *SecretService) SecretList(ctx context.Context, options types.SecretListOptions) ([]swarm.Secret, error) {
 	return nil, nil
 }
@@ -46,7 +46,7 @@ func (s *SecretService) SecretList(ctx context.Context, options types.SecretList
 // a mocked call to remove a secret for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.SecretRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.SecretRemove
 func (s *SecretService) SecretRemove(ctx context.Context, id string) error {
 	return nil
 }
@@ -55,7 +55,7 @@ func (s *SecretService) SecretRemove(ctx context.Context, id string) error {
 // a mocked call to update a secret for a
 // Docker swarm cluster.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.SecretUpdate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.SecretUpdate
 func (s *SecretService) SecretUpdate(ctx context.Context, id string, version swarm.Version, secret swarm.SecretSpec) error {
 	return nil
 }
@@ -66,5 +66,5 @@ func (s *SecretService) SecretUpdate(ctx context.Context, id string, version swa
 // SecretService satisfies the SecretAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#SecretAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#SecretAPIClient
 var _ client.SecretAPIClient = (*SecretService)(nil)

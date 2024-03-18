@@ -58,7 +58,7 @@ func Upload(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *libra
 	if l == nil {
 		// create new logger
 		//
-		// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+		// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 		l = logrus.NewEntry(logrus.StandardLogger())
 	}
 
@@ -68,7 +68,7 @@ func Upload(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *libra
 
 		// send API call to update the build
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
 		_, _, err := c.Build.Update(r.GetOrg(), r.GetName(), b)
 		if err != nil {
 			l.Errorf("unable to upload final build state: %v", err)

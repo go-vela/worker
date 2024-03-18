@@ -70,6 +70,7 @@ type (
 		RegisterToken        chan string
 		CheckedIn            bool
 		RunningBuilds        []*library.Build
+		QueueCheckedIn       bool
 		RunningBuildIDsMutex sync.Mutex
 	}
 )

@@ -54,5 +54,5 @@ func (c *ConfigService) ConfigUpdate(ctx context.Context, id string, version swa
 // ImageService satisfies the ImageAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#ConfigAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#ConfigAPIClient
 var _ client.ConfigAPIClient = (*ConfigService)(nil)

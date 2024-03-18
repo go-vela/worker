@@ -63,12 +63,12 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
+	// https://pkg.go.dev/github.com/sirupsen/logrus#StandardLogger
 	logger := logrus.StandardLogger()
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+	// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 	c.Logger = logrus.NewEntry(logger)
 
 	// apply all provided configuration options
@@ -89,14 +89,14 @@ func New(opts ...ClientOpt) (*client, error) {
 	)
 
 	if c.config.File == "" {
-		// https://pkg.go.dev/k8s.io/client-go/rest?tab=doc#InClusterConfig
+		// https://pkg.go.dev/k8s.io/client-go/rest#InClusterConfig
 		config, err = rest.InClusterConfig()
 		if err != nil {
 			c.Logger.Error("VELA_RUNTIME_CONFIG not defined and failed to create kubernetes InClusterConfig!")
 			return nil, err
 		}
 	} else {
-		// https://pkg.go.dev/k8s.io/client-go/tools/clientcmd?tab=doc#BuildConfigFromFlags
+		// https://pkg.go.dev/k8s.io/client-go/tools/clientcmd#BuildConfigFromFlags
 		config, err = clientcmd.BuildConfigFromFlags("", c.config.File)
 		if err != nil {
 			return nil, err
@@ -105,7 +105,7 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// creates Kubernetes client from configuration
 	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes?tab=doc#NewForConfig
+	// https://pkg.go.dev/k8s.io/client-go/kubernetes#NewForConfig
 	_kubernetes, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err

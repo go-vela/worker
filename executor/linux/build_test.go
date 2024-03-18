@@ -1139,6 +1139,20 @@ func TestLinux_PlanBuild(t *testing.T) {
 			runtime:  constants.DriverKubernetes,
 			pipeline: "testdata/build/stages/basic.yml",
 		},
+		{
+			name:     "docker-basic steps with lazy and regular secrets pipeline",
+			failure:  false,
+			logError: false,
+			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/steps/basic_secrets.yml",
+		},
+		{
+			name:     "kubernetes-basic steps with lazy and regular secrets pipeline",
+			failure:  false,
+			logError: false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/steps/basic_secrets.yml",
+		},
 	}
 
 	// run test
@@ -1620,6 +1634,20 @@ func TestLinux_ExecBuild(t *testing.T) {
 			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_notfound.yml",
+		},
+		{
+			name:     "docker-basic steps with lazy and regular secrets pipeline",
+			failure:  false,
+			logError: false,
+			runtime:  constants.DriverDocker,
+			pipeline: "testdata/build/steps/basic_secrets.yml",
+		},
+		{
+			name:     "kubernetes-basic steps with lazy and regular secrets pipeline",
+			failure:  false,
+			logError: false,
+			runtime:  constants.DriverKubernetes,
+			pipeline: "testdata/build/steps/basic_secrets.yml",
 		},
 		//{
 		//	name:     "kubernetes-steps pipeline with image not found",

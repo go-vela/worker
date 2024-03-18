@@ -6,12 +6,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/build"
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
@@ -35,8 +38,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	c.Logger.Info("uploading build state")
 	// send API call to update the build
 	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#BuildService.Update
-	//nolint:contextcheck // ignore passing context
+	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
 	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
 	if c.err != nil {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
@@ -102,7 +104,13 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#SnapshotInit
-	defer func() { step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, c.repo, _init, _log) }()
+	defer func() {
+		if c.err != nil {
+			_init.SetStatus(constants.StatusFailure)
+		}
+
+		step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, c.repo, _init, _log)
+	}()
 
 	c.Logger.Info("creating network")
 	// create the runtime network for the pipeline
@@ -113,7 +121,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Inspecting runtime network...\n"))
 
 	// inspect the runtime network for the pipeline
@@ -125,7 +133,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with network information
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData(network)
 
 	c.Logger.Info("creating volume")
@@ -137,7 +145,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Inspecting runtime volume...\n"))
 
 	// inspect the runtime volume for the pipeline
@@ -149,12 +157,12 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 	// update the init log with volume information
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData(volume)
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing secrets...\n"))
 
 	// iterate through each secret provided in the pipeline
@@ -164,9 +172,15 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.Logger.Infof("pulling %s %s secret %s", secret.Engine, secret.Type, secret.Name)
+		// only pull in secrets that are set to be pulled in at the start
+		if strings.EqualFold(secret.Pull, constants.SecretPullStep) {
+			_log.AppendData([]byte(fmt.Sprintf("> Skipping pull: secret <%s> lazy loaded\n", secret.Name)))
 
-		//nolint:contextcheck // ignore passing context
+			continue
+		}
+
+		c.Logger.Infof("pulling secret: %s", secret.Name)
+
 		s, err := c.secret.pull(secret)
 		if err != nil {
 			c.err = err
@@ -185,9 +199,16 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 		_log.AppendData(append(sRaw, "\n"...))
 
-		// add secret to the map
-		c.Secrets[secret.Name] = s
+		// add secret to the appropriate map
+		if s.GetAllowSubstitution() {
+			c.Secrets[secret.Name] = s
+		} else {
+			c.NoSubSecrets[secret.Name] = s
+		}
 	}
+
+	// escape newlines in secrets loaded on build_start
+	escapeNewlineSecrets(c.Secrets)
 
 	return nil
 }
@@ -220,13 +241,19 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer an upload of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
-	defer func() { step.Upload(c.init, c.build, c.Vela, c.Logger, c.repo, _init) }()
+	defer func() {
+		if c.err != nil {
+			_init.SetStatus(constants.StatusFailure)
+		}
+
+		step.Upload(c.init, c.build, c.Vela, c.Logger, c.repo, _init)
+	}()
 
 	defer func() {
 		c.Logger.Infof("uploading %s step logs", c.init.Name)
 		// send API call to update the logs for the step
 		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela?tab=doc#LogService.UpdateStep
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
 		_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), c.init.Number, _log)
 		if err != nil {
 			c.Logger.Errorf("unable to upload %s logs: %v", c.init.Name, err)
@@ -235,7 +262,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing service images...\n"))
 
 	// create the services for the pipeline
@@ -255,18 +282,19 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		image, err := c.Runtime.InspectImage(ctx, s)
 		if err != nil {
 			c.err = err
+
 			return fmt.Errorf("unable to inspect %s service: %w", s.Name, err)
 		}
 
 		// update the init log with service image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing stage images...\n"))
 
 	// create the stages for the pipeline
@@ -288,7 +316,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing step images...\n"))
 
 	// create the steps for the pipeline
@@ -315,13 +343,13 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// update the init log with step image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing secret images...\n"))
 
 	// create the secrets for the pipeline
@@ -348,7 +376,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// update the init log with secret image info
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 	// enforce repo.trusted is set for pipelines containing privileged images
@@ -370,6 +398,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		// assume no privileged images are in use
 		containsPrivilegedImages := false
+		privImages := []string{}
 
 		// verify all pipeline containers
 		for _, container := range containers {
@@ -387,7 +416,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 			// update the init log with image info
 			//
-			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
 
 			for _, pattern := range c.privilegedImages {
@@ -399,7 +428,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 					// update the init log with image info
 					//
-					// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 					_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
 
 					// return error and destroy the build
@@ -410,23 +439,25 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 				if privileged {
 					// pipeline contains at least one privileged image
 					containsPrivilegedImages = privileged
+
+					privImages = append(privImages, container.Image)
 				}
 			}
 
 			// update the init log with image info
 			//
-			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 		}
 
 		// ensure pipelines containing privileged images are only permitted to run by trusted repos
 		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
-			// update error
-			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted")
+			// update error including privileged image
+			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted. privileged image: %v", privImages)
 
 			// update the init log with image info
 			//
-			// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
 
 			// return error and destroy the build
@@ -445,7 +476,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// update the init log with progress
 		// (an empty value allows the runtime to opt out of providing this)
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(buildOutput)
 	}
 
@@ -457,15 +488,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// update the init log with progress
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/library?tab=doc#Log.AppendData
+	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Executing secret images...\n"))
-
-	c.Logger.Info("executing secret images")
-	// execute the secret
-	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
-	if c.err != nil {
-		return fmt.Errorf("unable to execute secret: %w", c.err)
-	}
 
 	return c.err
 }
@@ -483,6 +507,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
 		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
 	}()
+
+	c.Logger.Info("executing secret images")
+	// execute the secret
+	c.err = c.secret.exec(ctx, &c.pipeline.Secrets)
+	if c.err != nil {
+		return fmt.Errorf("unable to execute secret: %w", c.err)
+	}
 
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
@@ -520,6 +551,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
+		// load any lazy secrets into the container environment
+		c.err = loadLazySecrets(c, _step)
+		if err != nil {
+			return fmt.Errorf("unable to plan step: %w", c.err)
+		}
+
 		c.Logger.Infof("planning %s step", _step.Name)
 		// plan the step
 		c.err = c.PlanStep(ctx, _step)
@@ -537,7 +574,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// create an error group with the context for each stage
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	stages, stageCtx := errgroup.WithContext(ctx)
 
 	// create a map to track the progress of each stage
@@ -558,7 +595,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		// spawn errgroup routine for the stage
 		//
-		// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Go
+		// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Go
 		stages.Go(func() error {
 			c.Logger.Infof("planning %s stage", stage.Name)
 			// plan the stage
@@ -581,7 +618,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	c.Logger.Debug("waiting for stages completion")
 	// wait for the stages to complete or return an error
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#Group.Wait
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group.Wait
 	c.err = stages.Wait()
 	if c.err != nil {
 		return fmt.Errorf("unable to wait for stages: %w", c.err)
@@ -600,7 +637,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 
 	// create an error group with the parent context
 	//
-	// https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc#WithContext
+	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
 	streams, streamCtx := errgroup.WithContext(delayedCtx)
 
 	defer func() {
@@ -639,7 +676,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 			streams.Go(func() error {
 				// update engine logger with step metadata
 				//
-				// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#Entry.WithField
+				// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 				logger := c.Logger.WithField(req.Key, req.Container.Name)
 
 				logger.Debugf("streaming %s container %s", req.Key, req.Container.ID)
@@ -657,6 +694,176 @@ func (c *client) StreamBuild(ctx context.Context) error {
 			return nil
 		}
 	}
+}
+
+// loadLazySecrets is a helper function that injects secrets
+// into the container right before execution, rather than
+// during build planning. It is only available for the Docker runtime.
+func loadLazySecrets(c *client, _step *pipeline.Container) error {
+	_log := new(library.Log)
+
+	lazySecrets := make(map[string]*library.Secret)
+	lazyNoSubSecrets := make(map[string]*library.Secret)
+
+	// this requires a small preface and brief description on
+	// how normal secrets make it into a container:
+	//
+	// 1. pull secrets
+	// 2. add them to the internal secrets map @ c.Secrets
+	// 3. call escapeNewlineSecrets() on c.Secrets
+	// 4. inject them into the container via injectSecrets()
+	// 5. call container.Substitute()
+	//
+	// 1-3 happens in PlanBuild. 4 and 5 happens in
+	// CreateStep and CreateService and for secrets added
+	// via plugin.
+	//
+	// it's important to call out that container.Substitute()
+	// can inadvertently(?) tweak the value of secrets,
+	// particularly multiline secrets and/or secrets with
+	// escaped newlines (for example). even worse, calling it
+	// multiple times on the same container can tweak
+	// them further. this is due to the json marshal/unmarshal
+	// dance that happens during the substitution process.
+	//
+	// we can't move .Substitute() here because other aspects
+	// of the build process depend on variables being
+	// substituted earlier.
+	//
+	// so, to ensure lazy loaded secrets get the same
+	// (mis)treatment and value (!) as regular secrets,
+	// we will do the following here:
+	//
+	//  1. create a temporary map for lazy loaded secrets
+	//  2. pull the lazy loaded secrets
+	//  3. add them to temporary map
+	//  4. call escapeNewlineSecrets() on temp map
+	//  5. IF there are no lazy secrets, we stop here
+	//  6. create a temporary copy of the step/container
+	//  7. remove all existing environment variables except
+	//     those needed for secret injection from the temp
+	//     copy of the step/container
+	//  8. inject the lazy loaded secrets into the
+	//     temp step/container
+	//  9. call .Substitute on the temp step/container
+	//  10. move the lazy loaded secrets over to the
+	//     actual step/container
+	//
+	// this will ensure the lazy loaded secrets return
+	// the same value as they would as regular secrets
+	// and also keep this process isolated to lazy secrets
+	// create a temporary map akin to c.Secrets
+	// ---- END ----
+
+	// iterate through step secrets
+	for _, s := range _step.Secrets {
+		// iterate through each secret provided in the pipeline
+		for _, secret := range c.pipeline.Secrets {
+			// only lazy load non-plugin, step_start secrets
+			if !secret.Origin.Empty() || !strings.EqualFold(s.Source, secret.Name) || strings.EqualFold(secret.Pull, constants.SecretPullBuild) {
+				continue
+			}
+
+			// lazy loading not supported with Kubernetes, log info and continue
+			if strings.EqualFold(constants.DriverKubernetes, c.Runtime.Driver()) {
+				_log.AppendData([]byte(
+					fmt.Sprintf("unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source)))
+
+				_, err := c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
+				if err != nil {
+					return err
+				}
+
+				continue
+			}
+
+			c.Logger.Infof("pulling secret %s", secret.Name)
+
+			s, err := c.secret.pull(secret)
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to pull secrets: %w", err)
+			}
+
+			_log.AppendData([]byte(
+				fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
+					secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
+
+			sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
+			if err != nil {
+				c.err = err
+				return fmt.Errorf("unable to decode secret: %w", err)
+			}
+
+			_log.AppendData(append(sRaw, "\n"...))
+
+			_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
+			if err != nil {
+				return err
+			}
+
+			// add secret to the appropriate temp map
+			if s.GetAllowSubstitution() {
+				lazySecrets[secret.Name] = s
+			} else {
+				lazyNoSubSecrets[secret.Name] = s
+			}
+		}
+	}
+
+	// if we had lazy secrets, get them into the container
+	if len(lazySecrets) > 0 {
+		// create a copy of the current step/container
+		tmpStep := new(pipeline.Container)
+		*tmpStep = *_step
+
+		c.Logger.Debug("clearing environment in temp step/container")
+		// empty the environment
+		tmpStep.Environment = map[string]string{}
+		// but keep VELA_BUILD_EVENT as it's used in injectSecrets
+		if _, ok := _step.Environment["VELA_BUILD_EVENT"]; ok {
+			tmpStep.Environment["VELA_BUILD_EVENT"] = _step.Environment["VELA_BUILD_EVENT"]
+		}
+
+		c.Logger.Debug("escaping newlines in lazy loaded secrets")
+		// escape newlines for secrets loaded on step_start
+		escapeNewlineSecrets(lazySecrets)
+
+		c.Logger.Debug("injecting lazy loaded secrets")
+		// inject secrets for container
+		err := injectSecrets(tmpStep, lazySecrets)
+		if err != nil {
+			return err
+		}
+
+		c.Logger.Debug("substituting container configuration after lazy loaded secret injection")
+		// substitute container configuration
+		//
+		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+		err = tmpStep.Substitute()
+		if err != nil {
+			return err
+		}
+
+		c.Logger.Debug("injecting no-sub lazy loaded secrets")
+		// inject secrets for container
+		err = injectSecrets(tmpStep, lazyNoSubSecrets)
+		if err != nil {
+			return err
+		}
+
+		c.Logger.Debug("merge lazy loaded secrets into container")
+		// merge lazy load secrets into original container
+		err = _step.MergeEnv(tmpStep.Environment)
+		if err != nil {
+			return fmt.Errorf("failed to merge environment")
+		}
+
+		// clear out temporary var
+		tmpStep = nil
+	}
+
+	return nil
 }
 
 // DestroyBuild cleans up the build after execution.

@@ -61,7 +61,7 @@ func run(c *cli.Context) error {
 
 	// create a log entry with extra metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
+	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
 	logrus.WithFields(logrus.Fields{
 		"code":     "https://github.com/go-vela/worker/",
 		"docs":     "https://go-vela.github.io/docs/concepts/infrastructure/worker/",
@@ -114,6 +114,7 @@ func run(c *cli.Context) error {
 			},
 			// queue configuration
 			Queue: &queue.Setup{
+				Address: c.String("queue.addr"),
 				Driver:  c.String("queue.driver"),
 				Cluster: c.Bool("queue.cluster"),
 				Routes:  c.StringSlice("queue.routes"),

@@ -11,7 +11,7 @@ import (
 // Flags represents all supported command line
 // interface (CLI) flags for the runtime.
 //
-// https://pkg.go.dev/github.com/urfave/cli?tab=doc#Flag
+// https://pkg.go.dev/github.com/urfave/cli#Flag
 var Flags = []cli.Flag{
 	// Runtime Flags
 

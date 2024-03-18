@@ -91,7 +91,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 	// create logger with extra metadata
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#WithFields
+	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
 	logger := logrus.WithFields(logrus.Fields{
 		"build":    item.Build.GetNumber(),
 		"executor": w.Config.Executor.Driver,
@@ -146,7 +146,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 	// setup the runtime
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime#New
 	w.Runtime, err = runtime.New(&runtime.Setup{
 		Logger:           logger,
 		Mock:             w.Config.Mock,
@@ -267,6 +267,14 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		return nil
 	}
 
+	logger.Info("assembling build")
+	// assemble the build with the executor
+	err = _executor.AssembleBuild(timeoutCtx)
+	if err != nil {
+		logger.Errorf("unable to assemble build: %v", err)
+		return nil
+	}
+
 	// add StreamBuild goroutine to WaitGroup
 	wg.Add(1)
 
@@ -280,14 +288,6 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 			logger.Errorf("unable to stream build logs: %v", err)
 		}
 	}()
-
-	logger.Info("assembling build")
-	// assemble the build with the executor
-	err = _executor.AssembleBuild(timeoutCtx)
-	if err != nil {
-		logger.Errorf("unable to assemble build: %v", err)
-		return nil
-	}
 
 	logger.Info("executing build")
 	// execute the build with the executor

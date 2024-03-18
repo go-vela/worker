@@ -13,10 +13,10 @@ package docker
 //
 // For example (use the compatibility matrix above for reference):
 //
-// * the Docker version of v20.10 has a maximum API version of v1.41
-// * to maintain n-1, the API version is pinned to v1.40
+// * the Docker version of v24.0 has a maximum API version of v1.43
+// * to maintain n-1, the API version is pinned to v1.42
 // .
-const Version = "v1.40"
+const Version = "v1.42"
 
 // New returns a client that is capable of handling
 // Docker client calls and returning stub responses.

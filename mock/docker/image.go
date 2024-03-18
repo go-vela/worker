@@ -41,7 +41,7 @@ func (i *ImageService) BuildCancel(ctx context.Context, id string) error {
 // ImageBuild is a helper function to simulate
 // a mocked call to build a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageBuild
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageBuild
 func (i *ImageService) ImageBuild(ctx context.Context, context io.Reader, options types.ImageBuildOptions) (types.ImageBuildResponse, error) {
 	return types.ImageBuildResponse{}, nil
 }
@@ -49,7 +49,7 @@ func (i *ImageService) ImageBuild(ctx context.Context, context io.Reader, option
 // ImageCreate is a helper function to simulate
 // a mocked call to create a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageCreate
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageCreate
 func (i *ImageService) ImageCreate(ctx context.Context, parentReference string, options types.ImageCreateOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -58,7 +58,7 @@ func (i *ImageService) ImageCreate(ctx context.Context, parentReference string, 
 // a mocked call to inspect the history for a
 // Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageHistory
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageHistory
 func (i *ImageService) ImageHistory(ctx context.Context, image string) ([]image.HistoryResponseItem, error) {
 	return nil, nil
 }
@@ -66,7 +66,7 @@ func (i *ImageService) ImageHistory(ctx context.Context, image string) ([]image.
 // ImageImport is a helper function to simulate
 // a mocked call to import a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageImport
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageImport
 func (i *ImageService) ImageImport(ctx context.Context, source types.ImageImportSource, ref string, options types.ImageImportOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -75,7 +75,7 @@ func (i *ImageService) ImageImport(ctx context.Context, source types.ImageImport
 // a mocked call to inspect a Docker image and return
 // the raw body received from the API.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageInspectWithRaw
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
 func (i *ImageService) ImageInspectWithRaw(ctx context.Context, image string) (types.ImageInspect, []byte, error) {
 	// verify an image was provided
 	if len(image) == 0 {
@@ -133,7 +133,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, image string) (t
 // ImageList is a helper function to simulate
 // a mocked call to list Docker images.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageList
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageList
 func (i *ImageService) ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error) {
 	return nil, nil
 }
@@ -141,7 +141,7 @@ func (i *ImageService) ImageList(ctx context.Context, options types.ImageListOpt
 // ImageLoad is a helper function to simulate
 // a mocked call to load a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageLoad
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageLoad
 func (i *ImageService) ImageLoad(ctx context.Context, input io.Reader, quiet bool) (types.ImageLoadResponse, error) {
 	return types.ImageLoadResponse{}, nil
 }
@@ -149,7 +149,7 @@ func (i *ImageService) ImageLoad(ctx context.Context, input io.Reader, quiet boo
 // ImagePull is a helper function to simulate
 // a mocked call to pull a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImagePull
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePull
 func (i *ImageService) ImagePull(ctx context.Context, image string, options types.ImagePullOptions) (io.ReadCloser, error) {
 	// verify an image was provided
 	if len(image) == 0 {
@@ -198,7 +198,7 @@ func (i *ImageService) ImagePull(ctx context.Context, image string, options type
 // ImagePush is a helper function to simulate
 // a mocked call to push a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImagePush
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePush
 func (i *ImageService) ImagePush(ctx context.Context, ref string, options types.ImagePushOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -206,7 +206,7 @@ func (i *ImageService) ImagePush(ctx context.Context, ref string, options types.
 // ImageRemove is a helper function to simulate
 // a mocked call to remove a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageRemove
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageRemove
 func (i *ImageService) ImageRemove(ctx context.Context, image string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error) {
 	return nil, nil
 }
@@ -214,7 +214,7 @@ func (i *ImageService) ImageRemove(ctx context.Context, image string, options ty
 // ImageSave is a helper function to simulate
 // a mocked call to save a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageSave
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageSave
 func (i *ImageService) ImageSave(ctx context.Context, images []string) (io.ReadCloser, error) {
 	return nil, nil
 }
@@ -222,7 +222,7 @@ func (i *ImageService) ImageSave(ctx context.Context, images []string) (io.ReadC
 // ImageSearch is a helper function to simulate
 // a mocked call to search for a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageSearch
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageSearch
 func (i *ImageService) ImageSearch(ctx context.Context, term string, options types.ImageSearchOptions) ([]registry.SearchResult, error) {
 	return nil, nil
 }
@@ -230,7 +230,7 @@ func (i *ImageService) ImageSearch(ctx context.Context, term string, options typ
 // ImageTag is a helper function to simulate
 // a mocked call to tag a Docker image.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImageTag
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageTag
 func (i *ImageService) ImageTag(ctx context.Context, image, ref string) error {
 	return nil
 }
@@ -238,7 +238,7 @@ func (i *ImageService) ImageTag(ctx context.Context, image, ref string) error {
 // ImagesPrune is a helper function to simulate
 // a mocked call to prune Docker images.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#Client.ImagesPrune
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagesPrune
 func (i *ImageService) ImagesPrune(ctx context.Context, pruneFilter filters.Args) (types.ImagesPruneReport, error) {
 	return types.ImagesPruneReport{}, nil
 }
@@ -249,5 +249,5 @@ func (i *ImageService) ImagesPrune(ctx context.Context, pruneFilter filters.Args
 // ImageService satisfies the ImageAPIClient interface that
 // the Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client?tab=doc#ImageAPIClient
+// https://pkg.go.dev/github.com/docker/docker/client#ImageAPIClient
 var _ client.ImageAPIClient = (*ImageService)(nil)

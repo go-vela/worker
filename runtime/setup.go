@@ -62,13 +62,13 @@ func (s *Setup) Docker() (Engine, error) {
 	if s.Mock {
 		// create new mock Docker runtime engine
 		//
-		// https://pkg.go.dev/github.com/go-vela/worker/runtime/docker?tab=doc#NewMock
+		// https://pkg.go.dev/github.com/go-vela/worker/runtime/docker#NewMock
 		return docker.NewMock(opts...)
 	}
 
 	// create new Docker runtime engine
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime/docker?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime/docker#New
 	return docker.New(opts...)
 }
 
@@ -89,13 +89,13 @@ func (s *Setup) Kubernetes() (Engine, error) {
 	if s.Mock {
 		// create new mock Kubernetes runtime engine
 		//
-		// https://pkg.go.dev/github.com/go-vela/worker/runtime/kubernetes?tab=doc#NewMock
+		// https://pkg.go.dev/github.com/go-vela/worker/runtime/kubernetes#NewMock
 		return kubernetes.NewMock(&v1.Pod{}, opts...)
 	}
 
 	// create new Kubernetes runtime engine
 	//
-	// https://pkg.go.dev/github.com/go-vela/worker/runtime/kubernetes?tab=doc#New
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime/kubernetes#New
 	return kubernetes.New(opts...)
 }
 
@@ -117,7 +117,7 @@ func (s *Setup) Validate() error {
 			for _, configCap := range s.DropCapabilities {
 				valid := false
 
-				for _, validCap := range caps.GetAllCapabilities() {
+				for _, validCap := range caps.DefaultCapabilities() {
 					if strings.EqualFold(configCap, validCap) {
 						valid = true
 						break

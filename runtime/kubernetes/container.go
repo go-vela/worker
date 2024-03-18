@@ -36,7 +36,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	for _, cst := range pod.Status.ContainerStatuses {
 		// check if the container has a matching ID
 		//
-		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerStatus
+		// https://pkg.go.dev/k8s.io/api/core/v1#ContainerStatus
 		if !strings.EqualFold(cst.Name, ctn.ID) {
 			// skip container if it's not a matching ID
 			continue
@@ -70,7 +70,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 }
 
 // RunContainer creates and starts the pipeline container.
-func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *pipeline.Build) error {
+func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
 	// parse image from step
 	_image, err := image.ParseWithError(ctn.Image)
@@ -83,7 +83,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 
 	// send API call to patch the pod with the new container image
 	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodInterface
+	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1#PodInterface
 	_, err = c.Kubernetes.CoreV1().Pods(c.config.Namespace).Patch(
 		ctx,
 		c.Pod.ObjectMeta.Name,
@@ -104,7 +104,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 
 	// create the container object for the pod
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#Container
+	// https://pkg.go.dev/k8s.io/api/core/v1#Container
 	container := v1.Container{
 		Name: ctn.ID,
 		// create the container with the kubernetes/pause image
@@ -196,7 +196,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 
 	// add the container definition to the pod spec
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodSpec
+	// https://pkg.go.dev/k8s.io/api/core/v1#PodSpec
 	c.Pod.Spec.Containers = append(c.Pod.Spec.Containers, container)
 
 	return nil
@@ -237,7 +237,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	var logsFunc wait.ConditionFunc = func() (bool, error) {
 		// create options for capturing the logs from the container
 		//
-		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodLogOptions
+		// https://pkg.go.dev/k8s.io/api/core/v1#PodLogOptions
 		opts := &v1.PodLogOptions{
 			Container:  ctn.ID,
 			Follow:     true,
@@ -246,9 +246,9 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 		// send API call to capture stream of container logs
 		//
-		// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1?tab=doc#PodExpansion
+		// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1#PodExpansion
 		// ->
-		// https://pkg.go.dev/k8s.io/client-go/rest?tab=doc#Request.Stream
+		// https://pkg.go.dev/k8s.io/client-go/rest#Request.Stream
 		stream, err := c.Kubernetes.CoreV1().
 			Pods(c.config.Namespace).
 			GetLogs(c.Pod.ObjectMeta.Name, opts).
@@ -283,7 +283,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// create backoff object for capturing the logs
 	// from the container with periodic backoff
 	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#Backoff
+	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait#Backoff
 	backoff := wait.Backoff{
 		Duration: 1 * time.Second,
 		Factor:   2.0,
@@ -295,7 +295,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	c.Logger.Tracef("capturing logs with exponential backoff for container %s", ctn.ID)
 	// perform the function to capture logs with periodic backoff
 	//
-	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait?tab=doc#ExponentialBackoff
+	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait#ExponentialBackoff
 	err := wait.ExponentialBackoffWithContext(ctx, backoff, logsFunc.WithContext())
 	if err != nil {
 		c.Logger.Errorf("exponential backoff error while tailing container %s: %v", ctn.ID, err)
@@ -325,7 +325,7 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 	// check if the pod is in a pending state
 	//
-	// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#PodStatus
+	// https://pkg.go.dev/k8s.io/api/core/v1#PodStatus
 	if pod.Status.Phase == v1.PodPending {
 		p.Logger.Debugf("skipping container status inspection as pod %s is pending", p.TrackedPod)
 
@@ -350,7 +350,7 @@ func (p *podTracker) inspectContainerStatuses(pod *v1.Pod) {
 
 		// check if the container is in a terminated state
 		//
-		// https://pkg.go.dev/k8s.io/api/core/v1?tab=doc#ContainerState
+		// https://pkg.go.dev/k8s.io/api/core/v1#ContainerState
 		if cst.State.Terminated != nil {
 			tracker.terminatedOnce.Do(func() {
 				p.Logger.Debugf("container completed: %s in pod %s, %v", cst.Name, p.TrackedPod, cst)

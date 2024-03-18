@@ -19,12 +19,13 @@ type (
 	// client manages communication with the pipeline resources.
 	client struct {
 		// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
-		Logger   *logrus.Entry
-		Vela     *vela.Client
-		Runtime  runtime.Engine
-		Secrets  map[string]*library.Secret
-		Hostname string
-		Version  string
+		Logger       *logrus.Entry
+		Vela         *vela.Client
+		Runtime      runtime.Engine
+		Secrets      map[string]*library.Secret
+		NoSubSecrets map[string]*library.Secret
+		Hostname     string
+		Version      string
 
 		// clients for build actions
 		secret *secretSvc
@@ -51,6 +52,7 @@ type (
 	}
 
 	svc struct {
+		//nolint:structcheck // false positive
 		client *client
 	}
 )
@@ -66,6 +68,7 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.Vela, b.Vela) &&
 		reflect.DeepEqual(a.Runtime, b.Runtime) &&
 		reflect.DeepEqual(a.Secrets, b.Secrets) &&
+		reflect.DeepEqual(a.NoSubSecrets, b.NoSubSecrets) &&
 		a.Hostname == b.Hostname &&
 		a.Version == b.Version &&
 		reflect.DeepEqual(a.init, b.init) &&
@@ -94,12 +97,12 @@ func New(opts ...Opt) (*client, error) {
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
+	// https://pkg.go.dev/github.com/sirupsen/logrus#StandardLogger
 	logger := logrus.StandardLogger()
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+	// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 	c.Logger = logrus.NewEntry(logger)
 
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
@@ -116,6 +119,9 @@ func New(opts ...Opt) (*client, error) {
 
 	// instantiate map for non-plugin secrets
 	c.Secrets = make(map[string]*library.Secret)
+
+	// instantiate map for non-substituted secrets
+	c.NoSubSecrets = make(map[string]*library.Secret)
 
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}

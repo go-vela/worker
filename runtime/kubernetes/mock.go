@@ -39,12 +39,12 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#StandardLogger
+	// https://pkg.go.dev/github.com/sirupsen/logrus#StandardLogger
 	logger := logrus.StandardLogger()
 
 	// create new logger for the client
 	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus?tab=doc#NewEntry
+	// https://pkg.go.dev/github.com/sirupsen/logrus#NewEntry
 	c.Logger = logrus.NewEntry(logger)
 
 	// set the Kubernetes namespace in the runtime client
@@ -64,7 +64,7 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	// set the Kubernetes fake client in the runtime client
 	//
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake?tab=doc#NewSimpleClientset
+	// https://pkg.go.dev/k8s.io/client-go/kubernetes/fake#NewSimpleClientset
 	c.Kubernetes = fake.NewSimpleClientset(c.Pod)
 
 	// set the VelaKubernetes fake client in the runtime client

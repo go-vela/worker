@@ -17,12 +17,12 @@ import (
 func PipelineHandlers(base *gin.RouterGroup) {
 	// add a collection of endpoints for handling pipeline related requests
 	//
-	// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.Group
+	// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.Group
 	pipeline := base.Group("/pipeline")
 	{
 		// add an endpoint for capturing the pipeline
 		//
-		// https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc#RouterGroup.GET
+		// https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup.GET
 		pipeline.GET("", api.GetPipeline)
 	}
 }
