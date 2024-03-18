@@ -6,12 +6,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
-	"github.com/sirupsen/logrus"
-
-	"golang.org/x/sync/errgroup"
 )
 
 // operate is a helper function to initiate all

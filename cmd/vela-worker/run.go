@@ -7,17 +7,15 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
+
+	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
-
-	"github.com/sirupsen/logrus"
-
-	"github.com/urfave/cli/v2"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
 // run executes the worker based

@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
@@ -16,7 +18,6 @@ import (
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
-	"github.com/sirupsen/logrus"
 )
 
 // exec is a helper function to poll the queue
