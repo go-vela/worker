@@ -6,25 +6,25 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
-	"github.com/sirupsen/logrus"
 )
 
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
 //nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int, config *library.Worker) error {
+func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
 
 	// setup the version
@@ -103,14 +103,14 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		"version":  v.Semantic(),
 	})
 
-	// lock and append the build to the RunningBuildIDs list
-	w.RunningBuildIDsMutex.Lock()
+	// lock and append the build to the list
+	w.RunningBuildsMutex.Lock()
 
-	w.RunningBuildIDs = append(w.RunningBuildIDs, strconv.FormatInt(item.Build.GetID(), 10))
+	w.RunningBuilds = append(w.RunningBuilds, item.Build)
 
-	config.SetRunningBuildIDs(w.RunningBuildIDs)
+	config.SetRunningBuilds(w.RunningBuilds)
 
-	w.RunningBuildIDsMutex.Unlock()
+	w.RunningBuildsMutex.Unlock()
 
 	// set worker status
 	updateStatus := w.getWorkerStatusFromConfig(config)
@@ -208,18 +208,18 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 		logger.Info("completed build")
 
-		// lock and remove the build from the RunningBuildIDs list
-		w.RunningBuildIDsMutex.Lock()
+		// lock and remove the build from the list
+		w.RunningBuildsMutex.Lock()
 
-		for i, v := range w.RunningBuildIDs {
-			if v == strconv.FormatInt(item.Build.GetID(), 10) {
-				w.RunningBuildIDs = append(w.RunningBuildIDs[:i], w.RunningBuildIDs[i+1:]...)
+		for i, v := range w.RunningBuilds {
+			if v.GetID() == item.Build.GetID() {
+				w.RunningBuilds = append(w.RunningBuilds[:i], w.RunningBuilds[i+1:]...)
 			}
 		}
 
-		config.SetRunningBuildIDs(w.RunningBuildIDs)
+		config.SetRunningBuilds(w.RunningBuilds)
 
-		w.RunningBuildIDsMutex.Unlock()
+		w.RunningBuildsMutex.Unlock()
 
 		// set worker status
 		updateStatus := w.getWorkerStatusFromConfig(config)
@@ -303,8 +303,8 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 // getWorkerStatusFromConfig is a helper function
 // to determine the appropriate worker status.
-func (w *Worker) getWorkerStatusFromConfig(config *library.Worker) string {
-	switch rb := len(config.GetRunningBuildIDs()); {
+func (w *Worker) getWorkerStatusFromConfig(config *api.Worker) string {
+	switch rb := len(config.GetRunningBuilds()); {
 	case rb == 0:
 		return constants.WorkerStatusIdle
 	case rb < w.Config.Build.Limit:
