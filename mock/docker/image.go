@@ -50,7 +50,7 @@ func (i *ImageService) ImageBuild(ctx context.Context, context io.Reader, option
 // a mocked call to create a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageCreate
-func (i *ImageService) ImageCreate(ctx context.Context, parentReference string, options types.ImageCreateOptions) (io.ReadCloser, error) {
+func (i *ImageService) ImageCreate(ctx context.Context, parentReference string, options image.CreateOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -67,7 +67,7 @@ func (i *ImageService) ImageHistory(ctx context.Context, image string) ([]image.
 // a mocked call to import a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageImport
-func (i *ImageService) ImageImport(ctx context.Context, source types.ImageImportSource, ref string, options types.ImageImportOptions) (io.ReadCloser, error) {
+func (i *ImageService) ImageImport(ctx context.Context, source types.ImageImportSource, ref string, options image.ImportOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -76,19 +76,19 @@ func (i *ImageService) ImageImport(ctx context.Context, source types.ImageImport
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
-func (i *ImageService) ImageInspectWithRaw(ctx context.Context, image string) (types.ImageInspect, []byte, error) {
+func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (types.ImageInspect, []byte, error) {
 	// verify an image was provided
-	if len(image) == 0 {
+	if len(img) == 0 {
 		return types.ImageInspect{}, nil, errors.New("no image provided")
 	}
 
 	// check if the image is not found
-	if strings.Contains(image, "notfound") || strings.Contains(image, "not-found") {
+	if strings.Contains(img, "notfound") || strings.Contains(img, "not-found") {
 		return types.ImageInspect{},
 			nil,
 			errdefs.NotFound(
 				//nolint:stylecheck // messsage is capitalized to match Docker messages
-				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
+				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", img),
 			)
 	}
 
@@ -118,7 +118,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, image string) (t
 			Type:   "layers",
 			Layers: []string{fmt.Sprintf("sha256:%s", stringid.GenerateRandomID())},
 		},
-		Metadata: types.ImageMetadata{LastTagTime: time.Now()},
+		Metadata: image.Metadata{LastTagTime: time.Now()},
 	}
 
 	// marshal response into raw bytes
@@ -134,7 +134,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, image string) (t
 // a mocked call to list Docker images.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageList
-func (i *ImageService) ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error) {
+func (i *ImageService) ImageList(ctx context.Context, options image.ListOptions) ([]image.Summary, error) {
 	return nil, nil
 }
 
@@ -150,7 +150,7 @@ func (i *ImageService) ImageLoad(ctx context.Context, input io.Reader, quiet boo
 // a mocked call to pull a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePull
-func (i *ImageService) ImagePull(ctx context.Context, image string, options types.ImagePullOptions) (io.ReadCloser, error) {
+func (i *ImageService) ImagePull(ctx context.Context, image string, options image.PullOptions) (io.ReadCloser, error) {
 	// verify an image was provided
 	if len(image) == 0 {
 		return nil, errors.New("no container provided")
@@ -199,7 +199,7 @@ func (i *ImageService) ImagePull(ctx context.Context, image string, options type
 // a mocked call to push a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePush
-func (i *ImageService) ImagePush(ctx context.Context, ref string, options types.ImagePushOptions) (io.ReadCloser, error) {
+func (i *ImageService) ImagePush(ctx context.Context, ref string, options image.PushOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -207,7 +207,7 @@ func (i *ImageService) ImagePush(ctx context.Context, ref string, options types.
 // a mocked call to remove a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageRemove
-func (i *ImageService) ImageRemove(ctx context.Context, image string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error) {
+func (i *ImageService) ImageRemove(ctx context.Context, image string, options image.RemoveOptions) ([]image.DeleteResponse, error) {
 	return nil, nil
 }
 

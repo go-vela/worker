@@ -19,14 +19,14 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 
 	// create options for creating network
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#NetworkCreate
+	// https://pkg.go.dev/github.com/docker/docker/api/types#NetworkCreate
 	opts := types.NetworkCreate{
 		Driver: "bridge",
 	}
 
 	// send API call to create the network
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.NetworkCreate
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkCreate
 	_, err := c.Docker.NetworkCreate(ctx, b.ID, opts)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 
 	// create options for inspecting network
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#NetworkInspectOptions
+	// https://pkg.go.dev/github.com/docker/docker/api/types#NetworkInspectOptions
 	opts := types.NetworkInspectOptions{}
 
 	// create output for inspecting network
@@ -51,7 +51,7 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 
 	// send API call to inspect the network
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.NetworkInspect
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspect
 	n, err := c.Docker.NetworkInspect(ctx, b.ID, opts)
 	if err != nil {
 		return output, err
@@ -59,7 +59,7 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 
 	// convert network type NetworkResource to bytes with pretty print
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#NetworkResource
+	// https://pkg.go.dev/github.com/docker/docker/api/types#NetworkResource
 	network, err := json.MarshalIndent(n, "", " ")
 	if err != nil {
 		return output, err
@@ -75,7 +75,7 @@ func (c *client) RemoveNetwork(ctx context.Context, b *pipeline.Build) error {
 
 	// send API call to remove the network
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.NetworkRemove
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkRemove
 	err := c.Docker.NetworkRemove(ctx, b.ID)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func netConfig(id, alias string) *network.NetworkingConfig {
 
 	// set pipeline id for endpoint with alias
 	//
-	// https://godoc.org/github.com/docker/docker/api/types/network#EndpointSettings
+	// https://pkg.go.dev/github.com/docker/docker/api/types/network#EndpointSettings
 	endpoints[id] = &network.EndpointSettings{
 		NetworkID: id,
 		Aliases:   []string{alias},
@@ -99,7 +99,7 @@ func netConfig(id, alias string) *network.NetworkingConfig {
 
 	// return network config with configured endpoints
 	//
-	// https://godoc.org/github.com/docker/docker/api/types/network#NetworkingConfig
+	// https://pkg.go.dev/github.com/docker/docker/api/types/network#NetworkingConfig
 	return &network.NetworkingConfig{
 		EndpointsConfig: endpoints,
 	}

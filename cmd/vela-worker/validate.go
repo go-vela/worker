@@ -57,7 +57,7 @@ func (w *Worker) Validate() error {
 
 	// verify the runtime configuration
 	//
-	// https://godoc.org/github.com/go-vela/worker/runtime#Setup.Validate
+	// https://pkg.go.dev/github.com/go-vela/worker/runtime#Setup.Validate
 	err := w.Config.Runtime.Validate()
 	if err != nil {
 		return err
