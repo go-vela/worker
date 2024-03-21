@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 )
@@ -20,8 +21,8 @@ type ServiceService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceCreate
-func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options types.ServiceCreateOptions) (types.ServiceCreateResponse, error) {
-	return types.ServiceCreateResponse{}, nil
+func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options types.ServiceCreateOptions) (swarm.ServiceCreateResponse, error) {
+	return swarm.ServiceCreateResponse{}, nil
 }
 
 // ServiceInspectWithRaw is a helper function to simulate
@@ -47,7 +48,7 @@ func (s *ServiceService) ServiceList(ctx context.Context, options types.ServiceL
 // service for a Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceLogs
-func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
+func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, options container.LogsOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -65,8 +66,8 @@ func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) er
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceUpdate
-func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options types.ServiceUpdateOptions) (types.ServiceUpdateResponse, error) {
-	return types.ServiceUpdateResponse{}, nil
+func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options types.ServiceUpdateOptions) (swarm.ServiceUpdateResponse, error) {
+	return swarm.ServiceUpdateResponse{}, nil
 }
 
 // TaskInspectWithRaw is a helper function to simulate
@@ -90,7 +91,7 @@ func (s *ServiceService) TaskList(ctx context.Context, options types.TaskListOpt
 // TaskLogs is a helper function to simulate
 // a mocked call to capture the logs from a
 // task for a Docker swarm cluster.
-func (s *ServiceService) TaskLogs(ctx context.Context, taskID string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
+func (s *ServiceService) TaskLogs(ctx context.Context, taskID string, options container.LogsOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 

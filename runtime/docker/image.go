@@ -9,7 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/docker/api/types"
+	dockerImageTypes "github.com/docker/docker/api/types/image"
+
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
@@ -30,12 +31,12 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 
 	// create options for pulling image
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#ImagePullOptions
-	opts := types.ImagePullOptions{}
+	// https://pkg.go.dev/github.com/docker/docker/api/types/image#PullOptions
+	opts := dockerImageTypes.PullOptions{}
 
 	// send API call to pull the image for the container
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ImagePull
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePull
 	reader, err := c.Docker.ImagePull(ctx, _image, opts)
 	if err != nil {
 		return err
@@ -86,7 +87,7 @@ func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]b
 
 	// send API call to inspect the image
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ImageInspectWithRaw
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
 	i, _, err := c.Docker.ImageInspectWithRaw(ctx, _image)
 	if err != nil {
 		return output, err
