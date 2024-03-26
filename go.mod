@@ -4,13 +4,13 @@ go 1.21
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/distribution/reference v0.5.0
+	github.com/distribution/reference v0.6.0
 	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-vela/sdk-go v0.23.3-0.20240319181130-4a7c245c93ae
-	github.com/go-vela/server v0.23.4-0.20240319161125-1809638e7e72
-	github.com/go-vela/types v0.23.2
+	github.com/go-vela/sdk-go v0.23.3
+	github.com/go-vela/server v0.23.4
+	github.com/go-vela/types v0.23.3
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
@@ -20,9 +20,9 @@ require (
 	github.com/urfave/cli/v2 v2.27.1
 	golang.org/x/sync v0.6.0
 	gotest.tools/v3 v3.5.1
-	k8s.io/api v0.29.2
-	k8s.io/apimachinery v0.29.2
-	k8s.io/client-go v0.29.2
+	k8s.io/api v0.29.3
+	k8s.io/apimachinery v0.29.3
+	k8s.io/client-go v0.29.3
 	sigs.k8s.io/yaml v1.4.0
 )
 
