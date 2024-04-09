@@ -262,7 +262,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 					_log.AppendData(logs.Bytes())
 
-					logger.Debug("appending logs service")
+					logger.Debug("appending logs")
 					// send API call to append the logs for the service
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
@@ -293,12 +293,10 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		// write all the logs from the scanner
 		logs.Write(append(scanner.Bytes(), []byte("\n")...))
 	}
-	if c.build.GetStatus() == constants.StatusSuccess {
-		logger.Info("finished streaming logs service")
+	logger.Info("finished streaming logs")
 
-		// close channel to stop processing logs
-		close(done)
-	}
+	// close channel to stop processing logs
+	close(done)
 
 	return scanner.Err()
 }
