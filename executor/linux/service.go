@@ -55,6 +55,13 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 		return fmt.Errorf("unable to substitute container configuration")
 	}
 
+	logger.Debug("injecting non-substituted secrets")
+	// inject no-substitution secrets for container
+	err = injectSecrets(ctn, c.NoSubSecrets)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

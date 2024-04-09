@@ -6,12 +6,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/sirupsen/logrus"
-
-	"golang.org/x/sync/errgroup"
 )
 
 // operate is a helper function to initiate all
@@ -27,7 +27,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	executors, gctx := errgroup.WithContext(ctx)
 	// Define the database representation of the worker
 	// and register itself in the database
-	registryWorker := new(library.Worker)
+	registryWorker := new(api.Worker)
 	registryWorker.SetHostname(w.Config.API.Address.Hostname())
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetRoutes(w.Config.Queue.Routes)
@@ -118,13 +118,16 @@ func (w *Worker) operate(ctx context.Context) error {
 
 						continue
 					}
+
 					w.QueueCheckedIn, err = w.queueCheckIn(gctx, registryWorker)
+
 					if err != nil {
 						// queue check in failed, retry
 						logrus.Errorf("unable to ping queue %v", err)
 						logrus.Info("retrying check-in...")
 
 						time.Sleep(5 * time.Second)
+
 						continue
 					}
 
@@ -166,12 +169,14 @@ func (w *Worker) operate(ctx context.Context) error {
 				if !w.CheckedIn {
 					time.Sleep(5 * time.Second)
 					logrus.Info("worker not checked in, skipping queue read")
+
 					continue
 				}
 				// do not pull from queue unless queue setup is done and connected
 				if !w.QueueCheckedIn {
 					time.Sleep(5 * time.Second)
 					logrus.Info("queue ping failed, skipping queue read")
+
 					continue
 				}
 				select {
@@ -179,6 +184,7 @@ func (w *Worker) operate(ctx context.Context) error {
 					logrus.WithFields(logrus.Fields{
 						"id": id,
 					}).Info("completed looping on worker executor")
+
 					return nil
 				default:
 					logrus.WithFields(logrus.Fields{
@@ -197,16 +203,19 @@ func (w *Worker) operate(ctx context.Context) error {
 						logrus.Errorf("failing worker executor: %v", err)
 						registryWorker.SetStatus(constants.WorkerStatusError)
 						_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+
 						if resp == nil {
 							// log the error instead of returning so the operation doesn't block worker deployment
 							logrus.Error("status update response is nil")
 						}
+
 						if logErr != nil {
 							if resp != nil {
 								// log the error instead of returning so the operation doesn't block worker deployment
 								logrus.Errorf("status code: %v, unable to update worker %s status with the server: %v", resp.StatusCode, registryWorker.GetHostname(), logErr)
 							}
 						}
+
 						return err
 					}
 				}
