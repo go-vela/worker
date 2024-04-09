@@ -5,6 +5,7 @@ package step
 import (
 	"testing"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/types/raw"
@@ -53,7 +54,7 @@ func TestStep_Environment(t *testing.T) {
 		Pull:        "always",
 	}
 
-	r := new(library.Repo)
+	r := new(api.Repo)
 	r.SetID(1)
 	r.SetOrg("github")
 	r.SetName("octocat")
@@ -94,7 +95,7 @@ func TestStep_Environment(t *testing.T) {
 		failure   bool
 		build     *library.Build
 		container *pipeline.Container
-		repo      *library.Repo
+		repo      *api.Repo
 		step      *library.Step
 	}{
 		{

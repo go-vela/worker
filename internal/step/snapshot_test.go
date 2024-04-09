@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -63,7 +64,7 @@ func TestStep_Snapshot(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_repo := &library.Repo{
+	_repo := &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),
@@ -113,7 +114,7 @@ func TestStep_Snapshot(t *testing.T) {
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
-		repo      *library.Repo
+		repo      *api.Repo
 		step      *library.Step
 	}{
 		{
@@ -192,7 +193,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_repo := &library.Repo{
+	_repo := &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),
@@ -243,7 +244,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		client    *vela.Client
 		container *pipeline.Container
 		log       *library.Log
-		repo      *library.Repo
+		repo      *api.Repo
 		step      *library.Step
 	}{
 		{

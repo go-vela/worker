@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-vela/worker/runtime"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -60,7 +61,7 @@ type Setup struct {
 	// resource for storing pipeline information in Vela
 	Pipeline *pipeline.Build
 	// resource for storing repo information in Vela
-	Repo *library.Repo
+	Repo *api.Repo
 	// resource for storing user information in Vela
 	User *library.User
 }

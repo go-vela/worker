@@ -373,7 +373,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	gin.SetMode(gin.TestMode)
 
@@ -430,7 +429,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithUser(_user).
-				WithMetadata(_metadata).
 				Compile(file)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)

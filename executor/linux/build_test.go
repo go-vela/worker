@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
@@ -37,7 +38,6 @@ func TestLinux_CreateBuild(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -151,7 +151,6 @@ func TestLinux_CreateBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
-				WithMetadata(_metadata).
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
@@ -237,7 +236,7 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	// test repo is not trusted by default
 	_untrustedRepo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
+
 	// to be matched with the image used by testdata/build/steps/basic.yml
 	_privilegedImagesStepsPipeline := []string{"alpine"}
 	// to be matched with the image used by testdata/build/services/basic.yml
@@ -262,7 +261,7 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 		failure             bool
 		runtime             string
 		build               *library.Build
-		repo                *library.Repo
+		repo                *api.Repo
 		pipeline            string
 		privilegedImages    []string
 		enforceTrustedRepos bool
@@ -996,7 +995,6 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(test.repo).
-				WithMetadata(_metadata).
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
@@ -1062,7 +1060,6 @@ func TestLinux_PlanBuild(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1165,7 +1162,6 @@ func TestLinux_PlanBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
-				WithMetadata(_metadata).
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
@@ -1251,7 +1247,6 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1455,7 +1450,6 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
-				WithMetadata(_metadata).
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
@@ -1565,7 +1559,6 @@ func TestLinux_ExecBuild(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1696,7 +1689,6 @@ func TestLinux_ExecBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
-				WithMetadata(_metadata).
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
@@ -1861,7 +1853,6 @@ func TestLinux_StreamBuild(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -2345,7 +2336,6 @@ func TestLinux_StreamBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
-				WithMetadata(_metadata).
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {
@@ -2481,7 +2471,6 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -2626,7 +2615,6 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_repo).
-				WithMetadata(_metadata).
 				WithUser(_user).
 				Compile(test.pipeline)
 			if err != nil {

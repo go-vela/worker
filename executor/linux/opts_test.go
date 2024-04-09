@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
@@ -384,7 +385,7 @@ func TestLinux_Opt_WithRepo(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
-		repo    *library.Repo
+		repo    *api.Repo
 	}{
 		{
 			name:    "repo",

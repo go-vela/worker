@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 
 	"github.com/go-vela/worker/runtime"
@@ -144,7 +145,7 @@ func TestLocal_Opt_WithRepo(t *testing.T) {
 	// setup tests
 	tests := []struct {
 		name string
-		repo *library.Repo
+		repo *api.Repo
 	}{
 		{
 			name: "repo",

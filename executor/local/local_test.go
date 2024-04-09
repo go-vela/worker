@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 
 	"github.com/go-vela/worker/runtime/docker"
@@ -201,8 +202,8 @@ func testBuild() *library.Build {
 
 // testRepo is a test helper function to create a Repo
 // type with all fields set to a fake value.
-func testRepo() *library.Repo {
-	return &library.Repo{
+func testRepo() *api.Repo {
+	return &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),

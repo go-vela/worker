@@ -28,7 +28,6 @@ func TestLinux_CreateStage(t *testing.T) {
 	_build := testBuild()
 	_repo := testRepo()
 	_user := testUser()
-	_metadata := testMetadata()
 
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
@@ -38,7 +37,6 @@ func TestLinux_CreateStage(t *testing.T) {
 		Duplicate().
 		WithBuild(_build).
 		WithRepo(_repo).
-		WithMetadata(_metadata).
 		WithUser(_user).
 		Compile(_file)
 	if err != nil {

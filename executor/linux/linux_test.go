@@ -12,8 +12,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -203,8 +203,8 @@ func testBuild() *library.Build {
 
 // testRepo is a test helper function to create a Repo
 // type with all fields set to a fake value.
-func testRepo() *library.Repo {
-	return &library.Repo{
+func testRepo() *api.Repo {
+	return &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),
@@ -235,30 +235,6 @@ func testUser() *library.User {
 		Favorites: vela.Strings([]string{"github/octocat"}),
 		Active:    vela.Bool(true),
 		Admin:     vela.Bool(false),
-	}
-}
-
-// testMetadata is a test helper function to create a metadata
-// type with all fields set to a fake value.
-func testMetadata() *types.Metadata {
-	return &types.Metadata{
-		Database: &types.Database{
-			Driver: "foo",
-			Host:   "foo",
-		},
-		Queue: &types.Queue{
-			Channel: "foo",
-			Driver:  "foo",
-			Host:    "foo",
-		},
-		Source: &types.Source{
-			Driver: "foo",
-			Host:   "foo",
-		},
-		Vela: &types.Vela{
-			Address:    "foo",
-			WebAddress: "foo",
-		},
 	}
 }
 

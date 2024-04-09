@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -34,7 +35,7 @@ func TestExecutor_Retrieve(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      new(library.Build),
 		Pipeline:   new(pipeline.Build),
-		Repo:       new(library.Repo),
+		Repo:       new(api.Repo),
 		User:       new(library.User),
 	})
 	if err != nil {
@@ -69,7 +70,7 @@ func TestExecutor_Establish(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      new(library.Build),
 		Pipeline:   new(pipeline.Build),
-		Repo:       new(library.Repo),
+		Repo:       new(api.Repo),
 		User:       new(library.User),
 	})
 	if err != nil {

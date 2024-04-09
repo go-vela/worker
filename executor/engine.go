@@ -6,6 +6,7 @@ import (
 	"context"
 	"sync"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 )
@@ -30,7 +31,7 @@ type Engine interface {
 	GetPipeline() (*pipeline.Build, error)
 	// GetRepo defines a function for the API
 	// that gets the current repo in execution.
-	GetRepo() (*library.Repo, error)
+	GetRepo() (*api.Repo, error)
 	// CancelBuild defines a function for the API
 	// that Cancels the current build in execution.
 	CancelBuild() (*library.Build, error)

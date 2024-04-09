@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
 )
@@ -42,7 +43,7 @@ func TestBuild_Snapshot(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
-	r := &library.Repo{
+	r := &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),
@@ -75,7 +76,7 @@ func TestBuild_Snapshot(t *testing.T) {
 		build  *library.Build
 		client *vela.Client
 		err    error
-		repo   *library.Repo
+		repo   *api.Repo
 	}{
 		{
 			name:   "build with error",

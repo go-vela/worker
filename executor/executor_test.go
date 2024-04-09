@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 
 	"github.com/go-vela/worker/executor/linux"
@@ -267,7 +268,7 @@ var (
 		},
 	}
 
-	_repo = &library.Repo{
+	_repo = &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),

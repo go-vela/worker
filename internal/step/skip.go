@@ -5,6 +5,7 @@ package step
 import (
 	"strings"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -13,7 +14,7 @@ import (
 // Skip creates the ruledata from the build and repository
 // information and returns true if the data does not match
 // the ruleset for the given container.
-func Skip(c *pipeline.Container, b *library.Build, r *library.Repo) (bool, error) {
+func Skip(c *pipeline.Container, b *library.Build, r *api.Repo) (bool, error) {
 	// check if the container provided is empty
 	if c == nil {
 		return true, nil

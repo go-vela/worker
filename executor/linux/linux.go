@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
@@ -38,7 +39,7 @@ type (
 		enforceTrustedRepos bool
 		build               *library.Build
 		pipeline            *pipeline.Build
-		repo                *library.Repo
+		repo                *api.Repo
 		secrets             sync.Map
 		services            sync.Map
 		serviceLogs         sync.Map

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 )
@@ -190,7 +191,7 @@ func TestStep_Skip(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_repo := &library.Repo{
+	_repo := &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),
@@ -213,7 +214,7 @@ func TestStep_Skip(t *testing.T) {
 		name      string
 		build     *library.Build
 		container *pipeline.Container
-		repo      *library.Repo
+		repo      *api.Repo
 		want      bool
 	}{
 		{

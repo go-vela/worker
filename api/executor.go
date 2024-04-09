@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	exec "github.com/go-vela/worker/router/middleware/executor"
 )
@@ -45,7 +45,7 @@ func GetExecutor(c *gin.Context) {
 	var err error
 
 	e := exec.Retrieve(c)
-	executor := &library.Executor{}
+	executor := &api.Executor{}
 
 	// TODO: Add this information from the context or helpers on executor
 	// tmp.SetHost(executor.GetHost())
@@ -129,11 +129,11 @@ func GetExecutors(c *gin.Context) {
 		return
 	}
 
-	executors := []*library.Executor{}
+	executors := []*api.Executor{}
 
 	for id, executor := range e {
 		// create a temporary executor to append results to response
-		tmp := &library.Executor{}
+		tmp := &api.Executor{}
 
 		// TODO: Add this information from the context or helpers on executor
 		// tmp.SetHost(executor.GetHost())
