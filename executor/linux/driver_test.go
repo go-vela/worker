@@ -38,7 +38,6 @@ func TestLinux_Driver(t *testing.T) {
 		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {

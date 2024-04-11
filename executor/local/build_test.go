@@ -22,7 +22,6 @@ func TestLocal_CreateBuild(t *testing.T) {
 
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -59,7 +58,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_repo.GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -70,7 +69,6 @@ func TestLocal_CreateBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -99,7 +97,6 @@ func TestLocal_PlanBuild(t *testing.T) {
 
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -136,7 +133,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_repo.GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -147,7 +144,6 @@ func TestLocal_PlanBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -182,7 +178,6 @@ func TestLocal_AssembleBuild(t *testing.T) {
 
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -252,7 +247,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_repo.GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -263,7 +258,6 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -299,7 +293,6 @@ func TestLocal_ExecBuild(t *testing.T) {
 
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -354,7 +347,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_repo.GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -365,7 +358,6 @@ func TestLocal_ExecBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -401,7 +393,6 @@ func TestLocal_StreamBuild(t *testing.T) {
 
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -548,7 +539,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_repo.GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -559,7 +550,6 @@ func TestLocal_StreamBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -615,7 +605,6 @@ func TestLocal_DestroyBuild(t *testing.T) {
 
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -667,7 +656,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_repo).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_repo.GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -678,7 +667,6 @@ func TestLocal_DestroyBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

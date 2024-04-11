@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -14,7 +15,7 @@ import (
 
 // Upload tracks the final state of the step
 // and attempts to upload it to the server.
-func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Step) {
+func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *api.Repo, s *library.Step) {
 	// handle the step based off the status provided
 	switch s.GetStatus() {
 	// step is in a canceled state

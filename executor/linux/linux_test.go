@@ -12,8 +12,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -42,7 +42,6 @@ func TestEqual(t *testing.T) {
 		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {
@@ -55,7 +54,6 @@ func TestEqual(t *testing.T) {
 		WithPipeline(testSteps(constants.DriverDocker)),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {
@@ -151,7 +149,6 @@ func TestLinux_New(t *testing.T) {
 				WithPipeline(testSteps(constants.DriverDocker)),
 				WithRepo(testRepo()),
 				WithRuntime(_runtime),
-				WithUser(testUser()),
 				WithVelaClient(_client),
 			)
 
@@ -203,24 +200,21 @@ func testBuild() *library.Build {
 
 // testRepo is a test helper function to create a Repo
 // type with all fields set to a fake value.
-func testRepo() *library.Repo {
-	return &library.Repo{
-		ID:          vela.Int64(1),
-		Org:         vela.String("github"),
-		Name:        vela.String("octocat"),
-		FullName:    vela.String("github/octocat"),
-		Link:        vela.String("https://github.com/github/octocat"),
-		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("main"),
-		Timeout:     vela.Int64(60),
-		Visibility:  vela.String("public"),
-		Private:     vela.Bool(false),
-		Trusted:     vela.Bool(false),
-		Active:      vela.Bool(true),
-		AllowPull:   vela.Bool(false),
-		AllowPush:   vela.Bool(true),
-		AllowDeploy: vela.Bool(false),
-		AllowTag:    vela.Bool(false),
+func testRepo() *api.Repo {
+	return &api.Repo{
+		ID:         vela.Int64(1),
+		Org:        vela.String("github"),
+		Name:       vela.String("octocat"),
+		FullName:   vela.String("github/octocat"),
+		Link:       vela.String("https://github.com/github/octocat"),
+		Clone:      vela.String("https://github.com/github/octocat.git"),
+		Branch:     vela.String("main"),
+		Timeout:    vela.Int64(60),
+		Visibility: vela.String("public"),
+		Private:    vela.Bool(false),
+		Trusted:    vela.Bool(false),
+		Active:     vela.Bool(true),
+		Owner:      testUser(),
 	}
 }
 
@@ -235,30 +229,6 @@ func testUser() *library.User {
 		Favorites: vela.Strings([]string{"github/octocat"}),
 		Active:    vela.Bool(true),
 		Admin:     vela.Bool(false),
-	}
-}
-
-// testMetadata is a test helper function to create a metadata
-// type with all fields set to a fake value.
-func testMetadata() *types.Metadata {
-	return &types.Metadata{
-		Database: &types.Database{
-			Driver: "foo",
-			Host:   "foo",
-		},
-		Queue: &types.Queue{
-			Channel: "foo",
-			Driver:  "foo",
-			Host:    "foo",
-		},
-		Source: &types.Source{
-			Driver: "foo",
-			Host:   "foo",
-		},
-		Vela: &types.Vela{
-			Address:    "foo",
-			WebAddress: "foo",
-		},
 	}
 }
 

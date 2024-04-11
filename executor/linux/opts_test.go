@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
@@ -384,7 +385,7 @@ func TestLinux_Opt_WithRepo(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
-		repo    *library.Repo
+		repo    *api.Repo
 	}{
 		{
 			name:    "repo",
@@ -480,54 +481,6 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 
 			if !reflect.DeepEqual(_engine.Runtime, test.runtime) {
 				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, test.runtime)
-			}
-		})
-	}
-}
-
-func TestLinux_Opt_WithUser(t *testing.T) {
-	// setup types
-	_user := testUser()
-
-	// setup tests
-	tests := []struct {
-		name    string
-		failure bool
-		user    *library.User
-	}{
-		{
-			name:    "user",
-			failure: false,
-			user:    _user,
-		},
-		{
-			name:    "nil user",
-			failure: true,
-			user:    nil,
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithUser(test.user),
-			)
-
-			if test.failure {
-				if err == nil {
-					t.Errorf("WithUser should have returned err")
-				}
-
-				return // continue to next test
-			}
-
-			if err != nil {
-				t.Errorf("WithUser returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.user, _user) {
-				t.Errorf("WithUser is %v, want %v", _engine.user, _user)
 			}
 		})
 	}

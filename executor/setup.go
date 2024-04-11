@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-vela/worker/runtime"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -60,9 +61,7 @@ type Setup struct {
 	// resource for storing pipeline information in Vela
 	Pipeline *pipeline.Build
 	// resource for storing repo information in Vela
-	Repo *library.Repo
-	// resource for storing user information in Vela
-	User *library.User
+	Repo *api.Repo
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -91,7 +90,6 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithPipeline(s.Pipeline),
 		linux.WithRepo(s.Repo),
 		linux.WithRuntime(s.Runtime),
-		linux.WithUser(s.User),
 		linux.WithVelaClient(s.Client),
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
@@ -112,7 +110,6 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithPipeline(s.Pipeline),
 		local.WithRepo(s.Repo),
 		local.WithRuntime(s.Runtime),
-		local.WithUser(s.User),
 		local.WithVelaClient(s.Client),
 		local.WithVersion(s.Version),
 		local.WithMockStdout(s.Mock),
@@ -170,7 +167,7 @@ func (s *Setup) Validate() error {
 	}
 
 	// check if a Vela user was provided
-	if s.User == nil {
+	if s.Repo.Owner == nil {
 		return fmt.Errorf("no Vela user provided in setup")
 	}
 
