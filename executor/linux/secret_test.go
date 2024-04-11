@@ -29,7 +29,6 @@ func TestLinux_Secret_create(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
@@ -124,7 +123,6 @@ func TestLinux_Secret_create(t *testing.T) {
 				WithPipeline(_steps),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -152,7 +150,6 @@ func TestLinux_Secret_delete(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 	_dockerSteps := testSteps(constants.DriverDocker)
 	_kubernetesSteps := testSteps(constants.DriverKubernetes)
 
@@ -327,7 +324,6 @@ func TestLinux_Secret_delete(t *testing.T) {
 				WithPipeline(test.steps),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -458,7 +454,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 				WithPipeline(p),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
@@ -502,7 +497,6 @@ func TestLinux_Secret_pull(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -774,7 +768,6 @@ func TestLinux_Secret_pull(t *testing.T) {
 				WithPipeline(testSteps(constants.DriverDocker)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -802,7 +795,6 @@ func TestLinux_Secret_stream(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
@@ -902,7 +894,6 @@ func TestLinux_Secret_stream(t *testing.T) {
 				WithPipeline(_steps),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -1057,7 +1048,17 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:  &v,
+					Value: &v,
+					AllowEvents: &library.Events{
+						Deployment: &actions.Deploy{
+							Created: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
@@ -1094,7 +1095,17 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "pull_request"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:  &v,
+					Value: &v,
+					AllowEvents: &library.Events{
+						Deployment: &actions.Deploy{
+							Created: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"VELA_BUILD_EVENT": "pull_request"},
@@ -1131,7 +1142,17 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "tag"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"deployment"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:  &v,
+					Value: &v,
+					AllowEvents: &library.Events{
+						Deployment: &actions.Deploy{
+							Created: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"VELA_BUILD_EVENT": "tag"},
@@ -1168,7 +1189,17 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"tag"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:  &v,
+					Value: &v,
+					AllowEvents: &library.Events{
+						Push: &actions.Push{
+							Tag: &tBool,
+						},
+					},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment"},
@@ -1183,7 +1214,18 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"push"}, Images: &[]string{"centos"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:  &v,
+					Value: &v,
+					AllowEvents: &library.Events{
+						Push: &actions.Push{
+							Branch: &tBool,
+						},
+					},
+					Images: &[]string{"centos"},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
@@ -1196,7 +1238,20 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
-			msec: map[string]*library.Secret{"FOO": {Name: &v, Value: &v, Events: &[]string{"pull_request"}, Images: &[]string{"centos"}}},
+			msec: map[string]*library.Secret{
+				"FOO": {
+					Name:  &v,
+					Value: &v,
+					AllowEvents: &library.Events{
+						PullRequest: &actions.Pull{
+							Opened:      &tBool,
+							Synchronize: &tBool,
+							Reopened:    &tBool,
+						},
+					},
+					Images: &[]string{"centos"},
+				},
+			},
 			want: &pipeline.Container{
 				Image:       "centos:latest",
 				Environment: map[string]string{"VELA_BUILD_EVENT": "push"},

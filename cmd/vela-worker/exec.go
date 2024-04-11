@@ -182,7 +182,6 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Build:               item.Build,
 		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
 		Repo:                item.Repo,
-		User:                item.Repo.GetOwner(),
 		Version:             v.Semantic(),
 	})
 

@@ -1,11 +1,8 @@
 module github.com/go-vela/worker
 
-go 1.21
+go 1.21.9
 
-replace (
-	github.com/go-vela/sdk-go => ../sdk-go
-	github.com/go-vela/server => ../server
-)
+toolchain go1.22.2
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -13,9 +10,9 @@ require (
 	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-vela/sdk-go v0.23.3-0.20240319181130-4a7c245c93ae
-	github.com/go-vela/server v0.23.4-0.20240319161125-1809638e7e72
-	github.com/go-vela/types v0.23.3
+	github.com/go-vela/sdk-go v0.23.3-0.20240411165353-c3fdc7210625
+	github.com/go-vela/server v0.23.4-0.20240411145541-132447406cf7
+	github.com/go-vela/types v0.23.4-0.20240405205548-f24f795ac0b7
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
@@ -68,7 +65,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
-	github.com/google/go-github/v59 v59.0.0 // indirect
+	github.com/google/go-github/v61 v61.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

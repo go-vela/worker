@@ -486,54 +486,6 @@ func TestLinux_Opt_WithRuntime(t *testing.T) {
 	}
 }
 
-func TestLinux_Opt_WithUser(t *testing.T) {
-	// setup types
-	_user := testUser()
-
-	// setup tests
-	tests := []struct {
-		name    string
-		failure bool
-		user    *library.User
-	}{
-		{
-			name:    "user",
-			failure: false,
-			user:    _user,
-		},
-		{
-			name:    "nil user",
-			failure: true,
-			user:    nil,
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithUser(test.user),
-			)
-
-			if test.failure {
-				if err == nil {
-					t.Errorf("WithUser should have returned err")
-				}
-
-				return // continue to next test
-			}
-
-			if err != nil {
-				t.Errorf("WithUser returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.user, _user) {
-				t.Errorf("WithUser is %v, want %v", _engine.user, _user)
-			}
-		})
-	}
-}
-
 func TestLinux_Opt_WithVelaClient(t *testing.T) {
 	// setup types
 	gin.SetMode(gin.TestMode)

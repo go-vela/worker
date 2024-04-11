@@ -222,39 +222,6 @@ func TestLocal_Opt_WithRuntime(t *testing.T) {
 	}
 }
 
-func TestLocal_Opt_WithUser(t *testing.T) {
-	// setup types
-	_user := testUser()
-
-	// setup tests
-	tests := []struct {
-		name string
-		user *library.User
-	}{
-		{
-			name: "user",
-			user: _user,
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithUser(test.user),
-			)
-
-			if err != nil {
-				t.Errorf("WithUser returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.user, _user) {
-				t.Errorf("WithUser is %v, want %v", _engine.user, _user)
-			}
-		})
-	}
-}
-
 func TestLocal_Opt_WithVelaClient(t *testing.T) {
 	// setup types
 	gin.SetMode(gin.TestMode)

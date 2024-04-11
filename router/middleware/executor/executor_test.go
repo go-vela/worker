@@ -28,6 +28,9 @@ func TestExecutor_Retrieve(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_repo := new(api.Repo)
+	_repo.SetOwner(new(library.User))
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -35,8 +38,7 @@ func TestExecutor_Retrieve(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      new(library.Build),
 		Pipeline:   new(pipeline.Build),
-		Repo:       new(api.Repo),
-		User:       new(library.User),
+		Repo:       _repo,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)
@@ -63,6 +65,9 @@ func TestExecutor_Establish(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_repo := new(api.Repo)
+	_repo.SetOwner(new(library.User))
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -70,8 +75,7 @@ func TestExecutor_Establish(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      new(library.Build),
 		Pipeline:   new(pipeline.Build),
-		Repo:       new(api.Repo),
-		User:       new(library.User),
+		Repo:       _repo,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)

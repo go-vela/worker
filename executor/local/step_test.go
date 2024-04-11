@@ -17,7 +17,6 @@ func TestLocal_CreateStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -84,7 +83,6 @@ func TestLocal_CreateStep(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -111,7 +109,6 @@ func TestLocal_PlanStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -152,7 +149,6 @@ func TestLocal_PlanStep(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -179,7 +175,6 @@ func TestLocal_ExecStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -263,7 +258,6 @@ func TestLocal_ExecStep(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -295,7 +289,6 @@ func TestLocal_StreamStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -362,7 +355,6 @@ func TestLocal_StreamStep(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -389,7 +381,6 @@ func TestLocal_DestroyStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -438,7 +429,6 @@ func TestLocal_DestroyStep(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

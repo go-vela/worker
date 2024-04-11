@@ -85,16 +85,6 @@ func WithRuntime(r runtime.Engine) Opt {
 	}
 }
 
-// WithUser sets the library user in the executor client for Local.
-func WithUser(u *library.User) Opt {
-	return func(c *client) error {
-		// set the user in the client
-		c.user = u
-
-		return nil
-	}
-}
-
 // WithVelaClient sets the Vela client in the executor client for Local.
 func WithVelaClient(cli *vela.Client) Opt {
 	return func(c *client) error {

@@ -41,7 +41,6 @@ func TestEqual(t *testing.T) {
 		WithPipeline(testSteps()),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {
@@ -54,7 +53,6 @@ func TestEqual(t *testing.T) {
 		WithPipeline(testSteps()),
 		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {
@@ -150,7 +148,6 @@ func TestLocal_New(t *testing.T) {
 				WithPipeline(test.pipeline),
 				WithRepo(testRepo()),
 				WithRuntime(_runtime),
-				WithUser(testUser()),
 				WithVelaClient(_client),
 			)
 
@@ -204,22 +201,19 @@ func testBuild() *library.Build {
 // type with all fields set to a fake value.
 func testRepo() *api.Repo {
 	return &api.Repo{
-		ID:          vela.Int64(1),
-		Org:         vela.String("github"),
-		Name:        vela.String("octocat"),
-		FullName:    vela.String("github/octocat"),
-		Link:        vela.String("https://github.com/github/octocat"),
-		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("main"),
-		Timeout:     vela.Int64(60),
-		Visibility:  vela.String("public"),
-		Private:     vela.Bool(false),
-		Trusted:     vela.Bool(false),
-		Active:      vela.Bool(true),
-		AllowPull:   vela.Bool(false),
-		AllowPush:   vela.Bool(true),
-		AllowDeploy: vela.Bool(false),
-		AllowTag:    vela.Bool(false),
+		ID:         vela.Int64(1),
+		Org:        vela.String("github"),
+		Name:       vela.String("octocat"),
+		FullName:   vela.String("github/octocat"),
+		Link:       vela.String("https://github.com/github/octocat"),
+		Clone:      vela.String("https://github.com/github/octocat.git"),
+		Branch:     vela.String("main"),
+		Timeout:    vela.Int64(60),
+		Visibility: vela.String("public"),
+		Private:    vela.Bool(false),
+		Trusted:    vela.Bool(false),
+		Active:     vela.Bool(true),
+		Owner:      testUser(),
 	}
 }
 

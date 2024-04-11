@@ -67,11 +67,7 @@ func TestStep_Environment(t *testing.T) {
 	r.SetPrivate(false)
 	r.SetTrusted(false)
 	r.SetActive(true)
-	r.SetAllowPull(false)
-	r.SetAllowPush(true)
-	r.SetAllowDeploy(false)
-	r.SetAllowTag(false)
-	r.SetAllowComment(false)
+	r.SetAllowEvents(api.NewEventsFromMask(1))
 
 	s := new(library.Step)
 	s.SetID(1)

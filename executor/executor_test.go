@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/api/types/actions"
 	"github.com/go-vela/server/mock/server"
 
 	"github.com/go-vela/worker/executor/linux"
@@ -48,7 +49,6 @@ func TestExecutor_New(t *testing.T) {
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
 	)
@@ -62,7 +62,6 @@ func TestExecutor_New(t *testing.T) {
 		local.WithPipeline(_pipeline),
 		local.WithRepo(_repo),
 		local.WithRuntime(_runtime),
-		local.WithUser(_user),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
 	)
@@ -88,7 +87,6 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Repo:     _repo,
 				Runtime:  _runtime,
-				User:     _user,
 				Version:  "v1.0.0",
 			},
 			want:  nil,
@@ -105,7 +103,6 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline:   _pipeline,
 				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 				Version:    "v1.0.0",
 			},
 			want:  _linux,
@@ -121,7 +118,6 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Repo:     _repo,
 				Runtime:  _runtime,
-				User:     _user,
 				Version:  "v1.0.0",
 			},
 			want:  _local,
@@ -137,7 +133,6 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Repo:     _repo,
 				Runtime:  _runtime,
-				User:     _user,
 				Version:  "v1.0.0",
 			},
 			want:  nil,
@@ -153,7 +148,6 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Repo:     _repo,
 				Runtime:  _runtime,
-				User:     _user,
 				Version:  "v1.0.0",
 			},
 			want:  nil,
@@ -169,7 +163,6 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Repo:     _repo,
 				Runtime:  _runtime,
-				User:     _user,
 				Version:  "v1.0.0",
 			},
 			want:  nil,
@@ -268,6 +261,38 @@ var (
 		},
 	}
 
+	_user = &library.User{
+		ID:        vela.Int64(1),
+		Name:      vela.String("octocat"),
+		Token:     vela.String("superSecretToken"),
+		Hash:      vela.String("MzM4N2MzMDAtNmY4Mi00OTA5LWFhZDAtNWIzMTlkNTJkODMy"),
+		Favorites: vela.Strings([]string{"github/octocat"}),
+		Active:    vela.Bool(true),
+		Admin:     vela.Bool(false),
+	}
+
+	_allowEvents = &api.Events{
+		Push: &actions.Push{
+			Branch: vela.Bool(true),
+			Tag:    vela.Bool(true),
+		},
+		PullRequest: &actions.Pull{
+			Opened:      vela.Bool(true),
+			Synchronize: vela.Bool(true),
+			Edited:      vela.Bool(true),
+			Reopened:    vela.Bool(true),
+			Labeled:     vela.Bool(true),
+			Unlabeled:   vela.Bool(true),
+		},
+		Comment: &actions.Comment{
+			Created: vela.Bool(true),
+			Edited:  vela.Bool(true),
+		},
+		Deployment: &actions.Deploy{
+			Created: vela.Bool(true),
+		},
+	}
+
 	_repo = &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
@@ -281,19 +306,7 @@ var (
 		Private:     vela.Bool(false),
 		Trusted:     vela.Bool(false),
 		Active:      vela.Bool(true),
-		AllowPull:   vela.Bool(false),
-		AllowPush:   vela.Bool(true),
-		AllowDeploy: vela.Bool(false),
-		AllowTag:    vela.Bool(false),
-	}
-
-	_user = &library.User{
-		ID:        vela.Int64(1),
-		Name:      vela.String("octocat"),
-		Token:     vela.String("superSecretToken"),
-		Hash:      vela.String("MzM4N2MzMDAtNmY4Mi00OTA5LWFhZDAtNWIzMTlkNTJkODMy"),
-		Favorites: vela.Strings([]string{"github/octocat"}),
-		Active:    vela.Bool(true),
-		Admin:     vela.Bool(false),
+		AllowEvents: _allowEvents,
+		Owner:       _user,
 	}
 )

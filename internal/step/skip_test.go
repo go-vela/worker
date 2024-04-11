@@ -204,10 +204,7 @@ func TestStep_Skip(t *testing.T) {
 		Private:     vela.Bool(false),
 		Trusted:     vela.Bool(false),
 		Active:      vela.Bool(true),
-		AllowPull:   vela.Bool(false),
-		AllowPush:   vela.Bool(true),
-		AllowDeploy: vela.Bool(false),
-		AllowTag:    vela.Bool(false),
+		AllowEvents: api.NewEventsFromMask(1),
 	}
 
 	tests := []struct {

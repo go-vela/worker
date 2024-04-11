@@ -27,7 +27,6 @@ func TestLinux_CreateStage(t *testing.T) {
 	_file := "testdata/build/stages/basic.yml"
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
@@ -37,7 +36,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		Duplicate().
 		WithBuild(_build).
 		WithRepo(_repo).
-		WithUser(_user).
+		WithUser(_repo.GetOwner()).
 		Compile(_file)
 	if err != nil {
 		t.Errorf("unable to compile pipeline %s: %v", _file, err)
@@ -167,7 +166,6 @@ func TestLinux_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -203,7 +201,6 @@ func TestLinux_PlanStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -394,7 +391,6 @@ func TestLinux_PlanStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -422,7 +418,6 @@ func TestLinux_ExecStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -585,7 +580,6 @@ func TestLinux_ExecStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
@@ -614,7 +608,6 @@ func TestLinux_DestroyStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -690,7 +683,6 @@ func TestLinux_DestroyStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {

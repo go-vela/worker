@@ -167,23 +167,6 @@ func WithRuntime(r runtime.Engine) Opt {
 	}
 }
 
-// WithUser sets the library user in the executor client for Linux.
-func WithUser(u *library.User) Opt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring user in linux executor client")
-
-		// check if the user provided is empty
-		if u == nil {
-			return fmt.Errorf("empty user provided")
-		}
-
-		// set the user in the client
-		c.user = u
-
-		return nil
-	}
-}
-
 // WithVelaClient sets the Vela client in the executor client for Linux.
 func WithVelaClient(cli *vela.Client) Opt {
 	return func(c *client) error {

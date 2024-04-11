@@ -30,7 +30,6 @@ type (
 		repo           *api.Repo
 		services       sync.Map
 		steps          sync.Map
-		user           *library.User
 		err            error
 		streamRequests chan message.StreamRequest
 
@@ -68,7 +67,6 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.repo, b.repo) &&
 		reflect.DeepEqual(&a.services, &b.services) &&
 		reflect.DeepEqual(&a.steps, &b.steps) &&
-		reflect.DeepEqual(a.user, b.user) &&
 		reflect.DeepEqual(a.err, b.err)
 }
 

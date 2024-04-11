@@ -3,6 +3,7 @@
 package linux
 
 import (
+	"errors"
 	"reflect"
 	"sync"
 	"time"
@@ -48,12 +49,10 @@ type (
 
 		streamRequests chan message.StreamRequest
 
-		user *library.User
-		err  error
+		err error
 	}
 
 	svc struct {
-		//nolint:structcheck // false positive
 		client *client
 	}
 )
@@ -84,9 +83,7 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(&a.serviceLogs, &b.serviceLogs) &&
 		reflect.DeepEqual(&a.steps, &b.steps) &&
 		reflect.DeepEqual(&a.stepLogs, &b.stepLogs) &&
-		// do not compare streamRequests channel
-		reflect.DeepEqual(a.user, b.user) &&
-		reflect.DeepEqual(a.err, b.err)
+		errors.Is(a.err, b.err)
 }
 
 // New returns an Executor implementation that integrates with a Linux instance.

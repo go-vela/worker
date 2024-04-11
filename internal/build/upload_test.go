@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/api/types/actions"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
 )
@@ -53,22 +54,23 @@ func TestBuild_Upload(t *testing.T) {
 	_pending.SetStatus("pending")
 
 	_repo := &api.Repo{
-		ID:          vela.Int64(1),
-		Org:         vela.String("github"),
-		Name:        vela.String("octocat"),
-		FullName:    vela.String("github/octocat"),
-		Link:        vela.String("https://github.com/github/octocat"),
-		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("main"),
-		Timeout:     vela.Int64(60),
-		Visibility:  vela.String("public"),
-		Private:     vela.Bool(false),
-		Trusted:     vela.Bool(false),
-		Active:      vela.Bool(true),
-		AllowPull:   vela.Bool(false),
-		AllowPush:   vela.Bool(true),
-		AllowDeploy: vela.Bool(false),
-		AllowTag:    vela.Bool(false),
+		ID:         vela.Int64(1),
+		Org:        vela.String("github"),
+		Name:       vela.String("octocat"),
+		FullName:   vela.String("github/octocat"),
+		Link:       vela.String("https://github.com/github/octocat"),
+		Clone:      vela.String("https://github.com/github/octocat.git"),
+		Branch:     vela.String("main"),
+		Timeout:    vela.Int64(60),
+		Visibility: vela.String("public"),
+		Private:    vela.Bool(false),
+		Trusted:    vela.Bool(false),
+		Active:     vela.Bool(true),
+		AllowEvents: &api.Events{
+			Push: &actions.Push{
+				Branch: vela.Bool(true),
+			},
+		},
 	}
 
 	gin.SetMode(gin.TestMode)
@@ -133,7 +135,7 @@ func TestBuild_Upload(t *testing.T) {
 
 	// run test
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			Upload(test.build, test.client, test.err, nil, test.repo)
 		})
 	}
