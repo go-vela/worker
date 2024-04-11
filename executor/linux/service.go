@@ -293,6 +293,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		// write all the logs from the scanner
 		logs.Write(append(scanner.Bytes(), []byte("\n")...))
 	}
+
 	logger.Info("finished streaming logs")
 
 	// close channel to stop processing logs

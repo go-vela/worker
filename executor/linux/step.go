@@ -293,7 +293,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 				return
 			// channel is closed
 			case <-done:
-				logger.Trace("channel closed for polling container logs step")
+				logger.Trace("channel closed for polling container logs")
 
 				// return out of the go routine
 				return
@@ -344,7 +344,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		logs.Write(append(scanner.Bytes(), []byte("\n")...))
 	}
 
-	logger.Info("finished streaming logs step")
+	logger.Info("finished streaming logs")
 
 	// close channel to stop processing logs
 	close(done)

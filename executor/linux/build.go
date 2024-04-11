@@ -670,8 +670,8 @@ func (c *client) StreamBuild(ctx context.Context) error {
 					// Ctx is done. Cancels status update
 					return
 				default:
-					context2.Status = c.build.GetStatus()
-					context2.TimeFinished = c.build.GetFinished()
+					context2.SetBuildStatus(c.build.GetStatus())
+					context2.SetBuildFinished(c.build.GetFinished())
 				}
 			}
 		}()
