@@ -167,7 +167,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 	// setup the executor
 	//
-	// https://godoc.org/github.com/go-vela/worker/executor#New
+	// https://pkg.go.dev/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
 		Logger:              logger,
 		Mock:                w.Config.Mock,
