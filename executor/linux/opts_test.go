@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
@@ -18,7 +20,6 @@ import (
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/worker/runtime/kubernetes"
-	"github.com/sirupsen/logrus"
 )
 
 func TestLinux_Opt_WithBuild(t *testing.T) {

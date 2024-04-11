@@ -318,6 +318,27 @@ spec-version-update:
 .PHONY: spec
 spec: spec-gen spec-version-update spec-validate
 
+# The `lint` target is intended to lint the
+# Go source code with golangci-lint.
+#
+# Usage: `make lint`
+.PHONY: lint
+lint:
+	@echo
+	@echo "### Linting Go Code"
+	@golangci-lint run ./...
+
+# The `lintfix` target is intended to lint the
+# Go source code with golangci-lint and apply
+# any fixes that can be automatically applied.
+#
+# Usage: `make lintfix`
+.PHONY: lintfix
+lintfix:
+	@echo
+	@echo "### Fixing Go code with linter"
+	@golangci-lint run ./... --fix
+
 # The `crd-gen` target is intended to create a k8s CRD client
 # for the kubernetes runtime using k8s.io/code-generator
 #

@@ -8,12 +8,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/internal/service"
-
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/internal/service"
 )
 
 // create a service logging pattern.

@@ -11,12 +11,11 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/go-units"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	vol "github.com/go-vela/worker/internal/volume"
-
-	"github.com/sirupsen/logrus"
 )
 
 // CreateVolume creates the pipeline volume.

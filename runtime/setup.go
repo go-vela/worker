@@ -6,15 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-vela/worker/runtime/docker"
-	"github.com/go-vela/worker/runtime/kubernetes"
-
 	"github.com/docker/docker/oci/caps"
-
-	"github.com/go-vela/types/constants"
-
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+
+	"github.com/go-vela/types/constants"
+	"github.com/go-vela/worker/runtime/docker"
+	"github.com/go-vela/worker/runtime/kubernetes"
 )
 
 // Setup represents the configuration necessary for

@@ -10,9 +10,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	logrusTest "github.com/sirupsen/logrus/hooks/test"
+	"github.com/urfave/cli/v2"
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/native"
@@ -24,9 +27,6 @@ import (
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/worker/runtime/kubernetes"
-	"github.com/sirupsen/logrus"
-	logrusTest "github.com/sirupsen/logrus/hooks/test"
-	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_CreateBuild(t *testing.T) {

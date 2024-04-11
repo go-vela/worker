@@ -5,10 +5,10 @@ package kubernetes
 import (
 	"testing"
 
-	"github.com/go-vela/types/pipeline"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/go-vela/types/pipeline"
 )
 
 func TestKubernetes_New(t *testing.T) {

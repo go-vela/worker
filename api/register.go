@@ -7,8 +7,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-vela/worker/router/middleware/token"
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/go-vela/worker/router/middleware/token"
 )
 
 // swagger:operation POST /register system Register

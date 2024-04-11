@@ -3,9 +3,9 @@
 package main
 
 import (
-	"github.com/go-vela/sdk-go/vela"
-
 	"github.com/sirupsen/logrus"
+
+	"github.com/go-vela/sdk-go/vela"
 )
 
 // helper function to setup the queue from the CLI arguments.

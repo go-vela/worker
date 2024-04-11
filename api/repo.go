@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-vela/types"
-
 	"github.com/gin-gonic/gin"
+
+	"github.com/go-vela/types"
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 

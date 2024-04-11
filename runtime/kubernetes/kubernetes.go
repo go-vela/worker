@@ -3,6 +3,7 @@
 package kubernetes
 
 import (
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -10,7 +11,6 @@ import (
 
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 	velaK8sClient "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned"
-	"github.com/sirupsen/logrus"
 )
 
 type config struct {

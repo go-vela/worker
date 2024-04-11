@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
-	"github.com/sirupsen/logrus"
 )
 
 // create a stage logging pattern.

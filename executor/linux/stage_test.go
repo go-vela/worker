@@ -11,6 +11,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/urfave/cli/v2"
+
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
@@ -19,7 +21,6 @@ import (
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/worker/runtime/kubernetes"
-	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_CreateStage(t *testing.T) {

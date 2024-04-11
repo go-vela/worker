@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/worker/router"
 	"github.com/go-vela/worker/router/middleware"
-
-	"github.com/sirupsen/logrus"
 )
 
 // server is a helper function to listen and serve
