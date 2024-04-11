@@ -35,7 +35,7 @@ type config struct {
 
 type client struct {
 	config *config
-	// https://godoc.org/github.com/docker/docker/client#CommonAPIClient
+	// https://pkg.go.dev/github.com/docker/docker/client#CommonAPIClient
 	Docker docker.CommonAPIClient
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry
@@ -72,7 +72,7 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// create new Docker client from environment
 	//
-	// https://godoc.org/github.com/docker/docker/client#NewClientWithOpts
+	// https://pkg.go.dev/github.com/docker/docker/client#NewClientWithOpts
 	_docker, err := docker.NewClientWithOpts(docker.FromEnv)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func New(opts ...ClientOpt) (*client, error) {
 	// typically this would be inherited from the host environment
 	// but this ensures the version of client being used
 	//
-	// https://godoc.org/github.com/docker/docker/client#WithVersion
+	// https://pkg.go.dev/github.com/docker/docker/client#WithVersion
 	_ = docker.WithVersion(Version)(_docker)
 
 	// set the Docker client in the runtime client

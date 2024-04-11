@@ -553,7 +553,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		// load any lazy secrets into the container environment
 		c.err = loadLazySecrets(c, _step)
-		if err != nil {
+		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 

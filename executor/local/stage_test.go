@@ -24,7 +24,6 @@ func TestLocal_CreateStage(t *testing.T) {
 	_file := "testdata/build/stages/basic.yml"
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
 
@@ -33,7 +32,7 @@ func TestLocal_CreateStage(t *testing.T) {
 		WithBuild(_build).
 		WithRepo(_repo).
 		WithLocal(true).
-		WithUser(_user).
+		WithUser(_repo.GetOwner()).
 		Compile(_file)
 	if err != nil {
 		t.Errorf("unable to compile pipeline %s: %v", _file, err)
@@ -96,7 +95,6 @@ func TestLocal_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -129,7 +127,6 @@ func TestLocal_PlanStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -226,7 +223,6 @@ func TestLocal_PlanStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -253,7 +249,6 @@ func TestLocal_ExecStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -318,7 +313,6 @@ func TestLocal_ExecStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -346,7 +340,6 @@ func TestLocal_DestroyStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -387,7 +380,6 @@ func TestLocal_DestroyStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

@@ -45,7 +45,6 @@ func TestExecutor_Setup_Darwin(t *testing.T) {
 		Pipeline: _pipeline,
 		Repo:     _repo,
 		Runtime:  _runtime,
-		User:     _user,
 	}
 
 	got, err := _setup.Darwin()
@@ -82,7 +81,6 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
 	)
@@ -99,7 +97,6 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		Pipeline:   _pipeline,
 		Repo:       _repo,
 		Runtime:    _runtime,
-		User:       _user,
 		Version:    "v1.0.0",
 	}
 
@@ -138,7 +135,6 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		local.WithPipeline(_pipeline),
 		local.WithRepo(_repo),
 		local.WithRuntime(_runtime),
-		local.WithUser(_user),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
 	)
@@ -154,7 +150,6 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		Pipeline: _pipeline,
 		Repo:     _repo,
 		Runtime:  _runtime,
-		User:     _user,
 		Version:  "v1.0.0",
 	}
 
@@ -194,7 +189,6 @@ func TestExecutor_Setup_Windows(t *testing.T) {
 		Pipeline: _pipeline,
 		Repo:     _repo,
 		Runtime:  _runtime,
-		User:     _user,
 	}
 
 	got, err := _setup.Windows()
@@ -223,6 +217,9 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_emptyOwnerRepo := *_repo
+	_emptyOwnerRepo.Owner = nil
+
 	// setup tests
 	tests := []struct {
 		name    string
@@ -239,7 +236,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Pipeline:   _pipeline,
 				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: false,
 		},
@@ -253,7 +249,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Pipeline:   _pipeline,
 				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -267,7 +262,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Pipeline:   _pipeline,
 				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -281,7 +275,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Pipeline:   _pipeline,
 				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -295,7 +288,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Pipeline:   nil,
 				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -309,7 +301,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Pipeline:   _pipeline,
 				Repo:       nil,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -323,7 +314,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Pipeline:   _pipeline,
 				Repo:       _repo,
 				Runtime:    nil,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -335,9 +325,8 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
+				Repo:       &_emptyOwnerRepo,
 				Runtime:    _runtime,
-				User:       nil,
 			},
 			failure: true,
 		},

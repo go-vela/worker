@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -35,7 +36,7 @@ func (c *client) GetPipeline() (*pipeline.Build, error) {
 }
 
 // GetRepo gets the current repo in execution.
-func (c *client) GetRepo() (*library.Repo, error) {
+func (c *client) GetRepo() (*api.Repo, error) {
 	// check if the repo resource is available
 	if c.repo == nil {
 		return nil, fmt.Errorf("repo resource not found")

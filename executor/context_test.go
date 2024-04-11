@@ -40,7 +40,6 @@ func TestExecutor_FromContext(t *testing.T) {
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {
@@ -105,7 +104,6 @@ func TestExecutor_FromGinContext(t *testing.T) {
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {
@@ -176,7 +174,6 @@ func TestExecutor_WithContext(t *testing.T) {
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {
@@ -215,7 +212,6 @@ func TestExecutor_WithGinContext(t *testing.T) {
 		linux.WithPipeline(_pipeline),
 		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {

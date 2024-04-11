@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -15,7 +16,7 @@ import (
 
 // Snapshot creates a moment in time record of the
 // step and attempts to upload it to the server.
-func Snapshot(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Step) {
+func Snapshot(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *api.Repo, s *library.Step) {
 	// check if the build is not in a canceled status or error status
 	logrus.Debugf("Snapshot s: %s %s", s.GetName(), s.GetStatus())
 
@@ -66,7 +67,7 @@ func Snapshot(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logr
 
 // SnapshotInit creates a moment in time record of the
 // init step and attempts to upload it to the server.
-func SnapshotInit(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *library.Repo, s *library.Step, lg *library.Log) {
+func SnapshotInit(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *api.Repo, s *library.Step, lg *library.Log) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) {
 		// check if the container has an unsuccessful exit code

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 
@@ -60,7 +61,7 @@ func WithPipeline(p *pipeline.Build) Opt {
 }
 
 // WithRepo sets the library repo in the executor client for Local.
-func WithRepo(r *library.Repo) Opt {
+func WithRepo(r *api.Repo) Opt {
 	return func(c *client) error {
 		// set the repo in the client
 		c.repo = r
@@ -79,16 +80,6 @@ func WithRuntime(r runtime.Engine) Opt {
 
 		// set the runtime in the client
 		c.Runtime = r
-
-		return nil
-	}
-}
-
-// WithUser sets the library user in the executor client for Local.
-func WithUser(u *library.User) Opt {
-	return func(c *client) error {
-		// set the user in the client
-		c.user = u
 
 		return nil
 	}

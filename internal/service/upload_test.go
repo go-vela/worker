@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -63,7 +64,7 @@ func TestService_Upload(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_repo := &library.Repo{
+	_repo := &api.Repo{
 		ID:          vela.Int64(1),
 		Org:         vela.String("github"),
 		Name:        vela.String("octocat"),
@@ -76,10 +77,7 @@ func TestService_Upload(t *testing.T) {
 		Private:     vela.Bool(false),
 		Trusted:     vela.Bool(false),
 		Active:      vela.Bool(true),
-		AllowPull:   vela.Bool(false),
-		AllowPush:   vela.Bool(true),
-		AllowDeploy: vela.Bool(false),
-		AllowTag:    vela.Bool(false),
+		AllowEvents: api.NewEventsFromMask(1),
 	}
 
 	_service := &library.Service{
@@ -122,7 +120,7 @@ func TestService_Upload(t *testing.T) {
 		build     *library.Build
 		client    *vela.Client
 		container *pipeline.Container
-		repo      *library.Repo
+		repo      *api.Repo
 		service   *library.Service
 	}{
 		{

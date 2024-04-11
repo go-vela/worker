@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -27,6 +28,9 @@ func TestExecutor_Retrieve(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_repo := new(api.Repo)
+	_repo.SetOwner(new(library.User))
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -34,8 +38,7 @@ func TestExecutor_Retrieve(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      new(library.Build),
 		Pipeline:   new(pipeline.Build),
-		Repo:       new(library.Repo),
-		User:       new(library.User),
+		Repo:       _repo,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)
@@ -62,6 +65,9 @@ func TestExecutor_Establish(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_repo := new(api.Repo)
+	_repo.SetOwner(new(library.User))
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -69,8 +75,7 @@ func TestExecutor_Establish(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      new(library.Build),
 		Pipeline:   new(pipeline.Build),
-		Repo:       new(library.Repo),
-		User:       new(library.User),
+		Repo:       _repo,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)

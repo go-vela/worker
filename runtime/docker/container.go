@@ -10,8 +10,7 @@ import (
 
 	"github.com/go-vela/types/constants"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
+	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 
@@ -25,7 +24,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 
 	// send API call to inspect the container
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ContainerInspect
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspect
 	container, err := c.Docker.ContainerInspect(ctx, ctn.ID)
 	if err != nil {
 		return err
@@ -33,7 +32,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 
 	// capture the container exit code
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#ContainerState
+	// https://pkg.go.dev/github.com/docker/docker/api/types#ContainerState
 	ctn.ExitCode = container.State.ExitCode
 
 	return nil
@@ -45,7 +44,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 
 	// send API call to inspect the container
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ContainerInspect
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspect
 	container, err := c.Docker.ContainerInspect(ctx, ctn.ID)
 	if err != nil {
 		return err
@@ -53,13 +52,13 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 
 	// if the container is paused, restarting or running
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#ContainerState
+	// https://pkg.go.dev/github.com/docker/docker/api/types#ContainerState
 	if container.State.Paused ||
 		container.State.Restarting ||
 		container.State.Running {
 		// send API call to kill the container
 		//
-		// https://godoc.org/github.com/docker/docker/client#Client.ContainerKill
+		// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerKill
 		err := c.Docker.ContainerKill(ctx, ctn.ID, "SIGKILL")
 		if err != nil {
 			return err
@@ -68,8 +67,8 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 
 	// create options for removing container
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#ContainerRemoveOptions
-	opts := types.ContainerRemoveOptions{
+	// https://pkg.go.dev/github.com/docker/docker/api/types/container#RemoveOptions
+	opts := dockerContainerTypes.RemoveOptions{
 		Force:         true,
 		RemoveLinks:   false,
 		RemoveVolumes: true,
@@ -77,7 +76,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 
 	// send API call to remove the container
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ContainerRemove
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRemove
 	err = c.Docker.ContainerRemove(ctx, ctn.ID, opts)
 	if err != nil {
 		return err
@@ -151,7 +150,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 
 	// send API call to create the container
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ContainerCreate
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCreate
 	_, err := c.Docker.ContainerCreate(
 		ctx,
 		containerConf,
@@ -166,12 +165,12 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 
 	// create options for starting container
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#ContainerStartOptions
-	opts := types.ContainerStartOptions{}
+	// https://pkg.go.dev/github.com/docker/docker/api/types/container#StartOptions
+	opts := dockerContainerTypes.StartOptions{}
 
 	// send API call to start the container
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ContainerStart
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStart
 	err = c.Docker.ContainerStart(ctx, ctn.ID, opts)
 	if err != nil {
 		return err
@@ -212,7 +211,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 
 	// check if the container image exists on the host
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ImageInspectWithRaw
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
 	_, _, err = c.Docker.ImageInspectWithRaw(ctx, _image)
 	if err == nil {
 		return nil
@@ -221,7 +220,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// if the container image does not exist on the host
 	// we attempt to capture it for executing the pipeline
 	//
-	// https://godoc.org/github.com/docker/docker/client#IsErrNotFound
+	// https://pkg.go.dev/github.com/docker/docker/client#IsErrNotFound
 	if docker.IsErrNotFound(err) {
 		// send API call to create the image
 		return c.CreateImage(ctx, ctn)
@@ -236,8 +235,8 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 	// create options for capturing container logs
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#ContainerLogsOptions
-	opts := types.ContainerLogsOptions{
+	// https://pkg.go.dev/github.com/docker/docker/api/types/container#LogsOptions
+	opts := dockerContainerTypes.LogsOptions{
 		Follow:     true,
 		ShowStdout: true,
 		ShowStderr: true,
@@ -247,7 +246,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 	// send API call to capture the container logs
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ContainerLogs
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerLogs
 	logs, err := c.Docker.ContainerLogs(ctx, ctn.ID, opts)
 	if err != nil {
 		return nil, err
@@ -262,7 +261,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 
 		// copy container stdout and stderr logs to our in-memory pipe
 		//
-		// https://godoc.org/github.com/docker/docker/pkg/stdcopy#StdCopy
+		// https://pkg.go.dev/github.com/docker/docker/pkg/stdcopy#StdCopy
 		_, err := stdcopy.StdCopy(wc, wc, logs)
 		if err != nil {
 			c.Logger.Errorf("unable to copy logs for container: %v", err)
@@ -284,8 +283,8 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 
 	// send API call to wait for the container completion
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.ContainerWait
-	wait, errC := c.Docker.ContainerWait(ctx, ctn.ID, container.WaitConditionNotRunning)
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerWait
+	wait, errC := c.Docker.ContainerWait(ctx, ctn.ID, dockerContainerTypes.WaitConditionNotRunning)
 
 	select {
 	case <-wait:
@@ -298,11 +297,11 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 
 // ctnConfig is a helper function to
 // generate the container config.
-func ctnConfig(ctn *pipeline.Container) *container.Config {
+func ctnConfig(ctn *pipeline.Container) *dockerContainerTypes.Config {
 	// create container config object
 	//
-	// https://godoc.org/github.com/docker/docker/api/types/container#Config
-	config := &container.Config{
+	// https://pkg.go.dev/github.com/docker/docker/api/types/container#Config
+	config := &dockerContainerTypes.Config{
 		Image:        image.Parse(ctn.Image),
 		WorkingDir:   ctn.Directory,
 		AttachStdin:  false,
