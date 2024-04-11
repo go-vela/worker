@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types"
 	"github.com/go-vela/worker/router/middleware/token"
-
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 // MustServer ensures the caller is the vela server.

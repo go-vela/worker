@@ -6,11 +6,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestLocal_CreateStep(t *testing.T) {

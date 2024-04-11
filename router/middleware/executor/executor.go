@@ -8,11 +8,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/types"
 	"github.com/go-vela/worker/executor"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Retrieve gets the repo in the given context.

@@ -11,13 +11,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
-
-	"github.com/sirupsen/logrus"
 )
 
 // secretSvc handles communication with secret processes during a build.

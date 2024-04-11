@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/pipeline"
-	"github.com/go-vela/worker/internal/image"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/image"
 )
 
 // InspectContainer inspects the pipeline container.

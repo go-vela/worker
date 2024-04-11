@@ -8,12 +8,11 @@ import (
 	"io"
 	"strings"
 
-	"github.com/go-vela/types/constants"
-
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 )

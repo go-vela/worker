@@ -7,19 +7,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/sdk-go/vela"
-
-	"github.com/go-vela/worker/executor/linux"
-	"github.com/go-vela/worker/executor/local"
-
-	"github.com/go-vela/worker/runtime"
-
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
-
-	"github.com/sirupsen/logrus"
+	"github.com/go-vela/worker/executor/linux"
+	"github.com/go-vela/worker/executor/local"
+	"github.com/go-vela/worker/runtime"
 )
 
 // Setup represents the configuration necessary for

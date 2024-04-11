@@ -6,9 +6,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-vela/types/pipeline"
-
 	v1 "k8s.io/api/core/v1"
+
+	"github.com/go-vela/types/pipeline"
 )
 
 func TestKubernetes_CreateVolume(t *testing.T) {

@@ -4,8 +4,9 @@ package docker
 
 import (
 	docker "github.com/docker/docker/client"
-	mock "github.com/go-vela/worker/mock/docker"
 	"github.com/sirupsen/logrus"
+
+	mock "github.com/go-vela/worker/mock/docker"
 )
 
 // Version represents the supported Docker API version for the mock.
