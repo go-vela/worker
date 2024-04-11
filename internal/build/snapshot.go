@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/sirupsen/logrus"
@@ -14,7 +15,7 @@ import (
 
 // Snapshot creates a moment in time record of the build
 // and attempts to upload it to the server.
-func Snapshot(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *library.Repo) {
+func Snapshot(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *api.Repo) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(b.GetStatus(), constants.StatusCanceled) {
 		// check if the error provided is empty

@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/queue/models"
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
@@ -99,7 +100,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		"host":     w.Config.API.Address.Hostname(),
 		"repo":     item.Repo.GetFullName(),
 		"runtime":  w.Config.Runtime.Driver,
-		"user":     item.User.GetName(),
+		"user":     item.Repo.GetOwner().GetName(),
 		"version":  v.Semantic(),
 	})
 
@@ -125,7 +126,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	}
 
 	// handle stale item queued before a Vela upgrade or downgrade.
-	if item.ItemVersion != types.ItemVersion {
+	if item.ItemVersion != models.ItemVersion {
 		// If the ItemVersion is older or newer than what we expect, then it might
 		// not be safe to process the build. Fail the build and loop to the next item.
 		// TODO: Ask the server to re-compile and requeue the build instead of failing it.
@@ -181,7 +182,6 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Build:               item.Build,
 		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
 		Repo:                item.Repo,
-		User:                item.User,
 		Version:             v.Semantic(),
 	})
 

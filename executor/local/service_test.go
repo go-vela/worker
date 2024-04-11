@@ -17,7 +17,6 @@ func TestLocal_CreateService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -75,7 +74,6 @@ func TestLocal_CreateService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -102,7 +100,6 @@ func TestLocal_PlanService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -145,7 +142,6 @@ func TestLocal_PlanService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -172,7 +168,6 @@ func TestLocal_ExecService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -233,7 +228,6 @@ func TestLocal_ExecService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -265,7 +259,6 @@ func TestLocal_StreamService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -308,7 +301,6 @@ func TestLocal_StreamService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -335,7 +327,6 @@ func TestLocal_DestroyService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -373,7 +364,6 @@ func TestLocal_DestroyService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

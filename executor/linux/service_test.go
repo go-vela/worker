@@ -22,7 +22,6 @@ func TestLinux_CreateService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -136,7 +135,6 @@ func TestLinux_CreateService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -164,7 +162,6 @@ func TestLinux_PlanService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -278,7 +275,6 @@ func TestLinux_PlanService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -306,7 +302,6 @@ func TestLinux_ExecService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -423,7 +418,6 @@ func TestLinux_ExecService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
@@ -457,7 +451,6 @@ func TestLinux_StreamService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -571,7 +564,6 @@ func TestLinux_StreamService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -604,7 +596,6 @@ func TestLinux_DestroyService(t *testing.T) {
 	// setup types
 	_build := testBuild()
 	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -706,7 +697,6 @@ func TestLinux_DestroyService(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {

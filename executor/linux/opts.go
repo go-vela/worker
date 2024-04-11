@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
@@ -133,7 +134,7 @@ func WithPipeline(p *pipeline.Build) Opt {
 }
 
 // WithRepo sets the library repo in the executor client for Linux.
-func WithRepo(r *library.Repo) Opt {
+func WithRepo(r *api.Repo) Opt {
 	return func(c *client) error {
 		c.Logger.Trace("configuring repository in linux executor client")
 
@@ -161,23 +162,6 @@ func WithRuntime(r runtime.Engine) Opt {
 
 		// set the runtime in the client
 		c.Runtime = r
-
-		return nil
-	}
-}
-
-// WithUser sets the library user in the executor client for Linux.
-func WithUser(u *library.User) Opt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring user in linux executor client")
-
-		// check if the user provided is empty
-		if u == nil {
-			return fmt.Errorf("empty user provided")
-		}
-
-		// set the user in the client
-		c.user = u
 
 		return nil
 	}
