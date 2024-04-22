@@ -29,7 +29,6 @@ import (
 func TestLinux_Secret_create(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
@@ -122,7 +121,6 @@ func TestLinux_Secret_create(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_steps),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -150,7 +148,6 @@ func TestLinux_Secret_create(t *testing.T) {
 func TestLinux_Secret_delete(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 	_dockerSteps := testSteps(constants.DriverDocker)
 	_kubernetesSteps := testSteps(constants.DriverKubernetes)
 
@@ -323,7 +320,6 @@ func TestLinux_Secret_delete(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(test.steps),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -368,8 +364,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -424,8 +418,8 @@ func TestLinux_Secret_exec(t *testing.T) {
 			p, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
-				WithUser(_user).
+				WithRepo(_build.GetRepo()).
+				WithUser(_build.GetRepo().GetOwner()).
 				Compile(file)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -453,7 +447,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(p),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -497,7 +490,6 @@ func TestLinux_Secret_exec(t *testing.T) {
 func TestLinux_Secret_pull(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -767,7 +759,6 @@ func TestLinux_Secret_pull(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(testSteps(constants.DriverDocker)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -795,7 +786,6 @@ func TestLinux_Secret_pull(t *testing.T) {
 func TestLinux_Secret_stream(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 	_steps := testSteps(constants.DriverDocker)
 
 	gin.SetMode(gin.TestMode)
@@ -893,7 +883,6 @@ func TestLinux_Secret_stream(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_steps),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)

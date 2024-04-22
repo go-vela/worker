@@ -12,7 +12,6 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -25,7 +24,7 @@ func TestLocal_Opt_WithBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
 		name  string
-		build *library.Build
+		build *api.Build
 	}{
 		{
 			name:  "build",
@@ -130,39 +129,6 @@ func TestLocal_Opt_WithPipeline(t *testing.T) {
 
 			if !reflect.DeepEqual(_engine.pipeline, _steps) {
 				t.Errorf("WithPipeline is %v, want %v", _engine.pipeline, _steps)
-			}
-		})
-	}
-}
-
-func TestLocal_Opt_WithRepo(t *testing.T) {
-	// setup types
-	_repo := testRepo()
-
-	// setup tests
-	tests := []struct {
-		name string
-		repo *api.Repo
-	}{
-		{
-			name: "repo",
-			repo: _repo,
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithRepo(test.repo),
-			)
-
-			if err != nil {
-				t.Errorf("WithRepo returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.repo, _repo) {
-				t.Errorf("WithRepo is %v, want %v", _engine.repo, _repo)
 			}
 		})
 	}

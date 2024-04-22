@@ -13,13 +13,33 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/api/types/actions"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types/library"
 )
 
 func TestBuild_Snapshot(t *testing.T) {
 	// setup types
-	b := &library.Build{
+	r := &api.Repo{
+		ID:         vela.Int64(1),
+		Org:        vela.String("github"),
+		Name:       vela.String("octocat"),
+		FullName:   vela.String("github/octocat"),
+		Link:       vela.String("https://github.com/github/octocat"),
+		Clone:      vela.String("https://github.com/github/octocat.git"),
+		Branch:     vela.String("main"),
+		Timeout:    vela.Int64(60),
+		Visibility: vela.String("public"),
+		Private:    vela.Bool(false),
+		Trusted:    vela.Bool(false),
+		Active:     vela.Bool(true),
+		AllowEvents: &api.Events{
+			Push: &actions.Push{
+				Branch: vela.Bool(true),
+			},
+		},
+	}
+
+	b := &api.Build{
 		ID:           vela.Int64(1),
+		Repo:         r,
 		Number:       vela.Int(1),
 		Parent:       vela.Int(1),
 		Event:        vela.String("push"),
@@ -45,26 +65,6 @@ func TestBuild_Snapshot(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
-	r := &api.Repo{
-		ID:         vela.Int64(1),
-		Org:        vela.String("github"),
-		Name:       vela.String("octocat"),
-		FullName:   vela.String("github/octocat"),
-		Link:       vela.String("https://github.com/github/octocat"),
-		Clone:      vela.String("https://github.com/github/octocat.git"),
-		Branch:     vela.String("main"),
-		Timeout:    vela.Int64(60),
-		Visibility: vela.String("public"),
-		Private:    vela.Bool(false),
-		Trusted:    vela.Bool(false),
-		Active:     vela.Bool(true),
-		AllowEvents: &api.Events{
-			Push: &actions.Push{
-				Branch: vela.Bool(true),
-			},
-		},
-	}
-
 	gin.SetMode(gin.TestMode)
 
 	s := httptest.NewServer(server.FakeHandler())
@@ -76,38 +76,34 @@ func TestBuild_Snapshot(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		build  *library.Build
+		build  *api.Build
 		client *vela.Client
 		err    error
-		repo   *api.Repo
 	}{
 		{
 			name:   "build with error",
 			build:  b,
 			client: _client,
 			err:    errors.New("unable to create network"),
-			repo:   r,
 		},
 		{
 			name:   "nil build with error",
 			build:  nil,
 			client: _client,
 			err:    errors.New("unable to create network"),
-			repo:   r,
 		},
 		{
 			name:   "nil everything",
 			build:  nil,
 			client: nil,
 			err:    nil,
-			repo:   nil,
 		},
 	}
 
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(_ *testing.T) {
-			Snapshot(test.build, test.client, test.err, nil, test.repo)
+			Snapshot(test.build, test.client, test.err, nil)
 		})
 	}
 }

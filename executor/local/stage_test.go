@@ -21,16 +21,15 @@ func TestLocal_CreateStage(t *testing.T) {
 	// setup types
 	_file := "testdata/build/stages/basic.yml"
 	_build := testBuild()
-	_repo := testRepo()
 
 	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
 
 	_pipeline, _, err := compiler.
 		Duplicate().
 		WithBuild(_build).
-		WithRepo(_repo).
+		WithRepo(_build.GetRepo()).
 		WithLocal(true).
-		WithUser(_repo.GetOwner()).
+		WithUser(_build.GetRepo().GetOwner()).
 		Compile(_file)
 	if err != nil {
 		t.Errorf("unable to compile pipeline %s: %v", _file, err)
@@ -91,7 +90,6 @@ func TestLocal_CreateStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 			)
 			if err != nil {
@@ -124,7 +122,6 @@ func TestLocal_CreateStage(t *testing.T) {
 func TestLocal_PlanStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -219,7 +216,6 @@ func TestLocal_PlanStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 			)
 			if err != nil {
@@ -246,7 +242,6 @@ func TestLocal_PlanStage(t *testing.T) {
 func TestLocal_ExecStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -309,7 +304,6 @@ func TestLocal_ExecStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				withStreamRequests(streamRequests),
 			)
@@ -337,7 +331,6 @@ func TestLocal_ExecStage(t *testing.T) {
 func TestLocal_DestroyStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -376,7 +369,6 @@ func TestLocal_DestroyStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 			)
 			if err != nil {

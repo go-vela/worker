@@ -17,9 +17,26 @@ import (
 
 func TestStep_Upload(t *testing.T) {
 	// setup types
-	_build := &library.Build{
+	_repo := &api.Repo{
+		ID:          vela.Int64(1),
+		Org:         vela.String("github"),
+		Name:        vela.String("octocat"),
+		FullName:    vela.String("github/octocat"),
+		Link:        vela.String("https://github.com/github/octocat"),
+		Clone:       vela.String("https://github.com/github/octocat.git"),
+		Branch:      vela.String("main"),
+		Timeout:     vela.Int64(60),
+		Visibility:  vela.String("public"),
+		Private:     vela.Bool(false),
+		Trusted:     vela.Bool(false),
+		Active:      vela.Bool(true),
+		AllowEvents: api.NewEventsFromMask(1),
+	}
+
+	_build := &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         _repo,
 		Parent:       vela.Int(1),
 		Event:        vela.String("push"),
 		Status:       vela.String("success"),
@@ -65,22 +82,6 @@ func TestStep_Upload(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_repo := &api.Repo{
-		ID:          vela.Int64(1),
-		Org:         vela.String("github"),
-		Name:        vela.String("octocat"),
-		FullName:    vela.String("github/octocat"),
-		Link:        vela.String("https://github.com/github/octocat"),
-		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("main"),
-		Timeout:     vela.Int64(60),
-		Visibility:  vela.String("public"),
-		Private:     vela.Bool(false),
-		Trusted:     vela.Bool(false),
-		Active:      vela.Bool(true),
-		AllowEvents: api.NewEventsFromMask(1),
-	}
-
 	_step := &library.Step{
 		ID:           vela.Int64(1),
 		BuildID:      vela.Int64(1),
@@ -118,10 +119,9 @@ func TestStep_Upload(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		build     *library.Build
+		build     *api.Build
 		client    *vela.Client
 		container *pipeline.Container
-		repo      *api.Repo
 		step      *library.Step
 	}{
 		{
@@ -129,7 +129,6 @@ func TestStep_Upload(t *testing.T) {
 			build:     _build,
 			client:    _client,
 			container: _container,
-			repo:      _repo,
 			step:      _step,
 		},
 		{
@@ -137,7 +136,6 @@ func TestStep_Upload(t *testing.T) {
 			build:     _build,
 			client:    _client,
 			container: _container,
-			repo:      _repo,
 			step:      &_canceled,
 		},
 		{
@@ -145,7 +143,6 @@ func TestStep_Upload(t *testing.T) {
 			build:     _build,
 			client:    _client,
 			container: _container,
-			repo:      _repo,
 			step:      &_error,
 		},
 		{
@@ -153,7 +150,6 @@ func TestStep_Upload(t *testing.T) {
 			build:     _build,
 			client:    _client,
 			container: _container,
-			repo:      _repo,
 			step:      &_pending,
 		},
 		{
@@ -161,15 +157,14 @@ func TestStep_Upload(t *testing.T) {
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
-			repo:      _repo,
 			step:      nil,
 		},
 	}
 
 	// run test
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			Upload(test.container, test.build, test.client, nil, test.repo, test.step)
+		t.Run(test.name, func(_ *testing.T) {
+			Upload(test.container, test.build, test.client, nil, test.step)
 		})
 	}
 }

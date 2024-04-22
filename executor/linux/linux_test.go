@@ -15,7 +15,6 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -40,7 +39,6 @@ func TestEqual(t *testing.T) {
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
 		WithPipeline(testSteps(constants.DriverDocker)),
-		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithVelaClient(_client),
 	)
@@ -52,7 +50,6 @@ func TestEqual(t *testing.T) {
 		WithBuild(testBuild()),
 		WithHostname("a.different.host"),
 		WithPipeline(testSteps(constants.DriverDocker)),
-		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithVelaClient(_client),
 	)
@@ -126,7 +123,7 @@ func TestLinux_New(t *testing.T) {
 	tests := []struct {
 		name    string
 		failure bool
-		build   *library.Build
+		build   *api.Build
 	}{
 		{
 			name:    "with build",
@@ -147,7 +144,6 @@ func TestLinux_New(t *testing.T) {
 				WithBuild(test.build),
 				WithHostname("localhost"),
 				WithPipeline(testSteps(constants.DriverDocker)),
-				WithRepo(testRepo()),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 			)
@@ -169,10 +165,11 @@ func TestLinux_New(t *testing.T) {
 
 // testBuild is a test helper function to create a Build
 // type with all fields set to a fake value.
-func testBuild() *library.Build {
-	return &library.Build{
+func testBuild() *api.Build {
+	return &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         testRepo(),
 		Parent:       vela.Int(1),
 		Event:        vela.String("push"),
 		Status:       vela.String("success"),
@@ -220,12 +217,11 @@ func testRepo() *api.Repo {
 
 // testUser is a test helper function to create a User
 // type with all fields set to a fake value.
-func testUser() *library.User {
-	return &library.User{
+func testUser() *api.User {
+	return &api.User{
 		ID:        vela.Int64(1),
 		Name:      vela.String("octocat"),
 		Token:     vela.String("superSecretToken"),
-		Hash:      vela.String("MzM4N2MzMDAtNmY4Mi00OTA5LWFhZDAtNWIzMTlkNTJkODMy"),
 		Favorites: vela.Strings([]string{"github/octocat"}),
 		Active:    vela.Bool(true),
 		Admin:     vela.Bool(false),

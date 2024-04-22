@@ -58,7 +58,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	}
 
 	// retrieve a build token from the server to setup the execBuildClient
-	bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
 	if err != nil {
 		logrus.Errorf("unable to retrieve build token: %s", err)
 
@@ -78,7 +78,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	}
 
 	// request build executable containing pipeline.Build data using exec client
-	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
 	if err != nil {
 		return err
 	}
@@ -98,9 +98,9 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		"build":    item.Build.GetNumber(),
 		"executor": w.Config.Executor.Driver,
 		"host":     w.Config.API.Address.Hostname(),
-		"repo":     item.Repo.GetFullName(),
+		"repo":     item.Build.GetRepo().GetFullName(),
 		"runtime":  w.Config.Runtime.Driver,
-		"user":     item.Repo.GetOwner().GetName(),
+		"user":     item.Build.GetRepo().GetOwner().GetName(),
 		"version":  v.Semantic(),
 	})
 
@@ -137,7 +137,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		build.SetStatus(constants.StatusError)
 		build.SetFinished(time.Now().UTC().Unix())
 
-		_, _, err := execBuildClient.Build.Update(item.Repo.GetOrg(), item.Repo.GetName(), build)
+		_, _, err := execBuildClient.Build.Update(build)
 		if err != nil {
 			logrus.Errorf("Unable to set build status to %s: %s", constants.StatusFailure, err)
 			return err
@@ -181,7 +181,6 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Runtime:             w.Runtime,
 		Build:               item.Build,
 		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
-		Repo:                item.Repo,
 		Version:             v.Semantic(),
 	})
 
@@ -237,9 +236,9 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	// capture the configured build timeout
 	t := w.Config.Build.Timeout
 	// check if the repository has a custom timeout
-	if item.Repo.GetTimeout() > 0 {
+	if item.Build.GetRepo().GetTimeout() > 0 {
 		// update timeout variable to repository custom timeout
-		t = time.Duration(item.Repo.GetTimeout()) * time.Minute
+		t = time.Duration(item.Build.GetRepo().GetTimeout()) * time.Minute
 	}
 
 	// create a build context (from a background context

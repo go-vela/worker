@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
@@ -20,7 +19,7 @@ import (
 type Opt func(*client) error
 
 // WithBuild sets the library build in the executor client for Linux.
-func WithBuild(b *library.Build) Opt {
+func WithBuild(b *api.Build) Opt {
 	return func(c *client) error {
 		c.Logger.Trace("configuring build in linux executor client")
 
@@ -129,23 +128,6 @@ func WithPipeline(p *pipeline.Build) Opt {
 
 		// set the pipeline in the client
 		c.pipeline = p
-
-		return nil
-	}
-}
-
-// WithRepo sets the library repo in the executor client for Linux.
-func WithRepo(r *api.Repo) Opt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring repository in linux executor client")
-
-		// check if the repo provided is empty
-		if r == nil {
-			return fmt.Errorf("empty repo provided")
-		}
-
-		// set the repo in the client
-		c.repo = r
 
 		return nil
 	}

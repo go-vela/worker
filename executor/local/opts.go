@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
@@ -17,8 +16,8 @@ import (
 // Opt represents a configuration option to initialize the executor client for Local.
 type Opt func(*client) error
 
-// WithBuild sets the library build in the executor client for Local.
-func WithBuild(b *library.Build) Opt {
+// WithBuild sets the API build in the executor client for Local.
+func WithBuild(b *api.Build) Opt {
 	return func(c *client) error {
 		// set the build in the client
 		c.build = b
@@ -53,16 +52,6 @@ func WithPipeline(p *pipeline.Build) Opt {
 
 		// set the pipeline in the client
 		c.pipeline = p
-
-		return nil
-	}
-}
-
-// WithRepo sets the library repo in the executor client for Local.
-func WithRepo(r *api.Repo) Opt {
-	return func(c *client) error {
-		// set the repo in the client
-		c.repo = r
 
 		return nil
 	}

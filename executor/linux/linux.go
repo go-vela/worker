@@ -39,9 +39,8 @@ type (
 		logStreamingTimeout time.Duration
 		privilegedImages    []string
 		enforceTrustedRepos bool
-		build               *library.Build
+		build               *api.Build
 		pipeline            *pipeline.Build
-		repo                *api.Repo
 		secrets             sync.Map
 		services            sync.Map
 		serviceLogs         sync.Map
@@ -78,7 +77,6 @@ func Equal(a, b *client) bool {
 		a.enforceTrustedRepos == b.enforceTrustedRepos &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
-		reflect.DeepEqual(a.repo, b.repo) &&
 		reflect.DeepEqual(&a.secrets, &b.secrets) &&
 		reflect.DeepEqual(&a.services, &b.services) &&
 		reflect.DeepEqual(&a.serviceLogs, &b.serviceLogs) &&

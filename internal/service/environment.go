@@ -13,7 +13,7 @@ import (
 
 // Environment attempts to update the environment variables
 // for the container based off the library resources.
-func Environment(c *pipeline.Container, b *library.Build, r *api.Repo, s *library.Service, version string) error {
+func Environment(c *pipeline.Container, b *api.Build, s *library.Service, version string) error {
 	// check if container or container environment are empty
 	if c == nil || c.Environment == nil {
 		return fmt.Errorf("empty container provided for environment")
@@ -52,17 +52,12 @@ func Environment(c *pipeline.Container, b *library.Build, r *api.Repo, s *librar
 		}
 	}
 
-	// check if the repo provided is empty
-	if r != nil {
-		// populate environment variables from repo library
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.MergeEnv
-		// ->
-		// https://pkg.go.dev/github.com/go-vela/types/library#Repo.Environment
-		err := c.MergeEnv(r.Environment())
-		if err != nil {
-			return err
-		}
+	// populate environment variables from repo library
+	//
+	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.MergeEnv
+	err := c.MergeEnv(b.GetRepo().Environment())
+	if err != nil {
+		return err
 	}
 
 	// check if the service provided is empty
