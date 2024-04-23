@@ -4,6 +4,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
@@ -132,6 +134,31 @@ func run(c *cli.Context) error {
 			// TLS minimum version enforced
 			TLSMinVersion: c.String("server.tls-min-version"),
 		},
+		// Usage configuration
+		Usage: &Usage{
+			cpuUsage: *promauto.NewGaugeVec(
+				prometheus.GaugeOpts{
+					Name: "cpu_usage_percent",
+					Help: "Current CPU usage percentage per build",
+				},
+				[]string{"org", "repo", "build_number"},
+			),
+			memoryUsage: *promauto.NewGaugeVec(
+				prometheus.GaugeOpts{
+					Name: "memory_usage_bytes",
+					Help: "Current memory usage in bytes",
+				},
+				[]string{"org", "repo", "build_number"},
+			),
+			diskUsage: *promauto.NewGaugeVec(
+				prometheus.GaugeOpts{
+					Name: "disk_usage_bytes",
+					Help: "Current disk usage in bytes",
+				},
+				[]string{"org", "repo", "build_number"},
+			),
+		},
+
 		Executors: make(map[int]executor.Engine),
 
 		RegisterToken: make(chan string, 1),

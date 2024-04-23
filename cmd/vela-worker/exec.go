@@ -5,7 +5,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -19,6 +21,9 @@ import (
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/mem"
 )
 
 // exec is a helper function to poll the queue
@@ -314,4 +319,62 @@ func (w *Worker) getWorkerStatusFromConfig(config *api.Worker) string {
 	default:
 		return constants.WorkerStatusError
 	}
+}
+
+func (w *Worker) collectMetrics(item *types.Item, ctx context.Context) {
+	go func() {
+		ticker := time.NewTicker(1 * time.Second) // Update interval: 5 seconds
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				//
+				logrus.Info("build ctx is done, stop timer")
+				// sleep for 5 secs to send off all the metrics
+				time.Sleep(5 * time.Second)
+				ticker.Stop()
+				w.resetMetrics()
+				return
+			case <-ticker.C:
+				w.updateCPUUsage(item)
+				w.updateMemoryUsage(item)
+			}
+		}
+	}()
+
+}
+
+func (w *Worker) resetMetrics() {
+	w.Usage.cpuUsage.Reset()
+	w.Usage.memoryUsage.Reset()
+}
+
+func (w *Worker) updateCPUUsage(item *types.Item) {
+	cpuPercent, err := cpu.Percent(time.Second, false)
+	if err != nil {
+		fmt.Println("Error getting CPU percent:", err)
+		return
+	}
+	w.Usage.cpuUsage.WithLabelValues(item.Repo.GetOrg(), item.Repo.GetName(),
+		strconv.Itoa(item.Build.GetNumber())).Set(cpuPercent[0])
+}
+
+func (w *Worker) updateMemoryUsage(item *types.Item) {
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		fmt.Println("Error getting memory info:", err)
+		return
+	}
+	w.Usage.memoryUsage.WithLabelValues(item.Repo.GetOrg(), item.Repo.GetName(),
+		strconv.Itoa(item.Build.GetNumber())).Set(float64(memInfo.Used))
+}
+
+func (w *Worker) updateDiskUsage(item *types.Item) {
+	diskInfo, err := disk.Usage("/")
+	if err != nil {
+		fmt.Println("Error getting memory info:", err)
+		return
+	}
+	w.Usage.diskUsage.WithLabelValues(item.Repo.GetOrg(), item.Repo.GetName(),
+		strconv.Itoa(item.Build.GetNumber())).Set(diskInfo.UsedPercent)
 }
