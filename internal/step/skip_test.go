@@ -7,15 +7,31 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 )
 
 func TestStep_Skip(t *testing.T) {
 	// setup types
-	_build := &library.Build{
+	_repo := &api.Repo{
+		ID:          vela.Int64(1),
+		Org:         vela.String("github"),
+		Name:        vela.String("octocat"),
+		FullName:    vela.String("github/octocat"),
+		Link:        vela.String("https://github.com/github/octocat"),
+		Clone:       vela.String("https://github.com/github/octocat.git"),
+		Branch:      vela.String("main"),
+		Timeout:     vela.Int64(60),
+		Visibility:  vela.String("public"),
+		Private:     vela.Bool(false),
+		Trusted:     vela.Bool(false),
+		Active:      vela.Bool(true),
+		AllowEvents: api.NewEventsFromMask(1),
+	}
+
+	_build := &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         _repo,
 		Parent:       vela.Int(1),
 		Event:        vela.String("push"),
 		EventAction:  vela.String(""),
@@ -41,9 +57,10 @@ func TestStep_Skip(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
-	_comment := &library.Build{
+	_comment := &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         _repo,
 		Parent:       vela.Int(1),
 		Event:        vela.String("comment"),
 		EventAction:  vela.String("created"),
@@ -69,9 +86,10 @@ func TestStep_Skip(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
-	_deploy := &library.Build{
+	_deploy := &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         _repo,
 		Parent:       vela.Int(1),
 		Event:        vela.String("deployment"),
 		EventAction:  vela.String(""),
@@ -97,9 +115,10 @@ func TestStep_Skip(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
-	_deployFromTag := &library.Build{
+	_deployFromTag := &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         _repo,
 		Parent:       vela.Int(1),
 		Event:        vela.String("deployment"),
 		EventAction:  vela.String(""),
@@ -125,9 +144,10 @@ func TestStep_Skip(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
-	_schedule := &library.Build{
+	_schedule := &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         _repo,
 		Parent:       vela.Int(1),
 		Event:        vela.String("schedule"),
 		EventAction:  vela.String(""),
@@ -153,9 +173,10 @@ func TestStep_Skip(t *testing.T) {
 		Distribution: vela.String("linux"),
 	}
 
-	_tag := &library.Build{
+	_tag := &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         _repo,
 		Parent:       vela.Int(1),
 		Event:        vela.String("tag"),
 		EventAction:  vela.String(""),
@@ -191,76 +212,52 @@ func TestStep_Skip(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_repo := &api.Repo{
-		ID:          vela.Int64(1),
-		Org:         vela.String("github"),
-		Name:        vela.String("octocat"),
-		FullName:    vela.String("github/octocat"),
-		Link:        vela.String("https://github.com/github/octocat"),
-		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("main"),
-		Timeout:     vela.Int64(60),
-		Visibility:  vela.String("public"),
-		Private:     vela.Bool(false),
-		Trusted:     vela.Bool(false),
-		Active:      vela.Bool(true),
-		AllowEvents: api.NewEventsFromMask(1),
-	}
-
 	tests := []struct {
 		name      string
-		build     *library.Build
+		build     *api.Build
 		container *pipeline.Container
-		repo      *api.Repo
 		want      bool
 	}{
 		{
 			name:      "build",
 			build:     _build,
 			container: _container,
-			repo:      _repo,
 			want:      false,
 		},
 		{
 			name:      "comment",
 			build:     _comment,
 			container: _container,
-			repo:      _repo,
 			want:      false,
 		},
 		{
 			name:      "deploy",
 			build:     _deploy,
 			container: _container,
-			repo:      _repo,
 			want:      false,
 		},
 		{
 			name:      "deployFromTag",
 			build:     _deployFromTag,
 			container: _container,
-			repo:      _repo,
 			want:      false,
 		},
 		{
 			name:      "schedule",
 			build:     _schedule,
 			container: _container,
-			repo:      _repo,
 			want:      false,
 		},
 		{
 			name:      "tag",
 			build:     _tag,
 			container: _container,
-			repo:      _repo,
 			want:      false,
 		},
 		{
 			name:      "skip nil",
 			build:     nil,
 			container: nil,
-			repo:      nil,
 			want:      true,
 		},
 	}
@@ -268,7 +265,7 @@ func TestStep_Skip(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := Skip(test.container, test.build, test.repo)
+			got, err := Skip(test.container, test.build)
 			if err != nil {
 				t.Errorf("Skip returned error: %s", err)
 			}

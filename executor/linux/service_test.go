@@ -22,7 +22,6 @@ import (
 func TestLinux_CreateService(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -134,7 +133,6 @@ func TestLinux_CreateService(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -162,7 +160,6 @@ func TestLinux_CreateService(t *testing.T) {
 func TestLinux_PlanService(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -274,7 +271,6 @@ func TestLinux_PlanService(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -302,7 +298,6 @@ func TestLinux_PlanService(t *testing.T) {
 func TestLinux_ExecService(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -417,7 +412,6 @@ func TestLinux_ExecService(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -451,7 +445,6 @@ func TestLinux_ExecService(t *testing.T) {
 func TestLinux_StreamService(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -563,7 +556,6 @@ func TestLinux_StreamService(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -596,7 +588,6 @@ func TestLinux_StreamService(t *testing.T) {
 func TestLinux_DestroyService(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -696,7 +687,6 @@ func TestLinux_DestroyService(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)

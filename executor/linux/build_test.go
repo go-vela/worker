@@ -21,7 +21,6 @@ import (
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
@@ -36,7 +35,6 @@ func TestLinux_CreateBuild(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -55,7 +53,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		failure  bool
 		logError bool
 		runtime  string
-		build    *library.Build
+		build    *api.Build
 		pipeline string
 	}{
 		{
@@ -127,7 +125,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			failure:  true,
 			logError: false,
 			runtime:  constants.DriverDocker,
-			build:    new(library.Build),
+			build:    new(api.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
@@ -135,7 +133,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			failure:  true,
 			logError: false,
 			runtime:  constants.DriverKubernetes,
-			build:    new(library.Build),
+			build:    new(api.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 	}
@@ -149,7 +147,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -178,7 +176,6 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 
 				WithVelaClient(_client),
@@ -257,7 +254,7 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 		name                string
 		failure             bool
 		runtime             string
-		build               *library.Build
+		build               *api.Build
 		repo                *api.Repo
 		pipeline            string
 		privilegedImages    []string
@@ -988,9 +985,12 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			// ensure custom test repos are in the executor engine
+			test.build.SetRepo(test.repo)
+
 			_pipeline, _, err := compiler.
 				Duplicate().
-				WithBuild(_build).
+				WithBuild(test.build).
 				WithRepo(test.repo).
 				Compile(test.pipeline)
 			if err != nil {
@@ -1010,7 +1010,6 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			_engine, err := New(
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
-				WithRepo(test.repo),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				WithPrivilegedImages(test.privilegedImages),
@@ -1028,6 +1027,7 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 			// override mock handler PUT build update
 			// used for dynamic substitute testing
 			_engine.build.SetMessage(test.build.GetMessage())
+			_engine.build.SetRepo(test.repo)
 
 			err = _engine.AssembleBuild(context.Background())
 
@@ -1053,7 +1053,6 @@ func TestLinux_PlanBuild(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1155,7 +1154,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -1184,7 +1183,6 @@ func TestLinux_PlanBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 			)
@@ -1237,7 +1235,6 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1440,7 +1437,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -1468,7 +1465,6 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -1546,7 +1542,6 @@ func TestLinux_ExecBuild(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1676,7 +1671,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -1711,7 +1706,6 @@ func TestLinux_ExecBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -1837,7 +1831,6 @@ func TestLinux_StreamBuild(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -2320,7 +2313,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -2349,7 +2342,6 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithLogStreamingTimeout(1*time.Second),
 				WithVelaClient(_client),
@@ -2452,7 +2444,6 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	compiler, _ := native.New(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -2596,7 +2587,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -2625,7 +2616,6 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 			)

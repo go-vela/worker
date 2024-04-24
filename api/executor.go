@@ -72,16 +72,6 @@ func GetExecutor(c *gin.Context) {
 		return
 	}
 
-	// get repo on executor
-	executor.Repo, err = e.GetRepo()
-	if err != nil {
-		msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
-
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
-
-		return
-	}
-
 	c.JSON(http.StatusOK, executor)
 }
 
@@ -155,16 +145,6 @@ func GetExecutors(c *gin.Context) {
 		tmp.Pipeline, err = executor.GetPipeline()
 		if err != nil {
 			msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
-
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
-
-			return
-		}
-
-		// get repo on executor
-		tmp.Repo, err = executor.GetRepo()
-		if err != nil {
-			msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
 
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 

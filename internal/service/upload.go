@@ -16,7 +16,7 @@ import (
 
 // Upload tracks the final state of the service
 // and attempts to upload it to the server.
-func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus.Entry, r *api.Repo, s *library.Service) {
+func Upload(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *library.Service) {
 	// handle the service based off the status provided
 	switch s.GetStatus() {
 	// service is in a canceled state
@@ -81,7 +81,7 @@ func Upload(ctn *pipeline.Container, b *library.Build, c *vela.Client, l *logrus
 		// send API call to update the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SvcService.Update
-		_, _, err := c.Svc.Update(r.GetOrg(), r.GetName(), b.GetNumber(), s)
+		_, _, err := c.Svc.Update(b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
 		if err != nil {
 			l.Errorf("unable to upload service snapshot: %v", err)
 		}

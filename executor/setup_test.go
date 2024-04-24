@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/executor/linux"
@@ -39,7 +40,6 @@ func TestExecutor_Setup_Darwin(t *testing.T) {
 		Client:   _client,
 		Driver:   constants.DriverDarwin,
 		Pipeline: _pipeline,
-		Repo:     _repo,
 		Runtime:  _runtime,
 	}
 
@@ -75,7 +75,6 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithLogStreamingTimeout(1*time.Second),
 		linux.WithHostname("localhost"),
 		linux.WithPipeline(_pipeline),
-		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
@@ -91,7 +90,6 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		MaxLogSize: 2097152,
 		Hostname:   "localhost",
 		Pipeline:   _pipeline,
-		Repo:       _repo,
 		Runtime:    _runtime,
 		Version:    "v1.0.0",
 	}
@@ -129,7 +127,6 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		local.WithBuild(_build),
 		local.WithHostname("localhost"),
 		local.WithPipeline(_pipeline),
-		local.WithRepo(_repo),
 		local.WithRuntime(_runtime),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
@@ -144,7 +141,6 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		Driver:   "local",
 		Hostname: "localhost",
 		Pipeline: _pipeline,
-		Repo:     _repo,
 		Runtime:  _runtime,
 		Version:  "v1.0.0",
 	}
@@ -183,7 +179,6 @@ func TestExecutor_Setup_Windows(t *testing.T) {
 		Client:   _client,
 		Driver:   constants.DriverWindows,
 		Pipeline: _pipeline,
-		Repo:     _repo,
 		Runtime:  _runtime,
 	}
 
@@ -213,8 +208,10 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	_emptyOwnerRepo := *_repo
-	_emptyOwnerRepo.Owner = nil
+	_emptyOwnerBuild := new(api.Build)
+	_emptyOwnerBuild.SetRepo(new(api.Repo))
+
+	_emptyRepoBuild := new(api.Build)
 
 	// setup tests
 	tests := []struct {
@@ -230,7 +227,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
 			},
 			failure: false,
@@ -243,7 +239,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
 			},
 			failure: true,
@@ -256,7 +251,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
 			},
 			failure: true,
@@ -269,7 +263,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     "",
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
 			},
 			failure: true,
@@ -282,7 +275,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   nil,
-				Repo:       _repo,
 				Runtime:    _runtime,
 			},
 			failure: true,
@@ -290,12 +282,11 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 		{
 			name: "nil repo",
 			setup: &Setup{
-				Build:      _build,
+				Build:      _emptyRepoBuild,
 				Client:     _client,
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       nil,
 				Runtime:    _runtime,
 			},
 			failure: true,
@@ -308,7 +299,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    nil,
 			},
 			failure: true,
@@ -316,12 +306,11 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 		{
 			name: "nil user",
 			setup: &Setup{
-				Build:      _build,
+				Build:      _emptyOwnerBuild,
 				Client:     _client,
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       &_emptyOwnerRepo,
 				Runtime:    _runtime,
 			},
 			failure: true,

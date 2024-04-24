@@ -12,7 +12,6 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
@@ -54,11 +53,9 @@ type Setup struct {
 	// Vela Resource Configuration
 
 	// resource for storing build information in Vela
-	Build *library.Build
+	Build *api.Build
 	// resource for storing pipeline information in Vela
 	Pipeline *pipeline.Build
-	// resource for storing repo information in Vela
-	Repo *api.Repo
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -85,7 +82,6 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
-		linux.WithRepo(s.Repo),
 		linux.WithRuntime(s.Runtime),
 		linux.WithVelaClient(s.Client),
 		linux.WithVersion(s.Version),
@@ -105,7 +101,6 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithBuild(s.Build),
 		local.WithHostname(s.Hostname),
 		local.WithPipeline(s.Pipeline),
-		local.WithRepo(s.Repo),
 		local.WithRuntime(s.Runtime),
 		local.WithVelaClient(s.Client),
 		local.WithVersion(s.Version),
@@ -159,12 +154,12 @@ func (s *Setup) Validate() error {
 	}
 
 	// check if a Vela repo was provided
-	if s.Repo == nil {
+	if s.Build.Repo == nil {
 		return fmt.Errorf("no Vela repo provided in setup")
 	}
 
 	// check if a Vela user was provided
-	if s.Repo.Owner == nil {
+	if s.Build.Repo.Owner == nil {
 		return fmt.Errorf("no Vela user provided in setup")
 	}
 
