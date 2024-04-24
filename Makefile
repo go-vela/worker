@@ -130,7 +130,7 @@ build:
 	@echo
 	@echo "### Building release/vela-worker binary"
 	GOOS=linux CGO_ENABLED=0 \
-		go build -a \
+		go1.21.9 build -a \
 		-ldflags '${LD_FLAGS}' \
 		-o release/vela-worker \
 		github.com/go-vela/worker/cmd/vela-worker
