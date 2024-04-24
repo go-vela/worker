@@ -10,18 +10,64 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 )
 
 const (
-	// BuildResp represents a JSON return for a single build.
 	BuildResp = `{
   "id": 1,
-  "repo_id": 1,
+  "repo": {
+	"id": 1,
+    "owner": {
+	  	"id": 1,
+	  	"name": "octocat",
+	  	"favorites": [],
+		"active": true,
+    	"admin": false
+  	},
+  	"org": "github",
+	"counter": 10,
+	"name": "octocat",
+	"full_name": "github/octocat",
+	"link": "https://github.com/github/octocat",
+	"clone": "https://github.com/github/octocat",
+	"branch": "main",
+	"build_limit": 10,
+	"timeout": 60,
+	"visibility": "public",
+	"private": false,
+	"trusted": true,
+	"pipeline_type": "yaml",
+	"topics": [],
+	"active": true,
+	"allow_events": {
+		"push": {
+			"branch": true,
+			"tag": true
+		},
+		"pull_request": {
+			"opened": true,
+			"synchronize": true,
+			"reopened": true,
+			"edited": false
+		},
+		"deployment": {
+			"created": true
+		},
+		"comment": {
+			"created": false,
+			"edited": false
+		}
+  	},
+  "approve_build": "fork-always",
+  "previous_name": ""
+ },
+  "pipeline_id": 1,
   "number": 1,
   "parent": 1,
   "event": "push",
+  "event_action": "",
   "status": "created",
   "error": "",
   "enqueued": 1563474077,
@@ -29,6 +75,8 @@ const (
   "started": 1563474077,
   "finished": 0,
   "deploy": "",
+  "deploy_number": 1,
+  "deploy_payload": {},
   "clone": "https://github.com/github/octocat.git",
   "source": "https://github.com/github/octocat/commit/48afb5bdc41ad69bf22588491333f7cf71135163",
   "title": "push received from https://github.com/github/octocat",
@@ -40,10 +88,13 @@ const (
   "link": "https://vela.example.company.com/github/octocat/1",
   "branch": "main",
   "ref": "refs/heads/main",
+  "head_ref": "",
   "base_ref": "",
   "host": "example.company.com",
   "runtime": "docker",
-  "distribution": "linux"
+  "distribution": "linux",
+  "approved_at": 0,
+  "approved_by": ""
 }`
 )
 
@@ -61,7 +112,7 @@ func getBuild(c *gin.Context) {
 
 	data := []byte(BuildResp)
 
-	var body library.Build
+	var body api.Build
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)

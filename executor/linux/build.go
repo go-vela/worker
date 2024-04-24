@@ -26,7 +26,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger, c.repo) }()
+	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -39,7 +39,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// send API call to update the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
-	c.build, _, c.err = c.Vela.Build.Update(c.repo.GetOrg(), c.repo.GetName(), c.build)
+	c.build, _, c.err = c.Vela.Build.Update(c.build)
 	if c.err != nil {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
 	}
@@ -80,7 +80,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger, c.repo) }()
+	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
 
 	// load the init step from the client
 	//
@@ -109,7 +109,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			_init.SetStatus(constants.StatusFailure)
 		}
 
-		step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, c.repo, _init, _log)
+		step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, _init, _log)
 	}()
 
 	c.Logger.Info("creating network")
@@ -220,7 +220,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger, c.repo) }()
+	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
 
 	// load the init step from the client
 	//
@@ -246,7 +246,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_init.SetStatus(constants.StatusFailure)
 		}
 
-		step.Upload(c.init, c.build, c.Vela, c.Logger, c.repo, _init)
+		step.Upload(c.init, c.build, c.Vela, c.Logger, _init)
 	}()
 
 	defer func() {
@@ -254,7 +254,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-		_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), c.init.Number, _log)
+		_, err = c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), c.init.Number, _log)
 		if err != nil {
 			c.Logger.Errorf("unable to upload %s logs: %v", c.init.Name, err)
 		}
@@ -450,8 +450,10 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
 		}
 
+		localBool := c.build.GetRepo().GetTrusted()
+
 		// ensure pipelines containing privileged images are only permitted to run by trusted repos
-		if (containsPrivilegedImages) && !(c.repo != nil && c.repo.GetTrusted()) {
+		if (containsPrivilegedImages) && !localBool {
 			// update error including privileged image
 			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted. privileged image: %v", privImages)
 
@@ -505,7 +507,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// defer an upload of the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
-		build.Upload(c.build, c.Vela, c.err, c.Logger, c.repo)
+		build.Upload(c.build, c.Vela, c.err, c.Logger)
 	}()
 
 	c.Logger.Info("executing secret images")
@@ -542,7 +544,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build, c.repo)
+		skip, err := step.Skip(_step, c.build)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
@@ -769,7 +771,7 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 				_log.AppendData([]byte(
 					fmt.Sprintf("unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source)))
 
-				_, err := c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
+				_, err := c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.Number, _log)
 				if err != nil {
 					return err
 				}
@@ -797,7 +799,7 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 
 			_log.AppendData(append(sRaw, "\n"...))
 
-			_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.Number, _log)
+			_, err = c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.Number, _log)
 			if err != nil {
 				return err
 			}

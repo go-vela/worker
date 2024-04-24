@@ -15,7 +15,6 @@ import (
 	"github.com/go-vela/server/api/types/actions"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
@@ -43,7 +42,6 @@ func TestExecutor_New(t *testing.T) {
 		linux.WithHostname("localhost"),
 		linux.WithMaxLogSize(2097152),
 		linux.WithPipeline(_pipeline),
-		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
@@ -56,7 +54,6 @@ func TestExecutor_New(t *testing.T) {
 		local.WithBuild(_build),
 		local.WithHostname("localhost"),
 		local.WithPipeline(_pipeline),
-		local.WithRepo(_repo),
 		local.WithRuntime(_runtime),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
@@ -81,7 +78,6 @@ func TestExecutor_New(t *testing.T) {
 				Client:   _client,
 				Driver:   constants.DriverDarwin,
 				Pipeline: _pipeline,
-				Repo:     _repo,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
 			},
@@ -97,7 +93,6 @@ func TestExecutor_New(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
 				Version:    "v1.0.0",
 			},
@@ -112,7 +107,6 @@ func TestExecutor_New(t *testing.T) {
 				Client:   _client,
 				Driver:   "local",
 				Pipeline: _pipeline,
-				Repo:     _repo,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
 			},
@@ -127,7 +121,6 @@ func TestExecutor_New(t *testing.T) {
 				Client:   _client,
 				Driver:   constants.DriverWindows,
 				Pipeline: _pipeline,
-				Repo:     _repo,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
 			},
@@ -142,7 +135,6 @@ func TestExecutor_New(t *testing.T) {
 				Client:   _client,
 				Driver:   "invalid",
 				Pipeline: _pipeline,
-				Repo:     _repo,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
 			},
@@ -157,7 +149,6 @@ func TestExecutor_New(t *testing.T) {
 				Client:   _client,
 				Driver:   "",
 				Pipeline: _pipeline,
-				Repo:     _repo,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
 			},
@@ -198,33 +189,6 @@ func TestExecutor_New(t *testing.T) {
 
 // setup global variables used for testing.
 var (
-	_build = &library.Build{
-		ID:           vela.Int64(1),
-		Number:       vela.Int(1),
-		Parent:       vela.Int(1),
-		Event:        vela.String("push"),
-		Status:       vela.String("success"),
-		Error:        vela.String(""),
-		Enqueued:     vela.Int64(1563474077),
-		Created:      vela.Int64(1563474076),
-		Started:      vela.Int64(1563474077),
-		Finished:     vela.Int64(0),
-		Deploy:       vela.String(""),
-		Clone:        vela.String("https://github.com/github/octocat.git"),
-		Source:       vela.String("https://github.com/github/octocat/abcdefghi123456789"),
-		Title:        vela.String("push received from https://github.com/github/octocat"),
-		Message:      vela.String("First commit..."),
-		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
-		Sender:       vela.String("OctoKitty"),
-		Author:       vela.String("OctoKitty"),
-		Branch:       vela.String("main"),
-		Ref:          vela.String("refs/heads/main"),
-		BaseRef:      vela.String(""),
-		Host:         vela.String("example.company.com"),
-		Runtime:      vela.String("docker"),
-		Distribution: vela.String("linux"),
-	}
-
 	_pipeline = &pipeline.Build{
 		Version: "1",
 		ID:      "github_octocat_1",
@@ -257,11 +221,10 @@ var (
 		},
 	}
 
-	_user = &library.User{
+	_user = &api.User{
 		ID:        vela.Int64(1),
 		Name:      vela.String("octocat"),
 		Token:     vela.String("superSecretToken"),
-		Hash:      vela.String("MzM4N2MzMDAtNmY4Mi00OTA5LWFhZDAtNWIzMTlkNTJkODMy"),
 		Favorites: vela.Strings([]string{"github/octocat"}),
 		Active:    vela.Bool(true),
 		Admin:     vela.Bool(false),
@@ -304,5 +267,33 @@ var (
 		Active:      vela.Bool(true),
 		AllowEvents: _allowEvents,
 		Owner:       _user,
+	}
+
+	_build = &api.Build{
+		ID:           vela.Int64(1),
+		Number:       vela.Int(1),
+		Repo:         _repo,
+		Parent:       vela.Int(1),
+		Event:        vela.String("push"),
+		Status:       vela.String("success"),
+		Error:        vela.String(""),
+		Enqueued:     vela.Int64(1563474077),
+		Created:      vela.Int64(1563474076),
+		Started:      vela.Int64(1563474077),
+		Finished:     vela.Int64(0),
+		Deploy:       vela.String(""),
+		Clone:        vela.String("https://github.com/github/octocat.git"),
+		Source:       vela.String("https://github.com/github/octocat/abcdefghi123456789"),
+		Title:        vela.String("push received from https://github.com/github/octocat"),
+		Message:      vela.String("First commit..."),
+		Commit:       vela.String("48afb5bdc41ad69bf22588491333f7cf71135163"),
+		Sender:       vela.String("OctoKitty"),
+		Author:       vela.String("OctoKitty"),
+		Branch:       vela.String("main"),
+		Ref:          vela.String("refs/heads/main"),
+		BaseRef:      vela.String(""),
+		Host:         vela.String("example.company.com"),
+		Runtime:      vela.String("docker"),
+		Distribution: vela.String("linux"),
 	}
 )

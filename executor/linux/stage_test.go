@@ -27,7 +27,6 @@ func TestLinux_CreateStage(t *testing.T) {
 	// setup types
 	_file := "testdata/build/stages/basic.yml"
 	_build := testBuild()
-	_repo := testRepo()
 
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
@@ -36,8 +35,8 @@ func TestLinux_CreateStage(t *testing.T) {
 	_pipeline, _, err := compiler.
 		Duplicate().
 		WithBuild(_build).
-		WithRepo(_repo).
-		WithUser(_repo.GetOwner()).
+		WithRepo(_build.GetRepo()).
+		WithUser(_build.GetRepo().GetOwner()).
 		Compile(_file)
 	if err != nil {
 		t.Errorf("unable to compile pipeline %s: %v", _file, err)
@@ -165,7 +164,6 @@ func TestLinux_CreateStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -201,7 +199,6 @@ func TestLinux_CreateStage(t *testing.T) {
 func TestLinux_PlanStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -390,7 +387,6 @@ func TestLinux_PlanStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)
@@ -418,7 +414,6 @@ func TestLinux_PlanStage(t *testing.T) {
 func TestLinux_ExecStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -579,7 +574,6 @@ func TestLinux_ExecStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
@@ -608,7 +602,6 @@ func TestLinux_ExecStage(t *testing.T) {
 func TestLinux_DestroyStage(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
 
 	gin.SetMode(gin.TestMode)
 
@@ -682,7 +675,6 @@ func TestLinux_DestroyStage(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 			)

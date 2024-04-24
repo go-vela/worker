@@ -39,12 +39,12 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	// create a library step object to facilitate injecting environment as early as possible
 	// (PlanStep is too late to inject environment vars for the kubernetes runtime).
-	_step := library.StepFromBuildContainer(c.build, ctn)
+	_step := library.StepFromBuildContainer(c.build.ToLibrary(), ctn)
 
 	// update the step container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment
-	err = step.Environment(ctn, c.build, c.repo, _step, c.Version)
+	err = step.Environment(ctn, c.build, _step, c.Version)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// create the library step object
-	_step := library.StepFromBuildContainer(c.build, ctn)
+	_step := library.StepFromBuildContainer(c.build.ToLibrary(), ctn)
 	_step.SetStatus(constants.StatusRunning)
 	_step.SetStarted(time.Now().UTC().Unix())
 
@@ -93,7 +93,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	// send API call to update the step
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-	_step, _, err = c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step)
+	_step, _, err = c.Vela.Step.Update(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step)
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	// update the step container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment
-	err = step.Environment(ctn, c.build, c.repo, _step, c.Version)
+	err = step.Environment(ctn, c.build, _step, c.Version)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	// send API call to capture the step log
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.GetStep
-	_log, _, err := c.Vela.Log.GetStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _step.GetNumber())
+	_log, _, err := c.Vela.Log.GetStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.GetNumber())
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// defer taking a snapshot of the step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
-	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, c.repo, _step) }()
+	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, _step) }()
 
 	logger.Debug("running container")
 	// run the runtime container
@@ -253,7 +253,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-		_, err = c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+		_, err = c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -287,8 +287,8 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 			// after repo timeout of idle (no response) end the stream
 			//
 			// this is a safety mechanism
-			case <-time.After(time.Duration(c.repo.GetTimeout()) * time.Minute):
-				logger.Tracef("repo timeout of %d exceeded", c.repo.GetTimeout())
+			case <-time.After(time.Duration(c.build.GetRepo().GetTimeout()) * time.Minute):
+				logger.Tracef("repo timeout of %d exceeded", c.build.GetRepo().GetTimeout())
 
 				return
 			// channel is closed
@@ -316,7 +316,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 					// send API call to append the logs for the step
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogStep.UpdateStep
-					_, err := c.Vela.Log.UpdateStep(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+					_, err := c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 					if err != nil {
 						logger.Error(err)
 					}
@@ -378,7 +378,7 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	// defer an upload of the step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
-	defer func() { step.Upload(ctn, c.build, c.Vela, logger, c.repo, _step) }()
+	defer func() { step.Upload(ctn, c.build, c.Vela, logger, _step) }()
 
 	logger.Debug("inspecting container")
 	// inspect the runtime container

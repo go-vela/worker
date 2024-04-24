@@ -116,7 +116,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		_, _, err = s.client.Vela.Step.Update(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), _init)
+		_, _, err = s.client.Vela.Step.Update(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
 			s.client.Logger.Errorf("unable to upload init state: %v", err)
 		}
@@ -180,7 +180,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		_, _, err = s.client.Vela.Step.Update(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), _init)
+		_, _, err = s.client.Vela.Step.Update(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
 			s.client.Logger.Errorf("unable to upload init state: %v", err)
 		}
@@ -196,7 +196,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 	switch secret.Type {
 	// handle repo secrets
 	case constants.SecretOrg:
-		org, key, err := secret.ParseOrg(s.client.repo.GetOrg())
+		org, key, err := secret.ParseOrg(s.client.build.GetRepo().GetOrg())
 		if err != nil {
 			return nil, err
 		}
@@ -213,7 +213,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
 
 	// handle repo secrets
 	case constants.SecretRepo:
-		org, repo, key, err := secret.ParseRepo(s.client.repo.GetOrg(), s.client.repo.GetName())
+		org, repo, key, err := secret.ParseRepo(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName())
 		if err != nil {
 			return nil, err
 		}
@@ -283,7 +283,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 		// send API call to update the logs for the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
-		_, err = s.client.Vela.Log.UpdateStep(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), ctn.Number, _log)
+		_, err = s.client.Vela.Log.UpdateStep(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -318,7 +318,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 			// send API call to append the logs for the init step
 			//
 			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-			_, err = s.client.Vela.Log.UpdateStep(s.client.repo.GetOrg(), s.client.repo.GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
+			_, err = s.client.Vela.Log.UpdateStep(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
 			if err != nil {
 				return err
 			}

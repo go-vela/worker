@@ -34,7 +34,7 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 	// update the service container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Environment
-	err = service.Environment(ctn, c.build, c.repo, nil, c.Version)
+	err = service.Environment(ctn, c.build, nil, c.Version)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	// send API call to update the service
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SvcService.Update
-	_service, _, err = c.Vela.Svc.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service)
+	_service, _, err = c.Vela.Svc.Update(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _service)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	// update the service container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Environment
-	err = service.Environment(ctn, c.build, c.repo, _service, c.Version)
+	err = service.Environment(ctn, c.build, _service, c.Version)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error
 	// send API call to capture the service log
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.GetService
-	_log, _, err := c.Vela.Log.GetService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), _service.GetNumber())
+	_log, _, err := c.Vela.Log.GetService(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _service.GetNumber())
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	// defer taking a snapshot of the service
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Snapshot
-	defer func() { service.Snapshot(ctn, c.build, c.Vela, c.Logger, c.repo, _service) }()
+	defer func() { service.Snapshot(ctn, c.build, c.Vela, c.Logger, _service) }()
 
 	logger.Debug("running container")
 	// run the runtime container
@@ -207,7 +207,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		// send API call to update the logs for the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
-		_, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+		_, err = c.Vela.Log.UpdateService(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -241,8 +241,8 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 			// after repo timeout of idle (no response) end the stream
 			//
 			// this is a safety mechanism
-			case <-time.After(time.Duration(c.repo.GetTimeout()) * time.Minute):
-				logger.Tracef("repo timeout of %d exceeded", c.repo.GetTimeout())
+			case <-time.After(time.Duration(c.build.GetRepo().GetTimeout()) * time.Minute):
+				logger.Tracef("repo timeout of %d exceeded", c.build.GetRepo().GetTimeout())
 
 				return
 			// channel is closed
@@ -266,7 +266,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 					// send API call to append the logs for the service
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
-					_, err = c.Vela.Log.UpdateService(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), ctn.Number, _log)
+					_, err = c.Vela.Log.UpdateService(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 					if err != nil {
 						logger.Error(err)
 					}
@@ -323,7 +323,7 @@ func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) er
 	// defer an upload of the service
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#LoaUploadd
-	defer func() { service.Upload(ctn, c.build, c.Vela, logger, c.repo, _service) }()
+	defer func() { service.Upload(ctn, c.build, c.Vela, logger, _service) }()
 
 	logger.Debug("inspecting container")
 	// inspect the runtime container

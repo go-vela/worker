@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -69,7 +69,7 @@ type (
 		VelaClient         *vela.Client
 		RegisterToken      chan string
 		CheckedIn          bool
-		RunningBuilds      []*library.Build
+		RunningBuilds      []*api.Build
 		QueueCheckedIn     bool
 		RunningBuildsMutex sync.Mutex
 	}

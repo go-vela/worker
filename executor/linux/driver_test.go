@@ -37,7 +37,6 @@ func TestLinux_Driver(t *testing.T) {
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
 		WithPipeline(testSteps(constants.DriverDocker)),
-		WithRepo(testRepo()),
 		WithRuntime(_runtime),
 		WithVelaClient(_client),
 	)

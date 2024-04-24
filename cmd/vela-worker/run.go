@@ -12,8 +12,8 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -136,7 +136,7 @@ func run(c *cli.Context) error {
 
 		RegisterToken: make(chan string, 1),
 
-		RunningBuilds: make([]*library.Build, 0),
+		RunningBuilds: make([]*api.Build, 0),
 	}
 
 	// set the worker address if no flag was provided
