@@ -4,19 +4,14 @@ go 1.21.9
 
 toolchain go1.22.2
 
-replace (
-	github.com/go-vela/sdk-go => ../sdk-go
-	github.com/go-vela/server => ../server
-)
-
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/distribution/reference v0.5.0
 	github.com/docker/docker v26.0.0+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-vela/sdk-go v0.23.3-0.20240411165353-c3fdc7210625
-	github.com/go-vela/server v0.23.4-0.20240412180845-04f930869c93
+	github.com/go-vela/sdk-go v0.23.3-0.20240424150003-64f8eb0ebcc0
+	github.com/go-vela/server v0.23.4-0.20240424144436-b55aa2bb3684
 	github.com/go-vela/types v0.23.4-0.20240405205548-f24f795ac0b7
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
