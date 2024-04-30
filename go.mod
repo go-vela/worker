@@ -4,6 +4,12 @@ go 1.21.9
 
 toolchain go1.22.2
 
+replace (
+	github.com/go-vela/sdk-go => ../sdk-go
+	github.com/go-vela/server => ../server
+	github.com/go-vela/types => ../types
+)
+
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/distribution/reference v0.5.0

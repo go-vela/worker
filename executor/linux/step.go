@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -44,7 +45,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	// update the step container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment
-	err = step.Environment(ctn, c.build, _step, c.Version)
+	err = step.Environment(ctn, c.build, _step, c.Version, "")
 	if err != nil {
 		return err
 	}
@@ -98,10 +99,26 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 		return err
 	}
 
+	var requestToken string
+
+	if len(ctn.IDRequest) > 0 {
+		opts := vela.RequestTokenOptions{
+			Image:   ctn.Image,
+			Request: ctn.IDRequest,
+		}
+
+		tkn, _, err := c.Vela.Build.GetIDRequestToken(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), opts)
+		if err != nil {
+			return err
+		}
+
+		requestToken = tkn.GetToken()
+	}
+
 	// update the step container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment
-	err = step.Environment(ctn, c.build, _step, c.Version)
+	err = step.Environment(ctn, c.build, _step, c.Version, requestToken)
 	if err != nil {
 		return err
 	}

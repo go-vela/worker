@@ -112,7 +112,7 @@ func TestStep_Environment(t *testing.T) {
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := Environment(test.container, test.build, test.step, "v0.0.0")
+			err := Environment(test.container, test.build, test.step, "v0.0.0", "ey123")
 
 			if test.failure {
 				if err == nil {
