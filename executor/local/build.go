@@ -167,6 +167,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// TODO: remove this; but we need it for tests
 		_service.Detach = true
 
+		fmt.Fprintln(c.stdout, _pattern, fmt.Sprintf("> Preparing service image %s...", _service.Image))
+
 		// create the service
 		c.err = c.CreateService(ctx, _service)
 		if c.err != nil {
@@ -212,6 +214,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		if _step.Name == "init" {
 			continue
 		}
+
+		fmt.Fprintln(c.stdout, _pattern, fmt.Sprintf("> Preparing step image %s...", _step.Image))
 
 		// create the step
 		c.err = c.CreateStep(ctx, _step)
