@@ -271,6 +271,9 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		s.Detach = true
 
 		c.Logger.Infof("creating %s service", s.Name)
+
+		_log.AppendData([]byte(fmt.Sprintf("> Preparing service image %s...\n", s.Image)))
+
 		// create the service
 		c.err = c.CreateService(ctx, s)
 		if c.err != nil {
@@ -325,6 +328,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		if s.Name == "init" {
 			continue
 		}
+
+		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", s.Image)))
 
 		c.Logger.Infof("creating %s step", s.Name)
 		// create the step

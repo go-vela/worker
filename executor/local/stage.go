@@ -29,6 +29,8 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 		// update the container environment with stage name
 		_step.Environment["VELA_STEP_STAGE"] = s.Name
 
+		fmt.Fprintln(c.stdout, _pattern, fmt.Sprintf("> Preparing step image %s...", _step.Image))
+
 		// create the step
 		err := c.CreateStep(ctx, _step)
 		if err != nil {
