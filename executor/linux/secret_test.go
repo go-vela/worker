@@ -361,7 +361,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -1152,7 +1152,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			name: "secret with matching deployment event ACL injected",
 			step: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment"},
+				Environment: map[string]string{"VELA_BUILD_EVENT": "deployment", "VELA_BUILD_EVENT_ACTION": "created"},
 				Secrets:     pipeline.StepSecretSlice{{Source: "FOO", Target: "FOO"}},
 			},
 			msec: map[string]*library.Secret{
@@ -1169,7 +1169,7 @@ func TestLinux_Secret_injectSecret(t *testing.T) {
 			},
 			want: &pipeline.Container{
 				Image:       "alpine:latest",
-				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "deployment"},
+				Environment: map[string]string{"FOO": "foo", "VELA_BUILD_EVENT": "deployment", "VELA_BUILD_EVENT_ACTION": "created"},
 			},
 		},
 		{
