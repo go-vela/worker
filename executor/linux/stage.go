@@ -37,6 +37,8 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 		// update the container environment with stage name
 		_step.Environment["VELA_STEP_STAGE"] = s.Name
 
+		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", _step.Image)))
+
 		logger.Debugf("creating %s step", _step.Name)
 		// create the step
 		err := c.CreateStep(ctx, _step)
