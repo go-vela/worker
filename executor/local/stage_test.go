@@ -22,7 +22,13 @@ func TestLocal_CreateStage(t *testing.T) {
 	_file := "testdata/build/stages/basic.yml"
 	_build := testBuild()
 
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+
+	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	if err != nil {
+		t.Errorf("unable to create compiler from CLI context: %v", err)
+	}
 
 	_pipeline, _, err := compiler.
 		Duplicate().

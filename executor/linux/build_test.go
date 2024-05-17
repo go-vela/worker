@@ -32,7 +32,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -220,7 +220,7 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -1050,7 +1050,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -1232,7 +1232,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -1539,7 +1539,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -1828,7 +1828,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
@@ -2441,7 +2441,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
 
