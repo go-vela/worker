@@ -103,8 +103,9 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 
 	if len(ctn.IDRequest) > 0 {
 		opts := vela.RequestTokenOptions{
-			Image:   ctn.Image,
-			Request: ctn.IDRequest,
+			Image:    ctn.Image,
+			Request:  ctn.IDRequest,
+			Commands: ctn.Commands != nil && len(ctn.Commands) > 0,
 		}
 
 		tkn, _, err := c.Vela.Build.GetIDRequestToken(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), opts)
