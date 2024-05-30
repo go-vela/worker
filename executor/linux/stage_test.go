@@ -30,7 +30,7 @@ func TestLinux_CreateStage(t *testing.T) {
 
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_pipeline, _, err := compiler.
 		Duplicate().
