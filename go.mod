@@ -2,12 +2,12 @@ module github.com/go-vela/worker
 
 go 1.22.0
 
-toolchain go1.22.2
+toolchain go1.22.4
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/distribution/reference v0.6.0
-	github.com/docker/docker v26.0.2+incompatible
+	github.com/docker/docker v26.1.4+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-vela/sdk-go v0.24.0-rc1
@@ -22,9 +22,9 @@ require (
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/sync v0.7.0
 	gotest.tools/v3 v3.5.1
-	k8s.io/api v0.29.2
+	k8s.io/api v0.30.1
 	k8s.io/apimachinery v0.30.1
-	k8s.io/client-go v0.29.2
+	k8s.io/client-go v0.30.1
 	sigs.k8s.io/yaml v1.4.0
 )
 
