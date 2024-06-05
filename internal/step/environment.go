@@ -13,7 +13,7 @@ import (
 
 // Environment attempts to update the environment variables
 // for the container based off the library resources.
-func Environment(c *pipeline.Container, b *api.Build, s *library.Step, version string) error {
+func Environment(c *pipeline.Container, b *api.Build, s *library.Step, version, reqToken string) error {
 	// check if container or container environment are empty
 	if c == nil || c.Environment == nil {
 		return fmt.Errorf("empty container provided for environment")
@@ -40,6 +40,7 @@ func Environment(c *pipeline.Container, b *api.Build, s *library.Step, version s
 		c.Environment["VELA_HOST"] = b.GetHost()
 		c.Environment["VELA_RUNTIME"] = b.GetRuntime()
 		c.Environment["VELA_VERSION"] = version
+		c.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
 
 		// populate environment variables from build library
 		//

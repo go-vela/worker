@@ -56,6 +56,8 @@ type Setup struct {
 	Build *api.Build
 	// resource for storing pipeline information in Vela
 	Pipeline *pipeline.Build
+	// id token request token for the build
+	RequestToken string
 }
 
 // Darwin creates and returns a Vela engine capable of
