@@ -102,7 +102,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	var requestToken string
 
 	if len(ctn.IDRequest) > 0 {
-		opts := vela.RequestTokenOptions{
+		opts := &vela.RequestTokenOptions{
 			Image:    ctn.Image,
 			Request:  ctn.IDRequest,
 			Commands: ctn.Commands != nil && len(ctn.Commands) > 0,
