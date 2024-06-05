@@ -7,7 +7,7 @@ toolchain go1.22.2
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/distribution/reference v0.6.0
-	github.com/docker/docker v26.0.0+incompatible
+	github.com/docker/docker v26.0.2+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-vela/sdk-go v0.23.3-0.20240605154217-db84c9aa1e55
