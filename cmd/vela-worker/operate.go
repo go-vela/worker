@@ -30,9 +30,13 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker := new(api.Worker)
 	registryWorker.SetHostname(w.Config.API.Address.Hostname())
 	registryWorker.SetAddress(w.Config.API.Address.String())
-	registryWorker.SetRoutes(w.Config.Queue.Routes)
 	registryWorker.SetActive(true)
 	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
+
+	// set routes from config if set or defaulted to `vela`
+	if (len(w.Config.Queue.Routes) > 0) && (w.Config.Queue.Routes[0] != "NONE" && w.Config.Queue.Routes[0] != "") {
+		registryWorker.SetRoutes(w.Config.Queue.Routes)
+	}
 
 	// pull registration token from configuration if provided; wait if not
 	logrus.Trace("waiting for register token")
