@@ -22,9 +22,9 @@ require (
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/sync v0.7.0
 	gotest.tools/v3 v3.5.1
-	k8s.io/api v0.30.1
+	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
-	k8s.io/client-go v0.30.1
+	k8s.io/client-go v0.30.2
 	sigs.k8s.io/yaml v1.4.0
 )
 
