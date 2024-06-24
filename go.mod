@@ -11,8 +11,8 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-vela/sdk-go v0.24.0-rc2
-	github.com/go-vela/server v0.24.0-rc2
-	github.com/go-vela/types v0.24.0-rc2
+	github.com/go-vela/server v0.24.0-rc3
+	github.com/go-vela/types v0.24.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
