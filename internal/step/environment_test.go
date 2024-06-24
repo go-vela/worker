@@ -5,6 +5,7 @@ package step
 import (
 	"testing"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/types/raw"
@@ -12,9 +13,24 @@ import (
 
 func TestStep_Environment(t *testing.T) {
 	// setup types
-	b := new(library.Build)
+	r := new(api.Repo)
+	r.SetID(1)
+	r.SetOrg("github")
+	r.SetName("octocat")
+	r.SetFullName("github/octocat")
+	r.SetLink("https://github.com/github/octocat")
+	r.SetClone("https://github.com/github/octocat.git")
+	r.SetBranch("main")
+	r.SetTimeout(30)
+	r.SetVisibility("public")
+	r.SetPrivate(false)
+	r.SetTrusted(false)
+	r.SetActive(true)
+	r.SetAllowEvents(api.NewEventsFromMask(1))
+
+	b := new(api.Build)
 	b.SetID(1)
-	b.SetRepoID(1)
+	b.SetRepo(r)
 	b.SetNumber(1)
 	b.SetParent(1)
 	b.SetEvent("push")
@@ -53,25 +69,6 @@ func TestStep_Environment(t *testing.T) {
 		Pull:        "always",
 	}
 
-	r := new(library.Repo)
-	r.SetID(1)
-	r.SetOrg("github")
-	r.SetName("octocat")
-	r.SetFullName("github/octocat")
-	r.SetLink("https://github.com/github/octocat")
-	r.SetClone("https://github.com/github/octocat.git")
-	r.SetBranch("main")
-	r.SetTimeout(30)
-	r.SetVisibility("public")
-	r.SetPrivate(false)
-	r.SetTrusted(false)
-	r.SetActive(true)
-	r.SetAllowPull(false)
-	r.SetAllowPush(true)
-	r.SetAllowDeploy(false)
-	r.SetAllowTag(false)
-	r.SetAllowComment(false)
-
 	s := new(library.Step)
 	s.SetID(1)
 	s.SetBuildID(1)
@@ -92,9 +89,8 @@ func TestStep_Environment(t *testing.T) {
 	tests := []struct {
 		name      string
 		failure   bool
-		build     *library.Build
+		build     *api.Build
 		container *pipeline.Container
-		repo      *library.Repo
 		step      *library.Step
 	}{
 		{
@@ -102,7 +98,6 @@ func TestStep_Environment(t *testing.T) {
 			failure:   false,
 			build:     b,
 			container: c,
-			repo:      r,
 			step:      s,
 		},
 		{
@@ -110,7 +105,6 @@ func TestStep_Environment(t *testing.T) {
 			failure:   true,
 			build:     nil,
 			container: nil,
-			repo:      nil,
 			step:      nil,
 		},
 	}
@@ -118,7 +112,7 @@ func TestStep_Environment(t *testing.T) {
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := Environment(test.container, test.build, test.repo, test.step, "v0.0.0")
+			err := Environment(test.container, test.build, test.step, "v0.0.0", "ey123")
 
 			if test.failure {
 				if err == nil {

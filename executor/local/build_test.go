@@ -18,11 +18,15 @@ import (
 
 func TestLocal_CreateBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+
+	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	if err != nil {
+		t.Errorf("unable to create compiler engine: %v", err)
+	}
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -57,9 +61,9 @@ func TestLocal_CreateBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_build.GetRepo().GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -68,9 +72,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -95,11 +97,15 @@ func TestLocal_CreateBuild(t *testing.T) {
 
 func TestLocal_PlanBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+
+	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	if err != nil {
+		t.Errorf("unable to create compiler engine: %v", err)
+	}
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -134,9 +140,9 @@ func TestLocal_PlanBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_build.GetRepo().GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -145,9 +151,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -178,11 +182,15 @@ func TestLocal_PlanBuild(t *testing.T) {
 
 func TestLocal_AssembleBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+
+	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	if err != nil {
+		t.Errorf("unable to create compiler engine: %v", err)
+	}
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -250,9 +258,9 @@ func TestLocal_AssembleBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_build.GetRepo().GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -261,9 +269,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -295,11 +301,15 @@ func TestLocal_AssembleBuild(t *testing.T) {
 
 func TestLocal_ExecBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+
+	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	if err != nil {
+		t.Errorf("unable to create compiler engine: %v", err)
+	}
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -352,9 +362,9 @@ func TestLocal_ExecBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_build.GetRepo().GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -363,9 +373,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -397,11 +405,15 @@ func TestLocal_ExecBuild(t *testing.T) {
 
 func TestLocal_StreamBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+
+	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	if err != nil {
+		t.Errorf("unable to create compiler engine: %v", err)
+	}
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -546,9 +558,9 @@ func TestLocal_StreamBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_build.GetRepo().GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -557,9 +569,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -611,11 +621,15 @@ func TestLocal_StreamBuild(t *testing.T) {
 
 func TestLocal_DestroyBuild(t *testing.T) {
 	// setup types
-	compiler, _ := native.New(cli.NewContext(nil, flag.NewFlagSet("test", 0), nil))
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+
+	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	if err != nil {
+		t.Errorf("unable to create compiler engine: %v", err)
+	}
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -665,9 +679,9 @@ func TestLocal_DestroyBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
+				WithRepo(_build.GetRepo()).
 				WithLocal(true).
-				WithUser(_user).
+				WithUser(_build.GetRepo().GetOwner()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
@@ -676,9 +690,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

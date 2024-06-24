@@ -5,8 +5,9 @@ package runtime
 import (
 	"fmt"
 
-	"github.com/go-vela/types/constants"
 	"github.com/sirupsen/logrus"
+
+	"github.com/go-vela/types/constants"
 )
 
 // New creates and returns a Vela engine capable of

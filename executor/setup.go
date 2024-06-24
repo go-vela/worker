@@ -7,18 +7,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-vela/sdk-go/vela"
+	"github.com/sirupsen/logrus"
 
+	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
-
 	"github.com/go-vela/worker/runtime"
-
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Setup represents the configuration necessary for
@@ -58,13 +55,11 @@ type Setup struct {
 	// Vela Resource Configuration
 
 	// resource for storing build information in Vela
-	Build *library.Build
+	Build *api.Build
 	// resource for storing pipeline information in Vela
 	Pipeline *pipeline.Build
-	// resource for storing repo information in Vela
-	Repo *library.Repo
-	// resource for storing user information in Vela
-	User *library.User
+	// id token request token for the build
+	RequestToken string
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -91,9 +86,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
 		linux.WithHostname(s.Hostname),
 		linux.WithPipeline(s.Pipeline),
-		linux.WithRepo(s.Repo),
 		linux.WithRuntime(s.Runtime),
-		linux.WithUser(s.User),
 		linux.WithVelaClient(s.Client),
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
@@ -113,9 +106,7 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithBuild(s.Build),
 		local.WithHostname(s.Hostname),
 		local.WithPipeline(s.Pipeline),
-		local.WithRepo(s.Repo),
 		local.WithRuntime(s.Runtime),
-		local.WithUser(s.User),
 		local.WithVelaClient(s.Client),
 		local.WithVersion(s.Version),
 		local.WithMockStdout(s.Mock),
@@ -168,12 +159,12 @@ func (s *Setup) Validate() error {
 	}
 
 	// check if a Vela repo was provided
-	if s.Repo == nil {
+	if s.Build.Repo == nil {
 		return fmt.Errorf("no Vela repo provided in setup")
 	}
 
 	// check if a Vela user was provided
-	if s.User == nil {
+	if s.Build.Repo.Owner == nil {
 		return fmt.Errorf("no Vela user provided in setup")
 	}
 

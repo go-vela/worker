@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/internal/build"
 	"github.com/go-vela/worker/internal/step"
-	"github.com/sirupsen/logrus"
 )
 
 // CreateBuild configures the build for execution.
@@ -21,7 +21,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, nil, c.err, nil, nil) }()
+	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -64,7 +64,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, nil, c.err, nil, nil) }()
+	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
 
 	// load the init step from the client
 	//
@@ -77,7 +77,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#SnapshotInit
-	defer func() { step.SnapshotInit(c.init, c.build, nil, nil, nil, _init, nil) }()
+	defer func() { step.SnapshotInit(c.init, c.build, nil, nil, _init, nil) }()
 
 	// create a step pattern for log output
 	_pattern := fmt.Sprintf(stepPattern, c.init.Name)
@@ -135,7 +135,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, nil, c.err, nil, nil) }()
+	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
 
 	// load the init step from the client
 	//
@@ -148,7 +148,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer an upload of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
-	defer func() { step.Upload(c.init, c.build, nil, nil, nil, _init) }()
+	defer func() { step.Upload(c.init, c.build, nil, nil, _init) }()
 
 	// create a step pattern for log output
 	_pattern := fmt.Sprintf(stepPattern, c.init.Name)
@@ -166,6 +166,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	for _, _service := range c.pipeline.Services {
 		// TODO: remove this; but we need it for tests
 		_service.Detach = true
+
+		fmt.Fprintln(c.stdout, _pattern, fmt.Sprintf("> Preparing service image %s...", _service.Image))
 
 		// create the service
 		c.err = c.CreateService(ctx, _service)
@@ -213,6 +215,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
+		fmt.Fprintln(c.stdout, _pattern, fmt.Sprintf("> Preparing step image %s...", _step.Image))
+
 		// create the step
 		c.err = c.CreateStep(ctx, _step)
 		if c.err != nil {
@@ -247,7 +251,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// defer an upload of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
-	defer func() { build.Upload(c.build, nil, c.err, nil, nil) }()
+	defer func() { build.Upload(c.build, nil, c.err, nil) }()
 
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
@@ -274,7 +278,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build, c.repo)
+		skip, err := step.Skip(_step, c.build)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}

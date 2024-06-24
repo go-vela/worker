@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-vela/sdk-go/vela"
-	"github.com/go-vela/types/library"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
@@ -24,12 +24,10 @@ type (
 
 		// private fields
 		init           *pipeline.Container
-		build          *library.Build
+		build          *api.Build
 		pipeline       *pipeline.Build
-		repo           *library.Repo
 		services       sync.Map
 		steps          sync.Map
-		user           *library.User
 		err            error
 		streamRequests chan message.StreamRequest
 
@@ -64,10 +62,8 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.init, b.init) &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
-		reflect.DeepEqual(a.repo, b.repo) &&
 		reflect.DeepEqual(&a.services, &b.services) &&
 		reflect.DeepEqual(&a.steps, &b.steps) &&
-		reflect.DeepEqual(a.user, b.user) &&
 		reflect.DeepEqual(a.err, b.err)
 }
 

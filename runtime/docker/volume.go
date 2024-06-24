@@ -11,12 +11,11 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/go-units"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	vol "github.com/go-vela/worker/internal/volume"
-
-	"github.com/sirupsen/logrus"
 )
 
 // CreateVolume creates the pipeline volume.
@@ -25,7 +24,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// create options for creating volume
 	//
-	// https://godoc.org/github.com/docker/docker/api/types/volume#CreateOptions
+	// https://pkg.go.dev/github.com/docker/docker/api/types/volume#CreateOptions
 	opts := volume.CreateOptions{
 		Name:   b.ID,
 		Driver: "local",
@@ -33,7 +32,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// send API call to create the volume
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.VolumeCreate
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeCreate
 	_, err := c.Docker.VolumeCreate(ctx, opts)
 	if err != nil {
 		return err
@@ -53,7 +52,7 @@ func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, 
 
 	// send API call to inspect the volume
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.VolumeInspect
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspect
 	v, err := c.Docker.VolumeInspect(ctx, b.ID)
 	if err != nil {
 		return output, err
@@ -61,7 +60,7 @@ func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, 
 
 	// convert volume type Volume to bytes with pretty print
 	//
-	// https://godoc.org/github.com/docker/docker/api/types#Volume
+	// https://pkg.go.dev/github.com/docker/docker/api/types#Volume
 	volume, err := json.MarshalIndent(v, "", " ")
 	if err != nil {
 		return output, err
@@ -77,7 +76,7 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 
 	// send API call to remove the volume
 	//
-	// https://godoc.org/github.com/docker/docker/client#Client.VolumeRemove
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeRemove
 	err := c.Docker.VolumeRemove(ctx, b.ID, true)
 	if err != nil {
 		return err
@@ -133,14 +132,14 @@ func hostConfig(logger *logrus.Entry, id string, ulimits pipeline.UlimitSlice, v
 		}
 	}
 
-	// https://godoc.org/github.com/docker/docker/api/types/container#HostConfig
+	// https://pkg.go.dev/github.com/docker/docker/api/types/container#HostConfig
 	return &container.HostConfig{
-		// https://godoc.org/github.com/docker/docker/api/types/container#LogConfig
+		// https://pkg.go.dev/github.com/docker/docker/api/types/container#LogConfig
 		LogConfig: container.LogConfig{
 			Type: "json-file",
 		},
 		Privileged: false,
-		// https://godoc.org/github.com/docker/docker/api/types/mount#Mount
+		// https://pkg.go.dev/github.com/docker/docker/api/types/mount#Mount
 		Mounts: mounts,
 		// https://pkg.go.dev/github.com/docker/docker/api/types/container#Resources.Ulimits
 		Resources: resources,

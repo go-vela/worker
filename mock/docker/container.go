@@ -32,7 +32,7 @@ type ContainerService struct{}
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerAttach
-func (c *ContainerService) ContainerAttach(ctx context.Context, ctn string, options types.ContainerAttachOptions) (types.HijackedResponse, error) {
+func (c *ContainerService) ContainerAttach(ctx context.Context, ctn string, options container.AttachOptions) (types.HijackedResponse, error) {
 	return types.HijackedResponse{}, nil
 }
 
@@ -40,7 +40,7 @@ func (c *ContainerService) ContainerAttach(ctx context.Context, ctn string, opti
 // a mocked call to apply changes to a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCommit
-func (c *ContainerService) ContainerCommit(ctx context.Context, ctn string, options types.ContainerCommitOptions) (types.IDResponse, error) {
+func (c *ContainerService) ContainerCommit(ctx context.Context, ctn string, options container.CommitOptions) (types.IDResponse, error) {
 	return types.IDResponse{}, nil
 }
 
@@ -96,7 +96,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 // filesystem between two Docker containers.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerDiff
-func (c *ContainerService) ContainerDiff(ctx context.Context, ctn string) ([]container.ContainerChangeResponseItem, error) {
+func (c *ContainerService) ContainerDiff(ctx context.Context, ctn string) ([]container.FilesystemChange, error) {
 	return nil, nil
 }
 
@@ -132,7 +132,7 @@ func (c *ContainerService) ContainerExecInspect(ctx context.Context, execID stri
 // inside a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecResize
-func (c *ContainerService) ContainerExecResize(ctx context.Context, execID string, options types.ResizeOptions) error {
+func (c *ContainerService) ContainerExecResize(ctx context.Context, execID string, options container.ResizeOptions) error {
 	return nil
 }
 
@@ -264,7 +264,7 @@ func (c *ContainerService) ContainerKill(ctx context.Context, ctn, signal string
 // a mocked call to list Docker containers.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerList
-func (c *ContainerService) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
+func (c *ContainerService) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
 	return nil, nil
 }
 
@@ -273,7 +273,7 @@ func (c *ContainerService) ContainerList(ctx context.Context, options types.Cont
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerLogs
-func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
+func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, options container.LogsOptions) (io.ReadCloser, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return nil, errors.New("no container provided")
@@ -320,7 +320,7 @@ func (c *ContainerService) ContainerPause(ctx context.Context, ctn string) error
 // a mocked call to remove a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRemove
-func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, options types.ContainerRemoveOptions) error {
+func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, options container.RemoveOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
@@ -347,7 +347,7 @@ func (c *ContainerService) ContainerRename(ctx context.Context, container, newCo
 // a mocked call to resize a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerResize
-func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, options types.ResizeOptions) error {
+func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, options container.ResizeOptions) error {
 	return nil
 }
 
@@ -363,7 +363,7 @@ func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, opt
 // a mocked call to start a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStart
-func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, options types.ContainerStartOptions) error {
+func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, options container.StartOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")

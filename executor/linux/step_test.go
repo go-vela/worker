@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
@@ -23,8 +24,6 @@ import (
 func TestLinux_CreateStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -156,9 +155,7 @@ func TestLinux_CreateStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -185,8 +182,6 @@ func TestLinux_CreateStep(t *testing.T) {
 func TestLinux_PlanStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -290,9 +285,7 @@ func TestLinux_PlanStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -319,8 +312,6 @@ func TestLinux_PlanStep(t *testing.T) {
 func TestLinux_ExecStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -487,9 +478,7 @@ func TestLinux_ExecStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
@@ -522,8 +511,6 @@ func TestLinux_ExecStep(t *testing.T) {
 func TestLinux_StreamStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 	_logs := new(library.Log)
 
 	// fill log with bytes
@@ -669,9 +656,7 @@ func TestLinux_StreamStep(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithMaxLogSize(10),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -703,8 +688,6 @@ func TestLinux_StreamStep(t *testing.T) {
 func TestLinux_DestroyStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	gin.SetMode(gin.TestMode)
 
@@ -824,9 +807,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(test.runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {

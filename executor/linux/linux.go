@@ -3,29 +3,33 @@
 package linux
 
 import (
+	"errors"
 	"reflect"
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
-	"github.com/sirupsen/logrus"
 )
 
 type (
 	// client manages communication with the pipeline resources.
 	client struct {
 		// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
-		Logger    *logrus.Entry
-		Vela      *vela.Client
-		Runtime   runtime.Engine
-		Secrets   map[string]*library.Secret
-		Hostname  string
-		Version   string
-		OutputCtn *pipeline.Container
+		Logger       *logrus.Entry
+		Vela         *vela.Client
+		Runtime      runtime.Engine
+		Secrets      map[string]*library.Secret
+		NoSubSecrets map[string]*library.Secret
+		Hostname     string
+		Version      string
+		OutputCtn    *pipeline.Container
 
 		// clients for build actions
 		secret  *secretSvc
@@ -37,9 +41,8 @@ type (
 		logStreamingTimeout time.Duration
 		privilegedImages    []string
 		enforceTrustedRepos bool
-		build               *library.Build
+		build               *api.Build
 		pipeline            *pipeline.Build
-		repo                *library.Repo
 		secrets             sync.Map
 		services            sync.Map
 		serviceLogs         sync.Map
@@ -49,12 +52,10 @@ type (
 
 		streamRequests chan message.StreamRequest
 
-		user *library.User
-		err  error
+		err error
 	}
 
 	svc struct {
-		//nolint:structcheck // false positive
 		client *client
 	}
 )
@@ -70,6 +71,7 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.Vela, b.Vela) &&
 		reflect.DeepEqual(a.Runtime, b.Runtime) &&
 		reflect.DeepEqual(a.Secrets, b.Secrets) &&
+		reflect.DeepEqual(a.NoSubSecrets, b.NoSubSecrets) &&
 		a.Hostname == b.Hostname &&
 		a.Version == b.Version &&
 		reflect.DeepEqual(a.init, b.init) &&
@@ -78,15 +80,12 @@ func Equal(a, b *client) bool {
 		a.enforceTrustedRepos == b.enforceTrustedRepos &&
 		reflect.DeepEqual(a.build, b.build) &&
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
-		reflect.DeepEqual(a.repo, b.repo) &&
 		reflect.DeepEqual(&a.secrets, &b.secrets) &&
 		reflect.DeepEqual(&a.services, &b.services) &&
 		reflect.DeepEqual(&a.serviceLogs, &b.serviceLogs) &&
 		reflect.DeepEqual(&a.steps, &b.steps) &&
 		reflect.DeepEqual(&a.stepLogs, &b.stepLogs) &&
-		// do not compare streamRequests channel
-		reflect.DeepEqual(a.user, b.user) &&
-		reflect.DeepEqual(a.err, b.err)
+		errors.Is(a.err, b.err)
 }
 
 // New returns an Executor implementation that integrates with a Linux instance.
@@ -120,6 +119,9 @@ func New(opts ...Opt) (*client, error) {
 
 	// instantiate map for non-plugin secrets
 	c.Secrets = make(map[string]*library.Secret)
+
+	// instantiate map for non-substituted secrets
+	c.NoSubSecrets = make(map[string]*library.Secret)
 
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}

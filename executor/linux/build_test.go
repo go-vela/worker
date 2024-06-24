@@ -10,34 +10,31 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	logrusTest "github.com/sirupsen/logrus/hooks/test"
+	"github.com/urfave/cli/v2"
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/worker/runtime/kubernetes"
-	"github.com/sirupsen/logrus"
-	logrusTest "github.com/sirupsen/logrus/hooks/test"
-	"github.com/urfave/cli/v2"
 )
 
 func TestLinux_CreateBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -56,7 +53,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 		failure  bool
 		logError bool
 		runtime  string
-		build    *library.Build
+		build    *api.Build
 		pipeline string
 	}{
 		{
@@ -128,7 +125,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			failure:  true,
 			logError: false,
 			runtime:  constants.DriverDocker,
-			build:    new(library.Build),
+			build:    new(api.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 		{
@@ -136,7 +133,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			failure:  true,
 			logError: false,
 			runtime:  constants.DriverKubernetes,
-			build:    new(library.Build),
+			build:    new(api.Build),
 			pipeline: "testdata/build/steps/basic.yml",
 		},
 	}
@@ -150,9 +147,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
-				WithMetadata(_metadata).
-				WithUser(_user).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -181,9 +176,8 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
+
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -222,16 +216,843 @@ func TestLinux_CreateBuild(t *testing.T) {
 	}
 }
 
+func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
+	// setup types
+	set := flag.NewFlagSet("test", 0)
+	set.String("clone-image", "target/vela-git:latest", "doc")
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+
+	_build := testBuild()
+
+	// setting mock build for testing dynamic environment tags
+	_buildWithMessageAlpine := testBuild()
+	_buildWithMessageAlpine.SetMessage("alpine")
+
+	// test repo is not trusted by default
+	_untrustedRepo := testRepo()
+
+	// to be matched with the image used by testdata/build/steps/basic.yml
+	_privilegedImagesStepsPipeline := []string{"alpine"}
+	// to be matched with the image used by testdata/build/services/basic.yml
+	_privilegedImagesServicesPipeline := []string{"postgres"}
+	// to be matched with the image used by testdata/build/stages/basic.yml
+	_privilegedImagesStagesPipeline := []string{"alpine"}
+	// create trusted repo
+	_trustedRepo := testRepo()
+	_trustedRepo.SetTrusted(true)
+
+	gin.SetMode(gin.TestMode)
+
+	s := httptest.NewServer(server.FakeHandler())
+
+	_client, err := vela.NewClient(s.URL, "", nil)
+	if err != nil {
+		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	tests := []struct {
+		name                string
+		failure             bool
+		runtime             string
+		build               *api.Build
+		repo                *api.Repo
+		pipeline            string
+		privilegedImages    []string
+		enforceTrustedRepos bool
+	}{
+		{
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with untrusted repo",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with untrusted repo",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with untrusted repo",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with trusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/basic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and dynamic image:tag",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _buildWithMessageAlpine,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/img_environmentdynamic.yml",
+			privilegedImages:    []string{}, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged steps pipeline with untrusted repo and init step name",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged steps pipeline with untrusted repo and init step name",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged steps pipeline with untrusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged steps pipeline with untrusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/steps/name_init.yml",
+			privilegedImages:    _privilegedImagesStepsPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged stages pipeline with untrusted repo and init step name",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged stages pipeline with untrusted repo and init step name",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged stages pipeline with untrusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with trusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged stages pipeline with untrusted repo and init step name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/stages/name_init.yml",
+			privilegedImages:    _privilegedImagesStagesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with trusted repo and init service name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: privileged services pipeline with untrusted repo and init service name",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with trusted repo and init service name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos enabled: non-privileged services pipeline with untrusted repo and init service name",
+			failure:             true,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: true,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with trusted repo and init service name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: privileged services pipeline with untrusted repo and init service name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with trusted repo and init service name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _trustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+		{
+			name:                "docker-enforce trusted repos disabled: non-privileged services pipeline with untrusted repo and init service name",
+			failure:             false,
+			runtime:             constants.DriverDocker,
+			build:               _build,
+			repo:                _untrustedRepo,
+			pipeline:            "testdata/build/services/name_init.yml",
+			privilegedImages:    _privilegedImagesServicesPipeline, // this matches the image from test.pipeline
+			enforceTrustedRepos: false,
+		},
+	}
+
+	// run test
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// ensure custom test repos are in the executor engine
+			test.build.SetRepo(test.repo)
+
+			_pipeline, _, err := compiler.
+				Duplicate().
+				WithBuild(test.build).
+				WithRepo(test.repo).
+				Compile(test.pipeline)
+			if err != nil {
+				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
+			}
+
+			var _runtime runtime.Engine
+
+			switch test.runtime {
+			case constants.DriverDocker:
+				_runtime, err = docker.NewMock()
+				if err != nil {
+					t.Errorf("unable to create docker runtime engine: %v", err)
+				}
+			}
+
+			_engine, err := New(
+				WithBuild(test.build),
+				WithPipeline(_pipeline),
+				WithRuntime(_runtime),
+				WithVelaClient(_client),
+				WithPrivilegedImages(test.privilegedImages),
+				WithEnforceTrustedRepos(test.enforceTrustedRepos),
+			)
+			if err != nil {
+				t.Errorf("unable to create executor engine: %v", err)
+			}
+
+			err = _engine.CreateBuild(context.Background())
+			if err != nil {
+				t.Errorf("CreateBuild returned err: %v", err)
+			}
+
+			// override mock handler PUT build update
+			// used for dynamic substitute testing
+			_engine.build.SetMessage(test.build.GetMessage())
+			_engine.build.SetRepo(test.repo)
+
+			err = _engine.AssembleBuild(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("AssembleBuild should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("AssembleBuild returned err: %v", err)
+			}
+		})
+	}
+}
+
 func TestLinux_PlanBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -333,9 +1154,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
-				WithMetadata(_metadata).
-				WithUser(_user).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -364,9 +1183,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -415,12 +1232,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -623,9 +1437,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
-				WithMetadata(_metadata).
-				WithUser(_user).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -653,9 +1465,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
@@ -730,12 +1540,9 @@ func TestLinux_ExecBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -865,9 +1672,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
-				WithMetadata(_metadata).
-				WithUser(_user).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -902,9 +1707,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
@@ -1027,12 +1830,9 @@ func TestLinux_StreamBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1515,9 +2315,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
-				WithMetadata(_metadata).
-				WithUser(_user).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -1546,10 +2344,8 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
 				WithLogStreamingTimeout(1*time.Second),
-				WithUser(_user),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
 			)
@@ -1647,12 +2443,9 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	// setup types
 	set := flag.NewFlagSet("test", 0)
 	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.New(cli.NewContext(nil, set, nil))
+	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
 
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
-	_metadata := testMetadata()
 
 	testLogger := logrus.New()
 	loggerHook := logrusTest.NewLocal(testLogger)
@@ -1796,9 +2589,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			_pipeline, _, err := compiler.
 				Duplicate().
 				WithBuild(_build).
-				WithRepo(_repo).
-				WithMetadata(_metadata).
-				WithUser(_user).
+				WithRepo(_build.GetRepo()).
 				Compile(test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
@@ -1827,9 +2618,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				WithLogger(logger),
 				WithBuild(_build),
 				WithPipeline(_pipeline),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 			)

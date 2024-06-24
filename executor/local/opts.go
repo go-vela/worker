@@ -6,20 +6,18 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
-
-	"github.com/go-vela/sdk-go/vela"
-
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 // Opt represents a configuration option to initialize the executor client for Local.
 type Opt func(*client) error
 
-// WithBuild sets the library build in the executor client for Local.
-func WithBuild(b *library.Build) Opt {
+// WithBuild sets the API build in the executor client for Local.
+func WithBuild(b *api.Build) Opt {
 	return func(c *client) error {
 		// set the build in the client
 		c.build = b
@@ -59,16 +57,6 @@ func WithPipeline(p *pipeline.Build) Opt {
 	}
 }
 
-// WithRepo sets the library repo in the executor client for Local.
-func WithRepo(r *library.Repo) Opt {
-	return func(c *client) error {
-		// set the repo in the client
-		c.repo = r
-
-		return nil
-	}
-}
-
 // WithRuntime sets the runtime engine in the executor client for Local.
 func WithRuntime(r runtime.Engine) Opt {
 	return func(c *client) error {
@@ -79,16 +67,6 @@ func WithRuntime(r runtime.Engine) Opt {
 
 		// set the runtime in the client
 		c.Runtime = r
-
-		return nil
-	}
-}
-
-// WithUser sets the library user in the executor client for Local.
-func WithUser(u *library.User) Opt {
-	return func(c *client) error {
-		// set the user in the client
-		c.user = u
 
 		return nil
 	}

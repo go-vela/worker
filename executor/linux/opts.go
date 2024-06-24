@@ -6,19 +6,20 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/sdk-go/vela"
-	"github.com/go-vela/types/library"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
-	"github.com/sirupsen/logrus"
 )
 
 // Opt represents a configuration option to initialize the executor client for Linux.
 type Opt func(*client) error
 
 // WithBuild sets the library build in the executor client for Linux.
-func WithBuild(b *library.Build) Opt {
+func WithBuild(b *api.Build) Opt {
 	return func(c *client) error {
 		c.Logger.Trace("configuring build in linux executor client")
 
@@ -132,23 +133,6 @@ func WithPipeline(p *pipeline.Build) Opt {
 	}
 }
 
-// WithRepo sets the library repo in the executor client for Linux.
-func WithRepo(r *library.Repo) Opt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring repository in linux executor client")
-
-		// check if the repo provided is empty
-		if r == nil {
-			return fmt.Errorf("empty repo provided")
-		}
-
-		// set the repo in the client
-		c.repo = r
-
-		return nil
-	}
-}
-
 // WithRuntime sets the runtime engine in the executor client for Linux.
 func WithRuntime(r runtime.Engine) Opt {
 	return func(c *client) error {
@@ -161,23 +145,6 @@ func WithRuntime(r runtime.Engine) Opt {
 
 		// set the runtime in the client
 		c.Runtime = r
-
-		return nil
-	}
-}
-
-// WithUser sets the library user in the executor client for Linux.
-func WithUser(u *library.User) Opt {
-	return func(c *client) error {
-		c.Logger.Trace("configuring user in linux executor client")
-
-		// check if the user provided is empty
-		if u == nil {
-			return fmt.Errorf("empty user provided")
-		}
-
-		// set the user in the client
-		c.user = u
 
 		return nil
 	}

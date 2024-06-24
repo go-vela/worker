@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	exec "github.com/go-vela/worker/router/middleware/executor"
 )
@@ -45,7 +45,7 @@ func GetExecutor(c *gin.Context) {
 	var err error
 
 	e := exec.Retrieve(c)
-	executor := &library.Executor{}
+	executor := &api.Executor{}
 
 	// TODO: Add this information from the context or helpers on executor
 	// tmp.SetHost(executor.GetHost())
@@ -66,16 +66,6 @@ func GetExecutor(c *gin.Context) {
 	executor.Pipeline, err = e.GetPipeline()
 	if err != nil {
 		msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
-
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
-
-		return
-	}
-
-	// get repo on executor
-	executor.Repo, err = e.GetRepo()
-	if err != nil {
-		msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
 
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
@@ -129,11 +119,11 @@ func GetExecutors(c *gin.Context) {
 		return
 	}
 
-	executors := []*library.Executor{}
+	executors := []*api.Executor{}
 
 	for id, executor := range e {
 		// create a temporary executor to append results to response
-		tmp := &library.Executor{}
+		tmp := &api.Executor{}
 
 		// TODO: Add this information from the context or helpers on executor
 		// tmp.SetHost(executor.GetHost())
@@ -155,16 +145,6 @@ func GetExecutors(c *gin.Context) {
 		tmp.Pipeline, err = executor.GetPipeline()
 		if err != nil {
 			msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
-
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
-
-			return
-		}
-
-		// get repo on executor
-		tmp.Repo, err = executor.GetRepo()
-		if err != nil {
-			msg := fmt.Errorf("unable to retrieve repo: %w", err).Error()
 
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 

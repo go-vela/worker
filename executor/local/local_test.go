@@ -8,14 +8,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/sdk-go/vela"
-
-	"github.com/go-vela/types/library"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestEqual(t *testing.T) {
@@ -38,9 +35,7 @@ func TestEqual(t *testing.T) {
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
 		WithPipeline(testSteps()),
-		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {
@@ -51,9 +46,7 @@ func TestEqual(t *testing.T) {
 		WithBuild(testBuild()),
 		WithHostname("a.different.host"),
 		WithPipeline(testSteps()),
-		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {
@@ -147,9 +140,7 @@ func TestLocal_New(t *testing.T) {
 				WithBuild(testBuild()),
 				WithHostname("localhost"),
 				WithPipeline(test.pipeline),
-				WithRepo(testRepo()),
 				WithRuntime(_runtime),
-				WithUser(testUser()),
 				WithVelaClient(_client),
 			)
 
@@ -170,10 +161,11 @@ func TestLocal_New(t *testing.T) {
 
 // testBuild is a test helper function to create a Build
 // type with all fields set to a fake value.
-func testBuild() *library.Build {
-	return &library.Build{
+func testBuild() *api.Build {
+	return &api.Build{
 		ID:           vela.Int64(1),
 		Number:       vela.Int(1),
+		Repo:         testRepo(),
 		Parent:       vela.Int(1),
 		Event:        vela.String("push"),
 		Status:       vela.String("success"),
@@ -201,35 +193,31 @@ func testBuild() *library.Build {
 
 // testRepo is a test helper function to create a Repo
 // type with all fields set to a fake value.
-func testRepo() *library.Repo {
-	return &library.Repo{
-		ID:          vela.Int64(1),
-		Org:         vela.String("github"),
-		Name:        vela.String("octocat"),
-		FullName:    vela.String("github/octocat"),
-		Link:        vela.String("https://github.com/github/octocat"),
-		Clone:       vela.String("https://github.com/github/octocat.git"),
-		Branch:      vela.String("main"),
-		Timeout:     vela.Int64(60),
-		Visibility:  vela.String("public"),
-		Private:     vela.Bool(false),
-		Trusted:     vela.Bool(false),
-		Active:      vela.Bool(true),
-		AllowPull:   vela.Bool(false),
-		AllowPush:   vela.Bool(true),
-		AllowDeploy: vela.Bool(false),
-		AllowTag:    vela.Bool(false),
+func testRepo() *api.Repo {
+	return &api.Repo{
+		ID:         vela.Int64(1),
+		Org:        vela.String("github"),
+		Name:       vela.String("octocat"),
+		FullName:   vela.String("github/octocat"),
+		Link:       vela.String("https://github.com/github/octocat"),
+		Clone:      vela.String("https://github.com/github/octocat.git"),
+		Branch:     vela.String("main"),
+		Timeout:    vela.Int64(60),
+		Visibility: vela.String("public"),
+		Private:    vela.Bool(false),
+		Trusted:    vela.Bool(false),
+		Active:     vela.Bool(true),
+		Owner:      testUser(),
 	}
 }
 
 // testUser is a test helper function to create a User
 // type with all fields set to a fake value.
-func testUser() *library.User {
-	return &library.User{
+func testUser() *api.User {
+	return &api.User{
 		ID:        vela.Int64(1),
 		Name:      vela.String("octocat"),
 		Token:     vela.String("superSecretToken"),
-		Hash:      vela.String("MzM4N2MzMDAtNmY4Mi00OTA5LWFhZDAtNWIzMTlkNTJkODMy"),
 		Favorites: vela.Strings([]string{"github/octocat"}),
 		Active:    vela.Bool(true),
 		Admin:     vela.Bool(false),

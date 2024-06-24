@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/go-vela/sdk-go/vela"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
@@ -36,9 +37,7 @@ func TestLinux_Driver(t *testing.T) {
 		WithBuild(testBuild()),
 		WithHostname("localhost"),
 		WithPipeline(testSteps(constants.DriverDocker)),
-		WithRepo(testRepo()),
 		WithRuntime(_runtime),
-		WithUser(testUser()),
 		WithVelaClient(_client),
 	)
 	if err != nil {

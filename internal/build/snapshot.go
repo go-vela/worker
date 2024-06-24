@@ -6,15 +6,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-vela/sdk-go/vela"
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/sirupsen/logrus"
+
+	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/types/constants"
 )
 
 // Snapshot creates a moment in time record of the build
 // and attempts to upload it to the server.
-func Snapshot(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *library.Repo) {
+func Snapshot(b *api.Build, c *vela.Client, e error, l *logrus.Entry) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(b.GetStatus(), constants.StatusCanceled) {
 		// check if the error provided is empty
@@ -41,7 +42,7 @@ func Snapshot(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *lib
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
-		_, _, err := c.Build.Update(r.GetOrg(), r.GetName(), b)
+		_, _, err := c.Build.Update(b)
 		if err != nil {
 			l.Errorf("unable to upload build snapshot: %v", err)
 		}

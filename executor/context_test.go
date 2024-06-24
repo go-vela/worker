@@ -10,13 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/server/mock/server"
-
-	"github.com/go-vela/worker/executor/linux"
-
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/sdk-go/vela"
+	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/worker/executor/linux"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestExecutor_FromContext(t *testing.T) {
@@ -38,9 +35,7 @@ func TestExecutor_FromContext(t *testing.T) {
 	_engine, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithPipeline(_pipeline),
-		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {
@@ -103,9 +98,7 @@ func TestExecutor_FromGinContext(t *testing.T) {
 	_engine, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithPipeline(_pipeline),
-		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {
@@ -174,9 +167,7 @@ func TestExecutor_WithContext(t *testing.T) {
 	_engine, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithPipeline(_pipeline),
-		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {
@@ -213,9 +204,7 @@ func TestExecutor_WithGinContext(t *testing.T) {
 	_engine, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithPipeline(_pipeline),
-		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 	)
 	if err != nil {

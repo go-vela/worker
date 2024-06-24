@@ -6,15 +6,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-vela/sdk-go/vela"
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/sirupsen/logrus"
+
+	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/types/constants"
 )
 
 // Upload tracks the final state of the build
 // and attempts to upload it to the server.
-func Upload(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *library.Repo) {
+func Upload(b *api.Build, c *vela.Client, e error, l *logrus.Entry) {
 	// handle the build based off the status provided
 	switch b.GetStatus() {
 	// build is in a canceled state
@@ -69,7 +70,7 @@ func Upload(b *library.Build, c *vela.Client, e error, l *logrus.Entry, r *libra
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
-		_, _, err := c.Build.Update(r.GetOrg(), r.GetName(), b)
+		_, _, err := c.Build.Update(b)
 		if err != nil {
 			l.Errorf("unable to upload final build state: %v", err)
 		}

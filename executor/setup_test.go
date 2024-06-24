@@ -10,16 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
-
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
-
 	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
-	"github.com/go-vela/types/constants"
 )
 
 func TestExecutor_Setup_Darwin(t *testing.T) {
@@ -43,9 +40,7 @@ func TestExecutor_Setup_Darwin(t *testing.T) {
 		Client:   _client,
 		Driver:   constants.DriverDarwin,
 		Pipeline: _pipeline,
-		Repo:     _repo,
 		Runtime:  _runtime,
-		User:     _user,
 	}
 
 	got, err := _setup.Darwin()
@@ -80,9 +75,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithLogStreamingTimeout(1*time.Second),
 		linux.WithHostname("localhost"),
 		linux.WithPipeline(_pipeline),
-		linux.WithRepo(_repo),
 		linux.WithRuntime(_runtime),
-		linux.WithUser(_user),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
 	)
@@ -97,9 +90,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		MaxLogSize: 2097152,
 		Hostname:   "localhost",
 		Pipeline:   _pipeline,
-		Repo:       _repo,
 		Runtime:    _runtime,
-		User:       _user,
 		Version:    "v1.0.0",
 	}
 
@@ -136,9 +127,7 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		local.WithBuild(_build),
 		local.WithHostname("localhost"),
 		local.WithPipeline(_pipeline),
-		local.WithRepo(_repo),
 		local.WithRuntime(_runtime),
-		local.WithUser(_user),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
 	)
@@ -152,9 +141,7 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		Driver:   "local",
 		Hostname: "localhost",
 		Pipeline: _pipeline,
-		Repo:     _repo,
 		Runtime:  _runtime,
-		User:     _user,
 		Version:  "v1.0.0",
 	}
 
@@ -192,9 +179,7 @@ func TestExecutor_Setup_Windows(t *testing.T) {
 		Client:   _client,
 		Driver:   constants.DriverWindows,
 		Pipeline: _pipeline,
-		Repo:     _repo,
 		Runtime:  _runtime,
-		User:     _user,
 	}
 
 	got, err := _setup.Windows()
@@ -223,6 +208,11 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_emptyOwnerBuild := new(api.Build)
+	_emptyOwnerBuild.SetRepo(new(api.Repo))
+
+	_emptyRepoBuild := new(api.Build)
+
 	// setup tests
 	tests := []struct {
 		name    string
@@ -237,9 +227,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: false,
 		},
@@ -251,9 +239,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -265,9 +251,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -279,9 +263,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     "",
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -293,23 +275,19 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   nil,
-				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
 		{
 			name: "nil repo",
 			setup: &Setup{
-				Build:      _build,
+				Build:      _emptyRepoBuild,
 				Client:     _client,
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       nil,
 				Runtime:    _runtime,
-				User:       _user,
 			},
 			failure: true,
 		},
@@ -321,23 +299,19 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    nil,
-				User:       _user,
 			},
 			failure: true,
 		},
 		{
 			name: "nil user",
 			setup: &Setup{
-				Build:      _build,
+				Build:      _emptyOwnerBuild,
 				Client:     _client,
 				Driver:     constants.DriverLinux,
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
-				Repo:       _repo,
 				Runtime:    _runtime,
-				User:       nil,
 			},
 			failure: true,
 		},

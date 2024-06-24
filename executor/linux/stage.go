@@ -38,6 +38,8 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 		// update the container environment with stage name
 		_step.Environment["VELA_STEP_STAGE"] = s.Name
 
+		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", _step.Image)))
+
 		logger.Debugf("creating %s step", _step.Name)
 		// create the step
 		err := c.CreateStep(ctx, _step)
@@ -141,7 +143,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, 
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build, c.repo)
+		skip, err := step.Skip(_step, c.build)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
@@ -210,7 +212,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, 
 
 			libStep.SetReport(report)
 
-			_, _, err = c.Vela.Step.Update(c.repo.GetOrg(), c.repo.GetName(), c.build.GetNumber(), libStep)
+			_, _, err = c.Vela.Step.Update(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), libStep)
 		}
 
 		// failed steps within the stage should set the stop value to true unless

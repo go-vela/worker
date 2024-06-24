@@ -7,25 +7,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/queue/models"
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
-	"github.com/sirupsen/logrus"
 )
 
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
 //nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
-func (w *Worker) exec(index int, config *library.Worker) error {
+func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
 
 	// setup the version
@@ -58,7 +59,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	}
 
 	// retrieve a build token from the server to setup the execBuildClient
-	bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
 	if err != nil {
 		logrus.Errorf("unable to retrieve build token: %s", err)
 
@@ -78,7 +79,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	}
 
 	// request build executable containing pipeline.Build data using exec client
-	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Repo.GetOrg(), item.Repo.GetName(), item.Build.GetNumber())
+	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
 	if err != nil {
 		return err
 	}
@@ -101,20 +102,20 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		"build":    item.Build.GetNumber(),
 		"executor": w.Config.Executor.Driver,
 		"host":     w.Config.API.Address.Hostname(),
-		"repo":     item.Repo.GetFullName(),
+		"repo":     item.Build.GetRepo().GetFullName(),
 		"runtime":  w.Config.Runtime.Driver,
-		"user":     item.User.GetName(),
+		"user":     item.Build.GetRepo().GetOwner().GetName(),
 		"version":  v.Semantic(),
 	})
 
-	// lock and append the build to the RunningBuildIDs list
-	w.RunningBuildIDsMutex.Lock()
+	// lock and append the build to the list
+	w.RunningBuildsMutex.Lock()
 
-	w.RunningBuildIDs = append(w.RunningBuildIDs, strconv.FormatInt(item.Build.GetID(), 10))
+	w.RunningBuilds = append(w.RunningBuilds, item.Build)
 
-	config.SetRunningBuildIDs(w.RunningBuildIDs)
+	config.SetRunningBuilds(w.RunningBuilds)
 
-	w.RunningBuildIDsMutex.Unlock()
+	w.RunningBuildsMutex.Unlock()
 
 	// set worker status
 	updateStatus := w.getWorkerStatusFromConfig(config)
@@ -129,7 +130,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	}
 
 	// handle stale item queued before a Vela upgrade or downgrade.
-	if item.ItemVersion != types.ItemVersion {
+	if item.ItemVersion != models.ItemVersion {
 		// If the ItemVersion is older or newer than what we expect, then it might
 		// not be safe to process the build. Fail the build and loop to the next item.
 		// TODO: Ask the server to re-compile and requeue the build instead of failing it.
@@ -140,7 +141,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		build.SetStatus(constants.StatusError)
 		build.SetFinished(time.Now().UTC().Unix())
 
-		_, _, err := execBuildClient.Build.Update(item.Repo.GetOrg(), item.Repo.GetName(), build)
+		_, _, err := execBuildClient.Build.Update(build)
 		if err != nil {
 			logrus.Errorf("Unable to set build status to %s: %s", constants.StatusFailure, err)
 			return err
@@ -170,7 +171,7 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 	// setup the executor
 	//
-	// https://godoc.org/github.com/go-vela/worker/executor#New
+	// https://pkg.go.dev/github.com/go-vela/worker/executor#New
 	_executor, err := executor.New(&executor.Setup{
 		Logger:              logger,
 		Mock:                w.Config.Mock,
@@ -184,8 +185,6 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 		Runtime:             w.Runtime,
 		Build:               item.Build,
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
-		Repo:                item.Repo,
-		User:                item.User,
 		Version:             v.Semantic(),
 		OutputCtn:           w.Config.Executor.OutputCtn,
 	})
@@ -213,18 +212,18 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 		logger.Info("completed build")
 
-		// lock and remove the build from the RunningBuildIDs list
-		w.RunningBuildIDsMutex.Lock()
+		// lock and remove the build from the list
+		w.RunningBuildsMutex.Lock()
 
-		for i, v := range w.RunningBuildIDs {
-			if v == strconv.FormatInt(item.Build.GetID(), 10) {
-				w.RunningBuildIDs = append(w.RunningBuildIDs[:i], w.RunningBuildIDs[i+1:]...)
+		for i, v := range w.RunningBuilds {
+			if v.GetID() == item.Build.GetID() {
+				w.RunningBuilds = append(w.RunningBuilds[:i], w.RunningBuilds[i+1:]...)
 			}
 		}
 
-		config.SetRunningBuildIDs(w.RunningBuildIDs)
+		config.SetRunningBuilds(w.RunningBuilds)
 
-		w.RunningBuildIDsMutex.Unlock()
+		w.RunningBuildsMutex.Unlock()
 
 		// set worker status
 		updateStatus := w.getWorkerStatusFromConfig(config)
@@ -242,9 +241,9 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 	// capture the configured build timeout
 	t := w.Config.Build.Timeout
 	// check if the repository has a custom timeout
-	if item.Repo.GetTimeout() > 0 {
+	if item.Build.GetRepo().GetTimeout() > 0 {
 		// update timeout variable to repository custom timeout
-		t = time.Duration(item.Repo.GetTimeout()) * time.Minute
+		t = time.Duration(item.Build.GetRepo().GetTimeout()) * time.Minute
 	}
 
 	// create a build context (from a background context
@@ -308,8 +307,8 @@ func (w *Worker) exec(index int, config *library.Worker) error {
 
 // getWorkerStatusFromConfig is a helper function
 // to determine the appropriate worker status.
-func (w *Worker) getWorkerStatusFromConfig(config *library.Worker) string {
-	switch rb := len(config.GetRunningBuildIDs()); {
+func (w *Worker) getWorkerStatusFromConfig(config *api.Worker) string {
+	switch rb := len(config.GetRunningBuilds()); {
 	case rb == 0:
 		return constants.WorkerStatusIdle
 	case rb < w.Config.Build.Limit:

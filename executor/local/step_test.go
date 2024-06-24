@@ -6,18 +6,15 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-vela/worker/internal/message"
-	"github.com/go-vela/worker/runtime/docker"
-
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/runtime/docker"
 )
 
 func TestLocal_CreateStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -82,9 +79,7 @@ func TestLocal_CreateStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -110,8 +105,6 @@ func TestLocal_CreateStep(t *testing.T) {
 func TestLocal_PlanStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -150,9 +143,7 @@ func TestLocal_PlanStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -178,8 +169,6 @@ func TestLocal_PlanStep(t *testing.T) {
 func TestLocal_ExecStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -261,9 +250,7 @@ func TestLocal_ExecStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -294,8 +281,6 @@ func TestLocal_ExecStep(t *testing.T) {
 func TestLocal_StreamStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -360,9 +345,7 @@ func TestLocal_StreamStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -388,8 +371,6 @@ func TestLocal_StreamStep(t *testing.T) {
 func TestLocal_DestroyStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_repo := testRepo()
-	_user := testUser()
 
 	_runtime, err := docker.NewMock()
 	if err != nil {
@@ -436,9 +417,7 @@ func TestLocal_DestroyStep(t *testing.T) {
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
-				WithRepo(_repo),
 				WithRuntime(_runtime),
-				WithUser(_user),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-vela/types"
-
 	"github.com/gin-gonic/gin"
+
+	"github.com/go-vela/types"
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 
@@ -42,14 +42,14 @@ import (
 func GetRepo(c *gin.Context) {
 	e := executor.Retrieve(c)
 
-	repo, err := e.GetRepo()
+	build, err := e.GetBuild()
 	if err != nil {
-		msg := fmt.Errorf("unable to read repo: %w", err).Error()
+		msg := fmt.Errorf("unable to read build: %w", err).Error()
 
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
 
 		return
 	}
 
-	c.JSON(http.StatusOK, repo)
+	c.JSON(http.StatusOK, build.GetRepo())
 }

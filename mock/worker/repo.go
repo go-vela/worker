@@ -9,8 +9,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 )
 
 const (
@@ -53,7 +54,7 @@ func getRepo(c *gin.Context) {
 
 	data := []byte(RepoResp)
 
-	var body library.Repo
+	var body api.Repo
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)

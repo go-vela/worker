@@ -9,15 +9,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/mock/server"
-
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
-
-	"github.com/go-vela/sdk-go/vela"
-
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 func TestLocal_Opt_WithBuild(t *testing.T) {
@@ -27,7 +24,7 @@ func TestLocal_Opt_WithBuild(t *testing.T) {
 	// setup tests
 	tests := []struct {
 		name  string
-		build *library.Build
+		build *api.Build
 	}{
 		{
 			name:  "build",
@@ -137,39 +134,6 @@ func TestLocal_Opt_WithPipeline(t *testing.T) {
 	}
 }
 
-func TestLocal_Opt_WithRepo(t *testing.T) {
-	// setup types
-	_repo := testRepo()
-
-	// setup tests
-	tests := []struct {
-		name string
-		repo *library.Repo
-	}{
-		{
-			name: "repo",
-			repo: _repo,
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithRepo(test.repo),
-			)
-
-			if err != nil {
-				t.Errorf("WithRepo returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.repo, _repo) {
-				t.Errorf("WithRepo is %v, want %v", _engine.repo, _repo)
-			}
-		})
-	}
-}
-
 func TestLocal_Opt_WithRuntime(t *testing.T) {
 	// setup types
 	_runtime, err := docker.NewMock()
@@ -216,39 +180,6 @@ func TestLocal_Opt_WithRuntime(t *testing.T) {
 
 			if !reflect.DeepEqual(_engine.Runtime, _runtime) {
 				t.Errorf("WithRuntime is %v, want %v", _engine.Runtime, _runtime)
-			}
-		})
-	}
-}
-
-func TestLocal_Opt_WithUser(t *testing.T) {
-	// setup types
-	_user := testUser()
-
-	// setup tests
-	tests := []struct {
-		name string
-		user *library.User
-	}{
-		{
-			name: "user",
-			user: _user,
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			_engine, err := New(
-				WithUser(test.user),
-			)
-
-			if err != nil {
-				t.Errorf("WithUser returned err: %v", err)
-			}
-
-			if !reflect.DeepEqual(_engine.user, _user) {
-				t.Errorf("WithUser is %v, want %v", _engine.user, _user)
 			}
 		})
 	}

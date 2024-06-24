@@ -7,17 +7,16 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 
+	_ "github.com/joho/godotenv/autoload"
+
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
-
-	"github.com/sirupsen/logrus"
-
-	"github.com/urfave/cli/v2"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
 // run executes the worker based
@@ -148,7 +147,7 @@ func run(c *cli.Context) error {
 
 		RegisterToken: make(chan string, 1),
 
-		RunningBuildIDs: make([]string, 0),
+		RunningBuilds: make([]*api.Build, 0),
 	}
 
 	// set the worker address if no flag was provided

@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
-	"github.com/sirupsen/logrus"
 )
 
 // create a stage logging pattern.
@@ -27,6 +28,8 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	for _, _step := range s.Steps {
 		// update the container environment with stage name
 		_step.Environment["VELA_STEP_STAGE"] = s.Name
+
+		fmt.Fprintln(c.stdout, _pattern, fmt.Sprintf("> Preparing step image %s...", _step.Image))
 
 		// create the step
 		err := c.CreateStep(ctx, _step)
@@ -90,7 +93,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, 
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build, c.repo)
+		skip, err := step.Skip(_step, c.build)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}

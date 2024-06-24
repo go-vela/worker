@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
@@ -15,7 +16,7 @@ import (
 )
 
 // GetBuild gets the current build in execution.
-func (c *client) GetBuild() (*library.Build, error) {
+func (c *client) GetBuild() (*api.Build, error) {
 	// check if the build resource is available
 	if c.build == nil {
 		return nil, fmt.Errorf("build resource not found")
@@ -34,20 +35,10 @@ func (c *client) GetPipeline() (*pipeline.Build, error) {
 	return c.pipeline, nil
 }
 
-// GetRepo gets the current repo in execution.
-func (c *client) GetRepo() (*library.Repo, error) {
-	// check if the repo resource is available
-	if c.repo == nil {
-		return nil, fmt.Errorf("repo resource not found")
-	}
-
-	return c.repo, nil
-}
-
 // CancelBuild cancels the current build in execution.
 //
 //nolint:funlen // process of going through steps/services/stages is verbose and could be funcitonalized
-func (c *client) CancelBuild() (*library.Build, error) {
+func (c *client) CancelBuild() (*api.Build, error) {
 	// get the current build from the client
 	b, err := c.GetBuild()
 	if err != nil {

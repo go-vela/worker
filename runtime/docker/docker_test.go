@@ -5,9 +5,9 @@ package docker
 import (
 	"testing"
 
-	"github.com/go-vela/types/pipeline"
-
 	"gotest.tools/v3/env"
+
+	"github.com/go-vela/types/pipeline"
 )
 
 func TestDocker_New(t *testing.T) {
