@@ -58,15 +58,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
-	logger.Debug("substituting container configuration")
-
-	logger.Debug("injecting non-substituted secrets")
-	// inject no-substitution secrets for container
-	err = injectSecrets(ctn, c.NoSubSecrets)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 

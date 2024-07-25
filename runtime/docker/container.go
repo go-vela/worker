@@ -295,8 +295,12 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	return nil
 }
 
-// PollOutputsContainer
+// PollOutputsContainer captures the `cat` response for a given path in the Docker volume.
 func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
+	if len(ctn.Image) == 0 {
+		return nil, nil
+	}
+
 	execConfig := types.ExecConfig{
 		Tty:          true,
 		Cmd:          []string{"sh", "-c", fmt.Sprintf("cat %s", path)},
@@ -314,16 +318,24 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 		log.Fatal(err)
 	}
 
-	defer hijackedResponse.Close()
+	defer func() {
+		if hijackedResponse.Conn != nil {
+			hijackedResponse.Close()
+		}
+	}()
 
 	outputStdout := new(bytes.Buffer)
 	outputStderr := new(bytes.Buffer)
 
-	stdcopy.StdCopy(outputStdout, outputStderr, hijackedResponse.Reader)
+	if hijackedResponse.Reader != nil {
+		_, err := stdcopy.StdCopy(outputStdout, outputStderr, hijackedResponse.Reader)
+		if err != nil {
+			c.Logger.Errorf("unable to copy logs for container: %v", err)
+		}
+	}
 
 	if outputStderr.Len() > 0 {
-		fmt.Println("Error: ", outputStderr.String())
-		return nil, fmt.Errorf("Error: %s", outputStderr.String())
+		return nil, fmt.Errorf("error: %s", outputStderr.String())
 	}
 
 	data := outputStdout.Bytes()

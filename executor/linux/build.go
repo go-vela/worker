@@ -441,14 +441,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		build.Upload(c.build, c.Vela, c.err, c.Logger)
 	}()
 
-	var (
-		opEnv, maskEnv map[string]string
-		report         *library.Report
-	)
+	// output maps for dynamic environment variables captured from volume
+	var opEnv, maskEnv map[string]string
 
 	// fire up output container to run with the build
 	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
 
+	// execute outputs container
 	c.err = c.outputs.exec(ctx, c.OutputCtn)
 	if c.err != nil {
 		return fmt.Errorf("unable to exec outputs container: %w", c.err)
@@ -461,8 +460,8 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to execute secret: %w", c.err)
 	}
 
-	// poll outputs container for any updates
-	opEnv, maskEnv, report, c.err = c.outputs.poll(ctx, c.OutputCtn, nil)
+	// poll outputs container for any updates from secret plugins
+	opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
 	if c.err != nil {
 		return fmt.Errorf("unable to exec outputs container: %w", c.err)
 	}
@@ -481,12 +480,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		c.err = c.ExecService(ctx, _service)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute service: %w", c.err)
-		}
-
-		// poll outputs container
-		opEnv, maskEnv, report, c.err = c.outputs.poll(ctx, c.OutputCtn, _service)
-		if c.err != nil {
-			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
 	}
 
@@ -546,6 +539,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return err
 		}
 
+		c.Logger.Debug("injecting non-substituted secrets")
+		// inject no-substitution secrets for container
+		err = injectSecrets(_step, c.NoSubSecrets)
+		if err != nil {
+			return err
+		}
+
 		c.Logger.Infof("executing %s step", _step.Name)
 		// execute the step
 		c.err = c.ExecStep(ctx, _step)
@@ -554,29 +554,10 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 
 		// poll outputs
-		opEnv, maskEnv, report, c.err = c.outputs.poll(ctx, c.OutputCtn, _step)
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
-
-		if _step.ReportStatus {
-			libStep, err := step.Load(_step, &c.steps)
-			if err != nil {
-				return fmt.Errorf("unable to load step %s", _step.Name)
-			}
-
-			c.Logger.Infof("REPORTY %v", report)
-
-			libStep.SetReport(report)
-
-			c.Logger.Infof("REPORT REPORT REPORT %v", libStep.GetReport())
-
-			_, _, err = c.Vela.Step.Update(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), libStep)
-			if err != nil {
-				return fmt.Errorf("unable to update step %s", _step.Name)
-			}
-		}
-
 	}
 
 	// create an error group with the context for each stage

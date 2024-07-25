@@ -1014,6 +1014,7 @@ func TestLinux_AssembleBuild_EnforceTrustedRepos(t *testing.T) {
 				WithVelaClient(_client),
 				WithPrivilegedImages(test.privilegedImages),
 				WithEnforceTrustedRepos(test.enforceTrustedRepos),
+				WithOutputCtn(new(pipeline.Container)),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

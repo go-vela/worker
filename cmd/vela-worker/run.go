@@ -74,7 +74,7 @@ func run(c *cli.Context) error {
 		return fmt.Errorf("unable to parse address: %w", err)
 	}
 
-	var outputsCtn *pipeline.Container
+	outputsCtn := new(pipeline.Container)
 	if len(c.String("executor.outputs-image")) > 0 {
 		outputsCtn = &pipeline.Container{
 			Detach:      true,
