@@ -58,6 +58,25 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
+	// K8s runtime needs to substitute + inject prior to reaching ExecBuild (no outputs)
+	if c.Runtime.Driver() == constants.DriverKubernetes {
+		logger.Debug("substituting container configuration")
+		// substitute container configuration
+		//
+		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+		err = ctn.Substitute()
+		if err != nil {
+			return fmt.Errorf("unable to substitute container configuration")
+		}
+
+		logger.Debug("injecting non-substituted secrets")
+		// inject no-substitution secrets for container
+		err = injectSecrets(ctn, c.NoSubSecrets)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
