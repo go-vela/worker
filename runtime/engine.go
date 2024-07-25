@@ -43,6 +43,8 @@ type Engine interface {
 	// InspectContainer defines a function that inspects
 	// the pipeline container.
 	InspectContainer(context.Context, *pipeline.Container) error
+	// PollOutputsContainer defines a function that captures
+	// file contents from the outputs container.
 	PollOutputsContainer(context.Context, *pipeline.Container, string) ([]byte, error)
 	// RemoveContainer defines a function that deletes
 	// (kill, remove) the pipeline container.

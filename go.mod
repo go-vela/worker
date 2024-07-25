@@ -4,8 +4,6 @@ go 1.22.0
 
 toolchain go1.22.4
 
-replace github.com/go-vela/types => ../types
-
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/distribution/reference v0.6.0

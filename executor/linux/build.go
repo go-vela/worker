@@ -214,8 +214,6 @@ func (c *client) PlanBuild(ctx context.Context) error {
 }
 
 // AssembleBuild prepares the containers within a build for execution.
-//
-//nolint:gocyclo,funlen // ignore cyclomatic complexity and function length due to comments and logging messages
 func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -271,6 +269,9 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		s.Detach = true
 
 		c.Logger.Infof("creating %s service", s.Name)
+
+		_log.AppendData([]byte(fmt.Sprintf("> Preparing service image %s...\n", s.Image)))
+
 		// create the service
 		c.err = c.CreateService(ctx, s)
 		if c.err != nil {
@@ -327,6 +328,9 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		}
 
 		c.Logger.Infof("creating %s step", s.Name)
+
+		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", s.Image)))
+
 		// create the step
 		c.err = c.CreateStep(ctx, s)
 		if c.err != nil {

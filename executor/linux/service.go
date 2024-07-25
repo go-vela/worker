@@ -129,18 +129,6 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
-	// verify service is allowed to run
-	if c.enforceTrustedRepos {
-		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
-		if err != nil {
-			return err
-		}
-
-		if priv && !c.build.GetRepo().GetTrusted() {
-			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
-		}
-	}
-
 	// load the service from the client
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Load
@@ -153,6 +141,21 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Snapshot
 	defer func() { service.Snapshot(ctn, c.build, c.Vela, c.Logger, _service) }()
+
+	// verify service is allowed to run
+	if c.enforceTrustedRepos {
+		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
+		if err != nil {
+			return err
+		}
+
+		if priv && !c.build.GetRepo().GetTrusted() {
+			_service.SetStatus(constants.StatusError)
+			_service.SetError("attempting to use privileged image as untrusted repo")
+
+			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
+		}
+	}
 
 	logger.Debug("running container")
 	// run the runtime container

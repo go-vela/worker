@@ -135,18 +135,6 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		return nil
 	}
 
-	// verify step is allowed to run
-	if c.enforceTrustedRepos {
-		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
-		if err != nil {
-			return err
-		}
-
-		if priv && !c.build.GetRepo().GetTrusted() {
-			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
-		}
-	}
-
 	// update engine logger with step metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
@@ -164,6 +152,21 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
 	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, _step) }()
+
+	// verify step is allowed to run
+	if c.enforceTrustedRepos {
+		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
+		if err != nil {
+			return err
+		}
+
+		if priv && !c.build.GetRepo().GetTrusted() {
+			_step.SetStatus(constants.StatusError)
+			_step.SetError("attempting to use privileged image as untrusted repo")
+
+			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
+		}
+	}
 
 	logger.Debug("running container")
 
