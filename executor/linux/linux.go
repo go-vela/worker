@@ -48,7 +48,6 @@ type (
 		serviceLogs         sync.Map
 		steps               sync.Map
 		stepLogs            sync.Map
-		workspacePath       string
 
 		streamRequests chan message.StreamRequest
 

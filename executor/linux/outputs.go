@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-vela/types/pipeline"
 	"github.com/sirupsen/logrus"
+
+	"github.com/go-vela/types/pipeline"
 )
 
 // outputSvc handles communication with the outputs container during the build.
