@@ -214,6 +214,8 @@ func (c *client) PlanBuild(ctx context.Context) error {
 }
 
 // AssembleBuild prepares the containers within a build for execution.
+//
+//nolint:funlen // consider abstracting parts here but for now this is fine
 func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -432,6 +434,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 }
 
 // ExecBuild runs a pipeline for a build.
+//
+//nolint:funlen // there is a lot going on here and will probably always be long
 func (c *client) ExecBuild(ctx context.Context) error {
 	defer func() {
 		// Exec* calls are responsible for sending StreamRequest messages.
@@ -543,7 +547,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return err
 		}
 
-		c.Logger.Debug("injecting non-substituted secrets")
 		// inject no-substitution secrets for container
 		err = injectSecrets(_step, c.NoSubSecrets)
 		if err != nil {
@@ -691,6 +694,8 @@ func (c *client) StreamBuild(ctx context.Context) error {
 // loadLazySecrets is a helper function that injects secrets
 // into the container right before execution, rather than
 // during build planning. It is only available for the Docker runtime.
+//
+//nolint:funlen // explanation takes up a lot of lines
 func loadLazySecrets(c *client, _step *pipeline.Container) error {
 	_log := new(library.Log)
 
