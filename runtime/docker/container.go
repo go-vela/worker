@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -310,12 +309,12 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 
 	responseExec, err := c.Docker.ContainerExecCreate(ctx, ctn.ID, execConfig)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, types.ExecStartCheck{})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	defer func() {
