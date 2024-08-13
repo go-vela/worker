@@ -889,11 +889,11 @@ func TestLinux_getSecretValues(t *testing.T) {
 				Secrets: pipeline.StepSecretSlice{
 					{
 						Source: "someSource",
-						Target: "secret_username",
+						Target: "SECRET_USERNAME",
 					},
 					{
 						Source: "someOtherSource",
-						Target: "secret_password",
+						Target: "SECRET_PASSWORD",
 					},
 					{
 						Source: "disallowedSecret",
@@ -920,11 +920,11 @@ func TestLinux_getSecretValues(t *testing.T) {
 				Secrets: pipeline.StepSecretSlice{
 					{
 						Source: "someSource",
-						Target: "secret_username",
+						Target: "SECRET_USERNAME",
 					},
 					{
 						Source: "someOtherSource",
-						Target: "secret_password",
+						Target: "SECRET_PASSWORD",
 					},
 				},
 			},

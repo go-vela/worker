@@ -443,7 +443,7 @@ func getSecretValues(ctn *pipeline.Container) []string {
 	// gather secrets' values from the environment map for masking
 	for _, secret := range ctn.Secrets {
 		// capture secret from environment
-		s, ok := ctn.Environment[strings.ToUpper(secret.Target)]
+		s, ok := ctn.Environment[secret.Target]
 		if !ok {
 			continue
 		}

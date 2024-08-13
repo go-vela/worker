@@ -14,6 +14,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
@@ -80,6 +81,7 @@ func run(c *cli.Context) error {
 			Detach:      true,
 			Image:       c.String("executor.outputs-image"),
 			Environment: make(map[string]string),
+			Pull:        constants.PullNotPresent,
 		}
 	}
 

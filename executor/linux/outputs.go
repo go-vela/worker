@@ -52,7 +52,7 @@ func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container, timeout
 	return nil
 }
 
-// destroy cleans up secret plugin after execution.
+// destroy cleans up outputs container after execution.
 func (o *outputSvc) destroy(ctx context.Context, ctn *pipeline.Container) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
@@ -81,7 +81,7 @@ func (o *outputSvc) destroy(ctx context.Context, ctn *pipeline.Container) error 
 	return nil
 }
 
-// exec runs a secret plugins for a pipeline.
+// exec runs the outputs sidecar container for a pipeline.
 func (o *outputSvc) exec(ctx context.Context, _outputs *pipeline.Container) error {
 	// exit if outputs container has not been configured
 	if len(_outputs.Image) == 0 {
