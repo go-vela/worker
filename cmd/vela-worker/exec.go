@@ -11,10 +11,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue/models"
 	"github.com/go-vela/types"
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
@@ -31,64 +33,114 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	// setup the version
 	v := version.New()
 
-	// get worker from database
-	worker, _, err := w.VelaClient.Worker.Get(w.Config.API.Address.Hostname())
-	if err != nil {
-		logrus.Errorf("unable to retrieve worker from server: %s", err)
+	var (
+		execBuildClient     *vela.Client
+		execBuildExecutable *library.BuildExecutable
+		p                   *pipeline.Build
+		item                *models.Item
+		retries             = 3
+	)
 
-		return err
-	}
+	for i := 0; i < retries; i++ {
+		// check if we're on the first iteration of the loop
+		if i > 0 {
+			// incrementally sleep in between retries
+			time.Sleep(time.Duration(i*10) * time.Second)
+		}
 
-	// capture an item from the queue
-	item, err := w.Queue.Pop(context.Background(), worker.GetRoutes())
-	if err != nil {
-		logrus.Errorf("queue pop failed: %v", err)
+		logrus.Debugf("queue item prep - attempt %d", i+1)
 
-		// returning immediately on queue pop fail will attempt
-		// to pop in quick succession, so we honor the configured timeout
-		time.Sleep(w.Config.Queue.Timeout)
+		// get worker from database
+		worker, _, err := w.VelaClient.Worker.Get(w.Config.API.Address.Hostname())
+		if err != nil {
+			logrus.Errorf("unable to retrieve worker from server: %s", err)
 
-		// returning nil to avoid unregistering the worker on pop failure;
-		// sometimes queue could be unavailable due to blip or maintenance
-		return nil
-	}
+			if i < retries-1 {
+				logrus.WithError(err).Warningf("retrying #%d", i+1)
 
-	if item == nil {
-		return nil
-	}
+				// continue to the next iteration of the loop
+				continue
+			}
 
-	// retrieve a build token from the server to setup the execBuildClient
-	bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
-	if err != nil {
-		logrus.Errorf("unable to retrieve build token: %s", err)
+			return err
+		}
 
-		// build is not in pending state — user canceled build while it was in queue. Pop, discard, move on.
-		if resp != nil && resp.StatusCode == http.StatusConflict {
+		// capture an item from the queue
+		item, err = w.Queue.Pop(context.Background(), worker.GetRoutes())
+		if err != nil {
+			logrus.Errorf("queue pop failed: %v", err)
+
+			// returning immediately on queue pop fail will attempt
+			// to pop in quick succession, so we honor the configured timeout
+			time.Sleep(w.Config.Queue.Timeout)
+
+			// returning nil to avoid unregistering the worker on pop failure;
+			// sometimes queue could be unavailable due to blip or maintenance
 			return nil
 		}
 
-		// something else is amiss (auth, server down, etc.) — shut down worker, will have to re-register if registration enabled.
-		return err
-	}
+		if item == nil {
+			return nil
+		}
 
-	// set up build client with build token as auth
-	execBuildClient, err := setupClient(w.Config.Server, bt.GetToken())
-	if err != nil {
-		return err
-	}
+		// retrieve a build token from the server to setup the execBuildClient
+		bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
+		if err != nil {
+			logrus.Errorf("unable to retrieve build token: %s", err)
 
-	// request build executable containing pipeline.Build data using exec client
-	execBuildExecutable, _, err := execBuildClient.Build.GetBuildExecutable(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
-	if err != nil {
-		return err
-	}
+			// build is not in pending state — user canceled build while it was in queue. Pop, discard, move on.
+			if resp != nil && resp.StatusCode == http.StatusConflict {
+				return nil
+			}
 
-	// get the build pipeline from the build executable
-	pipeline := new(pipeline.Build)
+			// check if the retry limit has been exceeded
+			if i < retries-1 {
+				logrus.WithError(err).Warningf("retrying #%d", i+1)
 
-	err = json.Unmarshal(execBuildExecutable.GetData(), pipeline)
-	if err != nil {
-		return err
+				// continue to the next iteration of the loop
+				continue
+			}
+
+			return err
+		}
+
+		// set up build client with build token as auth
+		execBuildClient, err = setupClient(w.Config.Server, bt.GetToken())
+		if err != nil {
+			// check if the retry limit has been exceeded
+			if i < retries-1 {
+				logrus.WithError(err).Warningf("retrying #%d", i+1)
+
+				// continue to the next iteration of the loop
+				continue
+			}
+
+			return err
+		}
+
+		// request build executable containing pipeline.Build data using exec client
+		execBuildExecutable, _, err = execBuildClient.Build.GetBuildExecutable(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
+		if err != nil {
+			// check if the retry limit has been exceeded
+			if i < retries-1 {
+				logrus.WithError(err).Warningf("retrying #%d", i+1)
+
+				// continue to the next iteration of the loop
+				continue
+			}
+
+			return err
+		}
+
+		// get the build pipeline from the build executable
+		p = new(pipeline.Build)
+
+		err = json.Unmarshal(execBuildExecutable.GetData(), p)
+		if err != nil {
+			return err
+		}
+
+		break
 	}
 
 	// create logger with extra metadata
@@ -180,7 +232,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Hostname:            w.Config.API.Address.Hostname(),
 		Runtime:             w.Runtime,
 		Build:               item.Build,
-		Pipeline:            pipeline.Sanitize(w.Config.Runtime.Driver),
+		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 	})
 
