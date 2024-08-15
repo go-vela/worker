@@ -332,7 +332,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 
 			// execute the stage
-			c.err = c.ExecStage(stageCtx, stage, stageMap, nil, nil)
+			c.err = c.ExecStage(stageCtx, stage, stageMap)
 			if c.err != nil {
 				return fmt.Errorf("unable to execute stage: %w", c.err)
 			}

@@ -77,7 +77,7 @@ func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 }
 
 // ExecStage runs a stage.
-func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, _, _ map[string]string) error {
+func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
 	// close the stage channel at the end
 	defer func() {
 		errChan, ok := m.Load(s.Name)

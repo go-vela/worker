@@ -98,7 +98,7 @@ func (c *client) PlanStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 }
 
 // ExecStage runs a stage.
-func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, opEnv, maskEnv map[string]string) error {
+func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) error {
 	// update engine logger with stage metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
@@ -165,9 +165,9 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map, 
 		}
 
 		// poll outputs
-		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		opEnv, maskEnv, err := c.outputs.poll(ctx, c.OutputCtn)
 		if c.err != nil {
-			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+			return fmt.Errorf("unable to exec outputs container: %w", err)
 		}
 
 		// merge env from outputs

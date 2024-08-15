@@ -41,6 +41,8 @@ func Environment(c *pipeline.Container, b *api.Build, s *library.Step, version, 
 		c.Environment["VELA_RUNTIME"] = b.GetRuntime()
 		c.Environment["VELA_VERSION"] = version
 		c.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
+		c.Environment["VELA_OUTPUTS"] = "/vela/outputs/.env"
+		c.Environment["VELA_MASKED_OUTPUTS"] = "/vela/outputs/masked.env"
 
 		// populate environment variables from build library
 		//

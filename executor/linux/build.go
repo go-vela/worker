@@ -468,12 +468,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		return fmt.Errorf("unable to execute secret: %w", c.err)
 	}
 
-	// poll outputs container for any updates from secret plugins
-	opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
-	if c.err != nil {
-		return fmt.Errorf("unable to exec outputs container: %w", c.err)
-	}
-
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
 		c.Logger.Infof("planning %s service", _service.Name)
@@ -523,6 +517,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
+		// poll outputs
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
 		// merge env from outputs
 		//
 		//nolint:errcheck // only errors with empty environment input, which does not matter here
@@ -558,12 +558,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		c.err = c.ExecStep(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute step: %w", c.err)
-		}
-
-		// poll outputs
-		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
-		if c.err != nil {
-			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
 	}
 
@@ -601,7 +595,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 			c.Logger.Infof("executing %s stage", stage.Name)
 			// execute the stage
-			c.err = c.ExecStage(stageCtx, stage, stageMap, opEnv, maskEnv)
+			c.err = c.ExecStage(stageCtx, stage, stageMap)
 			if c.err != nil {
 				return fmt.Errorf("unable to execute stage: %w", c.err)
 			}

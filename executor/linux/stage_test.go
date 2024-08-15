@@ -583,7 +583,7 @@ func TestLinux_ExecStage(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
-			err = _engine.ExecStage(context.Background(), test.stage, stageMap, nil, nil)
+			err = _engine.ExecStage(context.Background(), test.stage, stageMap)
 
 			if test.failure {
 				if err == nil {
