@@ -65,22 +65,24 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 			return err
 		}
 
-		// capture an item from the queue
-		item, err = w.Queue.Pop(context.Background(), worker.GetRoutes())
-		if err != nil {
-			logrus.Errorf("queue pop failed: %v", err)
+		// capture an item from the queue only on first loop iteration (failures here return nil)
+		if i == 0 {
+			item, err = w.Queue.Pop(context.Background(), worker.GetRoutes())
+			if err != nil {
+				logrus.Errorf("queue pop failed: %v", err)
 
-			// returning immediately on queue pop fail will attempt
-			// to pop in quick succession, so we honor the configured timeout
-			time.Sleep(w.Config.Queue.Timeout)
+				// returning immediately on queue pop fail will attempt
+				// to pop in quick succession, so we honor the configured timeout
+				time.Sleep(w.Config.Queue.Timeout)
 
-			// returning nil to avoid unregistering the worker on pop failure;
-			// sometimes queue could be unavailable due to blip or maintenance
-			return nil
-		}
+				// returning nil to avoid unregistering the worker on pop failure;
+				// sometimes queue could be unavailable due to blip or maintenance
+				return nil
+			}
 
-		if item == nil {
-			return nil
+			if item == nil {
+				return nil
+			}
 		}
 
 		// retrieve a build token from the server to setup the execBuildClient
