@@ -6,11 +6,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/library"
 )
 
 // checkIn is a helper function to phone home to the server.
@@ -18,32 +20,64 @@ func (w *Worker) checkIn(config *api.Worker) (bool, string, error) {
 	// check to see if the worker already exists in the database
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())
 
-	_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
-	if err != nil {
-		respErr := fmt.Errorf("unable to retrieve worker %s from the server: %w", config.GetHostname(), err)
-		// if server is down, the worker status will not be updated
-		if resp == nil {
-			return false, "", respErr
+	var (
+		tkn     *library.Token
+		retries = 3
+	)
+
+	for i := 0; i < retries; i++ {
+		logrus.Debugf("check in loop - attempt %d", i+1)
+		// check if we're on the first iteration of the loop
+		if i > 0 {
+			// incrementally sleep in between retries
+			time.Sleep(time.Duration(i*10) * time.Second)
 		}
-		// if we receive a 404 the worker needs to be registered
-		if resp.StatusCode == http.StatusNotFound {
-			return w.register(config)
+
+		_, resp, err := w.VelaClient.Worker.Get(config.GetHostname())
+		if err != nil {
+			respErr := fmt.Errorf("unable to retrieve worker %s from the server: %w", config.GetHostname(), err)
+			// if server is down, the worker status will not be updated
+			if resp == nil || (resp.StatusCode != http.StatusNotFound) {
+				return false, "", respErr
+			}
+			// if we receive a 404 the worker needs to be registered
+			if resp.StatusCode == http.StatusNotFound {
+				registered, strToken, regErr := w.register(config)
+				if regErr != nil {
+					if i < retries-1 {
+						logrus.WithError(err).Warningf("retrying #%d", i+1)
+
+						// continue to the next iteration of the loop
+						continue
+					}
+				}
+
+				return registered, strToken, regErr
+			}
 		}
 
-		return false, "", respErr
-	}
+		// if we were able to GET the worker, update it
+		logrus.Infof("checking worker %s into the server", config.GetHostname())
 
-	// if we were able to GET the worker, update it
-	logrus.Infof("checking worker %s into the server", config.GetHostname())
+		tkn, _, err = w.VelaClient.Worker.RefreshAuth(config.GetHostname())
+		if err != nil {
+			if i < retries-1 {
+				logrus.WithError(err).Warningf("retrying #%d", i+1)
 
-	tkn, _, err := w.VelaClient.Worker.RefreshAuth(config.GetHostname())
-	if err != nil {
-		// set to error when check in fails
-		w.updateWorkerStatus(config, constants.WorkerStatusError)
-		return false, "", fmt.Errorf("unable to refresh auth for worker %s on the server: %w", config.GetHostname(), err)
+				// continue to the next iteration of the loop
+				continue
+			}
+
+			// set to error when check in fails
+			w.updateWorkerStatus(config, constants.WorkerStatusError)
+
+			return false, "", fmt.Errorf("unable to refresh auth for worker %s on the server: %w", config.GetHostname(), err)
+		}
+		// update worker status to Idle when checkIn is successful.
+		w.updateWorkerStatus(config, constants.WorkerStatusIdle)
+
+		break
 	}
-	// update worker status to Idle when checkIn is successful.
-	w.updateWorkerStatus(config, constants.WorkerStatusIdle)
 
 	return true, tkn.GetToken(), nil
 }
