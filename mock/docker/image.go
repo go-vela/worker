@@ -67,7 +67,7 @@ func (i *ImageService) ImageHistory(ctx context.Context, image string) ([]image.
 // a mocked call to import a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageImport
-func (i *ImageService) ImageImport(ctx context.Context, source types.ImageImportSource, ref string, options image.ImportOptions) (io.ReadCloser, error) {
+func (i *ImageService) ImageImport(ctx context.Context, source image.ImportSource, ref string, options image.ImportOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
