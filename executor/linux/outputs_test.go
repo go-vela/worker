@@ -488,6 +488,15 @@ func TestLinux_Outputs_toMap(t *testing.T) {
 			},
 		},
 		{
+			name:    "multiple equals",
+			runtime: constants.DriverDocker,
+			input:   []byte("FOO=bar\r\nEQUATION=e=mc^2\r\n"),
+			wantMap: map[string]string{
+				"FOO":      "bar",
+				"EQUATION": "e=mc^2",
+			},
+		},
+		{
 			name:    "bad format",
 			runtime: constants.DriverDocker,
 			input:   []byte("FOO;bar//ONE^TEST,,,hello world"),

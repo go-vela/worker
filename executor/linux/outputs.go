@@ -143,7 +143,7 @@ func toMap(input []byte) map[string]string {
 	m := make(map[string]string)
 
 	for _, line := range lines {
-		parts := strings.Split(line, "=")
+		parts := strings.SplitN(line, "=", 2)
 		if len(parts) == 2 {
 			s := parts[1]
 			if !strings.Contains(parts[1], "\\\\n") {
