@@ -7,7 +7,6 @@ import (
 	"flag"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -464,53 +463,6 @@ func TestLinux_Outputs_poll(t *testing.T) {
 
 			if err != nil {
 				t.Errorf("%s poll returned err: %v", test.name, err)
-			}
-		})
-	}
-}
-
-func TestLinux_Outputs_toMap(t *testing.T) {
-	// setup tests
-	tests := []struct {
-		name    string
-		runtime string
-		input   []byte
-		wantMap map[string]string
-	}{
-		{
-			name:    "basic",
-			runtime: constants.DriverDocker,
-			input:   []byte("FOO=bar\r\nONE=1\r\nTEST=hello world\r\n"),
-			wantMap: map[string]string{
-				"FOO":  "bar",
-				"ONE":  "1",
-				"TEST": "hello world",
-			},
-		},
-		{
-			name:    "multiple equals",
-			runtime: constants.DriverDocker,
-			input:   []byte("FOO=bar\r\nEQUATION=e=mc^2\r\n"),
-			wantMap: map[string]string{
-				"FOO":      "bar",
-				"EQUATION": "e=mc^2",
-			},
-		},
-		{
-			name:    "bad format",
-			runtime: constants.DriverDocker,
-			input:   []byte("FOO;bar//ONE^TEST,,,hello world"),
-			wantMap: make(map[string]string),
-		},
-	}
-
-	// run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got := toMap(test.input)
-
-			if !reflect.DeepEqual(got, test.wantMap) {
-				t.Errorf("toMap is %v, want %v", got, test.wantMap)
 			}
 		})
 	}

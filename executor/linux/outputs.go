@@ -3,11 +3,12 @@
 package linux
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
-	"strings"
 
+	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/types/pipeline"
@@ -125,34 +126,25 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 		return nil, nil, err
 	}
 
+	reader := bytes.NewReader(outputBytes)
+
+	outputMap, err := envparse.Parse(reader)
+	if err != nil {
+		logger.Debugf("unable to parse output map: %v", err)
+	}
+
 	// grab masked outputs
 	maskedBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/masked.env")
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return toMap(outputBytes), toMap(maskedBytes), nil
-}
+	reader = bytes.NewReader(maskedBytes)
 
-// toMap is a helper function that turns raw docker exec output bytes into a map
-// by splitting on carriage returns + newlines and once more on `=`.
-func toMap(input []byte) map[string]string {
-	// carriage returns are included in the split because the exec config `TTY` value is set to true
-	lines := strings.Split(string(input), "\r\n")
-
-	m := make(map[string]string)
-
-	for _, line := range lines {
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) == 2 {
-			s := parts[1]
-			if !strings.Contains(parts[1], "\\\\n") {
-				s = strings.Replace(parts[1], "\\n", "\\\n", -1)
-			}
-
-			m[parts[0]] = s
-		}
+	maskMap, err := envparse.Parse(reader)
+	if err != nil {
+		logger.Debugf("unable to parse masked output map: %v", err)
 	}
 
-	return m
+	return outputMap, maskMap, nil
 }
