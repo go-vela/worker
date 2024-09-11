@@ -60,7 +60,7 @@ func (o *outputSvc) destroy(ctx context.Context, ctn *pipeline.Container) error 
 		return nil
 	}
 
-	// update engine logger with secret metadata
+	// update engine logger with outputs metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := o.client.Logger.WithField("outputs", ctn.Name)

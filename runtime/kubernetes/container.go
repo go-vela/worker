@@ -69,6 +69,8 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 	return nil
 }
 
+// PollOutputsContainer captures the `cat` response for a given path in the Docker volume.
+// This is a no-op for kubernetes. Pod environments cannot be dynamic.
 func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
 	c.Logger.Tracef("no-op: removing container %s", ctn.ID)
 
