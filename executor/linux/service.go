@@ -13,6 +13,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
 )
@@ -140,6 +141,21 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Snapshot
 	defer func() { service.Snapshot(ctn, c.build, c.Vela, c.Logger, _service) }()
+
+	// verify service is allowed to run
+	if c.enforceTrustedRepos {
+		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
+		if err != nil {
+			return err
+		}
+
+		if priv && !c.build.GetRepo().GetTrusted() {
+			_service.SetStatus(constants.StatusError)
+			_service.SetError("attempting to use privileged image as untrusted repo")
+
+			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
+		}
+	}
 
 	logger.Debug("running container")
 	// run the runtime container

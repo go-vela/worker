@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -145,6 +146,9 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		break
 	}
 
+	// set the outputs container ID
+	w.Config.Executor.OutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -236,6 +240,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Build:               item.Build,
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
+		OutputCtn:           w.Config.Executor.OutputCtn,
 	})
 
 	// add the executor to the worker

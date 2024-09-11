@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"net/http"
 
-	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/typed/vela/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
+
+	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/generated/clientset/versioned/typed/vela/v1alpha1"
 )
 
 type Interface interface {

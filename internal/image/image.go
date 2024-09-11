@@ -52,34 +52,40 @@ func ParseWithError(_image string) (string, error) {
 // IsPrivilegedImage digests the provided image with a
 // privileged pattern to see if the image meets the criteria
 // needed to allow a Docker Socket mount.
-func IsPrivilegedImage(image, privileged string) (bool, error) {
-	// parse the image provided into a
-	// named, fully qualified reference
-	//
-	// https://pkg.go.dev/github.com/distribution/reference#ParseAnyReference
-	_refImg, err := reference.ParseAnyReference(image)
-	if err != nil {
-		return false, err
+func IsPrivilegedImage(image string, privilegedSet []string) (bool, error) {
+	for _, pattern := range privilegedSet {
+		// parse the image provided into a
+		// named, fully qualified reference
+		//
+		// https://pkg.go.dev/github.com/distribution/reference#ParseAnyReference
+		_refImg, err := reference.ParseAnyReference(image)
+		if err != nil {
+			return false, err
+		}
+
+		// ensure we have the canonical form of the named reference
+		//
+		// https://pkg.go.dev/github.com/distribution/reference#ParseNamed
+		_canonical, err := reference.ParseNamed(_refImg.String())
+		if err != nil {
+			return false, err
+		}
+
+		// add default tag "latest" when tag does not exist
+		_refImg = reference.TagNameOnly(_canonical)
+
+		// check if the image matches the privileged pattern
+		//
+		// https://pkg.go.dev/github.com/distribution/reference#FamiliarMatch
+		match, err := reference.FamiliarMatch(pattern, _refImg)
+		if err != nil {
+			return false, err
+		}
+
+		if match {
+			return match, nil
+		}
 	}
 
-	// ensure we have the canonical form of the named reference
-	//
-	// https://pkg.go.dev/github.com/distribution/reference#ParseNamed
-	_canonical, err := reference.ParseNamed(_refImg.String())
-	if err != nil {
-		return false, err
-	}
-
-	// add default tag "latest" when tag does not exist
-	_refImg = reference.TagNameOnly(_canonical)
-
-	// check if the image matches the privileged pattern
-	//
-	// https://pkg.go.dev/github.com/distribution/reference#FamiliarMatch
-	match, err := reference.FamiliarMatch(privileged, _refImg)
-	if err != nil {
-		return false, err
-	}
-
-	return match, nil
+	return false, nil
 }

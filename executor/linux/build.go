@@ -215,7 +215,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 // AssembleBuild prepares the containers within a build for execution.
 //
-//nolint:gocyclo,funlen // ignore cyclomatic complexity and function length due to comments and logging messages
+//nolint:funlen // consider abstracting parts here but for now this is fine
 func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
@@ -329,9 +329,10 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
+		c.Logger.Infof("creating %s step", s.Name)
+
 		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", s.Image)))
 
-		c.Logger.Infof("creating %s step", s.Name)
 		// create the step
 		c.err = c.CreateStep(ctx, s)
 		if c.err != nil {
@@ -364,6 +365,18 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			continue
 		}
 
+		// verify secret image is allowed to run
+		if c.enforceTrustedRepos {
+			priv, err := image.IsPrivilegedImage(s.Origin.Image, c.privilegedImages)
+			if err != nil {
+				return err
+			}
+
+			if priv && !c.build.GetRepo().GetTrusted() {
+				return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", s.Origin.Image)
+			}
+		}
+
 		c.Logger.Infof("creating %s secret", s.Origin.Name)
 		// create the service
 		c.err = c.secret.create(ctx, s.Origin)
@@ -384,92 +397,11 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
-	// enforce repo.trusted is set for pipelines containing privileged images
-	// if not enforced, allow all that exist in the list of runtime privileged images
-	// this configuration is set as an executor flag
-	if c.enforceTrustedRepos {
-		// group steps services stages and secret origins together
-		containers := c.pipeline.Steps
 
-		containers = append(containers, c.pipeline.Services...)
-
-		for _, stage := range c.pipeline.Stages {
-			containers = append(containers, stage.Steps...)
-		}
-
-		for _, secret := range c.pipeline.Secrets {
-			containers = append(containers, secret.Origin)
-		}
-
-		// assume no privileged images are in use
-		containsPrivilegedImages := false
-		privImages := []string{}
-
-		// verify all pipeline containers
-		for _, container := range containers {
-			// TODO: remove hardcoded reference
-			if container.Image == "#init" {
-				continue
-			}
-
-			// skip over non-plugin secrets origins
-			if container.Empty() {
-				continue
-			}
-
-			c.Logger.Infof("verifying privileges for container %s", container.Name)
-
-			// update the init log with image info
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-			_log.AppendData([]byte(fmt.Sprintf("Verifying privileges for image %s...\n", container.Image)))
-
-			for _, pattern := range c.privilegedImages {
-				// check if image matches privileged pattern
-				privileged, err := image.IsPrivilegedImage(container.Image, pattern)
-				if err != nil {
-					// wrap the error
-					c.err = fmt.Errorf("unable to verify privileges for image %s: %w", container.Image, err)
-
-					// update the init log with image info
-					//
-					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-					_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
-
-					// return error and destroy the build
-					// ignore checking more images
-					return c.err
-				}
-
-				if privileged {
-					// pipeline contains at least one privileged image
-					containsPrivilegedImages = privileged
-
-					privImages = append(privImages, container.Image)
-				}
-			}
-
-			// update the init log with image info
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-			_log.AppendData([]byte(fmt.Sprintf("Privileges verified for image %s\n", container.Image)))
-		}
-
-		localBool := c.build.GetRepo().GetTrusted()
-
-		// ensure pipelines containing privileged images are only permitted to run by trusted repos
-		if (containsPrivilegedImages) && !localBool {
-			// update error including privileged image
-			c.err = fmt.Errorf("unable to assemble build. pipeline contains privileged images and repo is not trusted. privileged image: %v", privImages)
-
-			// update the init log with image info
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
-			_log.AppendData([]byte(fmt.Sprintf("ERROR: %s\n", c.err.Error())))
-
-			// return error and destroy the build
-			return c.err
-		}
+	// create outputs container with a timeout equal to the repo timeout
+	c.err = c.outputs.create(ctx, c.OutputCtn, (int64(60) * c.build.GetRepo().GetTimeout()))
+	if c.err != nil {
+		return fmt.Errorf("unable to create outputs container: %w", c.err)
 	}
 
 	// inspect the runtime build (eg a kubernetes pod) for the pipeline
@@ -502,6 +434,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 }
 
 // ExecBuild runs a pipeline for a build.
+//
+//nolint:funlen // there is a lot going on here and will probably always be long
 func (c *client) ExecBuild(ctx context.Context) error {
 	defer func() {
 		// Exec* calls are responsible for sending StreamRequest messages.
@@ -514,6 +448,18 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
 		build.Upload(c.build, c.Vela, c.err, c.Logger)
 	}()
+
+	// output maps for dynamic environment variables captured from volume
+	var opEnv, maskEnv map[string]string
+
+	// fire up output container to run with the build
+	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
+
+	// execute outputs container
+	c.err = c.outputs.exec(ctx, c.OutputCtn)
+	if c.err != nil {
+		return fmt.Errorf("unable to exec outputs container: %w", c.err)
+	}
 
 	c.Logger.Info("executing secret images")
 	// execute the secret
@@ -569,6 +515,42 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		c.err = c.PlanStep(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
+		}
+
+		// poll outputs
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
+		// merge env from outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(opEnv)
+
+		// merge env from masked outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(maskEnv)
+
+		// add masked outputs to secret map so they can be masked in logs
+		for key := range maskEnv {
+			sec := &pipeline.StepSecret{
+				Target: key,
+			}
+			_step.Secrets = append(_step.Secrets, sec)
+		}
+
+		// perform any substitution on dynamic variables
+		err = _step.Substitute()
+		if err != nil {
+			return err
+		}
+
+		// inject no-substitution secrets for container
+		err = injectSecrets(_step, c.NoSubSecrets)
+		if err != nil {
+			return err
 		}
 
 		c.Logger.Infof("executing %s step", _step.Name)
@@ -706,6 +688,8 @@ func (c *client) StreamBuild(ctx context.Context) error {
 // loadLazySecrets is a helper function that injects secrets
 // into the container right before execution, rather than
 // during build planning. It is only available for the Docker runtime.
+//
+//nolint:funlen // explanation takes up a lot of lines
 func loadLazySecrets(c *client, _step *pipeline.Container) error {
 	_log := new(library.Log)
 
@@ -939,6 +923,12 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 		if err != nil {
 			c.Logger.Errorf("unable to destroy secret: %v", err)
 		}
+	}
+
+	// destroy output container
+	err = c.outputs.destroy(ctx, c.OutputCtn)
+	if err != nil {
+		c.Logger.Errorf("unable to destroy output container: %v", err)
 	}
 
 	c.Logger.Info("deleting volume")

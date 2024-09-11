@@ -14,6 +14,8 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/types/constants"
+	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -73,6 +75,16 @@ func run(c *cli.Context) error {
 		return fmt.Errorf("unable to parse address: %w", err)
 	}
 
+	outputsCtn := new(pipeline.Container)
+	if len(c.String("executor.outputs-image")) > 0 {
+		outputsCtn = &pipeline.Container{
+			Detach:      true,
+			Image:       c.String("executor.outputs-image"),
+			Environment: make(map[string]string),
+			Pull:        constants.PullNotPresent,
+		}
+	}
+
 	// create the worker
 	w := &Worker{
 		// worker configuration
@@ -94,6 +106,7 @@ func run(c *cli.Context) error {
 				MaxLogSize:          c.Uint("executor.max_log_size"),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
+				OutputCtn:           outputsCtn,
 			},
 			// logger configuration
 			Logger: &Logger{

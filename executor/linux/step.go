@@ -15,6 +15,7 @@ import (
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
 	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -57,20 +58,23 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
-	logger.Debug("substituting container configuration")
-	// substitute container configuration
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
-	err = ctn.Substitute()
-	if err != nil {
-		return fmt.Errorf("unable to substitute container configuration")
-	}
+	// K8s runtime needs to substitute + inject prior to reaching ExecBuild (no outputs)
+	if c.Runtime.Driver() == constants.DriverKubernetes {
+		logger.Debug("substituting container configuration")
+		// substitute container configuration
+		//
+		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+		err = ctn.Substitute()
+		if err != nil {
+			return fmt.Errorf("unable to substitute container configuration")
+		}
 
-	logger.Debug("injecting non-substituted secrets")
-	// inject no-substitution secrets for container
-	err = injectSecrets(ctn, c.NoSubSecrets)
-	if err != nil {
-		return err
+		logger.Debug("injecting non-substituted secrets")
+		// inject no-substitution secrets for container
+		err = injectSecrets(ctn, c.NoSubSecrets)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -168,7 +172,23 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
 	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, _step) }()
 
+	// verify step is allowed to run
+	if c.enforceTrustedRepos {
+		priv, err := image.IsPrivilegedImage(ctn.Image, c.privilegedImages)
+		if err != nil {
+			return err
+		}
+
+		if priv && !c.build.GetRepo().GetTrusted() {
+			_step.SetStatus(constants.StatusError)
+			_step.SetError("attempting to use privileged image as untrusted repo")
+
+			return fmt.Errorf("attempting to use privileged image (%s) as untrusted repo", ctn.Image)
+		}
+	}
+
 	logger.Debug("running container")
+
 	// run the runtime container
 	err = c.Runtime.RunContainer(ctx, ctn, c.pipeline)
 	if err != nil {
@@ -423,7 +443,7 @@ func getSecretValues(ctn *pipeline.Container) []string {
 	// gather secrets' values from the environment map for masking
 	for _, secret := range ctn.Secrets {
 		// capture secret from environment
-		s, ok := ctn.Environment[strings.ToUpper(secret.Target)]
+		s, ok := ctn.Environment[secret.Target]
 		if !ok {
 			continue
 		}

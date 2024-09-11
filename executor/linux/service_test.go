@@ -404,6 +404,20 @@ func TestLinux_ExecService(t *testing.T) {
 			runtime:   _kubernetes,
 			container: new(pipeline.Container),
 		},
+		{
+			name:    "privileged image",
+			failure: true,
+			runtime: _docker,
+			container: &pipeline.Container{
+				ID:          "step_github_octocat_1_echo",
+				Directory:   "/vela/src/github.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "target/vela-docker",
+				Name:        "echo",
+				Number:      1,
+				Pull:        "not_present",
+			},
+		},
 	}
 
 	// run tests
@@ -415,6 +429,8 @@ func TestLinux_ExecService(t *testing.T) {
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
+				WithEnforceTrustedRepos(true),
+				WithPrivilegedImages([]string{"target/vela-docker"}),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)

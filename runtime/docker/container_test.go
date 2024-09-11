@@ -397,6 +397,51 @@ func TestDocker_TailContainer(t *testing.T) {
 	}
 }
 
+func TestDocker_PollOutputsContainer(t *testing.T) {
+	// setup Docker
+	_engine, err := NewMock()
+	if err != nil {
+		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	// setup tests
+	tests := []struct {
+		name      string
+		failure   bool
+		container *pipeline.Container
+	}{
+		{
+			name:      "outputs container",
+			failure:   false,
+			container: _container,
+		},
+		{
+			name:      "no provided outputs container",
+			failure:   false,
+			container: new(pipeline.Container),
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err = _engine.PollOutputsContainer(context.Background(), test.container, "")
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("PollOutputsContainer should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("PollOutputs returned err: %v", err)
+			}
+		})
+	}
+}
+
 func TestDocker_WaitContainer(t *testing.T) {
 	// setup Docker
 	_engine, err := NewMock()

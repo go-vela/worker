@@ -3,11 +3,13 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"strings"
 
+	"github.com/docker/docker/api/types"
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -136,21 +138,19 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	}
 
 	// check if the image is allowed to run privileged
-	for _, pattern := range c.config.Images {
-		privileged, err := image.IsPrivilegedImage(ctn.Image, pattern)
-		if err != nil {
-			return err
-		}
+	privileged, err := image.IsPrivilegedImage(ctn.Image, c.config.Images)
+	if err != nil {
+		return err
+	}
 
-		if privileged {
-			hostConf.Privileged = true
-		}
+	if privileged {
+		hostConf.Privileged = true
 	}
 
 	// send API call to create the container
 	//
-	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCreate
-	_, err := c.Docker.ContainerCreate(
+	// https://godoc.org/github.com/docker/docker/client#Client.ContainerCreate
+	_, err = c.Docker.ContainerCreate(
 		ctx,
 		containerConf,
 		hostConf,
@@ -292,6 +292,54 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	}
 
 	return nil
+}
+
+// PollOutputsContainer captures the `cat` response for a given path in the Docker volume.
+func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
+	if len(ctn.Image) == 0 {
+		return nil, nil
+	}
+
+	execConfig := types.ExecConfig{
+		Tty:          true,
+		Cmd:          []string{"sh", "-c", fmt.Sprintf("cat %s", path)},
+		AttachStderr: true,
+		AttachStdout: true,
+	}
+
+	responseExec, err := c.Docker.ContainerExecCreate(ctx, ctn.ID, execConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, types.ExecStartCheck{})
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if hijackedResponse.Conn != nil {
+			hijackedResponse.Close()
+		}
+	}()
+
+	outputStdout := new(bytes.Buffer)
+	outputStderr := new(bytes.Buffer)
+
+	if hijackedResponse.Reader != nil {
+		_, err := stdcopy.StdCopy(outputStdout, outputStderr, hijackedResponse.Reader)
+		if err != nil {
+			c.Logger.Errorf("unable to copy logs for container: %v", err)
+		}
+	}
+
+	if outputStderr.Len() > 0 {
+		return nil, fmt.Errorf("error: %s", outputStderr.String())
+	}
+
+	data := outputStdout.Bytes()
+
+	return data, nil
 }
 
 // ctnConfig is a helper function to

@@ -69,6 +69,12 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 	return nil
 }
 
+func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
+	c.Logger.Tracef("no-op: removing container %s", ctn.ID)
+
+	return nil, nil
+}
+
 // RunContainer creates and starts the pipeline container.
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
@@ -158,14 +164,13 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	container.VolumeMounts = volumeMounts
 
 	// check if the image is allowed to run privileged
-	for _, pattern := range c.config.Images {
-		privileged, err := image.IsPrivilegedImage(ctn.Image, pattern)
-		if err != nil {
-			return err
-		}
 
-		container.SecurityContext.Privileged = &privileged
+	privileged, err := image.IsPrivilegedImage(ctn.Image, c.config.Images)
+	if err != nil {
+		return err
 	}
+
+	container.SecurityContext.Privileged = &privileged
 
 	if c.PipelinePodTemplate != nil && c.PipelinePodTemplate.Spec.Container != nil {
 		securityContext := c.PipelinePodTemplate.Spec.Container.SecurityContext

@@ -576,6 +576,7 @@ func TestLinux_ExecStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
+				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {

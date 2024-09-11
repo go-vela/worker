@@ -107,8 +107,8 @@ github.com/go-vela/sdk-go v0.24.0 h1:QmwcF8h/Fq1mwbE8mdvqyTmXM2Z3sE0dLQLEMc7HA4w
 github.com/go-vela/sdk-go v0.24.0/go.mod h1:TmJI0KOt/KweLy0HE4JGpKYDPsbhW4sdl2AY/tWP0tY=
 github.com/go-vela/server v0.24.1 h1:iM5REZBh6oHD0nxEH4O6dkUWNhY3MNrWBLNWGUUwcP8=
 github.com/go-vela/server v0.24.1/go.mod h1:jCnJPiyaRLcdy1u5fKIf7BqsbYAbVMjjI7dlyxZovME=
-github.com/go-vela/types v0.24.0 h1:KkkiXxw3uHckh/foyadmLY1YnLw6vhZbz9XwqONCj6o=
-github.com/go-vela/types v0.24.0/go.mod h1:YWj6BIapl9Kbj4yHq/fp8jltXdGiwD/gTy1ez32Rzag=
+github.com/go-vela/types v0.24.1-0.20240813201820-772b29b91a5e h1:6OHP0aQ2SKwNyL5Q+qYo+Yts6MD3PwmkqWKGoH3AlTI=
+github.com/go-vela/types v0.24.1-0.20240813201820-772b29b91a5e/go.mod h1:YWj6BIapl9Kbj4yHq/fp8jltXdGiwD/gTy1ez32Rzag=
 github.com/goccy/go-json v0.10.3 h1:KZ5WoDbxAIgm2HNbYckL0se1fHD6rz5j4ywS6ebzDqA=
 github.com/goccy/go-json v0.10.3/go.mod h1:oq7eo15ShAhp70Anwd5lgX2pLfOS3QCiwU/PULtXL6M=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
@@ -147,6 +147,8 @@ github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/go-cleanhttp v0.5.2 h1:035FKYIWjmULyFRBKPs8TBQoi0x6d9G4xc9neXJWAZQ=
 github.com/hashicorp/go-cleanhttp v0.5.2/go.mod h1:kO/YDlP8L1346E6Sodw+PrpBSV4/SoxCXGY6BqNFT48=
+github.com/hashicorp/go-envparse v0.1.0 h1:bE++6bhIsNCPLvgDZkYqo3nA+/PFI51pkrHdmPSDFPY=
+github.com/hashicorp/go-envparse v0.1.0/go.mod h1:OHheN1GoygLlAkTlXLXvAdnXdZxy8JUweQ1rAXx1xnc=
 github.com/hashicorp/go-hclog v1.6.3 h1:Qr2kF+eVWjTiYmU7Y31tYlP1h0q/X3Nl3tPGdaB11/k=
 github.com/hashicorp/go-hclog v1.6.3/go.mod h1:W4Qnvbt70Wk/zYJryRzDRU/4r0kIg0PVHBcfoyhpF5M=
 github.com/hashicorp/go-multierror v1.1.1 h1:H5DkEtf6CXdFp0N0Em5UCwQpXMWke8IA0+lD48awMYo=

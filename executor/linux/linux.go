@@ -29,9 +29,11 @@ type (
 		NoSubSecrets map[string]*library.Secret
 		Hostname     string
 		Version      string
+		OutputCtn    *pipeline.Container
 
 		// clients for build actions
-		secret *secretSvc
+		secret  *secretSvc
+		outputs *outputSvc
 
 		// private fields
 		init                *pipeline.Container
@@ -122,6 +124,7 @@ func New(opts ...Opt) (*client, error) {
 
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}
+	c.outputs = &outputSvc{client: c}
 
 	return c, nil
 }
