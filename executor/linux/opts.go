@@ -185,11 +185,12 @@ func WithVersion(version string) Opt {
 	}
 }
 
+// WithOutputCtn sets the outputs container in the executor client for Linux.
 func WithOutputCtn(ctn *pipeline.Container) Opt {
 	return func(c *client) error {
 		c.Logger.Trace("configuring output container in linux executor client")
 
-		// set the version in the client
+		// set the outputs container in the client
 		c.OutputCtn = ctn
 
 		return nil
