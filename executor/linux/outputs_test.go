@@ -320,7 +320,7 @@ func TestLinux_Outputs_exec(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(file)
+				Compile(context.TODO(), file)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}

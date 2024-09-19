@@ -36,7 +36,7 @@ func TestLocal_CreateStage(t *testing.T) {
 		WithRepo(_build.GetRepo()).
 		WithLocal(true).
 		WithUser(_build.GetRepo().GetOwner()).
-		Compile(_file)
+		Compile(context.TODO(), _file)
 	if err != nil {
 		t.Errorf("unable to compile pipeline %s: %v", _file, err)
 	}

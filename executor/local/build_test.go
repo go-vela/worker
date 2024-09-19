@@ -64,7 +64,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 				WithRepo(_build.GetRepo()).
 				WithLocal(true).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(test.pipeline)
+				Compile(context.TODO(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
@@ -143,7 +143,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 				WithRepo(_build.GetRepo()).
 				WithLocal(true).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(test.pipeline)
+				Compile(context.TODO(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
@@ -261,7 +261,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				WithRepo(_build.GetRepo()).
 				WithLocal(true).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(test.pipeline)
+				Compile(context.TODO(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
@@ -365,7 +365,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 				WithRepo(_build.GetRepo()).
 				WithLocal(true).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(test.pipeline)
+				Compile(context.TODO(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
@@ -561,7 +561,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 				WithRepo(_build.GetRepo()).
 				WithLocal(true).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(test.pipeline)
+				Compile(context.TODO(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
@@ -682,7 +682,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 				WithRepo(_build.GetRepo()).
 				WithLocal(true).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(test.pipeline)
+				Compile(context.TODO(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
