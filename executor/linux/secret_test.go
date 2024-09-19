@@ -420,7 +420,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
 				WithUser(_build.GetRepo().GetOwner()).
-				Compile(context.TODO(), file)
+				Compile(context.Background(), file)
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
