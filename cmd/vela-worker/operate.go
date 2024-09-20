@@ -79,12 +79,19 @@ func (w *Worker) operate(ctx context.Context) error {
 
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
+		// five second ticker for signal handling
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+
+		// initialize timer for check-in
+		timer := time.After(0)
+
 		for {
 			select {
 			case <-gctx.Done():
 				logrus.Info("completed looping on worker registration")
 				return nil
-			default:
+			case <-timer:
 				// check in attempt loop
 				for {
 					// register or update the worker
@@ -145,9 +152,12 @@ func (w *Worker) operate(ctx context.Context) error {
 					return err
 				}
 
-				// sleep for the configured time
-				time.Sleep(w.Config.CheckIn)
+				// set timer to next check in
+				timer = time.After(w.Config.CheckIn)
 			}
+
+			// five second ticker
+			<-ticker.C
 		}
 	})
 
