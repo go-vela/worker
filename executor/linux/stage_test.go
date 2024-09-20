@@ -37,7 +37,7 @@ func TestLinux_CreateStage(t *testing.T) {
 		WithBuild(_build).
 		WithRepo(_build.GetRepo()).
 		WithUser(_build.GetRepo().GetOwner()).
-		Compile(_file)
+		Compile(context.Background(), _file)
 	if err != nil {
 		t.Errorf("unable to compile pipeline %s: %v", _file, err)
 	}

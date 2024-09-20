@@ -148,7 +148,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
-				Compile(test.pipeline)
+				Compile(context.Background(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
@@ -325,7 +325,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
-				Compile(test.pipeline)
+				Compile(context.Background(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
@@ -608,7 +608,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
-				Compile(test.pipeline)
+				Compile(context.Background(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
@@ -843,7 +843,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
-				Compile(test.pipeline)
+				Compile(context.Background(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
@@ -1486,7 +1486,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
-				Compile(test.pipeline)
+				Compile(context.Background(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
@@ -1760,7 +1760,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				Duplicate().
 				WithBuild(_build).
 				WithRepo(_build.GetRepo()).
-				Compile(test.pipeline)
+				Compile(context.Background(), test.pipeline)
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
