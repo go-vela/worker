@@ -67,7 +67,7 @@ func (i *ImageService) ImageHistory(ctx context.Context, image string) ([]image.
 // a mocked call to import a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageImport
-func (i *ImageService) ImageImport(ctx context.Context, source types.ImageImportSource, ref string, options image.ImportOptions) (io.ReadCloser, error) {
+func (i *ImageService) ImageImport(ctx context.Context, source image.ImportSource, ref string, options image.ImportOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -143,7 +143,7 @@ func (i *ImageService) ImageList(ctx context.Context, options image.ListOptions)
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageLoad
 func (i *ImageService) ImageLoad(ctx context.Context, input io.Reader, quiet bool) (types.ImageLoadResponse, error) {
-	return types.ImageLoadResponse{}, nil
+	return image.LoadResponse{}, nil
 }
 
 // ImagePull is a helper function to simulate
@@ -239,8 +239,8 @@ func (i *ImageService) ImageTag(ctx context.Context, image, ref string) error {
 // a mocked call to prune Docker images.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImagesPrune
-func (i *ImageService) ImagesPrune(ctx context.Context, pruneFilter filters.Args) (types.ImagesPruneReport, error) {
-	return types.ImagesPruneReport{}, nil
+func (i *ImageService) ImagesPrune(ctx context.Context, pruneFilter filters.Args) (image.PruneReport, error) {
+	return image.PruneReport{}, nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
