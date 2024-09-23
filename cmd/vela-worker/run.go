@@ -102,14 +102,15 @@ func run(c *cli.Context) error {
 			},
 			// runtime configuration
 			Runtime: &runtime.Setup{
-				Driver:           c.String("runtime.driver"),
-				ConfigFile:       c.String("runtime.config"),
-				Namespace:        c.String("runtime.namespace"),
-				PodsTemplateName: c.String("runtime.pods-template-name"),
-				PodsTemplateFile: c.Path("runtime.pods-template-file"),
-				HostVolumes:      c.StringSlice("runtime.volumes"),
-				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
-				DropCapabilities: c.StringSlice("runtime.drop-capabilities"),
+				Driver:            c.String("runtime.driver"),
+				ConfigFile:        c.String("runtime.config"),
+				Namespace:         c.String("runtime.namespace"),
+				PodsTemplateName:  c.String("runtime.pods-template-name"),
+				PodsTemplateFile:  c.Path("runtime.pods-template-file"),
+				HostVolumes:       c.StringSlice("runtime.volumes"),
+				PrivilegedImages:  c.StringSlice("runtime.privileged-images"),
+				DropCapabilities:  c.StringSlice("runtime.drop-capabilities"),
+				ContainerPlatform: c.String("runtime.container-platform"),
 			},
 			// queue configuration
 			Queue: &queue.Setup{

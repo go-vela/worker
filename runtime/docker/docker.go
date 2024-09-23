@@ -32,6 +32,8 @@ type config struct {
 	Volumes []string
 	// specifies a list of kernel capabilities to drop for each Docker container
 	DropCapabilities []string
+	//
+	ContainerPlatform string
 }
 
 type client struct {
@@ -89,6 +91,8 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// set the Docker client in the runtime client
 	c.Docker = _docker
+
+	c.Logger.Infof("Docker client initialized with API version %s", c.Docker.ClientVersion())
 
 	return c, nil
 }

@@ -32,7 +32,9 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 	// create options for pulling image
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types/image#PullOptions
-	opts := dockerImageTypes.PullOptions{}
+	opts := dockerImageTypes.PullOptions{
+		Platform: c.config.ContainerPlatform,
+	}
 
 	// send API call to pull the image for the container
 	//

@@ -11,6 +11,7 @@ import (
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/pipeline"
@@ -147,6 +148,11 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		}
 	}
 
+	platform := strings.Split(c.config.ContainerPlatform, "/")
+	if len(platform) != 2 {
+		return fmt.Errorf("invalid container platform %s", c.config.ContainerPlatform)
+	}
+
 	// send API call to create the container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCreate
@@ -155,7 +161,10 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		containerConf,
 		hostConf,
 		networkConf,
-		nil,
+		&v1.Platform{
+			OS:           platform[0],
+			Architecture: platform[1],
+		},
 		ctn.ID,
 	)
 	if err != nil {

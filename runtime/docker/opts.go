@@ -59,3 +59,12 @@ func WithDropCapabilities(caps []string) ClientOpt {
 		return nil
 	}
 }
+
+func WithContainerPlatform(platform string) ClientOpt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring container platform in docker runtime client")
+		// set the runtime container platform in the docker client
+		c.config.ContainerPlatform = platform
+		return nil
+	}
+}

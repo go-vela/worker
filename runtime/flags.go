@@ -3,6 +3,8 @@
 package runtime
 
 import (
+	"runtime"
+
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-vela/types/constants"
@@ -63,5 +65,12 @@ var Flags = []cli.Flag{
 		FilePath: "/vela/runtime/drop_capabilities",
 		Name:     "runtime.drop-capabilities",
 		Usage:    "list of kernel capabilities to drop from container privileges (only used by Docker)",
+	},
+	&cli.StringFlag{
+		EnvVars:  []string{"VELA_RUNTIME_CONTAINER_PLATFORM", "RUNTIME_CONTAINER_PLATFORM"},
+		FilePath: "/vela/runtime/container_platform",
+		Name:     "runtime.container-platform",
+		Usage:    "container platform to be used for the runtime",
+		Value:    "linux/" + runtime.GOARCH,
 	},
 }

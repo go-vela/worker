@@ -43,6 +43,8 @@ type Setup struct {
 	PrivilegedImages []string
 	// specifies a list of kernel capabilities to drop from container (only used by Docker)
 	DropCapabilities []string
+	//
+	ContainerPlatform string
 }
 
 // Docker creates and returns a Vela engine capable of
@@ -55,6 +57,7 @@ func (s *Setup) Docker() (Engine, error) {
 		docker.WithPrivilegedImages(s.PrivilegedImages),
 		docker.WithLogger(s.Logger),
 		docker.WithDropCapabilities(s.DropCapabilities),
+		docker.WithContainerPlatform(s.ContainerPlatform),
 	}
 
 	if s.Mock {
