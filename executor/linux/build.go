@@ -504,6 +504,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
+		// add netrc to secrets for masking in logs
+		sec := &pipeline.StepSecret{
+			Target: "VELA_NETRC_PASSWORD",
+		}
+		_step.Secrets = append(_step.Secrets, sec)
+
 		// load any lazy secrets into the container environment
 		c.err = loadLazySecrets(c, _step)
 		if c.err != nil {
