@@ -151,6 +151,12 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			continue
 		}
 
+		// add netrc to secrets for masking in logs
+		sec := &pipeline.StepSecret{
+			Target: "VELA_NETRC_PASSWORD",
+		}
+		_step.Secrets = append(_step.Secrets, sec)
+
 		// load any lazy secrets and inject them into container environment
 		err = loadLazySecrets(c, _step)
 		if err != nil {
