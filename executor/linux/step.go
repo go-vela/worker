@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
@@ -63,7 +63,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		logger.Debug("substituting container configuration")
 		// substitute container configuration
 		//
-		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+		// https://pkg.go.dev/github.com/go-vela/server/compiler/types/pipeline#Container.Substitute
 		err = ctn.Substitute()
 		if err != nil {
 			return fmt.Errorf("unable to substitute container configuration")

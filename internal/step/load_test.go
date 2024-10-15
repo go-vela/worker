@@ -7,8 +7,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 func TestStep_Load(t *testing.T) {

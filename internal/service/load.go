@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 // Load attempts to capture the library service

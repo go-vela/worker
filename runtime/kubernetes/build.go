@@ -10,11 +10,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+
 	// The k8s libraries have some quirks around yaml marshaling (see opts.go).
 	// So, just use the same library for all kubernetes-related YAML.
 	"sigs.k8s.io/yaml"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 )
 

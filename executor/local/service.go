@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
 )
@@ -36,7 +36,7 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 
 	// substitute container configuration
 	//
-	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
+	// https://pkg.go.dev/github.com/go-vela/server/compiler/types/pipeline#Container.Substitute
 	err = ctn.Substitute()
 	if err != nil {
 		return err

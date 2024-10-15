@@ -10,8 +10,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/pipeline"
 	vol "github.com/go-vela/worker/internal/volume"
 )
 

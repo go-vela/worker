@@ -7,7 +7,7 @@ import (
 
 	"gotest.tools/v3/env"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 func TestDocker_New(t *testing.T) {
