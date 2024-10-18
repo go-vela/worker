@@ -9,15 +9,15 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-vela/sdk-go v0.25.2-0.20241018192247-0d47b4597aaf
-	github.com/go-vela/server v0.25.1-0.20241018194931-72b59eb80018
+	github.com/go-vela/server v0.25.2
 	github.com/go-vela/types v0.25.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/opencontainers/image-spec v1.1.0
-	github.com/prometheus/client_golang v1.20.4
+	github.com/prometheus/client_golang v1.20.5
 	github.com/sirupsen/logrus v1.9.3
-	github.com/urfave/cli/v2 v2.27.4
+	github.com/urfave/cli/v2 v2.27.5
 	golang.org/x/sync v0.8.0
 	gotest.tools/v3 v3.5.1
 	k8s.io/api v0.31.1
