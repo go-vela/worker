@@ -8,9 +8,8 @@ import (
 	"time"
 
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/service"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -63,7 +62,7 @@ func (c *client) CancelBuild() (*api.Build, error) {
 		s, err := service.Load(_service, &c.services)
 		if err != nil {
 			// create the library service object
-			s = new(library.Service)
+			s = new(api.Service)
 			s.SetName(_service.Name)
 			s.SetNumber(_service.Number)
 			s.SetImage(_service.Image)
@@ -104,7 +103,7 @@ func (c *client) CancelBuild() (*api.Build, error) {
 		s, err := step.Load(_step, &c.steps)
 		if err != nil {
 			// create the library step object
-			s = new(library.Step)
+			s = new(api.Step)
 			s.SetName(_step.Name)
 			s.SetNumber(_step.Number)
 			s.SetImage(_step.Image)
@@ -146,7 +145,7 @@ func (c *client) CancelBuild() (*api.Build, error) {
 			s, err := step.Load(_step, &c.steps)
 			if err != nil {
 				// create the library step object
-				s = new(library.Step)
+				s = new(api.Step)
 				s.SetName(_step.Name)
 				s.SetNumber(_step.Number)
 				s.SetImage(_step.Image)

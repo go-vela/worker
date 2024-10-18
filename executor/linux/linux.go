@@ -12,8 +12,7 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 )
@@ -25,8 +24,8 @@ type (
 		Logger       *logrus.Entry
 		Vela         *vela.Client
 		Runtime      runtime.Engine
-		Secrets      map[string]*library.Secret
-		NoSubSecrets map[string]*library.Secret
+		Secrets      map[string]*api.Secret
+		NoSubSecrets map[string]*api.Secret
 		Hostname     string
 		Version      string
 		OutputCtn    *pipeline.Container
@@ -117,10 +116,10 @@ func New(opts ...Opt) (*client, error) {
 	}
 
 	// instantiate map for non-plugin secrets
-	c.Secrets = make(map[string]*library.Secret)
+	c.Secrets = make(map[string]*api.Secret)
 
 	// instantiate map for non-substituted secrets
-	c.NoSubSecrets = make(map[string]*library.Secret)
+	c.NoSubSecrets = make(map[string]*api.Secret)
 
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}

@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 )
 
 const (
@@ -51,7 +51,7 @@ func getPipeline(c *gin.Context) {
 
 	data := []byte(PipelineResp)
 
-	var body library.Pipeline
+	var body api.Pipeline
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)

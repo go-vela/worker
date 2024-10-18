@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -258,7 +258,7 @@ func TestLocal_ExecStep(t *testing.T) {
 			}
 
 			if !test.container.Empty() {
-				_engine.steps.Store(test.container.ID, new(library.Step))
+				_engine.steps.Store(test.container.ID, new(api.Step))
 			}
 
 			err = _engine.ExecStep(context.Background(), test.container)

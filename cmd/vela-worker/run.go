@@ -13,9 +13,9 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )

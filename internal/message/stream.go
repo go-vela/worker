@@ -5,7 +5,7 @@ package message
 import (
 	"context"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 // StreamFunc is either StreamService or StreamStep in executor.Engine.

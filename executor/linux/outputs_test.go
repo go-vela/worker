@@ -13,11 +13,11 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/native"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -143,7 +143,7 @@ func TestLinux_Outputs_delete(t *testing.T) {
 		t.Errorf("unable to create docker runtime engine: %v", err)
 	}
 
-	_step := new(library.Step)
+	_step := new(api.Step)
 	_step.SetName("clone")
 	_step.SetNumber(2)
 	_step.SetStatus(constants.StatusPending)
@@ -154,7 +154,7 @@ func TestLinux_Outputs_delete(t *testing.T) {
 		failure   bool
 		runtime   runtime.Engine
 		container *pipeline.Container
-		step      *library.Step
+		step      *api.Step
 		steps     *pipeline.Build
 	}{
 		{
@@ -170,7 +170,7 @@ func TestLinux_Outputs_delete(t *testing.T) {
 				Number:      1,
 				Pull:        "always",
 			},
-			step:  new(library.Step),
+			step:  new(api.Step),
 			steps: _dockerSteps,
 		},
 		{
@@ -202,7 +202,7 @@ func TestLinux_Outputs_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step:  new(library.Step),
+			step:  new(api.Step),
 			steps: _dockerSteps,
 		},
 		{
@@ -218,7 +218,7 @@ func TestLinux_Outputs_delete(t *testing.T) {
 				Number:      2,
 				Pull:        "always",
 			},
-			step:  new(library.Step),
+			step:  new(api.Step),
 			steps: _dockerSteps,
 		},
 		{

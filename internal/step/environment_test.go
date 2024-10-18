@@ -6,9 +6,8 @@ import (
 	"testing"
 
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
-	"github.com/go-vela/types/raw"
+	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/compiler/types/raw"
 )
 
 func TestStep_Environment(t *testing.T) {
@@ -69,7 +68,7 @@ func TestStep_Environment(t *testing.T) {
 		Pull:        "always",
 	}
 
-	s := new(library.Step)
+	s := new(api.Step)
 	s.SetID(1)
 	s.SetBuildID(1)
 	s.SetRepoID(1)
@@ -91,7 +90,7 @@ func TestStep_Environment(t *testing.T) {
 		failure   bool
 		build     *api.Build
 		container *pipeline.Container
-		step      *library.Step
+		step      *api.Step
 	}{
 		{
 			name:      "success",

@@ -6,14 +6,13 @@ import (
 	"fmt"
 
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 // Environment attempts to update the environment variables
 // for the container based off the library resources.
-func Environment(c *pipeline.Container, b *api.Build, s *library.Step, version, reqToken string) error {
+func Environment(c *pipeline.Container, b *api.Build, s *api.Step, version, reqToken string) error {
 	// check if container or container environment are empty
 	if c == nil || c.Environment == nil {
 		return fmt.Errorf("empty container provided for environment")

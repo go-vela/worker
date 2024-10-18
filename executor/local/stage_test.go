@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-vela/server/compiler/native"
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )

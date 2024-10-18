@@ -11,7 +11,7 @@ import (
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 // outputSvc handles communication with the outputs container during the build.

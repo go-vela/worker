@@ -9,14 +9,13 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 // Upload tracks the final state of the service
 // and attempts to upload it to the server.
-func Upload(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *library.Service) {
+func Upload(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Service) {
 	// handle the service based off the status provided
 	switch s.GetStatus() {
 	// service is in a canceled state

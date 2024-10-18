@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/types"
-	"github.com/go-vela/types/library"
 )
 
 const (
@@ -35,7 +35,7 @@ const (
 func getExecutors(c *gin.Context) {
 	data := []byte(ExecutorsResp)
 
-	var body []library.Executor
+	var body []api.Executor
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)
@@ -55,7 +55,7 @@ func getExecutor(c *gin.Context) {
 
 	data := []byte(ExecutorResp)
 
-	var body library.Executor
+	var body api.Executor
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)

@@ -10,14 +10,13 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 // Snapshot creates a moment in time record of the
 // service and attempts to upload it to the server.
-func Snapshot(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *library.Service) {
+func Snapshot(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Service) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) {
 		// check if the container is running in headless mode
