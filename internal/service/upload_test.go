@@ -10,9 +10,8 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 func TestService_Upload(t *testing.T) {
@@ -82,7 +81,7 @@ func TestService_Upload(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_service := &library.Service{
+	_service := &api.Service{
 		ID:           vela.Int64(1),
 		BuildID:      vela.Int64(1),
 		RepoID:       vela.Int64(1),
@@ -122,7 +121,7 @@ func TestService_Upload(t *testing.T) {
 		build     *api.Build
 		client    *vela.Client
 		container *pipeline.Container
-		service   *library.Service
+		service   *api.Service
 	}{
 		{
 			name:      "running service",

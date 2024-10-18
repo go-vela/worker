@@ -10,9 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -437,7 +438,7 @@ func TestLinux_ExecService(t *testing.T) {
 			}
 
 			if !test.container.Empty() {
-				_engine.services.Store(test.container.ID, new(library.Service))
+				_engine.services.Store(test.container.ID, new(api.Service))
 				_engine.serviceLogs.Store(test.container.ID, new(library.Log))
 			}
 
@@ -580,7 +581,7 @@ func TestLinux_StreamService(t *testing.T) {
 			}
 
 			if !test.container.Empty() {
-				_engine.services.Store(test.container.ID, new(library.Service))
+				_engine.services.Store(test.container.ID, new(api.Service))
 				_engine.serviceLogs.Store(test.container.ID, new(library.Log))
 			}
 

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
 )
@@ -48,7 +48,7 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 // PlanService prepares the service for execution.
 func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error {
 	// update the engine service object
-	_service := new(library.Service)
+	_service := new(api.Service)
 	_service.SetName(ctn.Name)
 	_service.SetNumber(ctn.Number)
 	_service.SetImage(ctn.Image)
@@ -137,7 +137,7 @@ func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) er
 		// create the service from the container
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library#ServiceFromContainerEnvironment
-		_service = library.ServiceFromContainerEnvironment(ctn)
+		_service = api.ServiceFromContainerEnvironment(ctn)
 	}
 
 	// defer an upload of the service

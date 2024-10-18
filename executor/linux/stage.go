@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/step"
 )
 

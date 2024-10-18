@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
@@ -41,7 +41,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 
 	// create a library step object to facilitate injecting environment as early as possible
 	// (PlanStep is too late to inject environment vars for the kubernetes runtime).
-	_step := library.StepFromBuildContainer(c.build.ToLibrary(), ctn)
+	_step := api.StepFromBuildContainer(c.build, ctn)
 
 	// update the step container environment
 	//
@@ -90,7 +90,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// create the library step object
-	_step := library.StepFromBuildContainer(c.build.ToLibrary(), ctn)
+	_step := api.StepFromBuildContainer(c.build, ctn)
 	_step.SetStatus(constants.StatusRunning)
 	_step.SetStarted(time.Now().UTC().Unix())
 
@@ -410,7 +410,7 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 		// create the step from the container
 		//
 		// https://pkg.go.dev/github.com/go-vela/types/library#StepFromContainerEnvironment
-		_step = library.StepFromContainerEnvironment(ctn)
+		_step = api.StepFromContainerEnvironment(ctn)
 	}
 
 	// defer an upload of the step

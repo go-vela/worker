@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/worker/internal/image"
 	velav1alpha1 "github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 )

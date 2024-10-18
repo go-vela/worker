@@ -13,9 +13,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -190,8 +190,8 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 }
 
 // pull defines a function that pulls the secrets from the server for a given pipeline.
-func (s *secretSvc) pull(secret *pipeline.Secret) (*library.Secret, error) {
-	_secret := new(library.Secret)
+func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
+	_secret := new(api.Secret)
 
 	switch secret.Type {
 	// handle repo secrets
@@ -336,7 +336,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 // TODO: Evaluate pulling this into a "bool" types function for injecting
 //
 // helper function to check secret whitelist before setting value.
-func injectSecrets(ctn *pipeline.Container, m map[string]*library.Secret) error {
+func injectSecrets(ctn *pipeline.Container, m map[string]*api.Secret) error {
 	// inject secrets for step
 	for _, _secret := range ctn.Secrets {
 		logrus.Tracef("looking up secret %s from pipeline secrets", _secret.Source)
@@ -358,7 +358,7 @@ func injectSecrets(ctn *pipeline.Container, m map[string]*library.Secret) error 
 
 // escapeNewlineSecrets is a helper function to double-escape escaped newlines,
 // double-escaped newlines are resolved to newlines during env substitution.
-func escapeNewlineSecrets(m map[string]*library.Secret) {
+func escapeNewlineSecrets(m map[string]*api.Secret) {
 	for i, secret := range m {
 		// only double-escape secrets that have been manually escaped
 		if !strings.Contains(secret.GetValue(), "\\\\n") {

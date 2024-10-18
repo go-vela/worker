@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 	"github.com/go-vela/worker/runtime"

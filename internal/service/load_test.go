@@ -7,8 +7,9 @@ import (
 	"sync"
 	"testing"
 
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 func TestService_Load(t *testing.T) {
@@ -25,7 +26,7 @@ func TestService_Load(t *testing.T) {
 	}
 
 	goodMap := new(sync.Map)
-	goodMap.Store(c.ID, new(library.Service))
+	goodMap.Store(c.ID, new(api.Service))
 
 	badMap := new(sync.Map)
 	badMap.Store(c.ID, c)
@@ -36,13 +37,13 @@ func TestService_Load(t *testing.T) {
 		failure   bool
 		container *pipeline.Container
 		_map      *sync.Map
-		want      *library.Service
+		want      *api.Service
 	}{
 		{
 			name:      "good map",
 			failure:   false,
 			container: c,
-			want:      new(library.Service),
+			want:      new(api.Service),
 			_map:      goodMap,
 		},
 		{

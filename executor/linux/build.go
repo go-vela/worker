@@ -12,9 +12,10 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/types/constants"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 	"github.com/go-vela/worker/internal/build"
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
@@ -699,8 +700,8 @@ func (c *client) StreamBuild(ctx context.Context) error {
 func loadLazySecrets(c *client, _step *pipeline.Container) error {
 	_log := new(library.Log)
 
-	lazySecrets := make(map[string]*library.Secret)
-	lazyNoSubSecrets := make(map[string]*library.Secret)
+	lazySecrets := make(map[string]*api.Secret)
+	lazyNoSubSecrets := make(map[string]*api.Secret)
 
 	// this requires a small preface and brief description on
 	// how normal secrets make it into a container:

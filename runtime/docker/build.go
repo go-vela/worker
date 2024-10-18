@@ -5,7 +5,7 @@ package docker
 import (
 	"context"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 // InspectBuild displays details about the pod for the init step.

@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 // Engine represents the interface for Vela integrating

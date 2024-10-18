@@ -14,7 +14,7 @@ import (
 	// So, just use the same library for all kubernetes-related YAML.
 	"sigs.k8s.io/yaml"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 )
 

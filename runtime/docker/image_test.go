@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-vela/types/pipeline"
+	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 func TestDocker_InspectImage(t *testing.T) {

@@ -10,9 +10,9 @@ import (
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/types/library"
-	"github.com/go-vela/types/pipeline"
 )
 
 func TestStep_Snapshot(t *testing.T) {
@@ -82,7 +82,7 @@ func TestStep_Snapshot(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_step := &library.Step{
+	_step := &api.Step{
 		ID:           vela.Int64(1),
 		BuildID:      vela.Int64(1),
 		RepoID:       vela.Int64(1),
@@ -113,7 +113,7 @@ func TestStep_Snapshot(t *testing.T) {
 		build     *api.Build
 		client    *vela.Client
 		container *pipeline.Container
-		step      *library.Step
+		step      *api.Step
 	}{
 		{
 			name:      "running step",
@@ -206,7 +206,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		Pull:        "always",
 	}
 
-	_step := &library.Step{
+	_step := &api.Step{
 		ID:           vela.Int64(1),
 		BuildID:      vela.Int64(1),
 		RepoID:       vela.Int64(1),
@@ -238,7 +238,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		client    *vela.Client
 		container *pipeline.Container
 		log       *library.Log
-		step      *library.Step
+		step      *api.Step
 	}{
 		{
 			name:      "running step",
