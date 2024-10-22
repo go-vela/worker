@@ -15,10 +15,8 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue/models"
-	"github.com/go-vela/types"
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -36,7 +34,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 	var (
 		execBuildClient     *vela.Client
-		execBuildExecutable *library.BuildExecutable
+		execBuildExecutable *api.BuildExecutable
 		p                   *pipeline.Build
 		item                *models.Item
 		retries             = 3
@@ -188,7 +186,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		// If the ItemVersion is older or newer than what we expect, then it might
 		// not be safe to process the build. Fail the build and loop to the next item.
 		// TODO: Ask the server to re-compile and requeue the build instead of failing it.
-		logrus.Errorf("Failing stale queued build due to wrong item version: want %d, got %d", types.ItemVersion, item.ItemVersion)
+		logrus.Errorf("Failing stale queued build due to wrong item version: want %d, got %d", models.ItemVersion, item.ItemVersion)
 
 		build := item.Build
 		build.SetError("Unable to process stale build (queued before Vela upgrade/downgrade).")

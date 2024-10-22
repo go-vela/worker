@@ -13,7 +13,6 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -439,7 +438,7 @@ func TestLinux_ExecService(t *testing.T) {
 
 			if !test.container.Empty() {
 				_engine.services.Store(test.container.ID, new(api.Service))
-				_engine.serviceLogs.Store(test.container.ID, new(library.Log))
+				_engine.serviceLogs.Store(test.container.ID, new(api.Log))
 			}
 
 			err = _engine.ExecService(context.Background(), test.container)
@@ -582,7 +581,7 @@ func TestLinux_StreamService(t *testing.T) {
 
 			if !test.container.Empty() {
 				_engine.services.Store(test.container.ID, new(api.Service))
-				_engine.serviceLogs.Store(test.container.ID, new(library.Log))
+				_engine.serviceLogs.Store(test.container.ID, new(api.Log))
 			}
 
 			err = _engine.StreamService(context.Background(), test.container)

@@ -12,7 +12,6 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types/library"
 )
 
 func TestStep_Snapshot(t *testing.T) {
@@ -237,7 +236,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		build     *api.Build
 		client    *vela.Client
 		container *pipeline.Container
-		log       *library.Log
+		log       *api.Log
 		step      *api.Step
 	}{
 		{
@@ -245,7 +244,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 			build:     _build,
 			client:    _client,
 			container: _container,
-			log:       new(library.Log),
+			log:       new(api.Log),
 			step:      _step,
 		},
 		{
@@ -253,7 +252,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 			build:     _build,
 			client:    _client,
 			container: _exitCode,
-			log:       new(library.Log),
+			log:       new(api.Log),
 			step:      nil,
 		},
 	}

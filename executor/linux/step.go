@@ -14,7 +14,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/types/constants"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
@@ -62,8 +62,6 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	if c.Runtime.Driver() == constants.DriverKubernetes {
 		logger.Debug("substituting container configuration")
 		// substitute container configuration
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
 		err = ctn.Substitute()
 		if err != nil {
 			return fmt.Errorf("unable to substitute container configuration")
@@ -278,13 +276,9 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		}
 
 		// overwrite the existing log with all bytes
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.SetData
 		_log.SetData(append(existingLog.GetData(), data...))
 
 		// mask secrets in the log data
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.MaskData
 		_log.MaskData(secretValues)
 
 		logger.Debug("uploading logs")
@@ -342,12 +336,9 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 					logger.Trace(logs.String())
 
 					// update the existing log with the new bytes
-					//
-					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 					_log.AppendData(logs.Bytes())
+
 					// mask secrets within the logs before updating database
-					//
-					// https://pkg.go.dev/github.com/go-vela/types/library#Log.MaskData
 					_log.MaskData(secretValues)
 
 					logger.Debug("appending logs")
@@ -408,8 +399,6 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	_step, err := step.Load(ctn, &c.steps)
 	if err != nil {
 		// create the step from the container
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#StepFromContainerEnvironment
 		_step = api.StepFromContainerEnvironment(ctn)
 	}
 

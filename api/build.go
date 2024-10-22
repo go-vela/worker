@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-vela/types"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/worker/router/middleware/executor"
 )
 
@@ -47,7 +47,7 @@ func GetBuild(c *gin.Context) {
 	if err != nil {
 		msg := fmt.Errorf("unable to read build: %w", err).Error()
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 		return
 	}
@@ -90,7 +90,7 @@ func CancelBuild(c *gin.Context) {
 	if err != nil {
 		msg := fmt.Errorf("unable to cancel build: %w", err).Error()
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 		return
 	}

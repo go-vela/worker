@@ -11,8 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
+	"github.com/go-vela/server/constants"
 )
 
 // checkIn is a helper function to phone home to the server.
@@ -21,7 +20,7 @@ func (w *Worker) checkIn(config *api.Worker) (bool, string, error) {
 	logrus.Infof("retrieving worker %s from the server", config.GetHostname())
 
 	var (
-		tkn     *library.Token
+		tkn     *api.Token
 		retries = 3
 	)
 

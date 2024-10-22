@@ -2,7 +2,7 @@
 
 package kubernetes
 
-import "github.com/go-vela/types/constants"
+import "github.com/go-vela/server/constants"
 
 // Driver outputs the configured runtime driver.
 func (c *client) Driver() string {

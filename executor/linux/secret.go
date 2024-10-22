@@ -15,7 +15,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/types/constants"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/step"
 )
@@ -275,8 +275,6 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 		logger.Trace(logs.String())
 
 		// update the existing log with the last bytes
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(logs.Bytes())
 
 		logger.Debug("uploading logs")
@@ -310,8 +308,6 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 			logger.Trace(logs.String())
 
 			// update the existing log with the new bytes
-			//
-			// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 			_log.AppendData(logs.Bytes())
 
 			logger.Debug("appending logs")

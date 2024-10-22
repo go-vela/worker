@@ -7,7 +7,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/types/constants"
+	"github.com/go-vela/server/constants"
 )
 
 // Skip creates the ruledata from the build and repository
@@ -28,8 +28,6 @@ func Skip(c *pipeline.Container, b *api.Build) (bool, error) {
 	}
 
 	// create ruledata from build and repository information
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/pipeline#RuleData
 	ruledata := &pipeline.RuleData{
 		Branch:   b.GetBranch(),
 		Event:    event,
@@ -62,8 +60,6 @@ func Skip(c *pipeline.Container, b *api.Build) (bool, error) {
 	}
 
 	// return the inverse of container execute
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Execute
 	exec, err := c.Execute(ruledata)
 
 	return !exec, err

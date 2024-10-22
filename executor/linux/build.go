@@ -14,8 +14,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/build"
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
@@ -121,8 +120,6 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Inspecting runtime network...\n"))
 
 	// inspect the runtime network for the pipeline
@@ -133,8 +130,6 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// update the init log with network information
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData(network)
 
 	c.Logger.Info("creating volume")
@@ -145,8 +140,6 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Inspecting runtime volume...\n"))
 
 	// inspect the runtime volume for the pipeline
@@ -157,13 +150,9 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// update the init log with volume information
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData(volume)
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing secrets...\n"))
 
 	// iterate through each secret provided in the pipeline
@@ -262,8 +251,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}()
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing service images...\n"))
 
 	// create the services for the pipeline
@@ -291,14 +278,10 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		}
 
 		// update the init log with service image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing stage images...\n"))
 
 	// create the stages for the pipeline
@@ -319,8 +302,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing step images...\n"))
 
 	// create the steps for the pipeline
@@ -349,14 +330,10 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		}
 
 		// update the init log with step image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Preparing secret images...\n"))
 
 	// create the secrets for the pipeline
@@ -394,8 +371,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		}
 
 		// update the init log with secret image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 
@@ -415,8 +390,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	if len(buildOutput) > 0 {
 		// update the init log with progress
 		// (an empty value allows the runtime to opt out of providing this)
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(buildOutput)
 	}
 
@@ -427,8 +400,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte("> Executing secret images...\n"))
 
 	return c.err
@@ -698,7 +669,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 //
 //nolint:funlen // explanation takes up a lot of lines
 func loadLazySecrets(c *client, _step *pipeline.Container) error {
-	_log := new(library.Log)
+	_log := new(api.Log)
 
 	lazySecrets := make(map[string]*api.Secret)
 	lazyNoSubSecrets := make(map[string]*api.Secret)
@@ -836,8 +807,6 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 
 		c.Logger.Debug("substituting container configuration after lazy loaded secret injection")
 		// substitute container configuration
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
 		err = tmpStep.Substitute()
 		if err != nil {
 			return err

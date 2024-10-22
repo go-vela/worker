@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/types/constants"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -28,8 +28,6 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	logger := c.Logger.WithField("stage", s.Name)
 
 	// update the init log with progress
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 	_log.AppendData([]byte(fmt.Sprintf("> Preparing step images for stage %s...\n", s.Name)))
 
 	// create the steps for the stage
@@ -54,8 +52,6 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 		}
 
 		// update the init log with step image info
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 		_log.AppendData(image)
 	}
 

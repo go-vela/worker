@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types"
 )
 
 const (
@@ -105,7 +104,7 @@ func getBuild(c *gin.Context) {
 	if strings.EqualFold(b, "0") {
 		msg := fmt.Sprintf("Build %s does not exist", b)
 
-		c.AbortWithStatusJSON(http.StatusNotFound, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusNotFound, api.Error{Message: &msg})
 
 		return
 	}
@@ -127,7 +126,7 @@ func cancelBuild(c *gin.Context) {
 	if strings.EqualFold(b, "0") {
 		msg := fmt.Sprintf("Build %s does not exist", b)
 
-		c.AbortWithStatusJSON(http.StatusNotFound, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusNotFound, api.Error{Message: &msg})
 
 		return
 	}
