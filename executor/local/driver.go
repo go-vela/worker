@@ -2,7 +2,7 @@
 
 package local
 
-import "github.com/go-vela/types/constants"
+import "github.com/go-vela/server/constants"
 
 // Driver outputs the configured executor driver.
 func (c *client) Driver() string {

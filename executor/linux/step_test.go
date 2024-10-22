@@ -15,7 +15,6 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -505,7 +504,7 @@ func TestLinux_ExecStep(t *testing.T) {
 
 			if !test.container.Empty() {
 				_engine.steps.Store(test.container.ID, new(api.Step))
-				_engine.stepLogs.Store(test.container.ID, new(library.Log))
+				_engine.stepLogs.Store(test.container.ID, new(api.Log))
 			}
 
 			err = _engine.ExecStep(context.Background(), test.container)
@@ -528,7 +527,7 @@ func TestLinux_ExecStep(t *testing.T) {
 func TestLinux_StreamStep(t *testing.T) {
 	// setup types
 	_build := testBuild()
-	_logs := new(library.Log)
+	_logs := new(api.Log)
 
 	// fill log with bytes
 	_logs.SetData(make([]byte, 1000))
@@ -557,7 +556,7 @@ func TestLinux_StreamStep(t *testing.T) {
 		name      string
 		failure   bool
 		runtime   runtime.Engine
-		logs      *library.Log
+		logs      *api.Log
 		container *pipeline.Container
 	}{
 		{
@@ -682,7 +681,7 @@ func TestLinux_StreamStep(t *testing.T) {
 
 			if !test.container.Empty() {
 				_engine.steps.Store(test.container.ID, new(api.Step))
-				_engine.stepLogs.Store(test.container.ID, new(library.Log))
+				_engine.stepLogs.Store(test.container.ID, new(api.Log))
 			}
 
 			err = _engine.StreamStep(context.Background(), test.container)

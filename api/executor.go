@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types"
 	"github.com/go-vela/worker/executor"
 	exec "github.com/go-vela/worker/router/middleware/executor"
 )
@@ -57,7 +56,7 @@ func GetExecutor(c *gin.Context) {
 	if err != nil {
 		msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 		return
 	}
@@ -67,7 +66,7 @@ func GetExecutor(c *gin.Context) {
 	if err != nil {
 		msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 		return
 	}
@@ -104,7 +103,7 @@ func GetExecutors(c *gin.Context) {
 	if value == nil {
 		msg := "no running executors found"
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 		return
 	}
@@ -114,7 +113,7 @@ func GetExecutors(c *gin.Context) {
 	if !ok {
 		msg := "unable to get executors"
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 		return
 	}
@@ -136,7 +135,7 @@ func GetExecutors(c *gin.Context) {
 		if err != nil {
 			msg := fmt.Errorf("unable to retrieve build: %w", err).Error()
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 			return
 		}
@@ -146,7 +145,7 @@ func GetExecutors(c *gin.Context) {
 		if err != nil {
 			msg := fmt.Errorf("unable to retrieve pipeline: %w", err).Error()
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 			return
 		}

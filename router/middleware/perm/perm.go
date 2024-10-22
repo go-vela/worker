@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/sdk-go/vela"
-	"github.com/go-vela/types"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/worker/router/middleware/token"
 )
 
@@ -25,7 +25,7 @@ func MustServer() gin.HandlerFunc {
 
 			logrus.Error(msg)
 
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusBadRequest, api.Error{Message: &msg})
 
 			return
 		}
@@ -40,7 +40,7 @@ func MustServer() gin.HandlerFunc {
 
 			logrus.Error(msg)
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 			return
 		}
@@ -51,7 +51,7 @@ func MustServer() gin.HandlerFunc {
 
 			logrus.Error(msg)
 
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusBadRequest, api.Error{Message: &msg})
 
 			return
 		}
@@ -66,7 +66,7 @@ func MustServer() gin.HandlerFunc {
 
 			logrus.Error(msg)
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 			return
 		}
@@ -77,7 +77,7 @@ func MustServer() gin.HandlerFunc {
 
 			logrus.Error(msg)
 
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, api.Error{Message: &msg})
 
 			return
 		}

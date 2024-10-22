@@ -12,7 +12,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/types/constants"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/image"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/internal/service"
@@ -49,8 +49,6 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 
 	logger.Debug("substituting container configuration")
 	// substitute container configuration
-	//
-	// https://pkg.go.dev/github.com/go-vela/types/pipeline#Container.Substitute
 	err = ctn.Substitute()
 	if err != nil {
 		return fmt.Errorf("unable to substitute container configuration")
@@ -69,7 +67,6 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 // PlanService prepares the service for execution.
 func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error {
 	var err error
-
 	// update engine logger with service metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
@@ -215,8 +212,6 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		}
 
 		// overwrite the existing log with all bytes
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#Log.SetData
 		_log.SetData(data)
 
 		logger.Debug("uploading logs")
@@ -274,8 +269,6 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 					logger.Trace(logs.String())
 
 					// update the existing log with the new bytes
-					//
-					// https://pkg.go.dev/github.com/go-vela/types/library#Log.AppendData
 					_log.AppendData(logs.Bytes())
 
 					logger.Debug("appending logs")
@@ -331,8 +324,6 @@ func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) er
 	_service, err := service.Load(ctn, &c.services)
 	if err != nil {
 		// create the service from the container
-		//
-		// https://pkg.go.dev/github.com/go-vela/types/library#ServiceFromContainerEnvironment
 		_service = api.ServiceFromContainerEnvironment(ctn)
 	}
 

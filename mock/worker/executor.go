@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/types"
 )
 
 const (
@@ -48,7 +47,7 @@ func getExecutor(c *gin.Context) {
 	if strings.EqualFold(w, "0") {
 		msg := fmt.Sprintf("Executor %s does not exist", w)
 
-		c.AbortWithStatusJSON(http.StatusNotFound, types.Error{Message: &msg})
+		c.AbortWithStatusJSON(http.StatusNotFound, api.Error{Message: &msg})
 
 		return
 	}

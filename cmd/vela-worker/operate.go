@@ -10,8 +10,8 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/types/constants"
 )
 
 // operate is a helper function to initiate all

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"github.com/go-vela/types"
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/worker/executor"
 )
 
@@ -26,7 +26,7 @@ func Establish() gin.HandlerFunc {
 		if len(param) == 0 {
 			msg := "No executor parameter provided"
 
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusBadRequest, api.Error{Message: &msg})
 
 			return
 		}
@@ -35,7 +35,7 @@ func Establish() gin.HandlerFunc {
 		if err != nil {
 			msg := fmt.Sprintf("invalid executor parameter provided: %s", param)
 
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusBadRequest, api.Error{Message: &msg})
 
 			return
 		}
@@ -45,7 +45,7 @@ func Establish() gin.HandlerFunc {
 		if value == nil {
 			msg := "no running executors found"
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 			return
 		}
@@ -55,7 +55,7 @@ func Establish() gin.HandlerFunc {
 		if !ok {
 			msg := "unable to get executors"
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, api.Error{Message: &msg})
 
 			return
 		}
@@ -66,7 +66,7 @@ func Establish() gin.HandlerFunc {
 		if !ok {
 			msg := fmt.Sprintf("unable to get executor %s", param)
 
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Error{Message: &msg})
+			c.AbortWithStatusJSON(http.StatusBadRequest, api.Error{Message: &msg})
 
 			return
 		}

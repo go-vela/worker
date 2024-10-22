@@ -18,9 +18,8 @@ import (
 	"github.com/go-vela/server/api/types/actions"
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/types/constants"
-	"github.com/go-vela/types/library"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -813,14 +812,14 @@ func TestLinux_Secret_stream(t *testing.T) {
 		name      string
 		failure   bool
 		runtime   runtime.Engine
-		logs      *library.Log
+		logs      *api.Log
 		container *pipeline.Container
 	}{
 		{
 			name:    "docker-container step succeeds",
 			failure: false,
 			runtime: _docker,
-			logs:    new(library.Log),
+			logs:    new(api.Log),
 			container: &pipeline.Container{
 				ID:          "step_github_octocat_1_init",
 				Directory:   "/home/github/octocat",
@@ -835,7 +834,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 			name:    "kubernetes-container step succeeds",
 			failure: false,
 			runtime: _kubernetes,
-			logs:    new(library.Log),
+			logs:    new(api.Log),
 			container: &pipeline.Container{
 				ID:          "step-github-octocat-1-init",
 				Directory:   "/home/github/octocat",
@@ -850,7 +849,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 			name:    "docker-container step fails because of invalid container id",
 			failure: true,
 			runtime: _docker,
-			logs:    new(library.Log),
+			logs:    new(api.Log),
 			container: &pipeline.Container{
 				ID:          "secret_github_octocat_1_notfound",
 				Directory:   "/vela/src/vcs.company.com/github/octocat",
@@ -865,7 +864,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 		//	name:    "kubernetes-container step fails because of invalid container id",
 		//	failure: true, // FIXME: make Kubernetes mock simulate failure similar to Docker mock
 		//	runtime: _kubernetes,
-		//	logs:    new(library.Log),
+		//	logs:    new(api.Log),
 		//	container: &pipeline.Container{
 		//		ID:          "secret-github-octocat-1-notfound",
 		//		Directory:   "/vela/src/vcs.company.com/github/octocat",

@@ -8,7 +8,6 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/types/library"
 )
 
 // Load attempts to capture the library step
@@ -62,7 +61,7 @@ func LoadInit(p *pipeline.Build) (*pipeline.Container, error) {
 
 // LoadLogs attempts to capture the library step logs
 // representing the container from the map.
-func LoadLogs(c *pipeline.Container, m *sync.Map) (*library.Log, error) {
+func LoadLogs(c *pipeline.Container, m *sync.Map) (*api.Log, error) {
 	// check if the container provided is empty
 	if c == nil {
 		return nil, fmt.Errorf("empty container provided")
@@ -75,7 +74,7 @@ func LoadLogs(c *pipeline.Container, m *sync.Map) (*library.Log, error) {
 	}
 
 	// cast the value from the step log key to the expected type
-	l, ok := result.(*library.Log)
+	l, ok := result.(*api.Log)
 	if !ok {
 		return nil, fmt.Errorf("unable to cast value to logs for step %s", c.ID)
 	}

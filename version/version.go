@@ -9,7 +9,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/sirupsen/logrus"
 
-	"github.com/go-vela/types/version"
+	"github.com/go-vela/server/version"
 )
 
 var (
