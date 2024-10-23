@@ -72,8 +72,11 @@ func (w *Worker) checkIn(config *api.Worker) (bool, string, error) {
 
 			return false, "", fmt.Errorf("unable to refresh auth for worker %s on the server: %w", config.GetHostname(), err)
 		}
+
+		status := w.getWorkerStatusFromConfig(config)
+
 		// update worker status to Idle when checkIn is successful.
-		w.updateWorkerStatus(config, constants.WorkerStatusIdle)
+		w.updateWorkerStatus(config, status)
 
 		break
 	}
@@ -112,8 +115,10 @@ func (w *Worker) queueCheckIn(ctx context.Context, registryWorker *api.Worker) (
 		return false, pErr
 	}
 
+	status := w.getWorkerStatusFromConfig(registryWorker)
+
 	// update worker status to Idle when setup and ping are good.
-	w.updateWorkerStatus(registryWorker, constants.WorkerStatusIdle)
+	w.updateWorkerStatus(registryWorker, status)
 
 	return true, nil
 }
