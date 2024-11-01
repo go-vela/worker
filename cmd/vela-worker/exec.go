@@ -144,8 +144,11 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		break
 	}
 
-	// set the outputs container ID
-	w.Config.Executor.OutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
+	// dereference configured outputs ctn config and set the outputs container ID for the executor
+	//
+	// need to dereference to avoid executors sharing the last set outputs container config
+	execOutputCtn := *w.Config.Executor.OutputCtn
+	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
 	// create logger with extra metadata
 	//
@@ -238,7 +241,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Build:               item.Build,
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
-		OutputCtn:           w.Config.Executor.OutputCtn,
+		OutputCtn:           &execOutputCtn,
 	})
 
 	// add the executor to the worker
