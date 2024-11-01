@@ -141,6 +141,12 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 			return err
 		}
 
+		for _, wabba := range p.Stages {
+			for _, wobba := range wabba.Steps {
+				fmt.Printf("\n\n NAME: %s, STATUS: %s, STAGE STATUS: %s\n\n", wobba.Name, wobba.Ruleset.If.Status, wobba.Ruleset.If.StageStatus)
+			}
+		}
+
 		break
 	}
 

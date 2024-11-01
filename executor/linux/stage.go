@@ -119,6 +119,8 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 	// stop value determines when a stage's step series should stop executing
 	stop := false
 
+	stageStatus := c.build.GetStatus()
+
 	// execute the steps for the stage
 	for _, _step := range s.Steps {
 		// first check to see if we need to stop the stage before it even starts.
@@ -138,7 +140,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build)
+		skip, err := step.Skip(_step, c.build, stageStatus)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
@@ -214,6 +216,13 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		// the continue rule is set to true.
 		if _step.ExitCode != 0 && !_step.Ruleset.Continue {
 			stop = true
+
+			// if stage is independent, set the stage status to failure
+			if s.Independent {
+				stageStatus = constants.StatusFailure
+			} else {
+				stageStatus = c.build.GetStatus()
+			}
 		}
 	}
 
