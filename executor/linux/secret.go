@@ -34,7 +34,7 @@ var (
 )
 
 // create configures the secret plugin for execution.
-func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container) error {
+func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container, reqToken string) error {
 	// update engine logger with secret metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
@@ -45,6 +45,12 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container) error {
 	ctn.Environment["VELA_HOST"] = s.client.build.GetHost()
 	ctn.Environment["VELA_RUNTIME"] = s.client.build.GetRuntime()
 	ctn.Environment["VELA_VERSION"] = s.client.Version
+	ctn.Environment["VELA_OUTPUTS"] = "/vela/outputs/.env"
+	ctn.Environment["VELA_MASKED_OUTPUTS"] = "/vela/outputs/masked.env"
+
+	if len(reqToken) > 0 {
+		ctn.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
+	}
 
 	logger.Debug("setting up container")
 	// setup the runtime container
