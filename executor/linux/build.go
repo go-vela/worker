@@ -12,6 +12,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
@@ -356,8 +357,27 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		}
 
 		c.Logger.Infof("creating %s secret", s.Origin.Name)
+
+		// fetch request token if id_request used in origin config
+		var requestToken string
+
+		if len(s.Origin.IDRequest) > 0 {
+			opts := &vela.RequestTokenOptions{
+				Image:    s.Origin.Image,
+				Request:  s.Origin.IDRequest,
+				Commands: len(s.Origin.Commands) > 0 || len(s.Origin.Entrypoint) > 0,
+			}
+
+			tkn, _, err := c.Vela.Build.GetIDRequestToken(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), opts)
+			if err != nil {
+				return err
+			}
+
+			requestToken = tkn.GetToken()
+		}
+
 		// create the service
-		c.err = c.secret.create(ctx, s.Origin)
+		c.err = c.secret.create(ctx, s.Origin, requestToken)
 		if c.err != nil {
 			return fmt.Errorf("unable to create %s secret: %w", s.Origin.Name, c.err)
 		}

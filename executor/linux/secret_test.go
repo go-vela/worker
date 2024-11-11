@@ -128,7 +128,7 @@ func TestLinux_Secret_create(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
-			err = _engine.secret.create(context.Background(), test.container)
+			err = _engine.secret.create(context.Background(), test.container, "")
 
 			if test.failure {
 				if err == nil {
