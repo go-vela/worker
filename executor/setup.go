@@ -4,6 +4,7 @@ package executor
 
 import (
 	"fmt"
+	"github.com/go-vela/server/storage"
 	"strings"
 	"time"
 
@@ -60,6 +61,8 @@ type Setup struct {
 	Pipeline *pipeline.Build
 	// id token request token for the build
 	RequestToken string
+	// storage client for interacting with storage resources
+	Storage *storage.Setup
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -91,6 +94,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
 		linux.WithOutputCtn(s.OutputCtn),
+		linux.WithStorage(s.Storage),
 	)
 }
 
@@ -168,6 +172,10 @@ func (s *Setup) Validate() error {
 		return fmt.Errorf("no Vela user provided in setup")
 	}
 
+	// check if the storage client is provided
+	if &s.Storage == nil {
+		return fmt.Errorf("no storage client provided in setup")
+	}
 	// setup is valid
 	return nil
 }

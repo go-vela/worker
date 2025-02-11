@@ -4,6 +4,7 @@ package linux
 
 import (
 	"errors"
+	"github.com/go-vela/server/storage"
 	"reflect"
 	"sync"
 	"time"
@@ -29,6 +30,7 @@ type (
 		Hostname     string
 		Version      string
 		OutputCtn    *pipeline.Container
+		Storage      storage.Storage
 
 		// clients for build actions
 		secret  *secretSvc
@@ -106,7 +108,6 @@ func New(opts ...Opt) (*client, error) {
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
 	// messages get sent during ExecBuild, then ExecBuild closes this on exit.
 	c.streamRequests = make(chan message.StreamRequest)
-
 	// apply all provided configuration options
 	for _, opt := range opts {
 		err := opt(c)
@@ -124,6 +125,7 @@ func New(opts ...Opt) (*client, error) {
 	// instantiate all client services
 	c.secret = &secretSvc{client: c}
 	c.outputs = &outputSvc{client: c}
+	//c.Storage = storage.New(c)
 
 	return c, nil
 }

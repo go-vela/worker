@@ -29,6 +29,11 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
 	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
 
+	// Check if storage client is initialized
+	if c.Storage == nil {
+		return fmt.Errorf("storage client is not initialized")
+	}
+
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
 	c.build.SetStarted(time.Now().UTC().Unix())
@@ -521,6 +526,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
 
+		//fileNames, err := c.outputs.pollFiles(ctx, c.OutputCtn)
+		//c.Logger.Infof("file names from outputs in build: %s", fileNames)
+
 		// merge env from outputs
 		//
 		//nolint:errcheck // only errors with empty environment input, which does not matter here
@@ -865,6 +873,9 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 			c.Logger.Errorf("unable to remove runtime build: %v", err)
 		}
 	}()
+
+	fileNames, err := c.outputs.pollFiles(ctx, c.OutputCtn)
+	c.Logger.Infof("file names from outputs in before destroy build: %s", fileNames)
 
 	// destroy the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {

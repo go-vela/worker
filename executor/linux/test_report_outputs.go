@@ -7,18 +7,18 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	api "github.com/go-vela/server/api/types"
+
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
-// outputSvc handles communication with the outputs container during the build.
-type outputSvc svc
+// TestReportSvc handles communication with the outputs container during the build.
+type TestReportSvc svc
 
 // create configures the outputs container for execution.
-func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container, timeout int64) error {
+func (o *TestReportSvc) create(ctx context.Context, ctn *pipeline.Container, timeout int64) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
 		return nil
@@ -54,7 +54,7 @@ func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container, timeout
 }
 
 // destroy cleans up outputs container after execution.
-func (o *outputSvc) destroy(ctx context.Context, ctn *pipeline.Container) error {
+func (o *TestReportSvc) destroy(ctx context.Context, ctn *pipeline.Container) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
 		return nil
@@ -83,7 +83,7 @@ func (o *outputSvc) destroy(ctx context.Context, ctn *pipeline.Container) error 
 }
 
 // exec runs the outputs sidecar container for a pipeline.
-func (o *outputSvc) exec(ctx context.Context, _outputs *pipeline.Container) error {
+func (o *TestReportSvc) exec(ctx context.Context, _outputs *pipeline.Container) error {
 	// exit if outputs container has not been configured
 	if len(_outputs.Image) == 0 {
 		return nil
@@ -107,7 +107,7 @@ func (o *outputSvc) exec(ctx context.Context, _outputs *pipeline.Container) erro
 }
 
 // poll tails the output for sidecar container.
-func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[string]string, map[string]string, error) {
+func (o *TestReportSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[string]string, map[string]string, error) {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
 		return nil, nil, nil
@@ -147,91 +147,4 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	}
 
 	return outputMap, maskMap, nil
-}
-
-// pollFiles tails the output for sidecar container.
-func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container) ([]string, error) {
-	// exit if outputs container has not been configured
-	if len(ctn.Image) == 0 {
-		return nil, nil
-	}
-
-	// update engine logger with outputs metadata
-	//
-	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
-	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
-
-	logger.Debug("tailing container")
-
-	// grab outputs
-	fileNames, err := o.client.Runtime.PollFileNames(ctx, ctn, []string{"/vela/src/git.target.com/TamHuynh/supvela/cypress/fixtures/*.json"})
-	if err != nil {
-		return nil, err
-	}
-	for _, fileName := range fileNames {
-		logger.Infof("fileName: %v", fileName)
-		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, fileName)
-		if err != nil {
-			logger.Errorf("unable to poll file content: %v", err)
-			return nil, err
-		}
-		//o.client.Storage.Minio()
-
-		//if o.client.Storage == nil {
-		//	logger.Errorf("storage is nil")
-		//	return nil, err
-		//} else {
-		//	logger.Infof("storage is valida: %v", o.client.Storage)
-		//}
-		//_, r, err := o.client.Vela.Storage.UploadObject(&api.Object{fileName, api.Bucket{BucketName: "vela"}, fileName})
-		//if err != nil {
-		//	logger.Errorf("unable to upload object: %v", err)
-		//	logger.Errorf("response: %v", r)
-		//	return nil, err
-		//}
-
-		sc := o.client.Storage
-		err = sc.UploadObject(ctx, &api.Object{
-			ObjectName: fileName,
-			Bucket:     api.Bucket{BucketName: "vela"},
-			FilePath:   fileName,
-		}, reader, size)
-		if err != nil {
-			logger.Errorf("unable to upload object: %v", err)
-			return nil, err
-		}
-		//o.client.Storage.UploadObject(ctx, &api.Object{
-		//	ObjectName: fileName,
-		//	Bucket:     api.Bucket{BucketName: "vela"},
-		//	FilePath:   fileName,
-		//}, reader, size)
-	}
-	logger.Infof("fileNames: %v", fileNames)
-	if len(fileNames) == 0 {
-		logger.Debug("no files found")
-	}
-
-	return fileNames, nil
-
-	//reader := bytes.NewReader(outputBytes)
-	//
-	//outputMap, err := envparse.Parse(reader)
-	//if err != nil {
-	//	logger.Debugf("unable to parse output map: %v", err)
-	//}
-	//
-	//// grab masked outputs
-	//maskedBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/masked.env")
-	//if err != nil {
-	//	return nil, nil, err
-	//}
-	//
-	//reader = bytes.NewReader(maskedBytes)
-	//
-	//maskMap, err := envparse.Parse(reader)
-	//if err != nil {
-	//	logger.Debugf("unable to parse masked output map: %v", err)
-	//}
-
-	//return outputMap, maskMap, nil
 }

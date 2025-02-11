@@ -209,6 +209,27 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		return nil
 	}
 
+	// Grabs the test report here
+	//files, err := c.Runtime.PollFileNames(ctx, ctn, ctn.TestReport.Results)
+	//if err != nil {
+	//	return err
+	//}
+	// poll file names from outputs
+	//c.Runtime.PollFileNames()
+	//fileNames, err := c.outputs.pollFiles(ctx, ctn)
+	//c.Logger.Infof("file names from outputs before waiting: %s", fileNames)
+	//st3, _ := storage.New(c.Storage)
+	//for _, fileName := range fileNames {
+	//	logger.Infof("fileName: %v", fileName)
+	//	obj := &api.Object{ObjectName: fileName, Bucket: api.Bucket{BucketName: "vela"}, FilePath: fileName}
+	//	err := st3.Upload(ctx, obj)
+	//	if err != nil {
+	//		logger.Errorf("unable to upload object %s: %v", fileName, err)
+	//		return err
+	//	}
+	//}
+	//c.pipeline.Steps
+	//c.Vela.Build.UploadObject()
 	logger.Debug("waiting for container")
 	// wait for the runtime container
 	err = c.Runtime.WaitContainer(ctx, ctn)

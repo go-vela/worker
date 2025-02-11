@@ -100,6 +100,12 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 		return nil
 	}
 
+	// Grabs the test report here
+	//err = c.Runtime(ctx, ctn)
+	//if err != nil {
+	//	return err
+	//}
+
 	// wait for the runtime container
 	err = c.Runtime.WaitContainer(ctx, ctn)
 	if err != nil {
