@@ -526,8 +526,21 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
 
-		//fileNames, err := c.outputs.pollFiles(ctx, c.OutputCtn)
-		//c.Logger.Infof("file names from outputs in build: %s", fileNames)
+		// logic for polling files only if the test-report step is present
+		// iterate through the steps in the build
+		for _, step := range c.pipeline.Steps {
+			c.Logger.Infof("polling files for %s step", step.Name)
+
+			if len(step.TestReport.Results) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, step.TestReport.Results)
+				c.Logger.Errorf("unable to poll files for results: %v", err)
+			}
+			if len(step.TestReport.Attachments) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, step.TestReport.Attachments)
+				c.Logger.Errorf("unable to poll files for attachments: %v", err)
+			}
+
+		}
 
 		// merge env from outputs
 		//
@@ -873,9 +886,6 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 			c.Logger.Errorf("unable to remove runtime build: %v", err)
 		}
 	}()
-
-	fileNames, err := c.outputs.pollFiles(ctx, c.OutputCtn)
-	c.Logger.Infof("file names from outputs in before destroy build: %s", fileNames)
 
 	// destroy the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {

@@ -3,8 +3,8 @@ module github.com/go-vela/worker
 go 1.23.5
 
 replace (
-	github.com/go-vela/sdk-go v0.26.0-rc2 => ../sdk-go
-	github.com/go-vela/server v0.26.0-rc2 => ../server
+	github.com/go-vela/sdk-go v0.26.0 => ../sdk-go
+	github.com/go-vela/server v0.26.0 => ../server
 )
 
 require (
@@ -33,7 +33,7 @@ require (
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/adhocore/gronx v1.19.5 // indirect
-	github.com/andybalholm/brotli v1.0.1 // indirect
+	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect

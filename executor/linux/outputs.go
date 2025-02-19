@@ -8,10 +8,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
-
-	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 // outputSvc handles communication with the outputs container during the build.
@@ -150,10 +149,10 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 }
 
 // pollFiles tails the output for sidecar container.
-func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container) ([]string, error) {
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	// update engine logger with outputs metadata
@@ -162,56 +161,36 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container) ([]s
 	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
 
 	logger.Debug("tailing container")
-
+	logger.Debugf("fileList: %v", fileList)
 	// grab outputs
-	fileNames, err := o.client.Runtime.PollFileNames(ctx, ctn, []string{"/vela/src/git.target.com/TamHuynh/supvela/cypress/fixtures/*.json"})
+	fileNames, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("unable to poll file names: %v", err)
 	}
-	for _, fileName := range fileNames {
-		logger.Infof("fileName: %v", fileName)
-		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, fileName)
-		if err != nil {
-			logger.Errorf("unable to poll file content: %v", err)
-			return nil, err
+	if len(fileNames) != 0 {
+		for _, fileName := range fileNames {
+			logger.Infof("fileName: %v", fileName)
+			reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, fileName)
+			if err != nil {
+				logger.Errorf("unable to poll file content: %v", err)
+				return err
+			}
+			err = o.client.Storage.UploadObject(ctx, &api.Object{
+				ObjectName: fileName,
+				Bucket:     api.Bucket{BucketName: "vela"},
+				FilePath:   fileName,
+			}, reader, size)
+			if err != nil {
+				logger.Errorf("unable to upload object: %v", err)
+				return err
+			}
+
 		}
-		//o.client.Storage.Minio()
-
-		//if o.client.Storage == nil {
-		//	logger.Errorf("storage is nil")
-		//	return nil, err
-		//} else {
-		//	logger.Infof("storage is valida: %v", o.client.Storage)
-		//}
-		//_, r, err := o.client.Vela.Storage.UploadObject(&api.Object{fileName, api.Bucket{BucketName: "vela"}, fileName})
-		//if err != nil {
-		//	logger.Errorf("unable to upload object: %v", err)
-		//	logger.Errorf("response: %v", r)
-		//	return nil, err
-		//}
-
-		sc := o.client.Storage
-		err = sc.UploadObject(ctx, &api.Object{
-			ObjectName: fileName,
-			Bucket:     api.Bucket{BucketName: "vela"},
-			FilePath:   fileName,
-		}, reader, size)
-		if err != nil {
-			logger.Errorf("unable to upload object: %v", err)
-			return nil, err
-		}
-		//o.client.Storage.UploadObject(ctx, &api.Object{
-		//	ObjectName: fileName,
-		//	Bucket:     api.Bucket{BucketName: "vela"},
-		//	FilePath:   fileName,
-		//}, reader, size)
+		logger.Infof("fileNames: %v", fileNames)
+		return nil
 	}
-	logger.Infof("fileNames: %v", fileNames)
-	if len(fileNames) == 0 {
-		logger.Debug("no files found")
-	}
-
-	return fileNames, nil
+	logger.Debug("no files found")
+	return fmt.Errorf("no files found: %v", err)
 
 	//reader := bytes.NewReader(outputBytes)
 	//

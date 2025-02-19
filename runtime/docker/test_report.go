@@ -28,8 +28,9 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 		c.Logger.Tracef("searching for file %s in %s", filename, dir)
 
 		execConfig := types.ExecConfig{
-			Tty:          true,
-			Cmd:          []string{"sh", "-c", fmt.Sprintf("find %s -type f -name %s", dir, filename)},
+			Tty: true,
+			//Cmd:          []string{"sh", "-c", fmt.Sprintf("find %s -type f -name %s", dir, filename)},
+			Cmd:          []string{"sh", "-c", fmt.Sprintf("find / -type f -path *%s  -print", path)},
 			AttachStderr: true,
 			AttachStdout: true,
 		}
@@ -73,7 +74,8 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 		filePaths := strings.Split(data, "\n")
 		for _, filePath := range filePaths {
 			if filePath != "" {
-				fullFilePaths = append(fullFilePaths, filePath)
+
+				fullFilePaths = append(fullFilePaths, strings.TrimSpace(filePath))
 				c.Logger.Infof("full file: %s", filePath)
 			}
 		}
@@ -117,7 +119,8 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	execConfig := types.ExecConfig{
 		Cmd:          cmd,
 		AttachStdout: true,
-		AttachStderr: true,
+		AttachStderr: false,
+		Tty:          true,
 	}
 
 	c.Logger.Infof("executing command for content: %v", execConfig.Cmd)
@@ -129,11 +132,33 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to attach to exec instance: %w", err)
 	}
-	//output, err := io.ReadAll(resp.Reader)
-	//if err != nil {
-	//	return nil, 0, fmt.Errorf("failed to read response: %w", err)
-	//}
 
-	//size := int64(len(output))
-	return resp.Reader, -1, nil
+	defer func() {
+		if resp.Conn != nil {
+			resp.Close()
+		}
+	}()
+
+	outputStdout := new(bytes.Buffer)
+	outputStderr := new(bytes.Buffer)
+
+	if resp.Reader != nil {
+		_, err := stdcopy.StdCopy(outputStdout, outputStderr, resp.Reader)
+		if err != nil {
+			c.Logger.Errorf("unable to copy logs for container: %v", err)
+		}
+	}
+
+	if outputStderr.Len() > 0 {
+		return nil, -1, fmt.Errorf("error: %s", outputStderr.String())
+	}
+
+	data := outputStdout.Bytes()
+	//c.Logger.Infof("data: %v", string(data))
+
+	// convert the data to a reader
+	reader := bytes.NewReader(data)
+	// get the size of the data
+	size := int64(len(data))
+	return reader, size, nil
 }
