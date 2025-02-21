@@ -17,10 +17,11 @@ import (
 type (
 	// client manages communication with the pipeline resources.
 	client struct {
-		Vela     *vela.Client
-		Runtime  runtime.Engine
-		Hostname string
-		Version  string
+		Vela      *vela.Client
+		Runtime   runtime.Engine
+		Hostname  string
+		Version   string
+		OutputCtn *pipeline.Container
 
 		// private fields
 		init           *pipeline.Container
@@ -31,9 +32,15 @@ type (
 		err            error
 		streamRequests chan message.StreamRequest
 
+		outputs *outputSvc
+
 		// internal field partially exported for tests
 		stdout           *os.File
 		mockStdoutReader *os.File
+	}
+
+	svc struct {
+		client *client
 	}
 
 	// MockedClient is for internal use to facilitate testing the local executor.
@@ -76,6 +83,8 @@ func New(opts ...Opt) (*client, error) {
 
 	// Add stdout by default
 	c.stdout = os.Stdout
+
+	c.outputs = &outputSvc{client: c}
 
 	// instantiate streamRequests channel (which may be overridden using withStreamRequests()).
 	c.streamRequests = make(chan message.StreamRequest)
