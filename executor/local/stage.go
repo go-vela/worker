@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -88,12 +89,26 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		close(errChan.(chan error))
 	}()
 
+	stageStatus := c.build.GetStatus()
+
 	// execute the steps for the stage
 	for _, _step := range s.Steps {
+		if !s.Independent && c.build.GetStatus() == constants.StatusFailure {
+			continue
+		}
+
+		var useStatus string
+
+		if s.Independent {
+			useStatus = stageStatus
+		} else {
+			useStatus = c.build.GetStatus()
+		}
+
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build)
+		skip, err := step.Skip(_step, c.build, useStatus)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
@@ -113,6 +128,10 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		err = c.ExecStep(ctx, _step)
 		if err != nil {
 			return fmt.Errorf("unable to exec step %s: %w", _step.Name, err)
+		}
+
+		if _step.ExitCode != 0 && !_step.Ruleset.Continue {
+			stageStatus = constants.StatusFailure
 		}
 	}
 
