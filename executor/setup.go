@@ -110,6 +110,7 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithVelaClient(s.Client),
 		local.WithVersion(s.Version),
 		local.WithMockStdout(s.Mock),
+		local.WithOutputCtn(s.OutputCtn),
 	)
 }
 
