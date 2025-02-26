@@ -487,7 +487,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build)
+		skip, err := step.Skip(_step, c.build, c.build.GetStatus())
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}

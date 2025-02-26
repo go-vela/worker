@@ -2,6 +2,8 @@ module github.com/go-vela/worker
 
 go 1.23.5
 
+replace github.com/go-vela/server => ../server
+
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/distribution/reference v0.6.0
@@ -157,7 +159,7 @@ require (
 	go.opentelemetry.io/otel v1.34.0 // indirect
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
-	go.starlark.net v0.0.0-20241226192728-8dfa5b98479f // indirect
+	go.starlark.net v0.0.0-20250128212104-d908c3ead437 // indirect
 	golang.org/x/arch v0.13.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
