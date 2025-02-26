@@ -29,6 +29,11 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
 	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
 
+	// Check if storage client is initialized
+	if c.Storage == nil {
+		return fmt.Errorf("storage client is not initialized")
+	}
+
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
 	c.build.SetStarted(time.Now().UTC().Unix())
@@ -519,6 +524,22 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
+		// logic for polling files only if the test-report step is present
+		// iterate through the steps in the build
+		for _, step := range c.pipeline.Steps {
+			c.Logger.Infof("polling files for %s step", step.Name)
+
+			if len(step.TestReport.Results) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, step.TestReport.Results)
+				c.Logger.Errorf("unable to poll files for results: %v", err)
+			}
+			if len(step.TestReport.Attachments) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, step.TestReport.Attachments)
+				c.Logger.Errorf("unable to poll files for attachments: %v", err)
+			}
+
 		}
 
 		// merge env from outputs

@@ -140,7 +140,6 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		if err != nil {
 			return err
 		}
-
 		break
 	}
 
@@ -149,6 +148,11 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	// need to dereference to avoid executors sharing the last set outputs container config
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
+
+	// dereference configured storage config and set the storage config for the executor
+	execStorage := *w.Config.Executor.Storage
+
+	// what if we verify the files then upload to s3 here?
 
 	// create logger with extra metadata
 	//
@@ -162,6 +166,10 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		"user":     item.Build.GetRepo().GetOwner().GetName(),
 		"version":  v.Semantic(),
 	})
+
+	if &execStorage == nil {
+		logger.Errorf("storage config is not set")
+	}
 
 	// lock and append the build to the list
 	w.RunningBuildsMutex.Lock()
@@ -242,6 +250,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
+		Storage:             &execStorage,
 	})
 
 	// add the executor to the worker
@@ -257,8 +266,10 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		wg.Wait()
 
 		logger.Info("destroying build")
+		if _executor == nil {
 
-		// destroy the build with the executor (pass a background
+		}
+		// destroy the build with the executor (pa	ss a background
 		// context to guarantee all build resources are destroyed).
 		err = _executor.DestroyBuild(context.Background())
 		if err != nil {

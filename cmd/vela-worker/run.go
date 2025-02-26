@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-vela/server/storage"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
@@ -107,7 +108,13 @@ func run(c *cli.Context) error {
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,
-			},
+				Storage: &storage.Setup{
+					Driver:    c.String("storage.driver"),
+					Endpoint:  c.String("storage.endpoint.name"),
+					AccessKey: c.String("storage.access.key"),
+					SecretKey: c.String("storage.secret.key"),
+					Bucket:    c.String("storage.bucket.name"),
+				}},
 			// logger configuration
 			Logger: &Logger{
 				Format: c.String("log.format"),
@@ -142,6 +149,13 @@ func run(c *cli.Context) error {
 				Cert: c.String("server.cert"),
 				Key:  c.String("server.cert-key"),
 			},
+			Storage: &storage.Setup{
+				Driver:    c.String("storage.driver"),
+				Endpoint:  c.String("storage.endpoint.name"),
+				AccessKey: c.String("storage.access.key"),
+				SecretKey: c.String("storage.secret.key"),
+				Bucket:    c.String("storage.bucket.name"),
+			},
 			// TLS minimum version enforced
 			TLSMinVersion: c.String("server.tls-min-version"),
 		},
@@ -151,8 +165,7 @@ func run(c *cli.Context) error {
 
 		RunningBuilds: make([]*api.Build, 0),
 	}
-
-	// set the worker address if no flag was provided
+	logrus.Infof("Storage configuration - Driver: %s, Endpoint: %s, AccessKey: %s, SecretKey: %s", c.String("queue.driver"), c.String("storage.endpoint.name"), c.String("storage.access.key"), c.String("storage.secret.key")) // set the worker address if no flag was provided
 	if len(w.Config.API.Address.String()) == 0 {
 		w.Config.API.Address, _ = url.Parse(fmt.Sprintf("http://%s", hostname))
 	}
