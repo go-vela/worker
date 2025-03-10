@@ -19,6 +19,7 @@ import (
 	"github.com/go-vela/worker/internal/build"
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
+	"github.com/go-vela/worker/internal/outputs"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -520,6 +521,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
+
+		opEnv = outputs.Sanitize(_step, opEnv)
+		maskEnv = outputs.Sanitize(_step, maskEnv)
 
 		// merge env from outputs
 		//
