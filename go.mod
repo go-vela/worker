@@ -13,15 +13,15 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
-	github.com/opencontainers/image-spec v1.1.0
+	github.com/opencontainers/image-spec v1.1.1
 	github.com/prometheus/client_golang v1.21.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli/v2 v2.27.6
 	golang.org/x/sync v0.12.0
-	gotest.tools/v3 v3.5.1
-	k8s.io/api v0.32.1
+	gotest.tools/v3 v3.5.2
+	k8s.io/api v0.32.2
 	k8s.io/apimachinery v0.32.2
-	k8s.io/client-go v0.32.1
+	k8s.io/client-go v0.32.2
 	sigs.k8s.io/yaml v1.4.0
 )
 
