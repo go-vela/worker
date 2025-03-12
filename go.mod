@@ -9,7 +9,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-vela/sdk-go v0.26.2
-	github.com/go-vela/server v0.26.3
+	github.com/go-vela/server v0.26.4
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
@@ -19,9 +19,9 @@ require (
 	github.com/urfave/cli/v2 v2.27.6
 	golang.org/x/sync v0.12.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/api v0.32.2
-	k8s.io/apimachinery v0.32.2
-	k8s.io/client-go v0.32.2
+	k8s.io/api v0.32.3
+	k8s.io/apimachinery v0.32.3
+	k8s.io/client-go v0.32.3
 	sigs.k8s.io/yaml v1.4.0
 )
 
