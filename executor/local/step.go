@@ -37,6 +37,14 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 		return err
 	}
 
+	// update the step container environment
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment
+	err = step.Environment(ctn, c.build, nil, c.Version, "")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -97,6 +97,7 @@ func TestLocal_CreateStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -223,6 +224,7 @@ func TestLocal_PlanStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -311,6 +313,7 @@ func TestLocal_ExecStage(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(new(pipeline.Build)),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {

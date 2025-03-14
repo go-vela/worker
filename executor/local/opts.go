@@ -120,6 +120,16 @@ func WithMockStdout(mock bool) Opt {
 	}
 }
 
+// WithOutputCtn sets the outputs container in the executor client for Linux.
+func WithOutputCtn(ctn *pipeline.Container) Opt {
+	return func(c *client) error {
+		// set the outputs container in the client
+		c.OutputCtn = ctn
+
+		return nil
+	}
+}
+
 // withStreamRequests sets the streamRequests channel in the executor client for Linux
 // (primarily used for tests).
 func withStreamRequests(s chan message.StreamRequest) Opt {
