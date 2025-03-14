@@ -2,6 +2,8 @@ module github.com/go-vela/worker
 
 go 1.23.5
 
+replace github.com/go-vela/server => ../server
+
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/distribution/reference v0.6.0
