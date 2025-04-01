@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/worker/internal/outputs"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -114,6 +115,9 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		if c.err != nil {
 			return fmt.Errorf("unable to exec outputs container: %w", err)
 		}
+
+		opEnv = outputs.Sanitize(_step, opEnv)
+		maskEnv = outputs.Sanitize(_step, maskEnv)
 
 		// merge env from outputs
 		//

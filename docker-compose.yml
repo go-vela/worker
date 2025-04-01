@@ -12,7 +12,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ${VELA_WORKER_DOCKERFILE:-Dockerfile}
     container_name: worker
     image: worker:local
     networks:
