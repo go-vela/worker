@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/build"
+	"github.com/go-vela/worker/internal/outputs"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -237,6 +238,11 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// output a new line for readability to stdout
 	fmt.Fprintln(c.stdout, "")
 
+	c.err = c.outputs.create(ctx, c.OutputCtn, (int64(60) * 30))
+	if c.err != nil {
+		return fmt.Errorf("unable to create outputs container: %w", c.err)
+	}
+
 	// assemble runtime build just before any containers execute
 	c.err = c.Runtime.AssembleBuild(ctx, c.pipeline)
 	if c.err != nil {
@@ -252,6 +258,15 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
 	defer func() { build.Upload(c.build, nil, c.err, nil) }()
+
+	// output maps for dynamic environment variables captured from volume
+	var opEnv, maskEnv map[string]string
+
+	// execute outputs container
+	c.err = c.outputs.exec(ctx, c.OutputCtn)
+	if c.err != nil {
+		return fmt.Errorf("unable to exec outputs container: %w", c.err)
+	}
 
 	// execute the services for the pipeline
 	for _, _service := range c.pipeline.Services {
@@ -293,6 +308,25 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
+
+		// poll outputs
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
+		opEnv = outputs.Sanitize(_step, opEnv)
+		maskEnv = outputs.Sanitize(_step, maskEnv)
+
+		// merge env from outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(opEnv)
+
+		// merge env from masked outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(maskEnv)
 
 		// execute the step
 		c.err = c.ExecStep(ctx, _step)
@@ -449,6 +483,12 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 			// output the error information to stdout
 			fmt.Fprintln(c.stdout, "unable to destroy service:", err)
 		}
+	}
+
+	// destroy output container
+	err = c.outputs.destroy(ctx, c.OutputCtn)
+	if err != nil {
+		fmt.Fprintln(c.stdout, "unable to destroy output container:", err)
 	}
 
 	// remove the runtime volume for the pipeline

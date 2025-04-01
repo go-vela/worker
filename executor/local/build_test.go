@@ -73,6 +73,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -152,6 +153,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -270,6 +272,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -374,6 +377,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -570,6 +574,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
 			)
 			if err != nil {
@@ -691,6 +696,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 				WithBuild(_build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
+				WithOutputCtn(testOutputsCtn()),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -716,5 +722,13 @@ func TestLocal_DestroyBuild(t *testing.T) {
 				t.Errorf("DestroyBuild returned err: %v", err)
 			}
 		})
+	}
+}
+
+func testOutputsCtn() *pipeline.Container {
+	return &pipeline.Container{
+		ID:          "outputs_test",
+		Environment: make(map[string]string),
+		Detach:      true,
 	}
 }
