@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/worker/internal/outputs"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -108,6 +109,25 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		if err != nil {
 			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}
+
+		// poll outputs
+		opEnv, maskEnv, err := c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", err)
+		}
+
+		opEnv = outputs.Sanitize(_step, opEnv)
+		maskEnv = outputs.Sanitize(_step, maskEnv)
+
+		// merge env from outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(opEnv)
+
+		// merge env from masked outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(maskEnv)
 
 		// execute the step
 		err = c.ExecStep(ctx, _step)

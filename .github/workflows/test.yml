@@ -28,7 +28,7 @@ jobs:
         go test -covermode=atomic -coverprofile=coverage.out ./...
 
     - name: coverage
-      uses: codecov/codecov-action@0da7aa657d958d32c117fc47e1f977e7524753c7 # v5.3.0
+      uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: coverage.out
