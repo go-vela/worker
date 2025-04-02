@@ -99,6 +99,10 @@ func (w *Worker) operate(ctx context.Context) error {
 	w.Config.Executor.Storage.SecretKey = stCreds.GetSecretKey()
 	logrus.Trace("secret key: ", w.Config.Executor.Storage.SecretKey)
 
+	// set bucket name in storage config
+	w.Config.Executor.Storage.Bucket = stCreds.GetStorageBucket()
+	logrus.Trace("bucket name: ", w.Config.Executor.Storage.Bucket)
+	// set secure connection mode in storage config
 	// setup the storage client
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/storage#New

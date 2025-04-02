@@ -3,6 +3,7 @@ package docker
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -115,12 +116,12 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	if len(ctn.Image) == 0 {
 		return nil, 0, nil
 	}
-	cmd := []string{"sh", "-c", fmt.Sprintf("cat %s", path)}
+	cmd := []string{"sh", "-c", fmt.Sprintf("base64 %s", path)}
 	execConfig := types.ExecConfig{
 		Cmd:          cmd,
 		AttachStdout: true,
 		AttachStderr: false,
-		Tty:          true,
+		Tty:          false,
 	}
 
 	c.Logger.Infof("executing command for content: %v", execConfig.Cmd)
@@ -150,15 +151,20 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	}
 
 	if outputStderr.Len() > 0 {
-		return nil, -1, fmt.Errorf("error: %s", outputStderr.String())
+		return nil, 0, fmt.Errorf("error: %s", outputStderr.String())
 	}
-
 	data := outputStdout.Bytes()
+
+	decoded, err := base64.StdEncoding.DecodeString(string(data))
+	if err != nil {
+		c.Logger.Errorf("unable to decode base64 data: %v", err)
+		return nil, 0, err
+	}
 	//c.Logger.Infof("data: %v", string(data))
 
 	// convert the data to a reader
-	reader := bytes.NewReader(data)
+	reader := bytes.NewReader(decoded)
 	// get the size of the data
-	size := int64(len(data))
+	size := int64(len(decoded))
 	return reader, size, nil
 }

@@ -175,9 +175,10 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 				logger.Errorf("unable to poll file content: %v", err)
 				return err
 			}
+
 			err = o.client.Storage.UploadObject(ctx, &api.Object{
 				ObjectName: fileName,
-				Bucket:     api.Bucket{BucketName: "vela"},
+				Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
 				FilePath:   fileName,
 			}, reader, size)
 			if err != nil {
