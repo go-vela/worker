@@ -338,7 +338,6 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 	}
 
 	data := outputStdout.Bytes()
-
 	return data, nil
 }
 
