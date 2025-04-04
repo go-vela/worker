@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	logrusTest "github.com/sirupsen/logrus/hooks/test"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/go-vela/sdk-go/vela"
