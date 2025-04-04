@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
