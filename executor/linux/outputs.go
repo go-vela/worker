@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	api "github.com/go-vela/server/api/types"
 
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
@@ -147,4 +148,72 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	}
 
 	return outputMap, maskMap, nil
+}
+
+// pollFiles tails the output for sidecar container.
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string) error {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return nil
+	}
+
+	// update engine logger with outputs metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
+	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
+
+	logger.Debug("tailing container")
+	logger.Debugf("fileList: %v", fileList)
+	// grab outputs
+	fileNames, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
+	if err != nil {
+		return fmt.Errorf("unable to poll file names: %v", err)
+	}
+	if len(fileNames) != 0 {
+		for _, fileName := range fileNames {
+			logger.Infof("fileName: %v", fileName)
+			reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, fileName)
+			if err != nil {
+				logger.Errorf("unable to poll file content: %v", err)
+				return err
+			}
+
+			err = o.client.Storage.UploadObject(ctx, &api.Object{
+				ObjectName: fileName,
+				Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
+				FilePath:   fileName,
+			}, reader, size)
+			if err != nil {
+				logger.Errorf("unable to upload object: %v", err)
+				return err
+			}
+
+		}
+		logger.Infof("fileNames: %v", fileNames)
+		return nil
+	}
+	logger.Debug("no files found")
+	return fmt.Errorf("no files found: %v", err)
+
+	//reader := bytes.NewReader(outputBytes)
+	//
+	//outputMap, err := envparse.Parse(reader)
+	//if err != nil {
+	//	logger.Debugf("unable to parse output map: %v", err)
+	//}
+	//
+	//// grab masked outputs
+	//maskedBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/masked.env")
+	//if err != nil {
+	//	return nil, nil, err
+	//}
+	//
+	//reader = bytes.NewReader(maskedBytes)
+	//
+	//maskMap, err := envparse.Parse(reader)
+	//if err != nil {
+	//	logger.Debugf("unable to parse masked output map: %v", err)
+	//}
+
+	//return outputMap, maskMap, nil
 }

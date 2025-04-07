@@ -22,7 +22,7 @@ type (
 
 	// Build represents the worker configuration for build information.
 	Build struct {
-		Limit   int
+		Limit   int64
 		Timeout time.Duration
 	}
 

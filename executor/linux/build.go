@@ -29,6 +29,11 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
 	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
+	// Check if storage client is initialized
+	// and if storage is enable
+	if c.Storage == nil {
+		return fmt.Errorf("storage client is not initialized")
+	}
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -396,7 +401,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// create outputs container with a timeout equal to the repo timeout
-	c.err = c.outputs.create(ctx, c.OutputCtn, (int64(60) * c.build.GetRepo().GetTimeout()))
+	c.err = c.outputs.create(ctx, c.OutputCtn, int64(60*c.build.GetRepo().GetTimeout()))
 	if c.err != nil {
 		return fmt.Errorf("unable to create outputs container: %w", c.err)
 	}
@@ -541,6 +546,22 @@ func (c *client) ExecBuild(ctx context.Context) error {
 				Target: key,
 			}
 			_step.Secrets = append(_step.Secrets, sec)
+		}
+
+		// logic for polling files only if the test-report step is present
+		// iterate through the steps in the build
+		for _, s := range c.pipeline.Steps {
+			c.Logger.Infof("polling files for %s step", s.Name)
+
+			if len(s.TestReport.Results) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Results)
+				c.Logger.Errorf("unable to poll files for results: %v", err)
+			}
+			if len(s.TestReport.Attachments) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Attachments)
+				c.Logger.Errorf("unable to poll files for attachments: %v", err)
+			}
+
 		}
 
 		// perform any substitution on dynamic variables

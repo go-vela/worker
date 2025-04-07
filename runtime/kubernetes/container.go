@@ -53,7 +53,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 		}
 
 		// set the step exit code
-		ctn.ExitCode = int(cst.State.Terminated.ExitCode)
+		ctn.ExitCode = cst.State.Terminated.ExitCode
 
 		break
 	}
@@ -75,6 +75,22 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 	c.Logger.Tracef("no-op: removing container %s", ctn.ID)
 
 	return nil, nil
+}
+
+// PollFileNames grabs test results and attachments from provided path within a container.
+// This is a no-op for kubernetes. Pod environments cannot be dynamic.
+func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, paths []string) ([]string, error) {
+	c.Logger.Tracef("no-op: gathering test results and attachments from container %s", ctn.ID)
+
+	return nil, nil
+}
+
+// PollFileContent captures the content and size of a file from the pipeline container.
+// This is a no-op for kubernetes. Pod environments cannot be dynamic.
+func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, path string) (io.Reader, int64, error) {
+	c.Logger.Tracef("no-op: gathering test results and attachments from container %s", ctn.ID)
+
+	return nil, 0, nil
 }
 
 // RunContainer creates and starts the pipeline container.

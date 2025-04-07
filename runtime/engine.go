@@ -94,4 +94,12 @@ type Engine interface {
 	// RemoveVolume defines a function that
 	// deletes the pipeline volume.
 	RemoveVolume(context.Context, *pipeline.Build) error
+	// TestReport Interface functions
+
+	// PollFileNames defines a function that
+	// captures the test results from the pipeline container.
+	PollFileNames(ctx context.Context, ctn *pipeline.Container, paths []string) ([]string, error)
+	// PollFileContent defines a function that
+	// captures the content and size of a file from the pipeline container.
+	PollFileContent(ctx context.Context, ctn *pipeline.Container, path string) (io.Reader, int64, error)
 }
