@@ -53,7 +53,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 		}
 
 		// set the step exit code
-		ctn.ExitCode = int(cst.State.Terminated.ExitCode)
+		ctn.ExitCode = cst.State.Terminated.ExitCode
 
 		break
 	}
