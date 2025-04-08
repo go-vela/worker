@@ -4,11 +4,10 @@ package local
 
 import (
 	"context"
-	"flag"
 	"testing"
 	"time"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -18,10 +17,15 @@ import (
 
 func TestLocal_CreateBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-
-	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
 	}
@@ -98,10 +102,15 @@ func TestLocal_CreateBuild(t *testing.T) {
 
 func TestLocal_PlanBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-
-	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
 	}
@@ -184,10 +193,15 @@ func TestLocal_PlanBuild(t *testing.T) {
 
 func TestLocal_AssembleBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-
-	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
 	}
@@ -304,10 +318,15 @@ func TestLocal_AssembleBuild(t *testing.T) {
 
 func TestLocal_ExecBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-
-	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
 	}
@@ -409,10 +428,15 @@ func TestLocal_ExecBuild(t *testing.T) {
 
 func TestLocal_StreamBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-
-	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
 	}
@@ -626,10 +650,15 @@ func TestLocal_StreamBuild(t *testing.T) {
 
 func TestLocal_DestroyBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-
-	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
 	}

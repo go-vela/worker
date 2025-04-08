@@ -3,12 +3,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	_ "github.com/joho/godotenv/autoload"
 
@@ -22,7 +23,7 @@ import (
 
 // run executes the worker based
 // off the configuration provided.
-func run(c *cli.Context) error {
+func run(ctx context.Context, c *cli.Command) error {
 	// set log format for the worker
 	switch c.String("log.format") {
 	case "t", "text", "Text", "TEXT":
@@ -95,7 +96,7 @@ func run(c *cli.Context) error {
 			},
 			// build configuration
 			Build: &Build{
-				Limit:   c.Int("build.limit"),
+				Limit:   int(c.Int("build.limit")),
 				Timeout: c.Duration("build.timeout"),
 			},
 			// build configuration
@@ -103,7 +104,7 @@ func run(c *cli.Context) error {
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver:              c.String("executor.driver"),
-				MaxLogSize:          c.Uint("executor.max_log_size"),
+				MaxLogSize:          uint(c.Uint("executor.max_log_size")),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,
@@ -119,7 +120,7 @@ func run(c *cli.Context) error {
 				ConfigFile:       c.String("runtime.config"),
 				Namespace:        c.String("runtime.namespace"),
 				PodsTemplateName: c.String("runtime.pods-template-name"),
-				PodsTemplateFile: c.Path("runtime.pods-template-file"),
+				PodsTemplateFile: c.String("runtime.pods-template-file"),
 				HostVolumes:      c.StringSlice("runtime.volumes"),
 				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
 				DropCapabilities: c.StringSlice("runtime.drop-capabilities"),
