@@ -164,9 +164,9 @@ func TestLocal_New(t *testing.T) {
 func testBuild() *api.Build {
 	return &api.Build{
 		ID:           vela.Int64(1),
-		Number:       vela.Int(1),
+		Number:       vela.Int64(1),
 		Repo:         testRepo(),
-		Parent:       vela.Int(1),
+		Parent:       vela.Int64(1),
 		Event:        vela.String("push"),
 		Status:       vela.String("success"),
 		Error:        vela.String(""),
@@ -202,7 +202,7 @@ func testRepo() *api.Repo {
 		Link:       vela.String("https://github.com/github/octocat"),
 		Clone:      vela.String("https://github.com/github/octocat.git"),
 		Branch:     vela.String("main"),
-		Timeout:    vela.Int64(60),
+		Timeout:    vela.Int32(60),
 		Visibility: vela.String("public"),
 		Private:    vela.Bool(false),
 		Trusted:    vela.Bool(false),

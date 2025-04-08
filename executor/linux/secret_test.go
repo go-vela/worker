@@ -4,14 +4,13 @@ package linux
 
 import (
 	"context"
-	"flag"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
@@ -359,9 +358,15 @@ func TestLinux_Secret_delete(t *testing.T) {
 
 func TestLinux_Secret_exec(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 

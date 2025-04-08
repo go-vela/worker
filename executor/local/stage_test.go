@@ -5,11 +5,10 @@ package local
 import (
 	"context"
 	"errors"
-	"flag"
 	"sync"
 	"testing"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -22,10 +21,15 @@ func TestLocal_CreateStage(t *testing.T) {
 	_file := "testdata/build/stages/basic.yml"
 	_build := testBuild()
 
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-
-	compiler, err := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler from CLI context: %v", err)
 	}

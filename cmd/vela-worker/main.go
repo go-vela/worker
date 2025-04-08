@@ -3,13 +3,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	_ "github.com/joho/godotenv/autoload"
 
@@ -45,35 +45,20 @@ func main() {
 	// output the version information to stdout
 	fmt.Fprintf(os.Stdout, "%s\n", string(bytes))
 
-	app := cli.NewApp()
-
-	// Worker Information
-
-	app.Name = "vela-worker"
-	app.HelpName = "vela-worker"
-	app.Usage = "Vela build daemon designed for executing pipelines"
-	app.Copyright = "Copyright 2019 Target Brands, Inc. All rights reserved."
-	app.Authors = []*cli.Author{
-		{
-			Name:  "Vela Admins",
-			Email: "vela@target.com",
-		},
+	cmd := cli.Command{
+		Name:    "vela-worker",
+		Version: v.Semantic(),
+		Action:  run,
+		Usage:   "Vela build daemon designed for executing pipelines",
 	}
-
-	// Worker Metadata
-
-	app.Action = run
-	app.Compiled = time.Now()
-	app.Version = v.Semantic()
 
 	// Worker Flags
 
-	app.Flags = flags()
+	cmd.Flags = flags()
 
 	// Worker Start
 
-	err = app.Run(os.Args)
-	if err != nil {
+	if err = cmd.Run(context.Background(), os.Args); err != nil {
 		logrus.Fatal(err)
 	}
 }

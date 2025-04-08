@@ -396,7 +396,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// create outputs container with a timeout equal to the repo timeout
-	c.err = c.outputs.create(ctx, c.OutputCtn, (int64(60) * c.build.GetRepo().GetTimeout()))
+	c.err = c.outputs.create(ctx, c.OutputCtn, int64(60*c.build.GetRepo().GetTimeout()))
 	if c.err != nil {
 		return fmt.Errorf("unable to create outputs container: %w", c.err)
 	}

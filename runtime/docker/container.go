@@ -34,7 +34,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// capture the container exit code
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#ContainerState
-	ctn.ExitCode = container.State.ExitCode
+	ctn.ExitCode = int32(container.State.ExitCode)
 
 	return nil
 }

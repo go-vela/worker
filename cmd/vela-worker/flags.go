@@ -3,9 +3,12 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"strings"
 	"time"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/queue"
 	"github.com/go-vela/worker/executor"
@@ -19,43 +22,56 @@ func flags() []cli.Flag {
 	f := []cli.Flag{
 
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_ADDR", "VELA_WORKER_ADDR", "VELA_WORKER"},
 			Name:    "worker.addr",
 			Usage:   "Worker server address as a fully qualified url (<scheme>://<host>)",
+			Sources: cli.EnvVars("WORKER_ADDR", "VELA_WORKER_ADDR", "VELA_WORKER"),
+			Action: func(_ context.Context, _ *cli.Command, v string) error {
+				// check if the worker address has a scheme
+				if !strings.Contains(v, "://") {
+					return fmt.Errorf("worker address must be fully qualified (<scheme>://<host>)")
+				}
+
+				// check if the worker address has a trailing slash
+				if strings.HasSuffix(v, "/") {
+					return fmt.Errorf("worker address must not have trailing slash")
+				}
+
+				return nil
+			},
 		},
 
 		&cli.DurationFlag{
-			EnvVars: []string{"WORKER_CHECK_IN", "VELA_CHECK_IN", "CHECK_IN"},
 			Name:    "checkIn",
 			Usage:   "time to wait in between checking in with the server",
+			Sources: cli.EnvVars("WORKER_CHECK_IN", "VELA_CHECK_IN", "CHECK_IN"),
 			Value:   15 * time.Minute,
 		},
 
 		// Build Flags
 
 		&cli.IntFlag{
-			EnvVars: []string{"WORKER_BUILD_LIMIT", "VELA_BUILD_LIMIT", "BUILD_LIMIT"},
 			Name:    "build.limit",
 			Usage:   "maximum amount of builds that can run concurrently",
+			Sources: cli.EnvVars("WORKER_BUILD_LIMIT", "VELA_BUILD_LIMIT", "BUILD_LIMIT"),
 			Value:   1,
 		},
 		&cli.DurationFlag{
-			EnvVars: []string{"WORKER_BUILD_TIMEOUT", "VELA_BUILD_TIMEOUT", "BUILD_TIMEOUT"},
 			Name:    "build.timeout",
 			Usage:   "maximum amount of time a build can run for",
+			Sources: cli.EnvVars("WORKER_BUILD_TIMEOUT", "VELA_BUILD_TIMEOUT", "BUILD_TIMEOUT"),
 			Value:   30 * time.Minute,
 		},
 
 		// Logger Flags
 
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_LOG_FORMAT", "VELA_LOG_FORMAT", "LOG_FORMAT"},
 			Name:    "log.format",
 			Usage:   "set log format for the worker",
+			Sources: cli.EnvVars("WORKER_LOG_FORMAT", "VELA_LOG_FORMAT", "LOG_FORMAT"),
 			Value:   "json",
 		},
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_LOG_LEVEL", "VELA_LOG_LEVEL", "LOG_LEVEL"},
+			Sources: cli.EnvVars("WORKER_LOG_LEVEL", "VELA_LOG_LEVEL", "LOG_LEVEL"),
 			Name:    "log.level",
 			Usage:   "set log level for the worker",
 			Value:   "info",
@@ -64,30 +80,30 @@ func flags() []cli.Flag {
 		// Server Flags
 
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_SERVER_ADDR", "VELA_SERVER_ADDR", "VELA_SERVER", "SERVER_ADDR"},
 			Name:    "server.addr",
 			Usage:   "Vela server address as a fully qualified url (<scheme>://<host>)",
+			Sources: cli.EnvVars("WORKER_SERVER_ADDR", "VELA_SERVER_ADDR", "VELA_SERVER", "SERVER_ADDR"),
 		},
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_SERVER_SECRET", "VELA_SERVER_SECRET", "SERVER_SECRET"},
 			Name:    "server.secret",
 			Usage:   "secret used for server <-> worker communication",
+			Sources: cli.EnvVars("WORKER_SERVER_SECRET", "VELA_SERVER_SECRET", "SERVER_SECRET"),
 			Value:   "",
 		},
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_SERVER_CERT", "VELA_SERVER_CERT", "SERVER_CERT"},
 			Name:    "server.cert",
 			Usage:   "optional TLS certificate for https",
+			Sources: cli.EnvVars("WORKER_SERVER_CERT", "VELA_SERVER_CERT", "SERVER_CERT"),
 		},
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_SERVER_CERT_KEY", "VELA_SERVER_CERT_KEY", "SERVER_CERT_KEY"},
 			Name:    "server.cert-key",
 			Usage:   "optional TLS certificate key",
+			Sources: cli.EnvVars("WORKER_SERVER_CERT_KEY", "VELA_SERVER_CERT_KEY", "SERVER_CERT_KEY"),
 		},
 		&cli.StringFlag{
-			EnvVars: []string{"WORKER_SERVER_TLS_MIN_VERSION", "VELA_SERVER_TLS_MIN_VERSION", "SERVER_TLS_MIN_VERSION"},
 			Name:    "server.tls-min-version",
 			Usage:   "optional TLS minimum version requirement",
+			Sources: cli.EnvVars("WORKER_SERVER_TLS_MIN_VERSION", "VELA_SERVER_TLS_MIN_VERSION", "SERVER_TLS_MIN_VERSION"),
 			Value:   "1.2",
 		},
 	}
