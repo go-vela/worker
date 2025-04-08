@@ -177,7 +177,7 @@ func (s *Setup) Validate() error {
 	if &s.Storage == nil {
 		return fmt.Errorf("no storage client provided in setup")
 	}
-	
+
 	// setup is valid
 	return nil
 }

@@ -95,7 +95,7 @@ func run(c *cli.Context) error {
 			},
 			// build configuration
 			Build: &Build{
-				Limit:   c.Int64("build.limit"),
+				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
 			// build configuration
