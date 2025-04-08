@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	_ "github.com/joho/godotenv/autoload"
 
@@ -22,7 +22,7 @@ import (
 
 // run executes the worker based
 // off the configuration provided.
-func run(c *cli.Context) error {
+func run(c *cli.Command) error {
 	// set log format for the worker
 	switch c.String("log.format") {
 	case "t", "text", "Text", "TEXT":
@@ -119,7 +119,7 @@ func run(c *cli.Context) error {
 				ConfigFile:       c.String("runtime.config"),
 				Namespace:        c.String("runtime.namespace"),
 				PodsTemplateName: c.String("runtime.pods-template-name"),
-				PodsTemplateFile: c.Path("runtime.pods-template-file"),
+				PodsTemplateFile: c.String("runtime.pods-template-file"),
 				HostVolumes:      c.StringSlice("runtime.volumes"),
 				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
 				DropCapabilities: c.StringSlice("runtime.drop-capabilities"),
