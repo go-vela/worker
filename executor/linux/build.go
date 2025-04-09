@@ -547,7 +547,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			}
 			_step.Secrets = append(_step.Secrets, sec)
 		}
-		
+
 		// logic for polling files only if the test-report step is present
 		// iterate through the steps in the build
 		for _, s := range c.pipeline.Steps {
