@@ -70,7 +70,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	// setup the queue
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue#New
-	w.Queue, err = queue.New(w.Config.Queue)
+	w.Queue, err = queue.New(ctx, w.Config.Queue)
 	if err != nil {
 		logrus.Error("queue setup failed")
 		// set to error as queue setup fails
