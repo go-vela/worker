@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/go-vela/server/storage"
 	"strings"
 	"time"
 
@@ -119,6 +120,9 @@ func flags() []cli.Flag {
 	// Runtime Flags
 
 	f = append(f, runtime.Flags...)
+
+	// Storage Flags
+	f = append(f, storage.Flags...)
 
 	return f
 }

@@ -76,7 +76,31 @@ func (w *Worker) operate(ctx context.Context) error {
 		// set to error as queue setup fails
 		w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
 	}
+	// getting storage creds
+	logrus.Trace("getting storage s3 creds..")
+	// fetching queue credentials using registration token
+	stCreds, _, err := w.VelaClient.Storage.GetInfo()
+	if err != nil {
+		logrus.Trace("error getting storage creds")
+		return err
+	}
 
+	// if an address was given at start up, use that — else use what is returned from server
+	if len(w.Config.Executor.Storage.Endpoint) == 0 {
+		w.Config.Executor.Storage.Endpoint = stCreds.GetStorageAddress()
+		logrus.Trace("storage address: ", w.Config.Executor.Storage.Driver)
+	}
+
+	// set access key in storage config
+	w.Config.Executor.Storage.AccessKey = stCreds.GetAccessKey()
+	logrus.Trace("access key: ", w.Config.Executor.Storage.AccessKey)
+	// set secret key in storage config
+	w.Config.Executor.Storage.SecretKey = stCreds.GetSecretKey()
+	logrus.Trace("secret key: ", w.Config.Executor.Storage.SecretKey)
+
+	// set bucket name in storage config
+	w.Config.Executor.Storage.Bucket = stCreds.GetStorageBucket()
+	logrus.Trace("bucket name: ", w.Config.Executor.Storage.Bucket)
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
 		// five second ticker for signal handling
