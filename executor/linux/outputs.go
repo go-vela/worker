@@ -8,11 +8,11 @@ import (
 	"encoding/base64"
 	"fmt"
 	api "github.com/go-vela/server/api/types"
-
+	"github.com/go-vela/server/compiler/types/pipeline"
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
-
-	"github.com/go-vela/server/compiler/types/pipeline"
+	"path/filepath"
+	"strconv"
 )
 
 // outputSvc handles communication with the outputs container during the build.
@@ -151,7 +151,7 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 }
 
 // pollFiles tails the output for sidecar container.
-func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string) error {
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
 		return nil
@@ -165,31 +165,42 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	logger.Debug("tailing container")
 	logger.Debugf("fileList: %v", fileList)
 	// grab outputs
-	fileNames, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
+	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
 	if err != nil {
 		return fmt.Errorf("unable to poll file names: %v", err)
 	}
-	if len(fileNames) != 0 {
-		for _, fileName := range fileNames {
+	if len(filesPath) != 0 {
+		for _, filePath := range filesPath {
+			fileName := filepath.Base(filePath)
 			logger.Infof("fileName: %v", fileName)
-			reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, fileName)
+			logger.Infof("filePath: %v", filePath)
+			reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
 			if err != nil {
 				logger.Errorf("unable to poll file content: %v", err)
 				return err
 			}
-
+			//
 			err = o.client.Storage.UploadObject(ctx, &api.Object{
-				ObjectName: fileName,
+				ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetID(), 10)+"/%s", fileName),
 				Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
-				FilePath:   fileName,
+				FilePath:   filePath,
 			}, reader, size)
 			if err != nil {
 				logger.Errorf("unable to upload object: %v", err)
 				return err
 			}
 
+			//err = o.client.Storage.Upload(ctx, &api.Object{
+			//	ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetID(), 10)+"/%s", fileName),
+			//	Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
+			//	FilePath:   filePath,
+			//})
+			//if err != nil {
+			//	logger.Errorf("unable to upload object: %v", err)
+			//	return err
+			//}
 		}
-		logger.Infof("fileNames: %v", fileNames)
+
 		return nil
 	}
 	logger.Debug("no files found")

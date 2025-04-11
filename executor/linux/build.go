@@ -554,11 +554,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			c.Logger.Infof("polling files for %s step", s.Name)
 
 			if len(s.TestReport.Results) != 0 {
-				err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Results)
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Results, c.build)
 				c.Logger.Errorf("unable to poll files for results: %v", err)
 			}
 			if len(s.TestReport.Attachments) != 0 {
-				err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Attachments)
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Attachments, c.build)
 				c.Logger.Errorf("unable to poll files for attachments: %v", err)
 			}
 
