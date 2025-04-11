@@ -3,6 +3,7 @@
 package executor
 
 import (
+	"github.com/go-vela/server/storage"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -69,6 +70,17 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
 	want, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithMaxLogSize(2097152),
@@ -78,6 +90,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithRuntime(_runtime),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
+		linux.WithStorage(_storage),
 	)
 	if err != nil {
 		t.Errorf("unable to create linux engine: %v", err)
@@ -92,6 +105,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		Pipeline:   _pipeline,
 		Runtime:    _runtime,
 		Version:    "v1.0.0",
+		Storage:    _storage,
 	}
 
 	// run test
