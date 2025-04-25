@@ -4,7 +4,6 @@ package linux
 
 import (
 	"context"
-	"flag"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -13,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	logrusTest "github.com/sirupsen/logrus/hooks/test"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -30,9 +29,15 @@ import (
 
 func TestLinux_CreateBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -218,9 +223,15 @@ func TestLinux_CreateBuild(t *testing.T) {
 
 func TestLinux_PlanBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -400,9 +411,15 @@ func TestLinux_PlanBuild(t *testing.T) {
 
 func TestLinux_AssembleBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -708,9 +725,15 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 func TestLinux_ExecBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -998,9 +1021,15 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 func TestLinux_StreamBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -1611,9 +1640,15 @@ func TestLinux_StreamBuild(t *testing.T) {
 
 func TestLinux_DestroyBuild(t *testing.T) {
 	// setup types
-	set := flag.NewFlagSet("test", 0)
-	set.String("clone-image", "target/vela-git:latest", "doc")
-	compiler, _ := native.FromCLIContext(cli.NewContext(nil, set, nil))
+	cmd := new(cli.Command)
+	cmd.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "clone-image",
+			Value: "target/vela-git:latest",
+			Usage: "doc",
+		},
+	}
+	compiler, err := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 

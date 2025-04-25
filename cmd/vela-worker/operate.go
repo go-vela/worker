@@ -31,7 +31,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetHostname(w.Config.API.Address.Hostname())
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetActive(true)
-	registryWorker.SetBuildLimit(int64(w.Config.Build.Limit))
+	registryWorker.SetBuildLimit(int32(w.Config.Build.Limit))
 
 	// set routes from config if set or defaulted to `vela`
 	if (len(w.Config.Queue.Routes) > 0) && (w.Config.Queue.Routes[0] != "NONE" && w.Config.Queue.Routes[0] != "") {
@@ -70,7 +70,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	// setup the queue
 	//
 	// https://pkg.go.dev/github.com/go-vela/server/queue#New
-	w.Queue, err = queue.New(w.Config.Queue)
+	w.Queue, err = queue.New(ctx, w.Config.Queue)
 	if err != nil {
 		logrus.Error("queue setup failed")
 		// set to error as queue setup fails

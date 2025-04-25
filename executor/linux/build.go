@@ -19,6 +19,7 @@ import (
 	"github.com/go-vela/worker/internal/build"
 	context2 "github.com/go-vela/worker/internal/context"
 	"github.com/go-vela/worker/internal/image"
+	"github.com/go-vela/worker/internal/outputs"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -395,7 +396,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	}
 
 	// create outputs container with a timeout equal to the repo timeout
-	c.err = c.outputs.create(ctx, c.OutputCtn, (int64(60) * c.build.GetRepo().GetTimeout()))
+	c.err = c.outputs.create(ctx, c.OutputCtn, int64(60*c.build.GetRepo().GetTimeout()))
 	if c.err != nil {
 		return fmt.Errorf("unable to create outputs container: %w", c.err)
 	}
@@ -484,6 +485,25 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
+		// poll outputs
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
+		opEnv = outputs.Sanitize(_step, opEnv)
+		maskEnv = outputs.Sanitize(_step, maskEnv)
+
+		// merge env from outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(opEnv)
+
+		// merge env from masked outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(maskEnv)
+
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
@@ -514,22 +534,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
-
-		// poll outputs
-		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
-		if c.err != nil {
-			return fmt.Errorf("unable to exec outputs container: %w", c.err)
-		}
-
-		// merge env from outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(opEnv)
-
-		// merge env from masked outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(maskEnv)
 
 		// add masked outputs to secret map so they can be masked in logs
 		for key := range maskEnv {

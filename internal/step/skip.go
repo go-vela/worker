@@ -33,6 +33,7 @@ func Skip(c *pipeline.Container, b *api.Build, status string) (bool, error) {
 		Event:  event,
 		Repo:   b.GetRepo().GetFullName(),
 		Status: status,
+		Env:    c.Environment,
 	}
 
 	// check if the build event is tag
