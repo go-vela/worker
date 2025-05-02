@@ -2,19 +2,14 @@ module github.com/go-vela/worker
 
 go 1.24.2
 
-replace (
-	github.com/go-vela/sdk-go => ../sdk-go
-	github.com/go-vela/server => ../server
-)
-
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/distribution/reference v0.6.0
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-vela/sdk-go v0.26.3-0.20250409022751-0f27f9202249
-	github.com/go-vela/server v0.26.5-0.20250423182142-006676428923
+	github.com/go-vela/sdk-go v0.26.3-0.20250502215856-0f39456b80b7
+	github.com/go-vela/server v0.26.5-0.20250502193529-35e61d83d2d5
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
