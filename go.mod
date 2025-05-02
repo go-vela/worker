@@ -9,7 +9,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-vela/sdk-go v0.26.3-0.20250409022751-0f27f9202249
-	github.com/go-vela/server v0.26.5-0.20250423182142-006676428923
+	github.com/go-vela/server v0.26.5-0.20250502191314-1885b1ded3b7
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
@@ -32,6 +32,7 @@ require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+	github.com/expr-lang/expr v1.17.2 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/google/go-github/v71 v71.0.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
