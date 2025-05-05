@@ -485,10 +485,29 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
+		// poll outputs
+		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
+		if c.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", c.err)
+		}
+
+		opEnv = outputs.Sanitize(_step, opEnv)
+		maskEnv = outputs.Sanitize(_step, maskEnv)
+
+		// merge env from outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(opEnv)
+
+		// merge env from masked outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_step.MergeEnv(maskEnv)
+
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build)
+		skip, err := step.Skip(_step, c.build, c.build.GetStatus())
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
@@ -515,25 +534,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
-
-		// poll outputs
-		opEnv, maskEnv, c.err = c.outputs.poll(ctx, c.OutputCtn)
-		if c.err != nil {
-			return fmt.Errorf("unable to exec outputs container: %w", c.err)
-		}
-
-		opEnv = outputs.Sanitize(_step, opEnv)
-		maskEnv = outputs.Sanitize(_step, maskEnv)
-
-		// merge env from outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(opEnv)
-
-		// merge env from masked outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(maskEnv)
 
 		// add masked outputs to secret map so they can be masked in logs
 		for key := range maskEnv {
