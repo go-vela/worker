@@ -13,7 +13,7 @@ import (
 // Skip creates the ruledata from the build and repository
 // information and returns true if the data does not match
 // the ruleset for the given container.
-func Skip(c *pipeline.Container, b *api.Build) (bool, error) {
+func Skip(c *pipeline.Container, b *api.Build, status string) (bool, error) {
 	// check if the container provided is empty
 	if c == nil {
 		return true, nil
@@ -29,11 +29,11 @@ func Skip(c *pipeline.Container, b *api.Build) (bool, error) {
 
 	// create ruledata from build and repository information
 	ruledata := &pipeline.RuleData{
-		Branch:   b.GetBranch(),
-		Event:    event,
-		Repo:     b.GetRepo().GetFullName(),
-		Status:   b.GetStatus(),
-		Parallel: c.Ruleset.If.Parallel,
+		Branch: b.GetBranch(),
+		Event:  event,
+		Repo:   b.GetRepo().GetFullName(),
+		Status: status,
+		Env:    c.Environment,
 	}
 
 	// check if the build event is tag
