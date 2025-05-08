@@ -9,7 +9,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-vela/sdk-go v0.26.3-0.20250506205517-a78afa8baa91
-	github.com/go-vela/server v0.26.5-0.20250506201518-be3567becf02
+	github.com/go-vela/server v0.26.5-0.20250507144115-ca5ab16522e0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
@@ -19,9 +19,9 @@ require (
 	github.com/urfave/cli/v3 v3.3.2
 	golang.org/x/sync v0.14.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/api v0.32.2
+	k8s.io/api v0.33.0
 	k8s.io/apimachinery v0.33.0
-	k8s.io/client-go v0.32.2
+	k8s.io/client-go v0.33.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -105,7 +105,6 @@ require (
 	github.com/go-playground/validator/v10 v10.26.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
