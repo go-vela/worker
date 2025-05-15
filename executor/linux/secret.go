@@ -287,7 +287,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 		// send API call to update the logs for the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
-		_, err = s.client.Vela.Log.UpdateStep(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), ctn.Number, _log)
+		_, err = s.client.Vela.Log.UpdateStep(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
