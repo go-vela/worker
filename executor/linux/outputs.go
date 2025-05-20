@@ -7,12 +7,13 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"path/filepath"
+	"strconv"
+
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
-	"path/filepath"
-	"strconv"
 )
 
 // outputSvc handles communication with the outputs container during the build.
@@ -181,7 +182,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 			}
 			//
 			err = o.client.Storage.UploadObject(ctx, &api.Object{
-				ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetID(), 10)+"/%s", fileName),
+				ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetNumber(), 10)+"/%s", fileName),
 				Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
 				FilePath:   filePath,
 			}, reader, size)
@@ -191,7 +192,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 			}
 
 			//err = o.client.Storage.Upload(ctx, &api.Object{
-			//	ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetID(), 10)+"/%s", fileName),
+			//	ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetNumber(), 10)+"/%s", fileName),
 			//	Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
 			//	FilePath:   filePath,
 			//})
