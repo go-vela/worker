@@ -3,6 +3,7 @@
 package main
 
 import (
+	"github.com/go-vela/server/storage"
 	"net/url"
 	"sync"
 	"time"
@@ -57,6 +58,7 @@ type (
 		Server        *Server
 		Certificate   *Certificate
 		TLSMinVersion string
+		Storage       *storage.Setup
 	}
 
 	// Worker represents all configuration and
@@ -72,5 +74,6 @@ type (
 		RunningBuilds      []*api.Build
 		QueueCheckedIn     bool
 		RunningBuildsMutex sync.Mutex
+		Storage            storage.Storage
 	}
 )
