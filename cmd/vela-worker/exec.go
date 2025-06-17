@@ -150,6 +150,9 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
+	// dereference configured storage config and set the storage config for the executor
+	execStorage := *w.Config.Executor.Storage
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -242,6 +245,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
+		Storage:             &execStorage,
 	})
 
 	// add the executor to the worker
