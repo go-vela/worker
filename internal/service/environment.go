@@ -20,12 +20,6 @@ func Environment(c *pipeline.Container, b *api.Build, s *api.Service, version st
 
 	// check if the build provided is empty
 	if b != nil {
-		// check if the channel exists in the environment
-		channel, ok := c.Environment["VELA_CHANNEL"]
-		if !ok {
-			// set default for channel
-			channel = constants.DefaultRoute
-		}
 
 		// check if the workspace exists in the environment
 		workspace, ok := c.Environment["VELA_WORKSPACE"]
@@ -41,7 +35,7 @@ func Environment(c *pipeline.Container, b *api.Build, s *api.Service, version st
 		c.Environment["VELA_VERSION"] = version
 
 		// populate environment variables from build library
-		err := c.MergeEnv(b.Environment(workspace, channel))
+		err := c.MergeEnv(b.Environment(workspace))
 		if err != nil {
 			return err
 		}
