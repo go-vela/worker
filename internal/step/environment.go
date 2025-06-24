@@ -20,7 +20,6 @@ func Environment(c *pipeline.Container, b *api.Build, s *api.Step, version, reqT
 
 	// check if the build provided is empty
 	if b != nil {
-
 		// check if the workspace exists in the environment
 		workspace, ok := c.Environment["VELA_WORKSPACE"]
 		if !ok {
