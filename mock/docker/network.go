@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
@@ -34,17 +33,17 @@ func (n *NetworkService) NetworkConnect(ctx context.Context, network, container 
 // a mocked call to create a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkCreate
-func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options types.NetworkCreate) (types.NetworkCreateResponse, error) {
+func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options network.CreateOptions) (network.CreateResponse, error) {
 	// verify a network was provided
 	if len(name) == 0 {
-		return types.NetworkCreateResponse{}, errors.New("no network provided")
+		return network.CreateResponse{}, errors.New("no network provided")
 	}
 
 	// check if the network is notfound and
 	// check if the notfound should be ignored
 	if strings.Contains(name, "notfound") &&
 		!strings.Contains(name, "ignorenotfound") {
-		return types.NetworkCreateResponse{},
+		return network.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
@@ -53,13 +52,13 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 	// check if the not-found should be ignored
 	if strings.Contains(name, "not-found") &&
 		!strings.Contains(name, "ignore-not-found") {
-		return types.NetworkCreateResponse{},
+		return network.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
 
 	// create response object to return
-	response := types.NetworkCreateResponse{
+	response := network.CreateResponse{
 		ID: stringid.GenerateRandomID(),
 	}
 
@@ -78,28 +77,28 @@ func (n *NetworkService) NetworkDisconnect(ctx context.Context, network, contain
 // a mocked call to inspect a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspect
-func (n *NetworkService) NetworkInspect(ctx context.Context, network string, options types.NetworkInspectOptions) (types.NetworkResource, error) {
+func (n *NetworkService) NetworkInspect(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, error) {
 	// verify a network was provided
-	if len(network) == 0 {
-		return types.NetworkResource{}, errors.New("no network provided")
+	if len(networkID) == 0 {
+		return network.Inspect{}, errors.New("no network provided")
 	}
 
 	// check if the network is notfound
-	if strings.Contains(network, "notfound") {
-		return types.NetworkResource{},
+	if strings.Contains(networkID, "notfound") {
+		return network.Inspect{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", network))
+			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
 	}
 
 	// check if the network is not-found
-	if strings.Contains(network, "not-found") {
-		return types.NetworkResource{},
+	if strings.Contains(networkID, "not-found") {
+		return network.Inspect{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", network))
+			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
 	}
 
 	// create response object to return
-	response := types.NetworkResource{
+	response := network.Inspect{
 		Attachable: false,
 		ConfigOnly: false,
 		Created:    time.Now(),
@@ -107,7 +106,7 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, network string, opt
 		ID:         stringid.GenerateRandomID(),
 		Ingress:    false,
 		Internal:   false,
-		Name:       network,
+		Name:       networkID,
 		Scope:      "local",
 	}
 
@@ -119,14 +118,14 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, network string, opt
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspectWithRaw
-func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, network string, options types.NetworkInspectOptions) (types.NetworkResource, []byte, error) {
+func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, []byte, error) {
 	// verify a network was provided
-	if len(network) == 0 {
-		return types.NetworkResource{}, nil, errors.New("no network provided")
+	if len(networkID) == 0 {
+		return network.Inspect{}, nil, errors.New("no network provided")
 	}
 
 	// create response object to return
-	response := types.NetworkResource{
+	response := network.Inspect{
 		Attachable: false,
 		ConfigOnly: false,
 		Created:    time.Now(),
@@ -134,14 +133,14 @@ func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, network stri
 		ID:         stringid.GenerateRandomID(),
 		Ingress:    false,
 		Internal:   false,
-		Name:       network,
+		Name:       networkID,
 		Scope:      "local",
 	}
 
 	// marshal response into raw bytes
 	b, err := json.Marshal(response)
 	if err != nil {
-		return types.NetworkResource{}, nil, err
+		return network.Inspect{}, nil, err
 	}
 
 	return response, b, nil
@@ -151,7 +150,7 @@ func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, network stri
 // a mocked call to list Docker networks.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkList
-func (n *NetworkService) NetworkList(ctx context.Context, options types.NetworkListOptions) ([]types.NetworkResource, error) {
+func (n *NetworkService) NetworkList(ctx context.Context, options network.ListOptions) ([]network.Summary, error) {
 	return nil, nil
 }
 
@@ -172,8 +171,8 @@ func (n *NetworkService) NetworkRemove(ctx context.Context, network string) erro
 // a mocked call to prune Docker networks.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworksPrune
-func (n *NetworkService) NetworksPrune(ctx context.Context, pruneFilter filters.Args) (types.NetworksPruneReport, error) {
-	return types.NetworksPruneReport{}, nil
+func (n *NetworkService) NetworksPrune(ctx context.Context, pruneFilter filters.Args) (network.PruneReport, error) {
+	return network.PruneReport{}, nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES

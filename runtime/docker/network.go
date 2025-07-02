@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/network"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -20,7 +19,7 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 	// create options for creating network
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#NetworkCreate
-	opts := types.NetworkCreate{
+	opts := network.CreateOptions{
 		Driver: "bridge",
 	}
 
@@ -42,7 +41,7 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 	// create options for inspecting network
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#NetworkInspectOptions
-	opts := types.NetworkInspectOptions{}
+	opts := network.InspectOptions{}
 
 	// create output for inspecting network
 	output := []byte(
