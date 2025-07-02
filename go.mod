@@ -3,26 +3,26 @@ module github.com/go-vela/worker
 go 1.24.2
 
 require (
-	github.com/Masterminds/semver/v3 v3.3.1
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/distribution/reference v0.6.0
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/docker/go-units v0.5.0
-	github.com/gin-gonic/gin v1.10.0
-	github.com/go-vela/sdk-go v0.26.3-0.20250506205517-a78afa8baa91
-	github.com/go-vela/server v0.26.5-0.20250617170616-81f50fad35b1
+	github.com/gin-gonic/gin v1.10.1
+	github.com/go-vela/sdk-go 3ea8df8bdb5d
+	github.com/go-vela/server v0.27.0-rc1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/prometheus/client_golang v1.22.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/urfave/cli/v3 v3.3.3
-	golang.org/x/sync v0.14.0
+	github.com/urfave/cli/v3 v3.3.8
+	golang.org/x/sync v0.15.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/api v0.32.2
-	k8s.io/apimachinery v0.33.0
-	k8s.io/client-go v0.32.2
-	sigs.k8s.io/yaml v1.4.0
+	k8s.io/api v0.33.2
+	k8s.io/apimachinery v0.33.2
+	k8s.io/client-go v0.33.2
+	sigs.k8s.io/yaml v1.5.0
 )
 
 require (
