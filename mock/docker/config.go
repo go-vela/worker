@@ -6,7 +6,6 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 )
@@ -18,8 +17,8 @@ type ConfigService struct{}
 // ConfigCreate is a helper function to simulate
 // a mocked call to create a config for a
 // Docker swarm cluster.
-func (c *ConfigService) ConfigCreate(ctx context.Context, config swarm.ConfigSpec) (types.ConfigCreateResponse, error) {
-	return types.ConfigCreateResponse{}, nil
+func (c *ConfigService) ConfigCreate(ctx context.Context, config swarm.ConfigSpec) (swarm.ConfigCreateResponse, error) {
+	return swarm.ConfigCreateResponse{}, nil
 }
 
 // ConfigInspectWithRaw is a helper function to simulate
@@ -32,7 +31,7 @@ func (c *ConfigService) ConfigInspectWithRaw(ctx context.Context, name string) (
 // ConfigList is a helper function to simulate
 // a mocked call to list the configs for a
 // Docker swarm cluster.
-func (c *ConfigService) ConfigList(ctx context.Context, options types.ConfigListOptions) ([]swarm.Config, error) {
+func (c *ConfigService) ConfigList(ctx context.Context, options swarm.ConfigListOptions) ([]swarm.Config, error) {
 	return nil, nil
 }
 

@@ -21,7 +21,7 @@ type SystemService struct{}
 // from the Docker daemon.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.DiskUsage
-func (s *SystemService) DiskUsage(ctx context.Context, opts types.DiskUsageOptions) (types.DiskUsage, error) {
+func (s *SystemService) DiskUsage(ctx context.Context, options types.DiskUsageOptions) (types.DiskUsage, error) {
 	return types.DiskUsage{}, nil
 }
 
@@ -30,7 +30,7 @@ func (s *SystemService) DiskUsage(ctx context.Context, opts types.DiskUsageOptio
 // from the Docker daemon.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.Events
-func (s *SystemService) Events(ctx context.Context, options types.EventsOptions) (<-chan events.Message, <-chan error) {
+func (s *SystemService) Events(ctx context.Context, options events.ListOptions) (<-chan events.Message, <-chan error) {
 	return nil, nil
 }
 

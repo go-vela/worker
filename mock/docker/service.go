@@ -6,7 +6,6 @@ import (
 	"context"
 	"io"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
@@ -21,7 +20,7 @@ type ServiceService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceCreate
-func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options types.ServiceCreateOptions) (swarm.ServiceCreateResponse, error) {
+func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options swarm.ServiceCreateOptions) (swarm.ServiceCreateResponse, error) {
 	return swarm.ServiceCreateResponse{}, nil
 }
 
@@ -30,7 +29,7 @@ func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.Servic
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceInspectWithRaw
-func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID string, options types.ServiceInspectOptions) (swarm.Service, []byte, error) {
+func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID string, options swarm.ServiceInspectOptions) (swarm.Service, []byte, error) {
 	return swarm.Service{}, nil, nil
 }
 
@@ -39,7 +38,7 @@ func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID st
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceList
-func (s *ServiceService) ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error) {
+func (s *ServiceService) ServiceList(ctx context.Context, options swarm.ServiceListOptions) ([]swarm.Service, error) {
 	return nil, nil
 }
 
@@ -66,7 +65,7 @@ func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) er
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceUpdate
-func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options types.ServiceUpdateOptions) (swarm.ServiceUpdateResponse, error) {
+func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options swarm.ServiceUpdateOptions) (swarm.ServiceUpdateResponse, error) {
 	return swarm.ServiceUpdateResponse{}, nil
 }
 
@@ -84,7 +83,7 @@ func (s *ServiceService) TaskInspectWithRaw(ctx context.Context, taskID string) 
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.TaskList
-func (s *ServiceService) TaskList(ctx context.Context, options types.TaskListOptions) ([]swarm.Task, error) {
+func (s *ServiceService) TaskList(ctx context.Context, options swarm.TaskListOptions) ([]swarm.Task, error) {
 	return nil, nil
 }
 
