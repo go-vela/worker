@@ -6,7 +6,6 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 )
@@ -20,8 +19,8 @@ type SecretService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretCreate
-func (s *SecretService) SecretCreate(ctx context.Context, secret swarm.SecretSpec) (types.SecretCreateResponse, error) {
-	return types.SecretCreateResponse{}, nil
+func (s *SecretService) SecretCreate(ctx context.Context, secret swarm.SecretSpec) (swarm.SecretCreateResponse, error) {
+	return swarm.SecretCreateResponse{}, nil
 }
 
 // SecretInspectWithRaw is a helper function to simulate
@@ -38,7 +37,7 @@ func (s *SecretService) SecretInspectWithRaw(ctx context.Context, name string) (
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretList
-func (s *SecretService) SecretList(ctx context.Context, options types.SecretListOptions) ([]swarm.Secret, error) {
+func (s *SecretService) SecretList(ctx context.Context, options swarm.SecretListOptions) ([]swarm.Secret, error) {
 	return nil, nil
 }
 

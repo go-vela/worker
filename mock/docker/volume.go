@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/api/types/volume"
@@ -148,7 +147,7 @@ func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID strin
 // a mocked call to list Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeList
-func (v *VolumeService) VolumeList(ctx context.Context, opts volume.ListOptions) (volume.ListResponse, error) {
+func (v *VolumeService) VolumeList(ctx context.Context, options volume.ListOptions) (volume.ListResponse, error) {
 	return volume.ListResponse{}, nil
 }
 
@@ -169,8 +168,8 @@ func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force
 // a mocked call to prune Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumesPrune
-func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Args) (types.VolumesPruneReport, error) {
-	return types.VolumesPruneReport{}, nil
+func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Args) (volume.PruneReport, error) {
+	return volume.PruneReport{}, nil
 }
 
 // VolumeUpdate is a helper function to simulate

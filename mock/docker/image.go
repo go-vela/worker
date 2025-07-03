@@ -12,10 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/build"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
+	"github.com/docker/docker/api/types/storage"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/pkg/stringid"
@@ -28,7 +29,7 @@ type ImageService struct{}
 // BuildCachePrune is a helper function to simulate
 // a mocked call to prune the build cache for the
 // Docker daemon.
-func (i *ImageService) BuildCachePrune(ctx context.Context, opts types.BuildCachePruneOptions) (*types.BuildCachePruneReport, error) {
+func (i *ImageService) BuildCachePrune(ctx context.Context, options build.CachePruneOptions) (*build.CachePruneReport, error) {
 	return nil, nil
 }
 
@@ -42,8 +43,8 @@ func (i *ImageService) BuildCancel(ctx context.Context, id string) error {
 // a mocked call to build a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageBuild
-func (i *ImageService) ImageBuild(ctx context.Context, context io.Reader, options types.ImageBuildOptions) (types.ImageBuildResponse, error) {
-	return types.ImageBuildResponse{}, nil
+func (i *ImageService) ImageBuild(ctx context.Context, context io.Reader, options build.ImageBuildOptions) (build.ImageBuildResponse, error) {
+	return build.ImageBuildResponse{}, nil
 }
 
 // ImageCreate is a helper function to simulate
@@ -59,7 +60,7 @@ func (i *ImageService) ImageCreate(ctx context.Context, parentReference string, 
 // Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageHistory
-func (i *ImageService) ImageHistory(ctx context.Context, image string) ([]image.HistoryResponseItem, error) {
+func (i *ImageService) ImageHistory(ctx context.Context, image string, options ...client.ImageHistoryOption) ([]image.HistoryResponseItem, error) {
 	return nil, nil
 }
 
@@ -71,20 +72,28 @@ func (i *ImageService) ImageImport(ctx context.Context, source image.ImportSourc
 	return nil, nil
 }
 
+// ImageInspect is a helper function to simulate
+// a mocked call to inspect a Docker image.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspect
+func (i *ImageService) ImageInspect(ctx context.Context, imageID string, inspectOpts ...client.ImageInspectOption) (image.InspectResponse, error) {
+	return image.InspectResponse{}, nil
+}
+
 // ImageInspectWithRaw is a helper function to simulate
 // a mocked call to inspect a Docker image and return
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
-func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (types.ImageInspect, []byte, error) {
+func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (image.InspectResponse, []byte, error) {
 	// verify an image was provided
 	if len(img) == 0 {
-		return types.ImageInspect{}, nil, errors.New("no image provided")
+		return image.InspectResponse{}, nil, errors.New("no image provided")
 	}
 
 	// check if the image is not found
 	if strings.Contains(img, "notfound") || strings.Contains(img, "not-found") {
-		return types.ImageInspect{},
+		return image.InspectResponse{},
 			nil,
 			errdefs.NotFound(
 				//nolint:stylecheck // messsage is capitalized to match Docker messages
@@ -95,7 +104,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (typ
 	path := fmt.Sprintf("/var/lib/docker/overlay2/%s", stringid.GenerateRandomID())
 
 	// create response object to return
-	response := types.ImageInspect{
+	response := image.InspectResponse{
 		ID:            fmt.Sprintf("sha256:%s", stringid.GenerateRandomID()),
 		RepoTags:      []string{"alpine:latest"},
 		RepoDigests:   []string{fmt.Sprintf("alpine@sha256:%s", stringid.GenerateRandomID())},
@@ -106,7 +115,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (typ
 		Os:            "linux",
 		Size:          5552690,
 		VirtualSize:   5552690,
-		GraphDriver: types.GraphDriverData{
+		GraphDriver: storage.DriverData{
 			Data: map[string]string{
 				"MergedDir": fmt.Sprintf("%s/merged", path),
 				"UpperDir":  fmt.Sprintf("%s/diff", path),
@@ -114,7 +123,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (typ
 			},
 			Name: "overlay2",
 		},
-		RootFS: types.RootFS{
+		RootFS: image.RootFS{
 			Type:   "layers",
 			Layers: []string{fmt.Sprintf("sha256:%s", stringid.GenerateRandomID())},
 		},
@@ -124,7 +133,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (typ
 	// marshal response into raw bytes
 	b, err := json.Marshal(response)
 	if err != nil {
-		return types.ImageInspect{}, nil, err
+		return image.InspectResponse{}, nil, err
 	}
 
 	return response, b, nil
@@ -142,7 +151,7 @@ func (i *ImageService) ImageList(ctx context.Context, options image.ListOptions)
 // a mocked call to load a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageLoad
-func (i *ImageService) ImageLoad(ctx context.Context, input io.Reader, quiet bool) (types.ImageLoadResponse, error) {
+func (i *ImageService) ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (image.LoadResponse, error) {
 	return image.LoadResponse{}, nil
 }
 
@@ -215,7 +224,7 @@ func (i *ImageService) ImageRemove(ctx context.Context, image string, options im
 // a mocked call to save a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageSave
-func (i *ImageService) ImageSave(ctx context.Context, images []string) (io.ReadCloser, error) {
+func (i *ImageService) ImageSave(ctx context.Context, images []string, options ...client.ImageSaveOption) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -223,7 +232,7 @@ func (i *ImageService) ImageSave(ctx context.Context, images []string) (io.ReadC
 // a mocked call to search for a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageSearch
-func (i *ImageService) ImageSearch(ctx context.Context, term string, options types.ImageSearchOptions) ([]registry.SearchResult, error) {
+func (i *ImageService) ImageSearch(ctx context.Context, term string, options registry.SearchOptions) ([]registry.SearchResult, error) {
 	return nil, nil
 }
 

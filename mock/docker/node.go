@@ -5,7 +5,6 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 )
@@ -28,7 +27,7 @@ func (n *NodeService) NodeInspectWithRaw(ctx context.Context, nodeID string) (sw
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeList
-func (n *NodeService) NodeList(ctx context.Context, options types.NodeListOptions) ([]swarm.Node, error) {
+func (n *NodeService) NodeList(ctx context.Context, options swarm.NodeListOptions) ([]swarm.Node, error) {
 	return nil, nil
 }
 
@@ -37,7 +36,7 @@ func (n *NodeService) NodeList(ctx context.Context, options types.NodeListOption
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeRemove
-func (n *NodeService) NodeRemove(ctx context.Context, nodeID string, options types.NodeRemoveOptions) error {
+func (n *NodeService) NodeRemove(ctx context.Context, nodeID string, options swarm.NodeRemoveOptions) error {
 	return nil
 }
 

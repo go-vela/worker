@@ -9,7 +9,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/docker/docker/api/types"
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -300,7 +299,7 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 		return nil, nil
 	}
 
-	execConfig := types.ExecConfig{
+	execConfig := dockerContainerTypes.ExecOptions{
 		Tty:          true,
 		Cmd:          []string{"sh", "-c", fmt.Sprintf("cat %s", path)},
 		AttachStderr: true,
@@ -312,7 +311,7 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 		return nil, err
 	}
 
-	hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, types.ExecStartCheck{})
+	hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, dockerContainerTypes.ExecAttachOptions{})
 	if err != nil {
 		return nil, err
 	}

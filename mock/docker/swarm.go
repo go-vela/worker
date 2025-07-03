@@ -5,7 +5,6 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 )
@@ -19,8 +18,8 @@ type SwarmService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmGetUnlockKey
-func (s *SwarmService) SwarmGetUnlockKey(ctx context.Context) (types.SwarmUnlockKeyResponse, error) {
-	return types.SwarmUnlockKeyResponse{}, nil
+func (s *SwarmService) SwarmGetUnlockKey(ctx context.Context) (swarm.UnlockKeyResponse, error) {
+	return swarm.UnlockKeyResponse{}, nil
 }
 
 // SwarmInit is a helper function to simulate
