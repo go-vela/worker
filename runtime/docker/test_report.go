@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/docker/docker/api/types"
+	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"io"
@@ -28,7 +28,7 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 		dir, filename := filepath.Split(path)
 		c.Logger.Tracef("searching for file %s in %s", filename, dir)
 
-		execConfig := types.ExecConfig{
+		execConfig := dockerContainerTypes.ExecOptions{
 			Tty: true,
 			//Cmd:          []string{"sh", "-c", fmt.Sprintf("find %s -type f -name %s", dir, filename)},
 			Cmd:          []string{"sh", "-c", fmt.Sprintf("find / -type f -path *%s  -print", path)},
@@ -43,7 +43,7 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 			return nil, err
 		}
 
-		hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, types.ExecStartCheck{})
+		hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, dockerContainerTypes.ExecAttachOptions{})
 		if err != nil {
 			c.Logger.Errorf("unable to attach to exec for container: %v", err)
 			return nil, err
@@ -117,7 +117,7 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 		return nil, 0, nil
 	}
 	cmd := []string{"sh", "-c", fmt.Sprintf("base64 %s", path)}
-	execConfig := types.ExecConfig{
+	execConfig := dockerContainerTypes.ExecOptions{
 		Cmd:          cmd,
 		AttachStdout: true,
 		AttachStderr: false,
@@ -129,7 +129,7 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to create exec instance: %w", err)
 	}
-	resp, err := c.Docker.ContainerExecAttach(ctx, execID.ID, types.ExecStartCheck{})
+	resp, err := c.Docker.ContainerExecAttach(ctx, execID.ID, dockerContainerTypes.ExecAttachOptions{})
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to attach to exec instance: %w", err)
 	}
