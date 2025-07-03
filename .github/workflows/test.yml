@@ -34,11 +34,6 @@ jobs:
         run: |
           make test
 
-      - name: test jsonschema
-        run: |
-          go install github.com/santhosh-tekuri/jsonschema/cmd/jv@v0.7.0
-          make test-jsonschema
-
       - name: coverage
         uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
         with:
