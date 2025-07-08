@@ -77,6 +77,22 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 	return nil, nil
 }
 
+// PollFileNames grabs test results and attachments from provided path within a container.
+// This is a no-op for kubernetes. Pod environments cannot be dynamic.
+func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, paths []string) ([]string, error) {
+	c.Logger.Tracef("no-op: gathering test results and attachments from container %s", ctn.ID)
+
+	return nil, nil
+}
+
+// PollFileContent captures the content and size of a file from the pipeline container.
+// This is a no-op for kubernetes. Pod environments cannot be dynamic.
+func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, path string) (io.Reader, int64, error) {
+	c.Logger.Tracef("no-op: gathering test results and attachments from container %s", ctn.ID)
+
+	return nil, 0, nil
+}
+
 // RunContainer creates and starts the pipeline container.
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
