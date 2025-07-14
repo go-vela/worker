@@ -151,11 +151,11 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	return outputMap, maskMap, nil
 }
 
-// pollFiles tails the output for sidecar container.
+// pollFiles polls the output for files from the sidecar container.
 func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
-		return nil
+		return fmt.Errorf("no outputs container configured")
 	}
 
 	// update engine logger with outputs metadata
@@ -163,69 +163,38 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
 
-	logger.Debug("tailing container")
-	logger.Debugf("fileList: %v", fileList)
-	// grab outputs
+	logger.Debug("polling files from container")
+
+	// grab file paths from the container
 	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
 	if err != nil {
-		return fmt.Errorf("unable to poll file names: %v", err)
+		return fmt.Errorf("unable to poll file names: %w", err)
 	}
-	if len(filesPath) != 0 {
-		for _, filePath := range filesPath {
-			fileName := filepath.Base(filePath)
-			logger.Infof("fileName: %v", fileName)
-			logger.Infof("filePath: %v", filePath)
-			reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
-			if err != nil {
-				logger.Errorf("unable to poll file content: %v", err)
-				return err
-			}
-			//
-			err = o.client.Storage.UploadObject(ctx, &api.Object{
-				ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetNumber(), 10)+"/%s", fileName),
-				Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
-				FilePath:   filePath,
-			}, reader, size)
-			if err != nil {
-				logger.Errorf("unable to upload object: %v", err)
-				return err
-			}
 
-			//err = o.client.Storage.Upload(ctx, &api.Object{
-			//	ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetNumber(), 10)+"/%s", fileName),
-			//	Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
-			//	FilePath:   filePath,
-			//})
-			//if err != nil {
-			//	logger.Errorf("unable to upload object: %v", err)
-			//	return err
-			//}
+	if len(filesPath) == 0 {
+		return fmt.Errorf("no files found for file list: %v", fileList)
+	}
+
+	// process each file found
+	for _, filePath := range filesPath {
+		fileName := filepath.Base(filePath)
+
+		// get file content from container
+		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
+		if err != nil {
+			return fmt.Errorf("unable to poll file content for %s: %w", filePath, err)
 		}
 
-		return nil
+		// upload file to storage
+		err = o.client.Storage.UploadObject(ctx, &api.Object{
+			ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetNumber(), 10)+"/%s", fileName),
+			Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
+			FilePath:   filePath,
+		}, reader, size)
+		if err != nil {
+			return fmt.Errorf("unable to upload object: %v", err)
+		}
 	}
-	logger.Debug("no files found")
-	return fmt.Errorf("no files found: %v", err)
 
-	//reader := bytes.NewReader(outputBytes)
-	//
-	//outputMap, err := envparse.Parse(reader)
-	//if err != nil {
-	//	logger.Debugf("unable to parse output map: %v", err)
-	//}
-	//
-	//// grab masked outputs
-	//maskedBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/masked.env")
-	//if err != nil {
-	//	return nil, nil, err
-	//}
-	//
-	//reader = bytes.NewReader(maskedBytes)
-	//
-	//maskMap, err := envparse.Parse(reader)
-	//if err != nil {
-	//	logger.Debugf("unable to parse masked output map: %v", err)
-	//}
-
-	//return outputMap, maskMap, nil
+	return nil
 }

@@ -550,31 +550,31 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		// logic for polling files only if the test-report step is present
 		// iterate through the steps in the build
-		for _, s := range c.pipeline.Steps {
-			c.Logger.Infof("polling files for %s step", s.Name)
 
-			if !s.TestReport.Empty() {
-				c.Logger.Debug("creating test report record in database")
-				// send API call to update the test report
-				//
-				// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#TestReportService.Add
-				// TODO: .Add should be .Update
-				// TODO: handle somewhere if multiple test report keys exist in pipeline
-				tr, resp, err := c.Vela.TestReport.Add(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber())
+		if !_step.TestReport.Empty() {
+			c.Logger.Debug("creating test report record in database")
+			// send API call to update the test report
+			//
+			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#TestReportService.Add
+			// TODO: .Add should be .Update
+			// TODO: handle somewhere if multiple test report keys exist in pipeline
+			tr, resp, err := c.Vela.TestReport.Add(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber())
+			if err != nil {
+				c.Logger.Errorf("unable to create test report record in databases: %v, %v, %v", tr.GetBuildID(), resp.StatusCode, err)
+			}
+
+			if len(_step.TestReport.Results) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build)
 				if err != nil {
-					c.Logger.Errorf("unable to create test report record in databases: %v, %v, %v", tr.GetBuildID(), resp.StatusCode, err)
-				}
-
-				if len(s.TestReport.Results) != 0 {
-					err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Results, c.build)
 					c.Logger.Errorf("unable to poll files for results: %v", err)
 				}
-				if len(s.TestReport.Attachments) != 0 {
-					err := c.outputs.pollFiles(ctx, c.OutputCtn, s.TestReport.Attachments, c.build)
+			}
+			if len(_step.TestReport.Attachments) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build)
+				if err != nil {
 					c.Logger.Errorf("unable to poll files for attachments: %v", err)
 				}
 			}
-
 		}
 
 		// perform any substitution on dynamic variables
