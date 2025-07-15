@@ -35,6 +35,8 @@ func Environment(c *pipeline.Container, b *api.Build, s *api.Step, version, reqT
 		c.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
 		c.Environment["VELA_OUTPUTS"] = "/vela/outputs/.env"
 		c.Environment["VELA_MASKED_OUTPUTS"] = "/vela/outputs/masked.env"
+		c.Environment["VELA_BASE64_OUTPUTS"] = "/vela/outputs/base64.env"
+		c.Environment["VELA_MASKED_BASE64_OUTPUTS"] = "/vela/outputs/masked.base64.env"
 
 		// populate environment variables from build library
 		err := c.MergeEnv(b.Environment(workspace))
