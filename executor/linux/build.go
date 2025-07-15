@@ -29,6 +29,11 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
 	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
+	// Check if storage client is initialized
+	// and if storage is enable
+	if c.Storage == nil {
+		return fmt.Errorf("storage client is not initialized")
+	}
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -445,6 +450,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// output maps for dynamic environment variables captured from volume
 	var opEnv, maskEnv map[string]string
 
+	// test report object for storing the test report information
+	var tr *api.TestReport
+
+	// Flag to track if we've already created the test report record
+	testReportCreated := false
+
 	// fire up output container to run with the build
 	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
 
@@ -541,6 +552,38 @@ func (c *client) ExecBuild(ctx context.Context) error {
 				Target: key,
 			}
 			_step.Secrets = append(_step.Secrets, sec)
+		}
+
+		// logic for polling files only if the test-report step is present
+		// iterate through the steps in the build
+
+		if !_step.TestReport.Empty() {
+			c.Logger.Debug("creating test report record in database")
+			// send API call to update the test report
+			//
+			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#TestReportService.Add
+			// TODO: .Add should be .Update
+			// TODO: handle somewhere if multiple test report keys exist in pipeline
+			if !testReportCreated {
+				tr, c.err = c.CreateTestReport()
+				if c.err != nil {
+					return fmt.Errorf("unable to create test report: %w", c.err)
+				}
+
+				testReportCreated = true
+			}
+			if len(_step.TestReport.Results) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build, tr)
+				if err != nil {
+					c.Logger.Errorf("unable to poll files for results: %v", err)
+				}
+			}
+			if len(_step.TestReport.Attachments) != 0 {
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build, tr)
+				if err != nil {
+					c.Logger.Errorf("unable to poll files for attachments: %v", err)
+				}
+			}
 		}
 
 		// perform any substitution on dynamic variables

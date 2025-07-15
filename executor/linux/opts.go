@@ -4,6 +4,7 @@ package linux
 
 import (
 	"fmt"
+	"github.com/go-vela/server/storage"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -205,6 +206,31 @@ func withStreamRequests(s chan message.StreamRequest) Opt {
 
 		// set the streamRequests channel in the client
 		c.streamRequests = s
+
+		return nil
+	}
+}
+
+// WithStorage sets the storage in the executor client for Linux.
+func WithStorage(s *storage.Setup) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring storage in linux executor client")
+
+		// check if the storage provided is empty
+		if &s == nil {
+			return fmt.Errorf("empty storage setup provided")
+		}
+
+		// set the storage in the client
+		var err error
+		c.Storage, err = storage.New(s)
+		if err != nil {
+			return fmt.Errorf("unable to create storage: %v", err)
+
+		}
+		if c.Storage == nil {
+			return fmt.Errorf("empty storage setup: %v", err)
+		}
 
 		return nil
 	}

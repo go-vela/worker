@@ -110,7 +110,7 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 
 	outputMap, err := envparse.Parse(reader)
 	if err != nil {
-		logrus.Debugf("unable to parse output map: %v", err)
+		logrus.Debugf("unable to parse local output map: %v", err)
 	}
 
 	// grab masked outputs
