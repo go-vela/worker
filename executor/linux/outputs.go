@@ -152,7 +152,7 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 }
 
 // pollFiles polls the output for files from the sidecar container.
-func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build) error {
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build, tr *api.TestReport) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
 		return fmt.Errorf("no outputs container configured")
@@ -162,8 +162,6 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
-
-	logger.Debug("polling files from container")
 
 	// grab file paths from the container
 	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
@@ -178,6 +176,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	// process each file found
 	for _, filePath := range filesPath {
 		fileName := filepath.Base(filePath)
+		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
 
 		// get file content from container
 		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
@@ -185,14 +184,30 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 			return fmt.Errorf("unable to poll file content for %s: %w", filePath, err)
 		}
 
+		// create storage object path
+		objectName := fmt.Sprintf("%s/%s/%s/%s",
+			b.GetRepo().GetOrg(),
+			b.GetRepo().GetName(),
+			strconv.FormatInt(b.GetNumber(), 10),
+			fileName)
+
 		// upload file to storage
 		err = o.client.Storage.UploadObject(ctx, &api.Object{
-			ObjectName: fmt.Sprintf(b.GetRepo().GetOrg()+"/"+b.GetRepo().GetName()+"/"+strconv.FormatInt(b.GetNumber(), 10)+"/%s", fileName),
+			ObjectName: objectName,
 			Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
 			FilePath:   filePath,
 		}, reader, size)
 		if err != nil {
-			return fmt.Errorf("unable to upload object: %v", err)
+			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
+		}
+
+		logger.Debugf("successfully uploaded file %s (%d bytes)", fileName, size)
+
+		// create test attachment record in database after successful upload
+		err = o.client.CreateTestAttachment(fileName, filePath, size, tr)
+		if err != nil {
+			logger.Errorf("unable to create test attachment record for %s: %v", fileName, err)
+			// don't return error here to avoid blocking the upload process
 		}
 	}
 

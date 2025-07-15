@@ -59,53 +59,53 @@ func (c *client) execContainerLines(ctx context.Context, containerID, cmd string
 	return lines, nil
 }
 
-// PollFileNames grabs files name from provided path
-// within a container and uploads them to s3
+// PollFileNames searches for files matching the provided patterns within a container.
 func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, paths []string) ([]string, error) {
 	c.Logger.Tracef("gathering files from container %s", ctn.ID)
+
 	if ctn.Image == "" {
 		return nil, nil
 	}
 
-	results := make([]string, 0)
-	for _, p := range paths {
-		// use find on the container to locate candidates
-		cmd := fmt.Sprintf("find / -type f -path '*%s' -print", p)
-		c.Logger.Infof("running: %s", cmd)
+	var results []string
+
+	for _, pattern := range paths {
+		// use find command to locate files matching the pattern
+		cmd := fmt.Sprintf("find / -type f -path '*%s' -print", pattern)
+		c.Logger.Debugf("searching for files with pattern: %s", pattern)
 
 		lines, err := c.execContainerLines(ctx, ctn.ID, cmd)
 		if err != nil {
-			return nil, fmt.Errorf("searching %q: %w", p, err)
+			return nil, fmt.Errorf("failed to search for pattern %q: %w", pattern, err)
 		}
-		c.Logger.Tracef("candidates: %v", lines)
 
-		for _, raw := range lines {
-			// 1) strip whitespace (including CR/LF) and normalize the path
-			fp := filepath.Clean(strings.TrimSpace(raw))
-			if fp == "" {
+		c.Logger.Tracef("found %d candidates for pattern %s", len(lines), pattern)
+
+		// process each found file
+		for _, line := range lines {
+			filePath := filepath.Clean(strings.TrimSpace(line))
+			if filePath == "" {
 				continue
 			}
 
-			// 2) quick ext check
-			ext := strings.ToLower(filepath.Ext(fp))
+			// check if file extension is allowed
+			ext := strings.ToLower(filepath.Ext(filePath))
 			if !isAllowedExt(ext) {
-				c.Logger.Infof("skipping %s (ext %s not allowed)", fp, ext)
+				c.Logger.Debugf("skipping file %s (extension %s not allowed)", filePath, ext)
 				continue
 			}
 
-			// 3) accept
-			c.Logger.Infof("accepted file: %s", fp)
-			results = append(results, fp)
+			c.Logger.Debugf("accepted file: %s", filePath)
+			results = append(results, filePath)
 		}
 	}
 
-	// Add logging for empty results in PollFileNames
 	if len(results) == 0 {
-		c.Logger.Errorf("PollFileNames found no matching files for paths: %v", paths)
-		return results, fmt.Errorf("no matching files found for any paths %v", paths)
+		return results, fmt.Errorf("no matching files found for patterns: %v", paths)
 	}
-	return results, nil
 
+	c.Logger.Infof("found %d files matching patterns", len(results))
+	return results, nil
 }
 
 // PollFileContent retrieves the content and size of a file inside a container.

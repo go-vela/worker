@@ -450,6 +450,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// output maps for dynamic environment variables captured from volume
 	var opEnv, maskEnv map[string]string
 
+	// test report object for storing the test report information
+	var tr *api.TestReport
+
+	// Flag to track if we've already created the test report record
+	testReportCreated := false
+
 	// fire up output container to run with the build
 	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
 
@@ -558,19 +564,22 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#TestReportService.Add
 			// TODO: .Add should be .Update
 			// TODO: handle somewhere if multiple test report keys exist in pipeline
-			tr, resp, err := c.Vela.TestReport.Add(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber())
-			if err != nil {
-				c.Logger.Errorf("unable to create test report record in databases: %v, %v, %v", tr.GetBuildID(), resp.StatusCode, err)
-			}
+			if !testReportCreated {
+				tr, c.err = c.CreateTestReport()
+				if c.err != nil {
+					return fmt.Errorf("unable to create test report: %w", c.err)
+				}
 
+				testReportCreated = true
+			}
 			if len(_step.TestReport.Results) != 0 {
-				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build)
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build, tr)
 				if err != nil {
 					c.Logger.Errorf("unable to poll files for results: %v", err)
 				}
 			}
 			if len(_step.TestReport.Attachments) != 0 {
-				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build)
+				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build, tr)
 				if err != nil {
 					c.Logger.Errorf("unable to poll files for attachments: %v", err)
 				}
