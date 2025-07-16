@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"maps"
 
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
@@ -100,30 +101,85 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 		return nil, nil, nil
 	}
 
-	// grab outputs
-	outputBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/.env")
-	if err != nil {
-		return nil, nil, err
-	}
+	var (
+		filePaths = []string{
+			"/vela/outputs/.env",
+			"/vela/outputs/masked.env",
+			"/vela/outputs/base64.env",
+			"/vela/outputs/masked.base64.env",
+		}
 
-	reader := bytes.NewReader(outputBytes)
+		outputMap = make(map[string]string)
+		maskMap   = make(map[string]string)
+	)
 
-	outputMap, err := envparse.Parse(reader)
-	if err != nil {
-		logrus.Debugf("unable to parse output map: %v", err)
-	}
+	for _, p := range filePaths {
+		outputBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, p)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to poll outputs container %s: %w", ctn.Name, err)
+		}
 
-	// grab masked outputs
-	maskedBytes, err := o.client.Runtime.PollOutputsContainer(ctx, ctn, "/vela/outputs/masked.env")
-	if err != nil {
-		return nil, nil, err
-	}
+		reader := bytes.NewReader(outputBytes)
 
-	reader = bytes.NewReader(maskedBytes)
+		switch p {
+		case "/vela/outputs/.env":
+			parsed, err := envparse.Parse(reader)
+			if err != nil {
+				logrus.Debugf("unable to parse output map: %v", err)
+			}
 
-	maskMap, err := envparse.Parse(reader)
-	if err != nil {
-		logrus.Debugf("unable to parse masked output map: %v", err)
+			// add to output map
+			maps.Copy(outputMap, parsed)
+
+		case "/vela/outputs/masked.env":
+			parsed, err := envparse.Parse(reader)
+			if err != nil {
+				logrus.Debugf("unable to parse masked output map: %v", err)
+			}
+
+			// add to mask map
+			maps.Copy(maskMap, parsed)
+
+		case "/vela/outputs/base64.env":
+			parsed, err := envparse.Parse(reader)
+			if err != nil {
+				logrus.Debugf("unable to parse base64 output map: %v", err)
+			}
+
+			for k, v := range parsed {
+				// decode the base64 value
+				decodedValue, err := base64.StdEncoding.DecodeString(v)
+				if err != nil {
+					logrus.Debugf("unable to decode base64 value for key %s: %v", k, err)
+					continue
+				}
+
+				parsed[k] = string(decodedValue)
+			}
+
+			// add to output map
+			maps.Copy(outputMap, parsed)
+
+		case "/vela/outputs/masked.base64.env":
+			parsed, err := envparse.Parse(reader)
+			if err != nil {
+				logrus.Debugf("unable to parse masked base64 output map: %v", err)
+			}
+
+			for k, v := range parsed {
+				// decode the base64 value
+				decodedValue, err := base64.StdEncoding.DecodeString(v)
+				if err != nil {
+					logrus.Debugf("unable to decode base64 value for key %s: %v", k, err)
+					continue
+				}
+
+				parsed[k] = string(decodedValue)
+			}
+
+			// add to mask map
+			maps.Copy(maskMap, parsed)
+		}
 	}
 
 	return outputMap, maskMap, nil

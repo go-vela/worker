@@ -47,6 +47,8 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container, reqToke
 	ctn.Environment["VELA_VERSION"] = s.client.Version
 	ctn.Environment["VELA_OUTPUTS"] = "/vela/outputs/.env"
 	ctn.Environment["VELA_MASKED_OUTPUTS"] = "/vela/outputs/masked.env"
+	ctn.Environment["VELA_BASE64_OUTPUTS"] = "/vela/outputs/base64.env"
+	ctn.Environment["VELA_MASKED_BASE64_OUTPUTS"] = "/vela/outputs/masked.base64.env"
 
 	if len(reqToken) > 0 {
 		ctn.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
