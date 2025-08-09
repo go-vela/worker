@@ -23,7 +23,7 @@ func TestGenerateCryptographicBuildID(t *testing.T) {
 
 	// Verify it's valid hex
 	for _, c := range id1 {
-		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+		if (c < '0' || c > '9') && (c < 'a' || c > 'f') {
 			t.Errorf("generateCryptographicBuildID() returned non-hex character: %c", c)
 		}
 	}
@@ -88,6 +88,7 @@ func TestWorker_getBuildResources(t *testing.T) {
 			if resources.Memory != tt.wantMemory {
 				t.Errorf("getBuildResources() Memory = %v, want %v", resources.Memory, tt.wantMemory)
 			}
+
 			if resources.PidsLimit != tt.wantPids {
 				t.Errorf("getBuildResources() PidsLimit = %v, want %v", resources.PidsLimit, tt.wantPids)
 			}
@@ -136,6 +137,7 @@ func TestWorker_BuildContextManagement(t *testing.T) {
 	if !exists {
 		t.Error("Build context was not stored")
 	}
+
 	if stored.BuildID != buildID {
 		t.Errorf("Stored build ID = %v, want %v", stored.BuildID, buildID)
 	}
@@ -159,16 +161,16 @@ func TestBuildContext(t *testing.T) {
 	buildID := "test-build-456"
 	workspace := "/tmp/vela-build-" + buildID
 	startTime := time.Now()
-	
+
 	resources := &BuildResources{
 		CPUQuota:  1200,
 		Memory:    4 * 1024 * 1024 * 1024,
 		PidsLimit: 1024,
 	}
-	
+
 	env := make(map[string]string)
 	env["TEST_VAR"] = "test_value"
-	
+
 	context := &BuildContext{
 		BuildID:       buildID,
 		WorkspacePath: workspace,
@@ -176,7 +178,7 @@ func TestBuildContext(t *testing.T) {
 		Resources:     resources,
 		Environment:   env,
 	}
-	
+
 	// Test all fields are set correctly
 	if context.BuildID != buildID {
 		t.Errorf("BuildContext.BuildID = %v, want %v", context.BuildID, buildID)
@@ -198,7 +200,7 @@ func TestBuildResources(t *testing.T) {
 		Memory:    8 * 1024 * 1024 * 1024,
 		PidsLimit: 2048,
 	}
-	
+
 	if resources.CPUQuota != 2000 {
 		t.Errorf("BuildResources.CPUQuota = %v, want 2000", resources.CPUQuota)
 	}

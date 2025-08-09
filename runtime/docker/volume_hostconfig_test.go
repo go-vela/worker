@@ -5,7 +5,6 @@ package docker
 import (
 	"testing"
 
-	"github.com/docker/go-units"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -30,11 +29,11 @@ func TestDocker_hostConfig(t *testing.T) {
 		wantCapAdd     []string
 	}{
 		{
-			name:          "with resource limits",
-			id:            "test-build-1",
-			ulimits:       pipeline.UlimitSlice{},
-			volumes:       []string{},
-			dropCaps:      []string{},
+			name:     "with resource limits",
+			id:       "test-build-1",
+			ulimits:  pipeline.UlimitSlice{},
+			volumes:  []string{},
+			dropCaps: []string{},
 			resourceLimits: &ResourceLimits{
 				Memory:    int64(2) * 1024 * 1024 * 1024,
 				CPUQuota:  int64(1500),
@@ -104,11 +103,11 @@ func TestDocker_hostConfig(t *testing.T) {
 			config := hostConfig(logger, tt.id, tt.ulimits, tt.volumes, tt.dropCaps, tt.resourceLimits)
 
 			// Check resource limits
-			if config.Resources.Memory != tt.wantMemory {
-				t.Errorf("hostConfig() Memory = %v, want %v", config.Resources.Memory, tt.wantMemory)
+			if config.Memory != tt.wantMemory {
+				t.Errorf("hostConfig() Memory = %v, want %v", config.Memory, tt.wantMemory)
 			}
-			if config.Resources.CPUQuota != tt.wantCPUQuota {
-				t.Errorf("hostConfig() CPUQuota = %v, want %v", config.Resources.CPUQuota, tt.wantCPUQuota)
+			if config.CPUQuota != tt.wantCPUQuota {
+				t.Errorf("hostConfig() CPUQuota = %v, want %v", config.CPUQuota, tt.wantCPUQuota)
 			}
 			if config.Resources.PidsLimit != nil && *config.Resources.PidsLimit != tt.wantPidsLimit {
 				t.Errorf("hostConfig() PidsLimit = %v, want %v", *config.Resources.PidsLimit, tt.wantPidsLimit)
@@ -152,10 +151,10 @@ func TestDocker_hostConfig(t *testing.T) {
 
 func TestResourceLimitsDefaults(t *testing.T) {
 	logger := logrus.NewEntry(logrus.StandardLogger())
-	
+
 	// Test that nil resource limits apply secure defaults
 	config := hostConfig(logger, "test-id", nil, nil, nil, nil)
-	
+
 	// Check secure defaults are applied
 	if config.Resources.Memory != int64(4)*1024*1024*1024 {
 		t.Errorf("Default Memory = %v, want %v", config.Resources.Memory, int64(4)*1024*1024*1024)
@@ -166,7 +165,7 @@ func TestResourceLimitsDefaults(t *testing.T) {
 	if config.Resources.PidsLimit == nil || *config.Resources.PidsLimit != 1024 {
 		t.Errorf("Default PidsLimit not set correctly")
 	}
-	
+
 	// Check default security ulimits
 	foundNofile := false
 	foundNproc := false
@@ -184,7 +183,7 @@ func TestResourceLimitsDefaults(t *testing.T) {
 	if !foundNproc {
 		t.Error("Default nproc ulimit not found")
 	}
-	
+
 	// Check security hardening is applied
 	if !contains(config.CapDrop, "ALL") {
 		t.Error("Should drop ALL capabilities by default")
@@ -203,14 +202,6 @@ func contains(slice []string, item string) bool {
 			return true
 		}
 	}
-	return false
-}
 
-func containsUlimit(ulimits []*units.Ulimit, name string, hard, soft int64) bool {
-	for _, u := range ulimits {
-		if u.Name == name && u.Hard == hard && u.Soft == soft {
-			return true
-		}
-	}
 	return false
 }
