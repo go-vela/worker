@@ -37,6 +37,7 @@ type config struct {
 type client struct {
 	config *config
 	// https://pkg.go.dev/github.com/docker/docker/client#CommonAPIClient
+	//nolint:staticcheck // CommonAPIClient is deprecated but still used for compatibility
 	Docker docker.CommonAPIClient
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry

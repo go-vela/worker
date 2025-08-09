@@ -107,4 +107,5 @@ func (m *mock) ServerVersion(ctx context.Context) (types.Version, error) {
 // Docker client expects.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#CommonAPIClient
+//nolint:staticcheck // CommonAPIClient is deprecated but still the correct interface for mocking
 var _ client.CommonAPIClient = (*mock)(nil)

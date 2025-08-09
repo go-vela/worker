@@ -183,8 +183,8 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		return nil, fmt.Errorf("newPodTracker expected a pod, got nil")
 	}
 
-	trackedPod := pod.ObjectMeta.Namespace + "/" + pod.ObjectMeta.Name
-	if pod.ObjectMeta.Name == "" || pod.ObjectMeta.Namespace == "" {
+	trackedPod := pod.Namespace + "/" + pod.Name
+	if pod.Name == "" || pod.Namespace == "" {
 		return nil, fmt.Errorf("newPodTracker expects pod to have Name and Namespace, got %s", trackedPod)
 	}
 

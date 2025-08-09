@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
-	cerrdefs "github.com/docker/docker/errdefs"
+	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -238,7 +238,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// we attempt to capture it for executing the pipeline
 	//
 	// https://pkg.go.dev/github.com/docker/docker/errdefs#IsNotFound
-	if cerrdefs.IsNotFound(err) {
+	if errdefs.IsNotFound(err) {
 		// send API call to create the image
 		return c.CreateImage(ctx, ctn)
 	}

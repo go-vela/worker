@@ -44,9 +44,7 @@ func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ network
 	if strings.Contains(name, "notfound") &&
 		!strings.Contains(name, "ignorenotfound") {
 		return network.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			//nolint:staticcheck // message is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
+			errdefs.NotFound(fmt.Errorf("error: no such network: %s", name))
 	}
 
 	// check if the network is not-found and
@@ -54,9 +52,7 @@ func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ network
 	if strings.Contains(name, "not-found") &&
 		!strings.Contains(name, "ignore-not-found") {
 		return network.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			//nolint:staticcheck // message is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
+			errdefs.NotFound(fmt.Errorf("error: no such network: %s", name))
 	}
 
 	// create response object to return
@@ -88,17 +84,13 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, networkID string, o
 	// check if the network is notfound
 	if strings.Contains(networkID, "notfound") {
 		return network.Inspect{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			//nolint:staticcheck // message is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
+			errdefs.NotFound(fmt.Errorf("error: no such network: %s", networkID))
 	}
 
 	// check if the network is not-found
 	if strings.Contains(networkID, "not-found") {
 		return network.Inspect{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			//nolint:staticcheck // message is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
+			errdefs.NotFound(fmt.Errorf("error: no such network: %s", networkID))
 	}
 
 	// create response object to return

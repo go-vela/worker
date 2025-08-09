@@ -424,6 +424,7 @@ func (w *Worker) getWorkerStatusFromConfig(config *api.Worker) string {
 // generateCryptographicBuildID generates a secure cryptographic ID for build isolation.
 func generateCryptographicBuildID() string {
 	randomBytes := make([]byte, 16)
+
 	_, err := rand.Read(randomBytes)
 	if err != nil {
 		// Fallback to timestamp-based ID if crypto/rand fails

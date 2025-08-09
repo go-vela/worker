@@ -37,8 +37,7 @@ func (v *VolumeService) VolumeCreate(_ context.Context, options volume.CreateOpt
 	if strings.Contains(options.Name, "notfound") &&
 		!strings.Contains(options.Name, "ignorenotfound") {
 		return volume.Volume{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
+			errdefs.NotFound(fmt.Errorf("error: no such volume: %s", options.Name))
 	}
 
 	// check if the volume is not-found and
@@ -46,8 +45,7 @@ func (v *VolumeService) VolumeCreate(_ context.Context, options volume.CreateOpt
 	if strings.Contains(options.Name, "not-found") &&
 		!strings.Contains(options.Name, "ignore-not-found") {
 		return volume.Volume{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
+			errdefs.NotFound(fmt.Errorf("error: no such volume: %s", options.Name))
 	}
 
 	// create response object to return
@@ -77,8 +75,7 @@ func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string) (volum
 	// check if the volume is notfound
 	if strings.Contains(volumeID, "notfound") {
 		return volume.Volume{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
+			errdefs.NotFound(fmt.Errorf("error: no such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
@@ -147,7 +144,7 @@ func (v *VolumeService) VolumeInspectWithRaw(_ context.Context, volumeID string)
 // a mocked call to list Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeList
-func (v *VolumeService) VolumeList(ctx context.Context, options volume.ListOptions) (volume.ListResponse, error) {
+func (v *VolumeService) VolumeList(_ context.Context, _ volume.ListOptions) (volume.ListResponse, error) {
 	return volume.ListResponse{}, nil
 }
 
@@ -155,7 +152,7 @@ func (v *VolumeService) VolumeList(ctx context.Context, options volume.ListOptio
 // a mocked call to remove Docker a volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeRemove
-func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force bool) error {
+func (v *VolumeService) VolumeRemove(_ context.Context, volumeID string, _ bool) error {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
 		return errors.New("no volume provided")
@@ -168,7 +165,7 @@ func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force
 // a mocked call to prune Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumesPrune
-func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Args) (volume.PruneReport, error) {
+func (v *VolumeService) VolumesPrune(_ context.Context, _ filters.Args) (volume.PruneReport, error) {
 	return volume.PruneReport{}, nil
 }
 

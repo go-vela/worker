@@ -188,9 +188,11 @@ func TestBuildContext(t *testing.T) {
 	if context.WorkspacePath != workspace {
 		t.Errorf("BuildContext.WorkspacePath = %v, want %v", context.WorkspacePath, workspace)
 	}
+
 	if context.Resources.CPUQuota != 1200 {
 		t.Errorf("BuildContext.Resources.CPUQuota = %v, want 1200", context.Resources.CPUQuota)
 	}
+
 	if context.Environment["TEST_VAR"] != "test_value" {
 		t.Errorf("BuildContext.Environment[TEST_VAR] = %v, want test_value", context.Environment["TEST_VAR"])
 	}
