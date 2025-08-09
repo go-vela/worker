@@ -76,7 +76,34 @@ func (i *ImageService) ImageImport(_ context.Context, _ image.ImportSource, _ st
 // a mocked call to inspect a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspect
-func (i *ImageService) ImageInspect(_ context.Context, _ string, _ ...client.ImageInspectOption) (image.InspectResponse, error) {
+func (i *ImageService) ImageInspect(_ context.Context, img string, _ ...client.ImageInspectOption) (image.InspectResponse, error) {
+	// verify an image was provided
+	if len(img) == 0 {
+		return image.InspectResponse{}, errors.New("no image provided")
+	}
+
+	// check if the image is notfound and
+	// check if the notfound should be ignored
+	if strings.Contains(img, "notfound") &&
+		!strings.Contains(img, "ignorenotfound") {
+		return image.InspectResponse{},
+			errdefs.NotFound(
+				//nolint:staticcheck // message is capitalized to match Docker messages
+				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", img),
+			)
+	}
+
+	// check if the image is not-found and
+	// check if the not-found should be ignored
+	if strings.Contains(img, "not-found") &&
+		!strings.Contains(img, "ignore-not-found") {
+		return image.InspectResponse{},
+			errdefs.NotFound(
+				//nolint:staticcheck // message is capitalized to match Docker messages
+				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", img),
+			)
+	}
+
 	return image.InspectResponse{}, nil
 }
 
@@ -91,8 +118,22 @@ func (i *ImageService) ImageInspectWithRaw(_ context.Context, img string) (image
 		return image.InspectResponse{}, nil, errors.New("no image provided")
 	}
 
-	// check if the image is not found
-	if strings.Contains(img, "notfound") || strings.Contains(img, "not-found") {
+	// check if the image is notfound and
+	// check if the notfound should be ignored
+	if strings.Contains(img, "notfound") &&
+		!strings.Contains(img, "ignorenotfound") {
+		return image.InspectResponse{},
+			nil,
+			errdefs.NotFound(
+				//nolint:staticcheck // message is capitalized to match Docker messages
+				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", img),
+			)
+	}
+
+	// check if the image is not-found and
+	// check if the not-found should be ignored
+	if strings.Contains(img, "not-found") &&
+		!strings.Contains(img, "ignore-not-found") {
 		return image.InspectResponse{},
 			nil,
 			errdefs.NotFound(

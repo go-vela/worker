@@ -236,7 +236,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 		},
 		{
 			name:     "services pipeline with ignoring image not found",
-			failure:  true,
+			failure:  false,
 			pipeline: "testdata/build/services/img_ignorenotfound.yml",
 		},
 		{
@@ -251,7 +251,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 		},
 		{
 			name:     "steps pipeline with ignoring image not found",
-			failure:  true,
+			failure:  false,
 			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
 		},
 		{
@@ -266,7 +266,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 		},
 		{
 			name:     "stages pipeline with ignoring image not found",
-			failure:  true,
+			failure:  false,
 			pipeline: "testdata/build/stages/img_ignorenotfound.yml",
 		},
 	}

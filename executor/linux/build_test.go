@@ -485,7 +485,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//},
 		{
 			name:     "docker-secrets pipeline with ignoring image not found",
-			failure:  true,
+			failure:  false,
 			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/secrets/img_ignorenotfound.yml",
@@ -527,7 +527,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//},
 		{
 			name:     "docker-services pipeline with ignoring image not found",
-			failure:  true,
+			failure:  false,
 			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/services/img_ignorenotfound.yml",
@@ -569,7 +569,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//},
 		{
 			name:     "docker-steps pipeline with ignoring image not found",
-			failure:  true,
+			failure:  false,
 			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/steps/img_ignorenotfound.yml",
@@ -611,7 +611,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		//},
 		{
 			name:     "docker-stages pipeline with ignoring image not found",
-			failure:  true,
+			failure:  false,
 			logError: false,
 			runtime:  constants.DriverDocker,
 			pipeline: "testdata/build/stages/img_ignorenotfound.yml",
