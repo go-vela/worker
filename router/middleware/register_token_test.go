@@ -3,6 +3,7 @@
 package middleware
 
 import (
+	stdcontext "context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -23,7 +24,7 @@ func TestMiddleware_RegisterToken(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	context.Request, _ = http.NewRequestWithContext(stdcontext.Background(), http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(RegisterToken(want))

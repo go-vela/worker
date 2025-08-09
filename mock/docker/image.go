@@ -29,13 +29,13 @@ type ImageService struct{}
 // BuildCachePrune is a helper function to simulate
 // a mocked call to prune the build cache for the
 // Docker daemon.
-func (i *ImageService) BuildCachePrune(ctx context.Context, options build.CachePruneOptions) (*build.CachePruneReport, error) {
+func (i *ImageService) BuildCachePrune(_ context.Context, _ build.CachePruneOptions) (*build.CachePruneReport, error) {
 	return nil, nil
 }
 
 // BuildCancel is a helper function to simulate
 // a mocked call to cancel building a Docker image.
-func (i *ImageService) BuildCancel(ctx context.Context, id string) error {
+func (i *ImageService) BuildCancel(_ context.Context, _ string) error {
 	return nil
 }
 
@@ -43,7 +43,7 @@ func (i *ImageService) BuildCancel(ctx context.Context, id string) error {
 // a mocked call to build a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageBuild
-func (i *ImageService) ImageBuild(ctx context.Context, context io.Reader, options build.ImageBuildOptions) (build.ImageBuildResponse, error) {
+func (i *ImageService) ImageBuild(_ context.Context, _ io.Reader, _ build.ImageBuildOptions) (build.ImageBuildResponse, error) {
 	return build.ImageBuildResponse{}, nil
 }
 
@@ -96,7 +96,7 @@ func (i *ImageService) ImageInspectWithRaw(ctx context.Context, img string) (ima
 		return image.InspectResponse{},
 			nil,
 			errdefs.NotFound(
-				//nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:staticcheck // message is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", img),
 			)
 	}
@@ -171,7 +171,7 @@ func (i *ImageService) ImagePull(ctx context.Context, image string, options imag
 		!strings.Contains(image, "ignorenotfound") {
 		return nil,
 			errdefs.NotFound(
-				//nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:staticcheck // message is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
 			)
 	}
@@ -182,7 +182,7 @@ func (i *ImageService) ImagePull(ctx context.Context, image string, options imag
 		!strings.Contains(image, "ignore-not-found") {
 		return nil,
 			errdefs.NotFound(
-				//nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:staticcheck // message is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
 			)
 	}

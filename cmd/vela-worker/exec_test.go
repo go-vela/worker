@@ -206,6 +206,7 @@ func TestBuildResources(t *testing.T) {
 	if resources.CPUQuota != 2000 {
 		t.Errorf("BuildResources.CPUQuota = %v, want 2000", resources.CPUQuota)
 	}
+
 	if resources.Memory != 8*1024*1024*1024 {
 		t.Errorf("BuildResources.Memory = %v, want %v", resources.Memory, 8*1024*1024*1024)
 	}

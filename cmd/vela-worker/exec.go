@@ -27,7 +27,7 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
-//nolint:funlen // ignore returning nil - don't want to crash worker
+//nolint:funlen,gocyclo // ignore returning nil - don't want to crash worker; complex build orchestration logic
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
 
@@ -386,6 +386,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
 		defer wg.Done()
+
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)
@@ -424,7 +425,6 @@ func (w *Worker) getWorkerStatusFromConfig(config *api.Worker) string {
 func generateCryptographicBuildID() string {
 	randomBytes := make([]byte, 16)
 	_, err := rand.Read(randomBytes)
-
 	if err != nil {
 		// Fallback to timestamp-based ID if crypto/rand fails
 		return fmt.Sprintf("build-%d", time.Now().UnixNano())

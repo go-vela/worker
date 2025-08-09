@@ -51,6 +51,7 @@ func (w *Worker) Start(ctx context.Context) error {
 			if err != nil {
 				logrus.Error(err)
 			}
+
 			done()
 		case <-gctx.Done():
 			logrus.Info("Closing signal goroutine")
@@ -58,6 +59,7 @@ func (w *Worker) Start(ctx context.Context) error {
 			if err != nil {
 				logrus.Error(err)
 			}
+
 			return gctx.Err()
 		}
 
@@ -67,7 +69,9 @@ func (w *Worker) Start(ctx context.Context) error {
 	// spawn goroutine for starting the server
 	g.Go(func() error {
 		var err error
+
 		logrus.Info("starting worker server")
+
 		if tlsCfg != nil {
 			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server

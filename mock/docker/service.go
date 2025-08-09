@@ -47,7 +47,7 @@ func (s *ServiceService) ServiceList(_ context.Context, _ swarm.ServiceListOptio
 // service for a Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceLogs
-func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, options container.LogsOptions) (io.ReadCloser, error) {
+func (s *ServiceService) ServiceLogs(_ context.Context, _ string, _ container.LogsOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -56,7 +56,7 @@ func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, opti
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceRemove
-func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) error {
+func (s *ServiceService) ServiceRemove(_ context.Context, _ string) error {
 	return nil
 }
 
@@ -65,7 +65,7 @@ func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) er
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceUpdate
-func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options swarm.ServiceUpdateOptions) (swarm.ServiceUpdateResponse, error) {
+func (s *ServiceService) ServiceUpdate(_ context.Context, _ string, _ swarm.Version, _ swarm.ServiceSpec, _ swarm.ServiceUpdateOptions) (swarm.ServiceUpdateResponse, error) {
 	return swarm.ServiceUpdateResponse{}, nil
 }
 

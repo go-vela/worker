@@ -26,7 +26,7 @@ type VolumeService struct{}
 // a mocked call to create a Docker volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeCreate
-func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error) {
+func (v *VolumeService) VolumeCreate(_ context.Context, options volume.CreateOptions) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(options.Name) == 0 {
 		return volume.Volume{}, errors.New("no volume provided")
@@ -68,7 +68,7 @@ func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateO
 // a mocked call to inspect a Docker volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspect
-func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (volume.Volume, error) {
+func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
 		return volume.Volume{}, errors.New("no volume provided")
@@ -105,7 +105,7 @@ func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (vol
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspectWithRaw
-func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID string) (volume.Volume, []byte, error) {
+func (v *VolumeService) VolumeInspectWithRaw(_ context.Context, volumeID string) (volume.Volume, []byte, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
 		return volume.Volume{}, nil, errors.New("no volume provided")

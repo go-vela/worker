@@ -13,7 +13,7 @@ import (
 )
 
 // CreateNetwork creates the pipeline network.
-func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
+func (c *client) CreateNetwork(_ context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("creating network for pipeline %s", b.ID)
 
 	// create the network for the pod

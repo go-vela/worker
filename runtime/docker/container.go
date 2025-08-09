@@ -36,7 +36,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	if container.State.ExitCode > int(^uint32(0)>>1) {
 		ctn.ExitCode = int32(^uint32(0) >> 1)
 	} else {
-		ctn.ExitCode = int32(container.State.ExitCode)
+		ctn.ExitCode = int32(container.State.ExitCode) // #nosec G115 -- bounds checking is performed above
 	}
 
 	return nil

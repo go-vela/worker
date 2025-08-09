@@ -60,7 +60,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	if strings.Contains(ctn, "notfound") &&
 		!strings.Contains(ctn, "ignorenotfound") {
 		return container.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // message is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -69,7 +69,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	if strings.Contains(ctn, "not-found") &&
 		!strings.Contains(ctn, "ignore-not-found") {
 		return container.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // message is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -78,7 +78,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 		strings.Contains(config.Image, "not-found") {
 		return container.CreateResponse{},
 			errdefs.NotFound(
-				//nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:staticcheck // message is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", config.Image),
 			)
 	}
@@ -169,7 +169,7 @@ func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (co
 	if strings.Contains(ctn, "notfound") &&
 		!strings.Contains(ctn, "ignorenotfound") {
 		return container.InspectResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // message is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -178,7 +178,7 @@ func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (co
 	if strings.Contains(ctn, "not-found") &&
 		!strings.Contains(ctn, "ignore-not-found") {
 		return container.InspectResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // message is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -214,7 +214,7 @@ func (c *ContainerService) ContainerInspectWithRaw(ctx context.Context, ctn stri
 		strings.Contains(ctn, "not-found") {
 		return container.InspectResponse{},
 			nil,
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // message is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -253,7 +253,7 @@ func (c *ContainerService) ContainerKill(ctx context.Context, ctn, signal string
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // message is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -282,7 +282,7 @@ func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, option
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // message is capitalized to match Docker messages
 		return nil, errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -328,7 +328,7 @@ func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, opti
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // message is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -372,7 +372,7 @@ func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, optio
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // message is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -409,7 +409,7 @@ func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, option
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // message is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -461,7 +461,7 @@ func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condit
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
 		// propagate the error to the error channel
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // message is capitalized to match Docker messages
 		errCh <- errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 
 		return ctnCh, errCh

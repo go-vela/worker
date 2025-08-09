@@ -19,7 +19,7 @@ type PluginService struct{}
 // a mocked call to create a Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginCreate
-func (p *PluginService) PluginCreate(ctx context.Context, createContext io.Reader, options types.PluginCreateOptions) error {
+func (p *PluginService) PluginCreate(_ context.Context, _ io.Reader, _ types.PluginCreateOptions) error {
 	return nil
 }
 
@@ -27,7 +27,7 @@ func (p *PluginService) PluginCreate(ctx context.Context, createContext io.Reade
 // a mocked call to disable a Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginDisable
-func (p *PluginService) PluginDisable(ctx context.Context, name string, options types.PluginDisableOptions) error {
+func (p *PluginService) PluginDisable(_ context.Context, _ string, _ types.PluginDisableOptions) error {
 	return nil
 }
 
@@ -35,7 +35,7 @@ func (p *PluginService) PluginDisable(ctx context.Context, name string, options 
 // a mocked call to enable a Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginEnable
-func (p *PluginService) PluginEnable(ctx context.Context, name string, options types.PluginEnableOptions) error {
+func (p *PluginService) PluginEnable(_ context.Context, _ string, _ types.PluginEnableOptions) error {
 	return nil
 }
 
@@ -44,7 +44,7 @@ func (p *PluginService) PluginEnable(ctx context.Context, name string, options t
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginInspectWithRaw
-func (p *PluginService) PluginInspectWithRaw(ctx context.Context, name string) (*types.Plugin, []byte, error) {
+func (p *PluginService) PluginInspectWithRaw(_ context.Context, _ string) (*types.Plugin, []byte, error) {
 	return nil, nil, nil
 }
 
@@ -52,7 +52,7 @@ func (p *PluginService) PluginInspectWithRaw(ctx context.Context, name string) (
 // a mocked call to install a Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginInstall
-func (p *PluginService) PluginInstall(ctx context.Context, name string, options types.PluginInstallOptions) (io.ReadCloser, error) {
+func (p *PluginService) PluginInstall(_ context.Context, _ string, _ types.PluginInstallOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -60,7 +60,7 @@ func (p *PluginService) PluginInstall(ctx context.Context, name string, options 
 // a mocked call to list Docker plugins.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginList
-func (p *PluginService) PluginList(ctx context.Context, filter filters.Args) (types.PluginsListResponse, error) {
+func (p *PluginService) PluginList(_ context.Context, _ filters.Args) (types.PluginsListResponse, error) {
 	return types.PluginsListResponse{}, nil
 }
 
@@ -68,7 +68,7 @@ func (p *PluginService) PluginList(ctx context.Context, filter filters.Args) (ty
 // a mocked call to push a Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginPush
-func (p *PluginService) PluginPush(ctx context.Context, name string, registryAuth string) (io.ReadCloser, error) {
+func (p *PluginService) PluginPush(_ context.Context, _, _ string) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -76,7 +76,7 @@ func (p *PluginService) PluginPush(ctx context.Context, name string, registryAut
 // a mocked call to remove a Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginRemove
-func (p *PluginService) PluginRemove(ctx context.Context, name string, options types.PluginRemoveOptions) error {
+func (p *PluginService) PluginRemove(_ context.Context, _ string, _ types.PluginRemoveOptions) error {
 	return nil
 }
 
@@ -85,7 +85,7 @@ func (p *PluginService) PluginRemove(ctx context.Context, name string, options t
 // Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginSet
-func (p *PluginService) PluginSet(ctx context.Context, name string, args []string) error {
+func (p *PluginService) PluginSet(_ context.Context, _ string, _ []string) error {
 	return nil
 }
 
@@ -93,7 +93,7 @@ func (p *PluginService) PluginSet(ctx context.Context, name string, args []strin
 // a mocked call to upgrade a Docker plugin.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.PluginUpgrade
-func (p *PluginService) PluginUpgrade(ctx context.Context, name string, options types.PluginInstallOptions) (io.ReadCloser, error) {
+func (p *PluginService) PluginUpgrade(_ context.Context, _ string, _ types.PluginInstallOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 

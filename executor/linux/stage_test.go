@@ -232,6 +232,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	dtm, _ := dockerTestMap.Load("foo")
 	dtm.(chan error) <- nil
+
 	close(dtm.(chan error))
 
 	kubernetesTestMap := new(sync.Map)

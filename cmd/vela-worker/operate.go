@@ -31,10 +31,11 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetHostname(w.Config.API.Address.Hostname())
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetActive(true)
+
 	if w.Config.Build.Limit > int(^uint32(0)>>1) {
 		registryWorker.SetBuildLimit(int32(^uint32(0) >> 1))
 	} else {
-		registryWorker.SetBuildLimit(int32(w.Config.Build.Limit))
+		registryWorker.SetBuildLimit(int32(w.Config.Build.Limit)) // #nosec G115 -- bounds checking is performed above
 	}
 
 	// set routes from config if set or defaulted to `vela`
@@ -135,7 +136,6 @@ func (w *Worker) operate(ctx context.Context) error {
 					}
 
 					w.QueueCheckedIn, err = w.queueCheckIn(gctx, registryWorker)
-
 					if err != nil {
 						// queue check in failed, retry
 						logrus.Errorf("unable to ping queue %v", err)
@@ -197,6 +197,7 @@ func (w *Worker) operate(ctx context.Context) error {
 
 					continue
 				}
+
 				select {
 				case <-gctx.Done():
 					logrus.WithFields(logrus.Fields{
