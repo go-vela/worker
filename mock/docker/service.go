@@ -20,7 +20,7 @@ type ServiceService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceCreate
-func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options swarm.ServiceCreateOptions) (swarm.ServiceCreateResponse, error) {
+func (s *ServiceService) ServiceCreate(_ context.Context, _ swarm.ServiceSpec, _ swarm.ServiceCreateOptions) (swarm.ServiceCreateResponse, error) {
 	return swarm.ServiceCreateResponse{}, nil
 }
 
@@ -29,7 +29,7 @@ func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.Servic
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceInspectWithRaw
-func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID string, options swarm.ServiceInspectOptions) (swarm.Service, []byte, error) {
+func (s *ServiceService) ServiceInspectWithRaw(_ context.Context, _ string, _ swarm.ServiceInspectOptions) (swarm.Service, []byte, error) {
 	return swarm.Service{}, nil, nil
 }
 
@@ -38,7 +38,7 @@ func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID st
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceList
-func (s *ServiceService) ServiceList(ctx context.Context, options swarm.ServiceListOptions) ([]swarm.Service, error) {
+func (s *ServiceService) ServiceList(_ context.Context, _ swarm.ServiceListOptions) ([]swarm.Service, error) {
 	return nil, nil
 }
 

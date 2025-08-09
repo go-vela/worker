@@ -36,6 +36,9 @@ func TestLinux_CreateStage(t *testing.T) {
 		},
 	}
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("FromCLICommand returned err: %v", err)
+	}
 
 	_pipeline, _, err := compiler.
 		Duplicate().

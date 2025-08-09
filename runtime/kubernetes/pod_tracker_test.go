@@ -181,7 +181,7 @@ func Test_podTracker_HandlePodAdd(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			p := &podTracker{
 				Logger:     logger,
 				TrackedPod: test.trackedPod,
@@ -255,7 +255,7 @@ func Test_podTracker_HandlePodUpdate(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			p := &podTracker{
 				Logger:     logger,
 				TrackedPod: test.trackedPod,
@@ -324,7 +324,7 @@ func Test_podTracker_HandlePodDelete(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			p := &podTracker{
 				Logger:     logger,
 				TrackedPod: test.trackedPod,

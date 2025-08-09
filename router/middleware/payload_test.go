@@ -4,6 +4,7 @@ package middleware
 
 import (
 	"bytes"
+	stdcontext "context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,7 @@ func TestMiddleware_Payload(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodPost, "/health", bytes.NewBuffer(jsonBody))
+	context.Request, _ = http.NewRequestWithContext(stdcontext.Background(), http.MethodPost, "/health", bytes.NewBuffer(jsonBody))
 
 	// setup mock server
 	engine.Use(Payload())

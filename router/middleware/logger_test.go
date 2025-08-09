@@ -4,6 +4,7 @@ package middleware
 
 import (
 	"bytes"
+	stdcontext "context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,7 +32,7 @@ func TestMiddleware_Logger(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodPost, "/foobar", bytes.NewBuffer(payload))
+	context.Request, _ = http.NewRequestWithContext(stdcontext.Background(), http.MethodPost, "/foobar", bytes.NewBuffer(payload))
 
 	// setup mock server
 	engine.Use(Payload())
@@ -72,7 +73,7 @@ func TestMiddleware_Logger_Error(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/foobar", nil)
+	context.Request, _ = http.NewRequestWithContext(stdcontext.Background(), http.MethodGet, "/foobar", nil)
 
 	// setup mock server
 	engine.Use(Logger(logger, time.RFC3339, true))

@@ -211,7 +211,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// create the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {
 		// TODO: remove hardcoded reference
-		if _step.Name == "init" {
+		if _step.Name == initStepName {
 			continue
 		}
 
@@ -285,7 +285,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// execute the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {
 		// TODO: remove hardcoded reference
-		if _step.Name == "init" {
+		if _step.Name == initStepName {
 			continue
 		}
 
@@ -447,7 +447,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 	// destroy the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {
 		// TODO: remove hardcoded reference
-		if _step.Name == "init" {
+		if _step.Name == initStepName {
 			continue
 		}
 

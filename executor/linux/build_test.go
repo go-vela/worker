@@ -733,7 +733,11 @@ func TestLinux_ExecBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("FromCLICommand returned err: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -1029,7 +1033,11 @@ func TestLinux_StreamBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("FromCLICommand returned err: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -1126,7 +1134,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamService
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanService
 				return planNothing
 			},
@@ -1152,7 +1160,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamService
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanService
 				return planNothing
 			},
@@ -1224,7 +1232,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamStep
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanStep
 				return planNothing
 			},
@@ -1248,7 +1256,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamStep
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanStep
 				return planNothing
 			},
@@ -1318,7 +1326,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.secret.stream
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// no plan function equivalent for secret containers
 				return planNothing
 			},
@@ -1342,7 +1350,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.secret.stream
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// no plan function equivalent for secret containers
 				return planNothing
 			},
@@ -1648,7 +1656,11 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("FromCLICommand returned err: %v", err)
+	}
 
 	_build := testBuild()
 

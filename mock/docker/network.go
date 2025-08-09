@@ -25,7 +25,7 @@ type NetworkService struct{}
 // a mocked call to connect to a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkConnect
-func (n *NetworkService) NetworkConnect(ctx context.Context, network, container string, config *network.EndpointSettings) error {
+func (n *NetworkService) NetworkConnect(_ context.Context, _, _ string, _ *network.EndpointSettings) error {
 	return nil
 }
 
@@ -33,7 +33,7 @@ func (n *NetworkService) NetworkConnect(ctx context.Context, network, container 
 // a mocked call to create a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkCreate
-func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options network.CreateOptions) (network.CreateResponse, error) {
+func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ network.CreateOptions) (network.CreateResponse, error) {
 	// verify a network was provided
 	if len(name) == 0 {
 		return network.CreateResponse{}, errors.New("no network provided")
@@ -69,7 +69,7 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 // a mocked call to disconnect from a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkDisconnect
-func (n *NetworkService) NetworkDisconnect(ctx context.Context, network, container string, force bool) error {
+func (n *NetworkService) NetworkDisconnect(_ context.Context, _, _ string, _ bool) error {
 	return nil
 }
 

@@ -214,7 +214,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, "*", key)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
+			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
 
 		secret.Value = _secret.GetValue()
@@ -231,7 +231,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, repo, key)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
+			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
 
 		secret.Value = _secret.GetValue()
@@ -248,7 +248,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, team, key)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
+			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
 
 		secret.Value = _secret.GetValue()

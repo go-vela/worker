@@ -34,7 +34,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#ContainerState
 	if container.State.ExitCode > int(^uint32(0)>>1) {
-		ctn.ExitCode = int32(^uint32(0)>>1)
+		ctn.ExitCode = int32(^uint32(0) >> 1)
 	} else {
 		ctn.ExitCode = int32(container.State.ExitCode)
 	}
@@ -226,7 +226,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		return err
 	}
 
-	// check if the container image exists on the host  
+	// check if the container image exists on the host
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspect
 	_, err = c.Docker.ImageInspect(ctx, _image)

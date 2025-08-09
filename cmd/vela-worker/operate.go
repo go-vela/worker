@@ -32,7 +32,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetActive(true)
 	if w.Config.Build.Limit > int(^uint32(0)>>1) {
-		registryWorker.SetBuildLimit(int32(^uint32(0)>>1))
+		registryWorker.SetBuildLimit(int32(^uint32(0) >> 1))
 	} else {
 		registryWorker.SetBuildLimit(int32(w.Config.Build.Limit))
 	}
