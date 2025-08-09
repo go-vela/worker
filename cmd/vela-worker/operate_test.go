@@ -3,6 +3,7 @@
 package main
 
 import (
+	"net/url"
 	"testing"
 
 	api "github.com/go-vela/server/api/types"
@@ -158,5 +159,38 @@ func TestWorkerStatusUpdate(t *testing.T) {
 	// Test hostname setting
 	if registryWorker.GetHostname() != "test-worker" {
 		t.Errorf("Worker hostname = %v, want test-worker", registryWorker.GetHostname())
+	}
+}
+
+func TestNoneRouteConstant(t *testing.T) {
+	// Test the constant value
+	if noneRoute != "NONE" {
+		t.Errorf("noneRoute constant = %v, want NONE", noneRoute)
+	}
+}
+
+func TestWorkerRegistryAddress(t *testing.T) {
+	// Test worker registry address setting
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: &url.URL{
+					Scheme: "https",
+					Host:   "vela.example.com",
+				},
+			},
+		},
+	}
+
+	registryWorker := new(api.Worker)
+	registryWorker.SetHostname(w.Config.API.Address.Hostname())
+	registryWorker.SetAddress(w.Config.API.Address.String())
+
+	if registryWorker.GetHostname() != "vela.example.com" {
+		t.Errorf("Registry worker hostname = %v, want vela.example.com", registryWorker.GetHostname())
+	}
+
+	if registryWorker.GetAddress() != "https://vela.example.com" {
+		t.Errorf("Registry worker address = %v, want https://vela.example.com", registryWorker.GetAddress())
 	}
 }
