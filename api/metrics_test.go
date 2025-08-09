@@ -3,6 +3,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,7 +18,7 @@ func TestMetrics(t *testing.T) {
 	}
 
 	// Test that the handler can serve HTTP requests
-	req, err := http.NewRequest(http.MethodGet, "/metrics", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/metrics", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
@@ -45,7 +46,7 @@ func TestMetrics(t *testing.T) {
 func TestMetrics_ContentType(t *testing.T) {
 	handler := Metrics()
 
-	req, err := http.NewRequest(http.MethodGet, "/metrics", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/metrics", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
@@ -60,7 +61,7 @@ func TestMetrics_ContentType(t *testing.T) {
 	}
 }
 
-// containsMetricsContent checks if the response body contains Prometheus metrics content
+// containsMetricsContent checks if the response body contains Prometheus metrics content.
 func containsMetricsContent(body string) bool {
 	// At minimum, should have some content and look like metrics
 	return len(body) > 0 && (body[0] == '#' || len(body) > 100)

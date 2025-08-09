@@ -3,6 +3,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -34,7 +35,7 @@ func TestShutdown(t *testing.T) {
 			r.POST("/api/v1/shutdown", Shutdown)
 
 			// Create request
-			req, err := http.NewRequest(http.MethodPost, "/api/v1/shutdown", nil)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "/api/v1/shutdown", nil)
 			if err != nil {
 				t.Fatalf("failed to create request: %v", err)
 			}
@@ -70,7 +71,7 @@ func TestShutdown_ContentType(t *testing.T) {
 	r.POST("/api/v1/shutdown", Shutdown)
 
 	// Create request
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/shutdown", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "/api/v1/shutdown", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}

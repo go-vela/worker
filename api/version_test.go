@@ -3,6 +3,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -34,7 +35,7 @@ func TestVersion(t *testing.T) {
 			r.GET("/version", Version)
 
 			// Create request
-			req, err := http.NewRequest(http.MethodGet, "/version", nil)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/version", nil)
 			if err != nil {
 				t.Fatalf("failed to create request: %v", err)
 			}
@@ -75,7 +76,7 @@ func TestVersion_ContentType(t *testing.T) {
 	r.GET("/version", Version)
 
 	// Create request
-	req, err := http.NewRequest(http.MethodGet, "/version", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/version", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}

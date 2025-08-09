@@ -30,7 +30,7 @@ func TestMockStreamRequestsWithCancel(t *testing.T) {
 		Name: "test",
 	}
 
-	mockStreamFunc := func(ctx context.Context, container *pipeline.Container) error {
+	mockStreamFunc := func(_ context.Context, _ *pipeline.Container) error {
 		return nil
 	}
 
@@ -42,8 +42,10 @@ func TestMockStreamRequestsWithCancel(t *testing.T) {
 
 	// Send a request (should not block)
 	done := make(chan bool)
+
 	go func() {
 		streamRequests <- req
+
 		done <- true
 	}()
 
@@ -61,7 +63,7 @@ func TestMockStreamRequestsWithCancel(t *testing.T) {
 	// Allow some time for goroutine to process cancellation
 	time.Sleep(10 * time.Millisecond)
 
-	// After cancelling, the goroutine should exit
+	// After canceling, the goroutine should exit
 	// We can't directly test this, but we've verified the basic functionality
 }
 
@@ -72,7 +74,7 @@ func TestStreamRequest(t *testing.T) {
 		Name: "test",
 	}
 
-	mockStreamFunc := func(ctx context.Context, container *pipeline.Container) error {
+	mockStreamFunc := func(_ context.Context, _ *pipeline.Container) error {
 		return nil
 	}
 
@@ -101,8 +103,9 @@ func TestStreamRequest(t *testing.T) {
 	}
 }
 
-func TestMockStreamRequestsWithCancel_MultipleRequests(t *testing.T) {
+func TestMockStreamRequestsWithCancel_MultipleRequests(_ *testing.T) {
 	ctx := context.Background()
+
 	streamRequests, cancel := MockStreamRequestsWithCancel(ctx)
 	defer cancel()
 
@@ -111,13 +114,13 @@ func TestMockStreamRequestsWithCancel_MultipleRequests(t *testing.T) {
 		Name: "test",
 	}
 
-	mockStreamFunc := func(ctx context.Context, container *pipeline.Container) error {
+	mockStreamFunc := func(_ context.Context, _ *pipeline.Container) error {
 		return nil
 	}
 
 	// Send multiple requests rapidly
 	for i := 0; i < 5; i++ {
-		go func(id int) {
+		go func(_ int) {
 			req := StreamRequest{
 				Key:       "service",
 				Stream:    mockStreamFunc,

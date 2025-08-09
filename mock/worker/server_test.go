@@ -3,6 +3,7 @@
 package worker
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,7 +18,7 @@ func TestFakeHandler(t *testing.T) {
 	}
 
 	// Test that the handler can serve HTTP requests
-	req, err := http.NewRequest(http.MethodGet, "/api/v1/executors", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/api/v1/executors", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
@@ -78,7 +79,7 @@ func TestFakeHandler_Routes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := http.NewRequest(tt.method, tt.path, nil)
+			req, err := http.NewRequestWithContext(context.Background(), tt.method, tt.path, nil)
 			if err != nil {
 				t.Fatalf("failed to create request: %v", err)
 			}
@@ -97,7 +98,7 @@ func TestFakeHandler_Routes(t *testing.T) {
 func TestFakeHandler_UnknownRoute(t *testing.T) {
 	handler := FakeHandler()
 
-	req, err := http.NewRequest(http.MethodGet, "/unknown-route", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/unknown-route", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}

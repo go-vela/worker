@@ -3,6 +3,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -34,7 +35,7 @@ func TestHealth(t *testing.T) {
 			r.GET("/health", Health)
 
 			// Create request
-			req, err := http.NewRequest(http.MethodGet, "/health", nil)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/health", nil)
 			if err != nil {
 				t.Fatalf("failed to create request: %v", err)
 			}
@@ -70,7 +71,7 @@ func TestHealth_ContentType(t *testing.T) {
 	r.GET("/health", Health)
 
 	// Create request
-	req, err := http.NewRequest(http.MethodGet, "/health", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/health", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
@@ -95,7 +96,7 @@ func TestHealth_MethodNotAllowed(t *testing.T) {
 	r.GET("/health", Health)
 
 	// Test that POST is not allowed
-	req, err := http.NewRequest(http.MethodPost, "/health", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "/health", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
