@@ -3,7 +3,9 @@
 package main
 
 import (
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestGenerateCryptographicBuildID(t *testing.T) {
@@ -90,5 +92,120 @@ func TestWorker_getBuildResources(t *testing.T) {
 				t.Errorf("getBuildResources() PidsLimit = %v, want %v", resources.PidsLimit, tt.wantPids)
 			}
 		})
+	}
+}
+
+func TestWorker_BuildContextManagement(t *testing.T) {
+	// Test build context initialization and cleanup
+	w := &Worker{
+		BuildContexts:      nil,
+		BuildContextsMutex: sync.RWMutex{},
+		Config: &Config{
+			Build: &Build{
+				CPUQuota:    1200,
+				MemoryLimit: 4,
+				PidsLimit:   1024,
+			},
+		},
+	}
+
+	// Test BuildContexts initialization
+	if w.BuildContexts == nil {
+		w.BuildContexts = make(map[string]*BuildContext)
+	}
+
+	buildID := "test-build-123"
+	buildContext := &BuildContext{
+		BuildID:       buildID,
+		WorkspacePath: "/tmp/vela-build-" + buildID,
+		StartTime:     time.Now(),
+		Resources:     w.getBuildResources(),
+		Environment:   make(map[string]string),
+	}
+
+	// Test context storage
+	w.BuildContextsMutex.Lock()
+	w.BuildContexts[buildID] = buildContext
+	w.BuildContextsMutex.Unlock()
+
+	// Verify context is stored
+	w.BuildContextsMutex.RLock()
+	stored, exists := w.BuildContexts[buildID]
+	w.BuildContextsMutex.RUnlock()
+
+	if !exists {
+		t.Error("Build context was not stored")
+	}
+	if stored.BuildID != buildID {
+		t.Errorf("Stored build ID = %v, want %v", stored.BuildID, buildID)
+	}
+
+	// Test context cleanup
+	w.BuildContextsMutex.Lock()
+	delete(w.BuildContexts, buildID)
+	w.BuildContextsMutex.Unlock()
+
+	// Verify context is cleaned up
+	w.BuildContextsMutex.RLock()
+	_, exists = w.BuildContexts[buildID]
+	w.BuildContextsMutex.RUnlock()
+
+	if exists {
+		t.Error("Build context was not cleaned up")
+	}
+}
+
+func TestBuildContext(t *testing.T) {
+	buildID := "test-build-456"
+	workspace := "/tmp/vela-build-" + buildID
+	startTime := time.Now()
+	
+	resources := &BuildResources{
+		CPUQuota:  1200,
+		Memory:    4 * 1024 * 1024 * 1024,
+		PidsLimit: 1024,
+	}
+	
+	env := make(map[string]string)
+	env["TEST_VAR"] = "test_value"
+	
+	context := &BuildContext{
+		BuildID:       buildID,
+		WorkspacePath: workspace,
+		StartTime:     startTime,
+		Resources:     resources,
+		Environment:   env,
+	}
+	
+	// Test all fields are set correctly
+	if context.BuildID != buildID {
+		t.Errorf("BuildContext.BuildID = %v, want %v", context.BuildID, buildID)
+	}
+	if context.WorkspacePath != workspace {
+		t.Errorf("BuildContext.WorkspacePath = %v, want %v", context.WorkspacePath, workspace)
+	}
+	if context.Resources.CPUQuota != 1200 {
+		t.Errorf("BuildContext.Resources.CPUQuota = %v, want 1200", context.Resources.CPUQuota)
+	}
+	if context.Environment["TEST_VAR"] != "test_value" {
+		t.Errorf("BuildContext.Environment[TEST_VAR] = %v, want test_value", context.Environment["TEST_VAR"])
+	}
+}
+
+func TestBuildResources(t *testing.T) {
+	resources := &BuildResources{
+		CPUQuota:  2000,
+		Memory:    8 * 1024 * 1024 * 1024,
+		PidsLimit: 2048,
+	}
+	
+	if resources.CPUQuota != 2000 {
+		t.Errorf("BuildResources.CPUQuota = %v, want 2000", resources.CPUQuota)
+	}
+	if resources.Memory != 8*1024*1024*1024 {
+		t.Errorf("BuildResources.Memory = %v, want %v", resources.Memory, 8*1024*1024*1024)
+	}
+	if resources.PidsLimit != 2048 {
+		t.Errorf("BuildResources.PidsLimit = %v, want 2048", resources.PidsLimit)
 	}
 }
