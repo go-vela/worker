@@ -35,6 +35,7 @@ func TestLinux_CreateStage(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("FromCLICommand returned err: %v", err)
@@ -231,6 +232,7 @@ func TestLinux_PlanStage(t *testing.T) {
 	dockerTestMap.Store("foo", make(chan error, 1))
 
 	dtm, _ := dockerTestMap.Load("foo")
+
 	dtm.(chan error) <- nil
 
 	close(dtm.(chan error))
@@ -239,14 +241,18 @@ func TestLinux_PlanStage(t *testing.T) {
 	kubernetesTestMap.Store("foo", make(chan error, 1))
 
 	ktm, _ := kubernetesTestMap.Load("foo")
+
 	ktm.(chan error) <- nil
+
 	close(ktm.(chan error))
 
 	dockerErrMap := new(sync.Map)
 	dockerErrMap.Store("foo", make(chan error, 1))
 
 	dem, _ := dockerErrMap.Load("foo")
+
 	dem.(chan error) <- errors.New("bar")
+
 	close(dem.(chan error))
 
 	kubernetesErrMap := new(sync.Map)
@@ -254,6 +260,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	kem, _ := kubernetesErrMap.Load("foo")
 	kem.(chan error) <- errors.New("bar")
+
 	close(kem.(chan error))
 
 	// setup tests

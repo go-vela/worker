@@ -9,8 +9,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/containerd/errdefs"
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -237,7 +237,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// if the container image does not exist on the host
 	// we attempt to capture it for executing the pipeline
 	//
-	// https://pkg.go.dev/github.com/docker/docker/errdefs#IsNotFound
+	// https://pkg.go.dev/github.com/containerd/errdefs#IsNotFound
 	if errdefs.IsNotFound(err) {
 		// send API call to create the image
 		return c.CreateImage(ctx, ctn)

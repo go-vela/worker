@@ -366,6 +366,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("FromCLICommand returned err: %v", err)
@@ -441,6 +442,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(p)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)

@@ -66,12 +66,15 @@ func TestBuild_ResourceConfiguration(t *testing.T) {
 			if build.Limit != tt.wantLimit {
 				t.Errorf("Build.Limit = %v, want %v", build.Limit, tt.wantLimit)
 			}
+
 			if build.CPUQuota != tt.wantCPU {
 				t.Errorf("Build.CPUQuota = %v, want %v", build.CPUQuota, tt.wantCPU)
 			}
+
 			if build.MemoryLimit != tt.wantMemory {
 				t.Errorf("Build.MemoryLimit = %v, want %v", build.MemoryLimit, tt.wantMemory)
 			}
+
 			if build.PidsLimit != tt.wantPids {
 				t.Errorf("Build.PidsLimit = %v, want %v", build.PidsLimit, tt.wantPids)
 			}
@@ -93,12 +96,15 @@ func TestConfig_SecurityConfiguration(t *testing.T) {
 	if config.Build.Limit != 2 {
 		t.Errorf("Config.Build.Limit = %v, want 2", config.Build.Limit)
 	}
+
 	if config.Build.CPUQuota != 1500 {
 		t.Errorf("Config.Build.CPUQuota = %v, want 1500", config.Build.CPUQuota)
 	}
+
 	if config.Build.MemoryLimit != 6 {
 		t.Errorf("Config.Build.MemoryLimit = %v, want 6", config.Build.MemoryLimit)
 	}
+
 	if config.Build.PidsLimit != 1536 {
 		t.Errorf("Config.Build.PidsLimit = %v, want 1536", config.Build.PidsLimit)
 	}
@@ -124,9 +130,11 @@ func TestWorker_ConfigurationIntegration(t *testing.T) {
 	if resources.Memory != expectedMemory {
 		t.Errorf("getBuildResources().Memory = %v, want %v", resources.Memory, expectedMemory)
 	}
+
 	if resources.CPUQuota != 1800 {
 		t.Errorf("getBuildResources().CPUQuota = %v, want 1800", resources.CPUQuota)
 	}
+
 	if resources.PidsLimit != 2048 {
 		t.Errorf("getBuildResources().PidsLimit = %v, want 2048", resources.PidsLimit)
 	}

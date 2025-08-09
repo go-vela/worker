@@ -75,7 +75,7 @@ func (n *NetworkService) NetworkDisconnect(_ context.Context, _, _ string, _ boo
 // a mocked call to inspect a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspect
-func (n *NetworkService) NetworkInspect(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, error) {
+func (n *NetworkService) NetworkInspect(_ context.Context, networkID string, _ network.InspectOptions) (network.Inspect, error) {
 	// verify a network was provided
 	if len(networkID) == 0 {
 		return network.Inspect{}, errors.New("no network provided")
@@ -114,7 +114,7 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, networkID string, o
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspectWithRaw
-func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, []byte, error) {
+func (n *NetworkService) NetworkInspectWithRaw(_ context.Context, networkID string, _ network.InspectOptions) (network.Inspect, []byte, error) {
 	// verify a network was provided
 	if len(networkID) == 0 {
 		return network.Inspect{}, nil, errors.New("no network provided")
@@ -146,7 +146,7 @@ func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, networkID st
 // a mocked call to list Docker networks.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkList
-func (n *NetworkService) NetworkList(ctx context.Context, options network.ListOptions) ([]network.Summary, error) {
+func (n *NetworkService) NetworkList(_ context.Context, _ network.ListOptions) ([]network.Summary, error) {
 	return nil, nil
 }
 
@@ -154,7 +154,7 @@ func (n *NetworkService) NetworkList(ctx context.Context, options network.ListOp
 // a mocked call to remove Docker a network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkRemove
-func (n *NetworkService) NetworkRemove(ctx context.Context, network string) error {
+func (n *NetworkService) NetworkRemove(_ context.Context, network string) error {
 	// verify a network was provided
 	if len(network) == 0 {
 		return errors.New("no network provided")
@@ -167,7 +167,7 @@ func (n *NetworkService) NetworkRemove(ctx context.Context, network string) erro
 // a mocked call to prune Docker networks.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworksPrune
-func (n *NetworkService) NetworksPrune(ctx context.Context, pruneFilter filters.Args) (network.PruneReport, error) {
+func (n *NetworkService) NetworksPrune(_ context.Context, _ filters.Args) (network.PruneReport, error) {
 	return network.PruneReport{}, nil
 }
 

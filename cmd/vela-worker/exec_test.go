@@ -212,6 +212,7 @@ func TestBuildResources(t *testing.T) {
 	if resources.Memory != 8*1024*1024*1024 {
 		t.Errorf("BuildResources.Memory = %v, want %v", resources.Memory, 8*1024*1024*1024)
 	}
+
 	if resources.PidsLimit != 2048 {
 		t.Errorf("BuildResources.PidsLimit = %v, want 2048", resources.PidsLimit)
 	}

@@ -74,7 +74,7 @@ func (s *ServiceService) ServiceUpdate(_ context.Context, _ string, _ swarm.Vers
 // cluster and return the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.TaskInspectWithRaw
-func (s *ServiceService) TaskInspectWithRaw(ctx context.Context, taskID string) (swarm.Task, []byte, error) {
+func (s *ServiceService) TaskInspectWithRaw(_ context.Context, _ string) (swarm.Task, []byte, error) {
 	return swarm.Task{}, nil, nil
 }
 
@@ -83,14 +83,14 @@ func (s *ServiceService) TaskInspectWithRaw(ctx context.Context, taskID string) 
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.TaskList
-func (s *ServiceService) TaskList(ctx context.Context, options swarm.TaskListOptions) ([]swarm.Task, error) {
+func (s *ServiceService) TaskList(_ context.Context, _ swarm.TaskListOptions) ([]swarm.Task, error) {
 	return nil, nil
 }
 
 // TaskLogs is a helper function to simulate
 // a mocked call to capture the logs from a
 // task for a Docker swarm cluster.
-func (s *ServiceService) TaskLogs(ctx context.Context, taskID string, options container.LogsOptions) (io.ReadCloser, error) {
+func (s *ServiceService) TaskLogs(_ context.Context, _ string, _ container.LogsOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 

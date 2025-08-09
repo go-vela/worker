@@ -47,6 +47,7 @@ func (w *Worker) Start(ctx context.Context) error {
 		select {
 		case sig := <-signalChannel:
 			logrus.Infof("Received signal: %s", sig)
+
 			err := server.Shutdown(ctx)
 			if err != nil {
 				logrus.Error(err)
@@ -55,6 +56,7 @@ func (w *Worker) Start(ctx context.Context) error {
 			done()
 		case <-gctx.Done():
 			logrus.Info("Closing signal goroutine")
+
 			err := server.Shutdown(ctx)
 			if err != nil {
 				logrus.Error(err)

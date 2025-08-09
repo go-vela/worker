@@ -284,6 +284,7 @@ func TestLinux_Outputs_exec(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("FromCLICommand returned err: %v", err)

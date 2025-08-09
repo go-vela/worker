@@ -106,9 +106,11 @@ func TestDocker_hostConfig(t *testing.T) {
 			if config.Memory != tt.wantMemory {
 				t.Errorf("hostConfig() Memory = %v, want %v", config.Memory, tt.wantMemory)
 			}
+
 			if config.CPUQuota != tt.wantCPUQuota {
 				t.Errorf("hostConfig() CPUQuota = %v, want %v", config.CPUQuota, tt.wantCPUQuota)
 			}
+
 			if config.PidsLimit != nil && *config.PidsLimit != tt.wantPidsLimit {
 				t.Errorf("hostConfig() PidsLimit = %v, want %v", *config.PidsLimit, tt.wantPidsLimit)
 			}
@@ -117,6 +119,7 @@ func TestDocker_hostConfig(t *testing.T) {
 			if len(config.CapDrop) != len(tt.wantCapDrop) {
 				t.Errorf("hostConfig() CapDrop length = %v, want %v", len(config.CapDrop), len(tt.wantCapDrop))
 			}
+
 			if len(config.CapAdd) != len(tt.wantCapAdd) {
 				t.Errorf("hostConfig() CapAdd length = %v, want %v", len(config.CapAdd), len(tt.wantCapAdd))
 			}
@@ -130,6 +133,7 @@ func TestDocker_hostConfig(t *testing.T) {
 			if len(config.Mounts) < 1 {
 				t.Errorf("hostConfig() should have at least one mount")
 			}
+
 			if config.Mounts[0].Target != constants.WorkspaceMount {
 				t.Errorf("hostConfig() first mount target = %v, want %v", config.Mounts[0].Target, constants.WorkspaceMount)
 			}
@@ -159,9 +163,11 @@ func TestResourceLimitsDefaults(t *testing.T) {
 	if config.Memory != int64(4)*1024*1024*1024 {
 		t.Errorf("Default Memory = %v, want %v", config.Memory, int64(4)*1024*1024*1024)
 	}
+
 	if config.CPUQuota != int64(1.2*100000) {
 		t.Errorf("Default CPUQuota = %v, want %v", config.CPUQuota, int64(1.2*100000))
 	}
+
 	if config.PidsLimit == nil || *config.PidsLimit != 1024 {
 		t.Errorf("Default PidsLimit not set correctly")
 	}
@@ -169,17 +175,21 @@ func TestResourceLimitsDefaults(t *testing.T) {
 	// Check default security ulimits
 	foundNofile := false
 	foundNproc := false
+
 	for _, ulimit := range config.Ulimits {
 		if ulimit.Name == "nofile" && ulimit.Hard == 1024 && ulimit.Soft == 1024 {
 			foundNofile = true
 		}
+
 		if ulimit.Name == "nproc" && ulimit.Hard == 512 && ulimit.Soft == 512 {
 			foundNproc = true
 		}
 	}
+
 	if !foundNofile {
 		t.Error("Default nofile ulimit not found")
 	}
+
 	if !foundNproc {
 		t.Error("Default nproc ulimit not found")
 	}
@@ -188,9 +198,11 @@ func TestResourceLimitsDefaults(t *testing.T) {
 	if !contains(config.CapDrop, "ALL") {
 		t.Error("Should drop ALL capabilities by default")
 	}
+
 	if !contains(config.SecurityOpt, "no-new-privileges:true") {
 		t.Error("Should have no-new-privileges security option")
 	}
+
 	if !contains(config.SecurityOpt, "seccomp=docker/default") {
 		t.Error("Should have seccomp security option")
 	}

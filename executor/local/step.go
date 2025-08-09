@@ -51,7 +51,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 }
 
 // PlanStep prepares the step for execution.
-func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) PlanStep(_ context.Context, ctn *pipeline.Container) error {
 	// early exit if container is nil
 	if ctn.Empty() {
 		return fmt.Errorf("empty container provided")

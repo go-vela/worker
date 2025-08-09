@@ -81,7 +81,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 }
 
 // PlanStep prepares the step for execution.
-func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) PlanStep(_ context.Context, ctn *pipeline.Container) error {
 	var err error
 
 	// update engine logger with step metadata

@@ -46,7 +46,7 @@ func (s *SecretService) SecretList(_ context.Context, _ swarm.SecretListOptions)
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretRemove
-func (s *SecretService) SecretRemove(ctx context.Context, id string) error {
+func (s *SecretService) SecretRemove(_ context.Context, _ string) error {
 	return nil
 }
 
@@ -55,7 +55,7 @@ func (s *SecretService) SecretRemove(ctx context.Context, id string) error {
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretUpdate
-func (s *SecretService) SecretUpdate(ctx context.Context, id string, version swarm.Version, secret swarm.SecretSpec) error {
+func (s *SecretService) SecretUpdate(_ context.Context, _ string, _ swarm.Version, _ swarm.SecretSpec) error {
 	return nil
 }
 

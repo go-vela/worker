@@ -82,7 +82,7 @@ func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string) (volum
 	if strings.Contains(volumeID, "not-found") {
 		return volume.Volume{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
+			errdefs.NotFound(fmt.Errorf("no such volume: %s", volumeID))
 	}
 
 	// create response object to return
@@ -112,14 +112,14 @@ func (v *VolumeService) VolumeInspectWithRaw(_ context.Context, volumeID string)
 	if strings.Contains(volumeID, "notfound") {
 		return volume.Volume{}, nil,
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
+			errdefs.NotFound(fmt.Errorf("no such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
 	if strings.Contains(volumeID, "not-found") {
 		return volume.Volume{}, nil,
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
+			errdefs.NotFound(fmt.Errorf("no such volume: %s", volumeID))
 	}
 
 	// create response object to return
@@ -173,7 +173,7 @@ func (v *VolumeService) VolumesPrune(_ context.Context, _ filters.Args) (volume.
 // a mocked call to update Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeUpdate
-func (v *VolumeService) VolumeUpdate(ctx context.Context, volumeID string, version swarm.Version, options volume.UpdateOptions) error {
+func (v *VolumeService) VolumeUpdate(_ context.Context, _ string, _ swarm.Version, _ volume.UpdateOptions) error {
 	return nil
 }
 

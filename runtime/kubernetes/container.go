@@ -21,7 +21,7 @@ import (
 )
 
 // InspectContainer inspects the pipeline container.
-func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) InspectContainer(_ context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("inspecting container %s", ctn.ID)
 
 	// get the pod from the local cache, which the Informer keeps up-to-date
@@ -63,7 +63,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 
 // RemoveContainer deletes (kill, remove) the pipeline container.
 // This is a no-op for kubernetes. RemoveBuild handles deleting the pod.
-func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) RemoveContainer(_ context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("no-op: removing container %s", ctn.ID)
 
 	return nil
@@ -71,7 +71,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 
 // PollOutputsContainer captures the `cat` response for a given path in the Docker volume.
 // This is a no-op for kubernetes. Pod environments cannot be dynamic.
-func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
+func (c *client) PollOutputsContainer(_ context.Context, ctn *pipeline.Container, _ string) ([]byte, error) {
 	c.Logger.Tracef("no-op: removing container %s", ctn.ID)
 
 	return nil, nil
@@ -313,7 +313,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 }
 
 // WaitContainer blocks until the pipeline container completes.
-func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) WaitContainer(_ context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("waiting for container %s", ctn.ID)
 
 	// get the containerTracker for this container
