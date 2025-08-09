@@ -96,8 +96,11 @@ func run(ctx context.Context, c *cli.Command) error {
 			},
 			// build configuration
 			Build: &Build{
-				Limit:   int(c.Int("build.limit")),
-				Timeout: c.Duration("build.timeout"),
+				Limit:       c.Int("build.limit"),
+				Timeout:     c.Duration("build.timeout"),
+				CPUQuota:    c.Int("build.cpu-quota"),
+				MemoryLimit: c.Int("build.memory-limit"),
+				PidsLimit:   c.Int("build.pid-limit"),
 			},
 			// build configuration
 			CheckIn: c.Duration("checkIn"),

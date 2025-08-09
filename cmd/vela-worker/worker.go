@@ -22,8 +22,11 @@ type (
 
 	// Build represents the worker configuration for build information.
 	Build struct {
-		Limit   int
-		Timeout time.Duration
+		Limit       int
+		Timeout     time.Duration
+		CPUQuota    int // CPU quota per build in millicores
+		MemoryLimit int // Memory limit per build in GB
+		PidsLimit   int // Process limit per build container
 	}
 
 	// Logger represents the worker configuration for logger information.
@@ -59,6 +62,22 @@ type (
 		TLSMinVersion string
 	}
 
+	// BuildContext represents isolated build execution context.
+	BuildContext struct {
+		BuildID       string            // Cryptographic ID for build isolation
+		WorkspacePath string            // Isolated workspace path
+		StartTime     time.Time         // Build start time
+		Resources     *BuildResources   // Resource allocation
+		Environment   map[string]string // Environment variables
+	}
+
+	// BuildResources represents resource limits for a build.
+	BuildResources struct {
+		CPUQuota  int64 // CPU limit in millicores (1000 = 1 core)
+		Memory    int64 // Memory in bytes
+		PidsLimit int64 // Process limit
+	}
+
 	// Worker represents all configuration and
 	// system processes for the worker.
 	Worker struct {
@@ -72,5 +91,8 @@ type (
 		RunningBuilds      []*api.Build
 		QueueCheckedIn     bool
 		RunningBuildsMutex sync.Mutex
+		// Security-focused build tracking (works with single builds, scales to concurrent)
+		BuildContexts      map[string]*BuildContext // Thread-safe build context tracking
+		BuildContextsMutex sync.RWMutex             // Thread-safe access to build contexts
 	}
 )

@@ -61,6 +61,24 @@ func flags() []cli.Flag {
 			Sources: cli.EnvVars("WORKER_BUILD_TIMEOUT", "VELA_BUILD_TIMEOUT", "BUILD_TIMEOUT"),
 			Value:   30 * time.Minute,
 		},
+		&cli.IntFlag{
+			Name:    "build.cpu-quota",
+			Usage:   "CPU quota per build in millicores (1000 = 1 core)",
+			Value:   1200, // 1.2 CPU cores per build
+			Sources: cli.EnvVars("VELA_BUILD_CPU_QUOTA", "BUILD_CPU_QUOTA"),
+		},
+		&cli.IntFlag{
+			Name:    "build.memory-limit",
+			Usage:   "Memory limit per build in GB",
+			Value:   4, // 4GB per build
+			Sources: cli.EnvVars("VELA_BUILD_MEMORY_LIMIT", "BUILD_MEMORY_LIMIT"),
+		},
+		&cli.IntFlag{
+			Name:    "build.pid-limit",
+			Usage:   "Process limit per build container",
+			Value:   1024, // Prevent fork bombs
+			Sources: cli.EnvVars("VELA_BUILD_PID_LIMIT", "BUILD_PID_LIMIT"),
+		},
 
 		// Logger Flags
 
