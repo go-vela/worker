@@ -223,7 +223,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	}
 
 	// register event handler funcs in podInformer
-	podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    tracker.HandlePodAdd,
 		UpdateFunc: tracker.HandlePodUpdate,
 		DeleteFunc: tracker.HandlePodDelete,

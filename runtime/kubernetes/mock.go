@@ -140,7 +140,7 @@ func (c *client) WaitForPodTrackerReady() {
 func (c *client) WaitForPodCreate(namespace, name string) {
 	created := make(chan struct{})
 
-	c.PodTracker.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = c.PodTracker.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			select {
 			case <-created:

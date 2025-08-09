@@ -31,7 +31,11 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetHostname(w.Config.API.Address.Hostname())
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetActive(true)
-	registryWorker.SetBuildLimit(int32(w.Config.Build.Limit))
+	if w.Config.Build.Limit > int(^uint32(0)>>1) {
+		registryWorker.SetBuildLimit(int32(^uint32(0)>>1))
+	} else {
+		registryWorker.SetBuildLimit(int32(w.Config.Build.Limit))
+	}
 
 	// set routes from config if set or defaulted to `vela`
 	if (len(w.Config.Queue.Routes) > 0) && (w.Config.Queue.Routes[0] != "NONE" && w.Config.Queue.Routes[0] != "") {

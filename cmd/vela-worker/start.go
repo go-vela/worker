@@ -22,9 +22,9 @@ import (
 // serve traffic for web and API requests. The
 // operator subprocess enables the Worker to
 // poll the queue and execute Vela pipelines.
-func (w *Worker) Start() error {
+func (w *Worker) Start(ctx context.Context) error {
 	// create the context for controlling the worker subprocesses
-	ctx, done := context.WithCancel(context.Background())
+	ctx, done := context.WithCancel(ctx)
 	// create the errgroup for managing worker subprocesses
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group

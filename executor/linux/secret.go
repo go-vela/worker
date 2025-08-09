@@ -72,7 +72,7 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container, reqToke
 	// substitute container configuration
 	err = ctn.Substitute()
 	if err != nil {
-		return fmt.Errorf("unable to substitute container configuration")
+		return fmt.Errorf("unable to substitute container configuration: %w", err)
 	}
 
 	logger.Debug("injecting non-substituted secrets")
@@ -366,7 +366,7 @@ func escapeNewlineSecrets(m map[string]*api.Secret) {
 	for i, secret := range m {
 		// only double-escape secrets that have been manually escaped
 		if !strings.Contains(secret.GetValue(), "\\\\n") {
-			s := strings.Replace(secret.GetValue(), "\\n", "\\\n", -1)
+			s := strings.ReplaceAll(secret.GetValue(), "\\n", "\\\n")
 			m[i].Value = &s
 		}
 	}

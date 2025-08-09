@@ -3,6 +3,7 @@
 package middleware
 
 import (
+	stdCtx "context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -23,7 +24,8 @@ func TestMiddleware_Executors(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	ctx := stdCtx.Background()
+	context.Request, _ = http.NewRequestWithContext(ctx, http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(Executors(want))

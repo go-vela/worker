@@ -3,6 +3,7 @@
 package middleware
 
 import (
+	stdCtx "context"
 	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
@@ -24,7 +25,8 @@ func TestMiddleware_NoCache(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	ctx := stdCtx.Background()
+	context.Request, _ = http.NewRequestWithContext(ctx, http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(NoCache)
@@ -69,7 +71,8 @@ func TestMiddleware_Options(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodOptions, "/health", nil)
+	ctx := stdCtx.Background()
+	context.Request, _ = http.NewRequestWithContext(ctx, http.MethodOptions, "/health", nil)
 
 	// setup mock server
 	engine.Use(Options)
@@ -117,7 +120,8 @@ func TestMiddleware_Options_InvalidMethod(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	ctx := stdCtx.Background()
+	context.Request, _ = http.NewRequestWithContext(ctx, http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(Options)
@@ -170,7 +174,8 @@ func TestMiddleware_Secure(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	ctx := stdCtx.Background()
+	context.Request, _ = http.NewRequestWithContext(ctx, http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(Secure)
@@ -214,7 +219,8 @@ func TestMiddleware_Secure_TLS(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	ctx := stdCtx.Background()
+	context.Request, _ = http.NewRequestWithContext(ctx, http.MethodGet, "/health", nil)
 	context.Request.TLS = new(tls.ConnectionState)
 
 	// setup mock server

@@ -175,5 +175,5 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// start the worker
-	return w.Start()
+	return w.Start(ctx)
 }

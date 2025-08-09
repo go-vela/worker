@@ -37,7 +37,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
-	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	compiler, _ := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -231,7 +231,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
-	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	compiler, _ := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -419,7 +419,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
-	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	compiler, _ := native.FromCLICommand(context.Background(), cmd)
 
 	_build := testBuild()
 
@@ -1048,7 +1048,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 	type planFuncType = func(context.Context, *pipeline.Container) error
 
 	// planNothing is a planFuncType that does nothing
-	planNothing := func(ctx context.Context, container *pipeline.Container) error {
+	planNothing := func(_ context.Context, _ *pipeline.Container) error {
 		return nil
 	}
 
