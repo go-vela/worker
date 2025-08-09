@@ -77,7 +77,8 @@ func (i *ImageService) ImageImport(ctx context.Context, source image.ImportSourc
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspect
 func (i *ImageService) ImageInspect(ctx context.Context, imageID string, inspectOpts ...client.ImageInspectOption) (image.InspectResponse, error) {
-	return image.InspectResponse{}, nil
+	resp, _, err := i.ImageInspectWithRaw(ctx, imageID)
+	return resp, err
 }
 
 // ImageInspectWithRaw is a helper function to simulate

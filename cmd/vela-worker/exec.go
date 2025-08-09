@@ -27,7 +27,7 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
-//nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
+//nolint:funlen,gocyclo // ignore function length and complexity - main worker loop
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
 

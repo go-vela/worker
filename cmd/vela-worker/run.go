@@ -23,7 +23,7 @@ import (
 
 // run executes the worker based
 // off the configuration provided.
-func run(ctx context.Context, c *cli.Command) error {
+func run(_ context.Context, c *cli.Command) error {
 	// set log format for the worker
 	switch c.String("log.format") {
 	case "t", "text", "Text", "TEXT":
@@ -107,7 +107,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver:              c.String("executor.driver"),
-				MaxLogSize:          uint(c.Uint("executor.max_log_size")),
+				MaxLogSize:          c.Uint("executor.max_log_size"),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,
@@ -175,5 +175,6 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// start the worker
+	//nolint:contextcheck // Start creates its own context internally
 	return w.Start()
 }
