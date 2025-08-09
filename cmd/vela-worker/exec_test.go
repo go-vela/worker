@@ -85,6 +85,7 @@ func TestWorker_getBuildResources(t *testing.T) {
 			if resources.CPUQuota != tt.wantCPU {
 				t.Errorf("getBuildResources() CPUQuota = %v, want %v", resources.CPUQuota, tt.wantCPU)
 			}
+
 			if resources.Memory != tt.wantMemory {
 				t.Errorf("getBuildResources() Memory = %v, want %v", resources.Memory, tt.wantMemory)
 			}
@@ -183,6 +184,7 @@ func TestBuildContext(t *testing.T) {
 	if context.BuildID != buildID {
 		t.Errorf("BuildContext.BuildID = %v, want %v", context.BuildID, buildID)
 	}
+
 	if context.WorkspacePath != workspace {
 		t.Errorf("BuildContext.WorkspacePath = %v, want %v", context.WorkspacePath, workspace)
 	}

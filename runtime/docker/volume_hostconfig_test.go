@@ -109,8 +109,8 @@ func TestDocker_hostConfig(t *testing.T) {
 			if config.CPUQuota != tt.wantCPUQuota {
 				t.Errorf("hostConfig() CPUQuota = %v, want %v", config.CPUQuota, tt.wantCPUQuota)
 			}
-			if config.Resources.PidsLimit != nil && *config.Resources.PidsLimit != tt.wantPidsLimit {
-				t.Errorf("hostConfig() PidsLimit = %v, want %v", *config.Resources.PidsLimit, tt.wantPidsLimit)
+			if config.PidsLimit != nil && *config.PidsLimit != tt.wantPidsLimit {
+				t.Errorf("hostConfig() PidsLimit = %v, want %v", *config.PidsLimit, tt.wantPidsLimit)
 			}
 
 			// Check capabilities
@@ -136,12 +136,12 @@ func TestDocker_hostConfig(t *testing.T) {
 
 			// Check ulimits are applied
 			if len(tt.ulimits) > 0 {
-				if len(config.Resources.Ulimits) != len(tt.ulimits) {
-					t.Errorf("hostConfig() Ulimits length = %v, want %v", len(config.Resources.Ulimits), len(tt.ulimits))
+				if len(config.Ulimits) != len(tt.ulimits) {
+					t.Errorf("hostConfig() Ulimits length = %v, want %v", len(config.Ulimits), len(tt.ulimits))
 				}
 			} else if tt.resourceLimits == nil {
 				// Should have default ulimits
-				if len(config.Resources.Ulimits) != 2 {
+				if len(config.Ulimits) != 2 {
 					t.Errorf("hostConfig() should have default ulimits when none provided")
 				}
 			}
@@ -156,20 +156,20 @@ func TestResourceLimitsDefaults(t *testing.T) {
 	config := hostConfig(logger, "test-id", nil, nil, nil, nil)
 
 	// Check secure defaults are applied
-	if config.Resources.Memory != int64(4)*1024*1024*1024 {
-		t.Errorf("Default Memory = %v, want %v", config.Resources.Memory, int64(4)*1024*1024*1024)
+	if config.Memory != int64(4)*1024*1024*1024 {
+		t.Errorf("Default Memory = %v, want %v", config.Memory, int64(4)*1024*1024*1024)
 	}
-	if config.Resources.CPUQuota != int64(1.2*100000) {
-		t.Errorf("Default CPUQuota = %v, want %v", config.Resources.CPUQuota, int64(1.2*100000))
+	if config.CPUQuota != int64(1.2*100000) {
+		t.Errorf("Default CPUQuota = %v, want %v", config.CPUQuota, int64(1.2*100000))
 	}
-	if config.Resources.PidsLimit == nil || *config.Resources.PidsLimit != 1024 {
+	if config.PidsLimit == nil || *config.PidsLimit != 1024 {
 		t.Errorf("Default PidsLimit not set correctly")
 	}
 
 	// Check default security ulimits
 	foundNofile := false
 	foundNproc := false
-	for _, ulimit := range config.Resources.Ulimits {
+	for _, ulimit := range config.Ulimits {
 		if ulimit.Name == "nofile" && ulimit.Hard == 1024 && ulimit.Soft == 1024 {
 			foundNofile = true
 		}
