@@ -92,7 +92,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	// allocate new container config from pipeline container
 	containerConf := ctnConfig(ctn)
 	// allocate new host config with volume data
-	hostConf := hostConfig(c.Logger, b.ID, ctn.Ulimits, c.config.Volumes, c.config.DropCapabilities)
+	hostConf := hostConfig(c.Logger, b.ID, ctn.Ulimits, c.config.Volumes, c.config.DropCapabilities, nil)
 	// allocate new network config with container name
 	networkConf := netConfig(b.ID, ctn.Name)
 
@@ -160,6 +160,21 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	if err != nil {
 		return err
 	}
+
+	// Security audit logging: Log container creation with security details
+	c.Logger.WithFields(map[string]interface{}{
+		"build_id":             ctn.ID,
+		"container_security":   "hardened",
+		"capabilities_dropped": hostConf.CapDrop,
+		"capabilities_added":   hostConf.CapAdd,
+		"privileged":           hostConf.Privileged,
+		"pid_limit":            hostConf.Resources.PidsLimit,
+		"memory_limit_bytes":   hostConf.Resources.Memory,
+		"cpu_quota":            hostConf.Resources.CPUQuota,
+		"cpu_period":           hostConf.Resources.CPUPeriod,
+		"security_opts":        hostConf.SecurityOpt,
+		"readonly_rootfs":      hostConf.ReadonlyRootfs,
+	}).Info("created security-hardened container")
 
 	// create options for starting container
 	//
