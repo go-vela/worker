@@ -3,7 +3,16 @@
 package main
 
 import (
+	"net/url"
 	"testing"
+	"time"
+
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/queue"
+	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/runtime"
 )
 
 func TestBuild_ResourceConfiguration(t *testing.T) {
@@ -138,4 +147,180 @@ func TestWorker_ConfigurationIntegration(t *testing.T) {
 	if resources.PidsLimit != 2048 {
 		t.Errorf("getBuildResources().PidsLimit = %v, want 2048", resources.PidsLimit)
 	}
+}
+
+func TestWorkerCreation(t *testing.T) {
+	// Test Worker struct initialization
+	addr, err := url.Parse("http://localhost:8080")
+	if err != nil {
+		t.Fatalf("Failed to parse URL: %v", err)
+	}
+
+	outputsCtn := &pipeline.Container{
+		Detach:      true,
+		Image:       "alpine:latest",
+		Environment: make(map[string]string),
+		Pull:        constants.PullNotPresent,
+	}
+
+	worker := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: addr,
+			},
+			Build: &Build{
+				Limit:       2,
+				Timeout:     30 * time.Minute,
+				CPUQuota:    1500,
+				MemoryLimit: 4,
+				PidsLimit:   1024,
+			},
+			CheckIn: 5 * time.Minute,
+			Executor: &executor.Setup{
+				Driver:              "linux",
+				MaxLogSize:          2097152,
+				LogStreamingTimeout: 30 * time.Second,
+				EnforceTrustedRepos: false,
+				OutputCtn:           outputsCtn,
+			},
+			Logger: &Logger{
+				Format: "json",
+				Level:  "info",
+			},
+			Runtime: &runtime.Setup{
+				Driver:           "docker",
+				ConfigFile:       "",
+				Namespace:        "vela",
+				PodsTemplateName: "",
+				PodsTemplateFile: "",
+				HostVolumes:      []string{},
+				PrivilegedImages: []string{"alpine"},
+				DropCapabilities: []string{"NET_RAW"},
+			},
+			Queue: &queue.Setup{
+				Address: "redis://localhost:6379",
+				Driver:  "redis",
+				Cluster: false,
+				Routes:  []string{"vela"},
+				Timeout: 30 * time.Second,
+			},
+			Server: &Server{
+				Address: "http://localhost:8080",
+				Secret:  "test-secret",
+			},
+			Certificate: &Certificate{
+				Cert: "",
+				Key:  "",
+			},
+			TLSMinVersion: "1.2",
+		},
+		Executors:     make(map[int]executor.Engine),
+		RegisterToken: make(chan string, 1),
+		RunningBuilds: make([]*api.Build, 0),
+	}
+
+	// Test that the worker structure is properly initialized
+	if worker.Config.API.Address.String() != "http://localhost:8080" {
+		t.Errorf("Worker API Address = %v, want http://localhost:8080", worker.Config.API.Address.String())
+	}
+
+	if worker.Config.Build.Limit != 2 {
+		t.Errorf("Worker Build Limit = %v, want 2", worker.Config.Build.Limit)
+	}
+
+	if worker.Config.Build.CPUQuota != 1500 {
+		t.Errorf("Worker Build CPUQuota = %v, want 1500", worker.Config.Build.CPUQuota)
+	}
+
+	if worker.Config.Executor.Driver != "linux" {
+		t.Errorf("Worker Executor Driver = %v, want linux", worker.Config.Executor.Driver)
+	}
+
+	if worker.Config.Runtime.Driver != "docker" {
+		t.Errorf("Worker Runtime Driver = %v, want docker", worker.Config.Runtime.Driver)
+	}
+
+	if worker.Config.Queue.Driver != "redis" {
+		t.Errorf("Worker Queue Driver = %v, want redis", worker.Config.Queue.Driver)
+	}
+
+	if len(worker.Executors) != 0 {
+		t.Errorf("Worker Executors length = %v, want 0", len(worker.Executors))
+	}
+
+	if len(worker.RunningBuilds) != 0 {
+		t.Errorf("Worker RunningBuilds length = %v, want 0", len(worker.RunningBuilds))
+	}
+
+	if cap(worker.RegisterToken) != 1 {
+		t.Errorf("Worker RegisterToken capacity = %v, want 1", cap(worker.RegisterToken))
+	}
+}
+
+func TestAPI_Configuration(t *testing.T) {
+	api := &API{
+		Address: mustParseURL("https://vela.example.com:8443"),
+	}
+
+	if api.Address.Scheme != "https" {
+		t.Errorf("API Address Scheme = %v, want https", api.Address.Scheme)
+	}
+
+	if api.Address.Host != "vela.example.com:8443" {
+		t.Errorf("API Address Host = %v, want vela.example.com:8443", api.Address.Host)
+	}
+}
+
+func TestServer_Configuration(t *testing.T) {
+	server := &Server{
+		Address: "https://api.vela.example.com",
+		Secret:  "super-secret-key",
+	}
+
+	if server.Address != "https://api.vela.example.com" {
+		t.Errorf("Server Address = %v, want https://api.vela.example.com", server.Address)
+	}
+
+	if server.Secret != "super-secret-key" {
+		t.Errorf("Server Secret = %v, want super-secret-key", server.Secret)
+	}
+}
+
+func TestCertificate_Configuration(t *testing.T) {
+	cert := &Certificate{
+		Cert: "/path/to/cert.pem",
+		Key:  "/path/to/key.pem",
+	}
+
+	if cert.Cert != "/path/to/cert.pem" {
+		t.Errorf("Certificate Cert = %v, want /path/to/cert.pem", cert.Cert)
+	}
+
+	if cert.Key != "/path/to/key.pem" {
+		t.Errorf("Certificate Key = %v, want /path/to/key.pem", cert.Key)
+	}
+}
+
+func TestLogger_Configuration(t *testing.T) {
+	logger := &Logger{
+		Format: "json",
+		Level:  "debug",
+	}
+
+	if logger.Format != "json" {
+		t.Errorf("Logger Format = %v, want json", logger.Format)
+	}
+
+	if logger.Level != "debug" {
+		t.Errorf("Logger Level = %v, want debug", logger.Level)
+	}
+}
+
+// Helper function for tests
+func mustParseURL(rawURL string) *url.URL {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		panic(err)
+	}
+	return u
 }

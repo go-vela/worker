@@ -6,6 +6,9 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/constants"
 )
 
 func TestGenerateCryptographicBuildID(t *testing.T) {
@@ -215,5 +218,70 @@ func TestBuildResources(t *testing.T) {
 
 	if resources.PidsLimit != 2048 {
 		t.Errorf("BuildResources.PidsLimit = %v, want 2048", resources.PidsLimit)
+	}
+}
+
+func TestWorker_getWorkerStatusFromConfig(t *testing.T) {
+	tests := []struct {
+		name           string
+		buildLimit     int
+		runningBuilds  []*api.Build
+		expectedStatus string
+	}{
+		{
+			name:           "idle status",
+			buildLimit:     5,
+			runningBuilds:  []*api.Build{},
+			expectedStatus: constants.WorkerStatusIdle,
+		},
+		{
+			name:       "available status",
+			buildLimit: 5,
+			runningBuilds: []*api.Build{
+				{ID: func() *int64 { id := int64(1); return &id }()},
+				{ID: func() *int64 { id := int64(2); return &id }()},
+			},
+			expectedStatus: constants.WorkerStatusAvailable,
+		},
+		{
+			name:       "busy status",
+			buildLimit: 3,
+			runningBuilds: []*api.Build{
+				{ID: func() *int64 { id := int64(1); return &id }()},
+				{ID: func() *int64 { id := int64(2); return &id }()},
+				{ID: func() *int64 { id := int64(3); return &id }()},
+			},
+			expectedStatus: constants.WorkerStatusBusy,
+		},
+		{
+			name:       "error status",
+			buildLimit: 2,
+			runningBuilds: []*api.Build{
+				{ID: func() *int64 { id := int64(1); return &id }()},
+				{ID: func() *int64 { id := int64(2); return &id }()},
+				{ID: func() *int64 { id := int64(3); return &id }()},
+			},
+			expectedStatus: constants.WorkerStatusError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &Worker{
+				Config: &Config{
+					Build: &Build{
+						Limit: tt.buildLimit,
+					},
+				},
+			}
+
+			config := &api.Worker{}
+			config.SetRunningBuilds(tt.runningBuilds)
+
+			status := w.getWorkerStatusFromConfig(config)
+			if status != tt.expectedStatus {
+				t.Errorf("getWorkerStatusFromConfig() = %v, want %v", status, tt.expectedStatus)
+			}
+		})
 	}
 }
