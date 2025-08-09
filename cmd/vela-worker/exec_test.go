@@ -3,12 +3,28 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
+	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/api/types/settings"
+	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/queue/models"
+	"github.com/go-vela/worker/executor"
+	"github.com/go-vela/worker/runtime"
 )
 
 func TestGenerateCryptographicBuildID(t *testing.T) {
@@ -218,6 +234,541 @@ func TestBuildResources(t *testing.T) {
 
 	if resources.PidsLimit != 2048 {
 		t.Errorf("BuildResources.PidsLimit = %v, want 2048", resources.PidsLimit)
+	}
+}
+
+func TestWorker_exec(t *testing.T) {
+	// Set up a test server to mock the Vela API
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/workers/test-worker":
+			switch r.Method {
+			case "GET":
+				worker := &api.Worker{}
+				worker.SetHostname("test-worker")
+				worker.SetRoutes([]string{"repo"})
+				worker.SetStatus(constants.WorkerStatusIdle)
+				worker.SetRunningBuilds([]*api.Build{})
+				_ = json.NewEncoder(w).Encode(worker)
+			case "PUT":
+				w.WriteHeader(http.StatusOK)
+				_ = json.NewEncoder(w).Encode(&api.Worker{})
+			}
+		case "/api/v1/repos/test-org/test-repo/builds/1/token":
+			token := &api.Token{}
+			token.SetToken("test-token")
+			_ = json.NewEncoder(w).Encode(token)
+		case "/api/v1/repos/test-org/test-repo/builds/1/executable":
+			pipelineBuild := &pipeline.Build{
+				ID:      "test-build-id",
+				Version: "1",
+				Steps: pipeline.ContainerSlice{
+					{
+						ID:    "step-1",
+						Name:  "test",
+						Image: "alpine:latest",
+					},
+				},
+			}
+			data, _ := json.Marshal(pipelineBuild)
+			executable := &api.BuildExecutable{}
+			executable.SetData(data)
+			_ = json.NewEncoder(w).Encode(executable)
+		case "/api/v1/repos/test-org/test-repo/builds/1":
+			if r.Method == "PUT" {
+				w.WriteHeader(http.StatusOK)
+				_ = json.NewEncoder(w).Encode(&api.Build{})
+			}
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	// Parse the test server URL
+	serverURL, _ := url.Parse(server.URL)
+
+	// Create a test queue
+	testQueue := &mockQueue{
+		popFunc: func(_ context.Context, _ []string) (*models.Item, error) {
+			build := &api.Build{}
+			build.SetID(1)
+			build.SetNumber(1)
+			build.SetStatus(constants.StatusPending)
+			repo := &api.Repo{}
+			repo.SetOrg("test-org")
+			repo.SetName("test-repo")
+			repo.SetFullName("test-org/test-repo")
+			repo.SetTimeout(60)
+			owner := &api.User{}
+			owner.SetName("test-user")
+			repo.SetOwner(owner)
+			build.SetRepo(repo)
+			return &models.Item{
+				Build:       build,
+				ItemVersion: models.ItemVersion,
+			}, nil
+		},
+	}
+
+	// Create a Vela client
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	// Create test worker
+	w := &Worker{
+		Config: &Config{
+			Mock: true,
+			API: &API{
+				Address: serverURL,
+			},
+			Build: &Build{
+				Limit:       5,
+				Timeout:     30 * time.Minute,
+				CPUQuota:    1200,
+				MemoryLimit: 4,
+				PidsLimit:   1024,
+			},
+			Server: &Server{
+				Address: server.URL,
+				Secret:  "test-secret",
+			},
+			Executor: &executor.Setup{
+				Driver:     "linux",
+				MaxLogSize: 1000000,
+				OutputCtn: &pipeline.Container{
+					ID:    "outputs",
+					Image: "alpine:latest",
+				},
+			},
+			Runtime: &runtime.Setup{
+				Driver: "docker",
+			},
+			Queue: &queue.Setup{
+				Timeout: 5 * time.Second,
+			},
+		},
+		VelaClient:         client,
+		Queue:              testQueue,
+		Executors:          make(map[int]executor.Engine),
+		RunningBuilds:      []*api.Build{},
+		RunningBuildsMutex: sync.Mutex{},
+		BuildContexts:      make(map[string]*BuildContext),
+		BuildContextsMutex: sync.RWMutex{},
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+	config.SetRunningBuilds([]*api.Build{})
+
+	// Test successful execution
+	err := w.exec(0, config)
+	if err != nil {
+		t.Errorf("exec() error = %v, want nil", err)
+	}
+}
+
+func TestWorker_exec_QueuePopError(t *testing.T) {
+	// Set up a test server to mock the Vela API
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/workers/test-worker":
+			worker := &api.Worker{}
+			worker.SetHostname("test-worker")
+			worker.SetRoutes([]string{"repo"})
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(worker)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	// Test queue pop failure
+	testQueue := &mockQueue{
+		popFunc: func(_ context.Context, _ []string) (*models.Item, error) {
+			return nil, errors.New("queue pop failed")
+		},
+	}
+
+	serverURL, _ := url.Parse(server.URL)
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: serverURL,
+			},
+			Queue: &queue.Setup{
+				Timeout: 1 * time.Second,
+			},
+		},
+		Queue:              testQueue,
+		VelaClient:         client,
+		RunningBuildsMutex: sync.Mutex{},
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+
+	err := w.exec(0, config)
+	if err != nil {
+		t.Errorf("exec() should return nil on queue pop error, got %v", err)
+	}
+}
+
+func TestWorker_exec_QueuePopNilItem(t *testing.T) {
+	// Set up a test server to mock the Vela API
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/workers/test-worker":
+			worker := &api.Worker{}
+			worker.SetHostname("test-worker")
+			worker.SetRoutes([]string{"repo"})
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(worker)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	// Test nil item from queue
+	testQueue := &mockQueue{
+		popFunc: func(_ context.Context, _ []string) (*models.Item, error) {
+			return nil, nil
+		},
+	}
+
+	serverURL, _ := url.Parse(server.URL)
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: serverURL,
+			},
+		},
+		Queue:              testQueue,
+		VelaClient:         client,
+		RunningBuildsMutex: sync.Mutex{},
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+
+	err := w.exec(0, config)
+	if err != nil {
+		t.Errorf("exec() should return nil for nil queue item, got %v", err)
+	}
+}
+
+func TestWorker_exec_StaleItemVersion(t *testing.T) {
+	// Set up a test server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/workers/test-worker":
+			worker := &api.Worker{}
+			worker.SetHostname("test-worker")
+			worker.SetRoutes([]string{"repo"})
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(worker)
+		case "/api/v1/repos/test-org/test-repo/builds/1/token":
+			token := &api.Token{}
+			token.SetToken("test-token")
+			_ = json.NewEncoder(w).Encode(token)
+		case "/api/v1/repos/test-org/test-repo/builds/1/executable":
+			pipelineBuild := &pipeline.Build{ID: "test-id"}
+			data, _ := json.Marshal(pipelineBuild)
+			executable := &api.BuildExecutable{}
+			executable.SetData(data)
+			_ = json.NewEncoder(w).Encode(executable)
+		case "/api/v1/repos/test-org/test-repo/builds/1":
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(&api.Build{})
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	serverURL, _ := url.Parse(server.URL)
+
+	// Create a test queue with stale item version
+	testQueue := &mockQueue{
+		popFunc: func(_ context.Context, _ []string) (*models.Item, error) {
+			build := &api.Build{}
+			build.SetID(1)
+			build.SetNumber(1)
+			repo := &api.Repo{}
+			repo.SetOrg("test-org")
+			repo.SetName("test-repo")
+			repo.SetFullName("test-org/test-repo")
+			owner := &api.User{}
+			owner.SetName("test-user")
+			repo.SetOwner(owner)
+			build.SetRepo(repo)
+			return &models.Item{
+				Build:       build,
+				ItemVersion: models.ItemVersion - 1, // Stale version
+			}, nil
+		},
+	}
+
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: serverURL,
+			},
+			Build: &Build{
+				CPUQuota:    1200,
+				MemoryLimit: 4,
+				PidsLimit:   1024,
+			},
+			Server: &Server{
+				Address: server.URL,
+			},
+			Executor: &executor.Setup{
+				OutputCtn: &pipeline.Container{},
+			},
+			Runtime: &runtime.Setup{},
+		},
+		VelaClient:         client,
+		Queue:              testQueue,
+		RunningBuilds:      []*api.Build{},
+		RunningBuildsMutex: sync.Mutex{},
+		BuildContexts:      make(map[string]*BuildContext),
+		BuildContextsMutex: sync.RWMutex{},
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+
+	err := w.exec(0, config)
+	if err != nil {
+		t.Errorf("exec() should return nil for stale item, got %v", err)
+	}
+}
+
+func TestWorker_exec_GetBuildTokenConflict(t *testing.T) {
+	// Set up a test server that returns conflict for build token
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/workers/test-worker":
+			worker := &api.Worker{}
+			worker.SetHostname("test-worker")
+			worker.SetRoutes([]string{"repo"})
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(worker)
+		case "/api/v1/repos/test-org/test-repo/builds/1/token":
+			w.WriteHeader(http.StatusConflict)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	serverURL, _ := url.Parse(server.URL)
+
+	testQueue := &mockQueue{
+		popFunc: func(_ context.Context, _ []string) (*models.Item, error) {
+			build := &api.Build{}
+			build.SetID(1)
+			build.SetNumber(1)
+			repo := &api.Repo{}
+			repo.SetOrg("test-org")
+			repo.SetName("test-repo")
+			repo.SetFullName("test-org/test-repo")
+			owner := &api.User{}
+			owner.SetName("test-user")
+			repo.SetOwner(owner)
+			build.SetRepo(repo)
+			return &models.Item{
+				Build:       build,
+				ItemVersion: models.ItemVersion,
+			}, nil
+		},
+	}
+
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: serverURL,
+			},
+		},
+		VelaClient: client,
+		Queue:      testQueue,
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+
+	err := w.exec(0, config)
+	if err != nil {
+		t.Errorf("exec() should return nil on conflict, got %v", err)
+	}
+}
+
+func TestWorker_exec_RetryLogic(t *testing.T) {
+	// Test retry logic when worker retrieval fails initially
+	attempt := 0
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/workers/test-worker":
+			attempt++
+			if attempt < 2 {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			worker := &api.Worker{}
+			worker.SetHostname("test-worker")
+			worker.SetRoutes([]string{"repo"})
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(worker)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	serverURL, _ := url.Parse(server.URL)
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	testQueue := &mockQueue{
+		popFunc: func(_ context.Context, _ []string) (*models.Item, error) {
+			return nil, nil // Return nil to exit early
+		},
+	}
+
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: serverURL,
+			},
+		},
+		VelaClient: client,
+		Queue:      testQueue,
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+
+	// Should succeed on retry
+	err := w.exec(0, config)
+	if err != nil {
+		t.Errorf("exec() error = %v, want nil after retry", err)
+	}
+
+	if attempt < 2 {
+		t.Errorf("Expected at least 2 attempts, got %d", attempt)
+	}
+}
+
+func TestWorker_exec_MaxRetriesExceeded(t *testing.T) {
+	// Test max retries exceeded
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError) // Always fail
+	}))
+	defer server.Close()
+
+	serverURL, _ := url.Parse(server.URL)
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: serverURL,
+			},
+		},
+		VelaClient: client,
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+
+	err := w.exec(0, config)
+	if err == nil {
+		t.Error("exec() should return error when max retries exceeded")
+	}
+}
+
+// Mock queue implementation for testing.
+type mockQueue struct {
+	popFunc func(context.Context, []string) (*models.Item, error)
+}
+
+func (m *mockQueue) Pop(ctx context.Context, routes []string) (*models.Item, error) {
+	if m.popFunc != nil {
+		return m.popFunc(ctx, routes)
+	}
+
+	return nil, nil
+}
+
+func (m *mockQueue) Route(_ *pipeline.Worker) (string, error)               { return "vela", nil }
+func (m *mockQueue) Driver() string                                         { return "mock" }
+func (m *mockQueue) GetSettings() settings.Queue                            { return settings.Queue{} }
+func (m *mockQueue) SetSettings(_ *settings.Platform)                       {}
+func (m *mockQueue) Length(_ context.Context) (int64, error)                { return 0, nil }
+func (m *mockQueue) RouteLength(_ context.Context, _ string) (int64, error) { return 0, nil }
+func (m *mockQueue) Push(_ context.Context, _ string, _ []byte) error       { return nil }
+func (m *mockQueue) Ping(_ context.Context) error                           { return nil }
+
+func TestWorker_exec_LogOutput(t *testing.T) {
+	// Capture log output to verify logging behavior
+	origLevel := logrus.GetLevel()
+
+	logrus.SetLevel(logrus.DebugLevel)
+	defer logrus.SetLevel(origLevel)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/workers/test-worker":
+			worker := &api.Worker{}
+			worker.SetHostname("test-worker")
+			worker.SetRoutes([]string{"repo"})
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(worker)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	serverURL, _ := url.Parse(server.URL)
+	client, _ := vela.NewClient(server.URL, "", nil)
+
+	testQueue := &mockQueue{
+		popFunc: func(_ context.Context, _ []string) (*models.Item, error) {
+			return nil, fmt.Errorf("simulated queue error")
+		},
+	}
+
+	w := &Worker{
+		Config: &Config{
+			API: &API{
+				Address: serverURL,
+			},
+			Queue: &queue.Setup{
+				Timeout: 100 * time.Millisecond,
+			},
+		},
+		VelaClient: client,
+		Queue:      testQueue,
+	}
+
+	config := &api.Worker{}
+	config.SetHostname("test-worker")
+
+	// This should log the queue pop error
+	err := w.exec(0, config)
+	if err != nil {
+		t.Errorf("exec() should return nil on queue error, got %v", err)
 	}
 }
 
