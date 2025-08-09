@@ -29,20 +29,25 @@ func TestWorkerRegistryConfiguration(t *testing.T) {
 	registryWorker.SetActive(true)
 
 	// Test normal build limit
-	if w.Config.Build.Limit <= int(^uint32(0)>>1) {
-		registryWorker.SetBuildLimit(int32(w.Config.Build.Limit))
-		if registryWorker.GetBuildLimit() != 5 {
-			t.Errorf("Build limit = %v, want 5", registryWorker.GetBuildLimit())
-		}
+	if w.Config.Build.Limit > int(^uint32(0)>>1) {
+		registryWorker.SetBuildLimit(int32(^uint32(0) >> 1))
+	} else {
+		registryWorker.SetBuildLimit(int32(w.Config.Build.Limit)) // #nosec G115 -- bounds checking is performed above
+	}
+
+	if registryWorker.GetBuildLimit() != 5 {
+		t.Errorf("Build limit = %v, want 5", registryWorker.GetBuildLimit())
 	}
 
 	// Test routes setting
 	if len(w.Config.Queue.Routes) > 0 && w.Config.Queue.Routes[0] != "NONE" && w.Config.Queue.Routes[0] != "" {
 		registryWorker.SetRoutes(w.Config.Queue.Routes)
+
 		routes := registryWorker.GetRoutes()
 		if len(routes) != 2 {
 			t.Errorf("Routes length = %v, want 2", len(routes))
 		}
+
 		if routes[0] != "vela" || routes[1] != "test" {
 			t.Errorf("Routes = %v, want [vela test]", routes)
 		}
@@ -62,8 +67,10 @@ func TestWorkerRegistryLimitBoundary(t *testing.T) {
 	registryWorker := new(api.Worker)
 
 	// This should clamp to max int32
+
 	if w.Config.Build.Limit > int(^uint32(0)>>1) {
 		registryWorker.SetBuildLimit(int32(^uint32(0) >> 1))
+
 		expectedMax := int32(^uint32(0) >> 1)
 		if registryWorker.GetBuildLimit() != expectedMax {
 			t.Errorf("Build limit = %v, want %v", registryWorker.GetBuildLimit(), expectedMax)
@@ -120,6 +127,7 @@ func TestWorkerRegistryNoRoutes(t *testing.T) {
 
 			if shouldSetRoutes {
 				registryWorker.SetRoutes(w.Config.Queue.Routes)
+
 				if len(registryWorker.GetRoutes()) == 0 {
 					t.Errorf("Routes were not set when they should have been")
 				}
@@ -135,12 +143,14 @@ func TestWorkerStatusUpdate(t *testing.T) {
 
 	// Test error status setting
 	registryWorker.SetStatus(constants.WorkerStatusError)
+
 	if registryWorker.GetStatus() != constants.WorkerStatusError {
 		t.Errorf("Worker status = %v, want %v", registryWorker.GetStatus(), constants.WorkerStatusError)
 	}
 
 	// Test active setting
 	registryWorker.SetActive(true)
+
 	if !registryWorker.GetActive() {
 		t.Errorf("Worker active = %v, want true", registryWorker.GetActive())
 	}

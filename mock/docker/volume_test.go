@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/containerd/errdefs"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/errdefs"
 )
 
 func TestVolumeService_VolumeCreate(t *testing.T) {
@@ -45,7 +45,7 @@ func TestVolumeService_VolumeCreate(t *testing.T) {
 				Name: "notfound-volume",
 			},
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name: "notfound volume with ignore",
@@ -61,7 +61,7 @@ func TestVolumeService_VolumeCreate(t *testing.T) {
 				Name: "not-found-volume",
 			},
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name: "not-found volume with ignore",
@@ -81,6 +81,7 @@ func TestVolumeService_VolumeCreate(t *testing.T) {
 				if err == nil {
 					t.Errorf("VolumeCreate() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("VolumeCreate() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -136,13 +137,13 @@ func TestVolumeService_VolumeInspect(t *testing.T) {
 			name:        "notfound volume",
 			volumeID:    "notfound-volume",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:        "not-found volume",
 			volumeID:    "not-found-volume",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 	}
 
@@ -154,6 +155,7 @@ func TestVolumeService_VolumeInspect(t *testing.T) {
 				if err == nil {
 					t.Errorf("VolumeInspect() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("VolumeInspect() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -207,13 +209,13 @@ func TestVolumeService_VolumeInspectWithRaw(t *testing.T) {
 			name:        "notfound volume",
 			volumeID:    "notfound-volume",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:        "not-found volume",
 			volumeID:    "not-found-volume",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 	}
 
@@ -225,6 +227,7 @@ func TestVolumeService_VolumeInspectWithRaw(t *testing.T) {
 				if err == nil {
 					t.Errorf("VolumeInspectWithRaw() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("VolumeInspectWithRaw() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -263,7 +266,6 @@ func TestVolumeService_VolumeList(t *testing.T) {
 	opts := volume.ListOptions{}
 
 	response, err := service.VolumeList(context.Background(), opts)
-
 	if err != nil {
 		t.Errorf("VolumeList() error = %v, want nil", err)
 	}
@@ -319,7 +321,6 @@ func TestVolumeService_VolumesPrune(t *testing.T) {
 	pruneFilters := filters.Args{}
 
 	report, err := service.VolumesPrune(context.Background(), pruneFilters)
-
 	if err != nil {
 		t.Errorf("VolumesPrune() error = %v, want nil", err)
 	}
@@ -339,12 +340,11 @@ func TestVolumeService_VolumeUpdate(t *testing.T) {
 	opts := volume.UpdateOptions{}
 
 	err := service.VolumeUpdate(context.Background(), "test-volume", version, opts)
-
 	if err != nil {
 		t.Errorf("VolumeUpdate() error = %v, want nil", err)
 	}
 }
 
-func TestVolumeService_InterfaceCompliance(t *testing.T) {
+func TestVolumeService_InterfaceCompliance(_ *testing.T) {
 	var _ client.VolumeAPIClient = (*VolumeService)(nil)
 }

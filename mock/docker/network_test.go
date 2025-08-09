@@ -7,10 +7,10 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/containerd/errdefs"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/errdefs"
 )
 
 func TestNetworkService_NetworkConnect(t *testing.T) {
@@ -18,7 +18,6 @@ func TestNetworkService_NetworkConnect(t *testing.T) {
 	settings := &network.EndpointSettings{}
 
 	err := service.NetworkConnect(context.Background(), "test-network", "test-container", settings)
-
 	if err != nil {
 		t.Errorf("NetworkConnect() error = %v, want nil", err)
 	}
@@ -50,7 +49,7 @@ func TestNetworkService_NetworkCreate(t *testing.T) {
 			name:        "notfound network",
 			networkName: "notfound-network",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:         "notfound network with ignore",
@@ -62,7 +61,7 @@ func TestNetworkService_NetworkCreate(t *testing.T) {
 			name:        "not-found network",
 			networkName: "not-found-network",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:         "not-found network with ignore",
@@ -80,6 +79,7 @@ func TestNetworkService_NetworkCreate(t *testing.T) {
 				if err == nil {
 					t.Errorf("NetworkCreate() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("NetworkCreate() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -102,7 +102,6 @@ func TestNetworkService_NetworkDisconnect(t *testing.T) {
 	service := &NetworkService{}
 
 	err := service.NetworkDisconnect(context.Background(), "test-network", "test-container", false)
-
 	if err != nil {
 		t.Errorf("NetworkDisconnect() error = %v, want nil", err)
 	}
@@ -134,13 +133,13 @@ func TestNetworkService_NetworkInspect(t *testing.T) {
 			name:        "notfound network",
 			networkID:   "notfound-network",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:        "not-found network",
 			networkID:   "not-found-network",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 	}
 
@@ -152,6 +151,7 @@ func TestNetworkService_NetworkInspect(t *testing.T) {
 				if err == nil {
 					t.Errorf("NetworkInspect() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("NetworkInspect() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -250,7 +250,6 @@ func TestNetworkService_NetworkList(t *testing.T) {
 	opts := network.ListOptions{}
 
 	networks, err := service.NetworkList(context.Background(), opts)
-
 	if err != nil {
 		t.Errorf("NetworkList() error = %v, want nil", err)
 	}
@@ -302,7 +301,6 @@ func TestNetworkService_NetworksPrune(t *testing.T) {
 	pruneFilters := filters.Args{}
 
 	report, err := service.NetworksPrune(context.Background(), pruneFilters)
-
 	if err != nil {
 		t.Errorf("NetworksPrune() error = %v, want nil", err)
 	}
@@ -314,6 +312,6 @@ func TestNetworkService_NetworksPrune(t *testing.T) {
 	// SpaceReclaimed field may not exist in this version of Docker API
 }
 
-func TestNetworkService_InterfaceCompliance(t *testing.T) {
+func TestNetworkService_InterfaceCompliance(_ *testing.T) {
 	var _ client.NetworkAPIClient = (*NetworkService)(nil)
 }

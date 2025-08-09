@@ -14,7 +14,6 @@ func TestSwarmService_SwarmGetUnlockKey(t *testing.T) {
 	service := &SwarmService{}
 
 	response, err := service.SwarmGetUnlockKey(context.Background())
-
 	if err != nil {
 		t.Errorf("SwarmGetUnlockKey() error = %v, want nil", err)
 	}
@@ -29,7 +28,6 @@ func TestSwarmService_SwarmInit(t *testing.T) {
 	request := swarm.InitRequest{}
 
 	nodeID, err := service.SwarmInit(context.Background(), request)
-
 	if err != nil {
 		t.Errorf("SwarmInit() error = %v, want nil", err)
 	}
@@ -43,7 +41,6 @@ func TestSwarmService_SwarmInspect(t *testing.T) {
 	service := &SwarmService{}
 
 	swarmInfo, err := service.SwarmInspect(context.Background())
-
 	if err != nil {
 		t.Errorf("SwarmInspect() error = %v, want nil", err)
 	}
@@ -58,7 +55,6 @@ func TestSwarmService_SwarmJoin(t *testing.T) {
 	request := swarm.JoinRequest{}
 
 	err := service.SwarmJoin(context.Background(), request)
-
 	if err != nil {
 		t.Errorf("SwarmJoin() error = %v, want nil", err)
 	}
@@ -68,7 +64,6 @@ func TestSwarmService_SwarmLeave(t *testing.T) {
 	service := &SwarmService{}
 
 	err := service.SwarmLeave(context.Background(), false)
-
 	if err != nil {
 		t.Errorf("SwarmLeave() error = %v, want nil", err)
 	}
@@ -79,7 +74,6 @@ func TestSwarmService_SwarmUnlock(t *testing.T) {
 	request := swarm.UnlockRequest{}
 
 	err := service.SwarmUnlock(context.Background(), request)
-
 	if err != nil {
 		t.Errorf("SwarmUnlock() error = %v, want nil", err)
 	}
@@ -92,12 +86,11 @@ func TestSwarmService_SwarmUpdate(t *testing.T) {
 	flags := swarm.UpdateFlags{}
 
 	err := service.SwarmUpdate(context.Background(), version, spec, flags)
-
 	if err != nil {
 		t.Errorf("SwarmUpdate() error = %v, want nil", err)
 	}
 }
 
-func TestSwarmService_InterfaceCompliance(t *testing.T) {
+func TestSwarmService_InterfaceCompliance(_ *testing.T) {
 	var _ client.SwarmAPIClient = (*SwarmService)(nil)
 }

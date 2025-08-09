@@ -17,7 +17,6 @@ func TestServiceService_ServiceCreate(t *testing.T) {
 	opts := swarm.ServiceCreateOptions{}
 
 	response, err := service.ServiceCreate(context.Background(), spec, opts)
-
 	if err != nil {
 		t.Errorf("ServiceCreate() error = %v, want nil", err)
 	}
@@ -36,7 +35,6 @@ func TestServiceService_ServiceInspectWithRaw(t *testing.T) {
 	opts := swarm.ServiceInspectOptions{}
 
 	svc, raw, err := service.ServiceInspectWithRaw(context.Background(), "test-service", opts)
-
 	if err != nil {
 		t.Errorf("ServiceInspectWithRaw() error = %v, want nil", err)
 	}
@@ -55,7 +53,6 @@ func TestServiceService_ServiceList(t *testing.T) {
 	opts := swarm.ServiceListOptions{}
 
 	services, err := service.ServiceList(context.Background(), opts)
-
 	if err != nil {
 		t.Errorf("ServiceList() error = %v, want nil", err)
 	}
@@ -70,7 +67,6 @@ func TestServiceService_ServiceLogs(t *testing.T) {
 	opts := container.LogsOptions{}
 
 	logs, err := service.ServiceLogs(context.Background(), "test-service", opts)
-
 	if err != nil {
 		t.Errorf("ServiceLogs() error = %v, want nil", err)
 	}
@@ -84,7 +80,6 @@ func TestServiceService_ServiceRemove(t *testing.T) {
 	service := &ServiceService{}
 
 	err := service.ServiceRemove(context.Background(), "test-service")
-
 	if err != nil {
 		t.Errorf("ServiceRemove() error = %v, want nil", err)
 	}
@@ -97,7 +92,6 @@ func TestServiceService_ServiceUpdate(t *testing.T) {
 	opts := swarm.ServiceUpdateOptions{}
 
 	response, err := service.ServiceUpdate(context.Background(), "test-service", version, spec, opts)
-
 	if err != nil {
 		t.Errorf("ServiceUpdate() error = %v, want nil", err)
 	}
@@ -111,7 +105,6 @@ func TestServiceService_TaskInspectWithRaw(t *testing.T) {
 	service := &ServiceService{}
 
 	task, raw, err := service.TaskInspectWithRaw(context.Background(), "test-task")
-
 	if err != nil {
 		t.Errorf("TaskInspectWithRaw() error = %v, want nil", err)
 	}
@@ -130,7 +123,6 @@ func TestServiceService_TaskList(t *testing.T) {
 	opts := swarm.TaskListOptions{}
 
 	tasks, err := service.TaskList(context.Background(), opts)
-
 	if err != nil {
 		t.Errorf("TaskList() error = %v, want nil", err)
 	}
@@ -145,7 +137,6 @@ func TestServiceService_TaskLogs(t *testing.T) {
 	opts := container.LogsOptions{}
 
 	logs, err := service.TaskLogs(context.Background(), "test-task", opts)
-
 	if err != nil {
 		t.Errorf("TaskLogs() error = %v, want nil", err)
 	}
@@ -155,6 +146,6 @@ func TestServiceService_TaskLogs(t *testing.T) {
 	}
 }
 
-func TestServiceService_InterfaceCompliance(t *testing.T) {
+func TestServiceService_InterfaceCompliance(_ *testing.T) {
 	var _ client.ServiceAPIClient = (*ServiceService)(nil)
 }

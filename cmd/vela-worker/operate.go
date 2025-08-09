@@ -14,6 +14,11 @@ import (
 	"github.com/go-vela/server/queue"
 )
 
+const (
+	// noneRoute represents a disabled route configuration.
+	noneRoute = "NONE"
+)
+
 // operate is a helper function to initiate all
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
@@ -39,7 +44,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	}
 
 	// set routes from config if set or defaulted to `vela`
-	if (len(w.Config.Queue.Routes) > 0) && (w.Config.Queue.Routes[0] != "NONE" && w.Config.Queue.Routes[0] != "") {
+	if (len(w.Config.Queue.Routes) > 0) && (w.Config.Queue.Routes[0] != noneRoute && w.Config.Queue.Routes[0] != "") {
 		registryWorker.SetRoutes(w.Config.Queue.Routes)
 	}
 

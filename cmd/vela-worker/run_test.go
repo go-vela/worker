@@ -316,11 +316,12 @@ func TestLogger_Configuration(t *testing.T) {
 	}
 }
 
-// Helper function for tests
+// Helper function for tests.
 func mustParseURL(rawURL string) *url.URL {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		panic(err)
 	}
+
 	return u
 }

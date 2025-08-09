@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/containerd/errdefs"
 	"github.com/docker/docker/api/types/build"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/errdefs"
 )
 
 func TestImageService_BuildCachePrune(t *testing.T) {
@@ -22,7 +22,6 @@ func TestImageService_BuildCachePrune(t *testing.T) {
 	opts := build.CachePruneOptions{}
 
 	report, err := service.BuildCachePrune(context.Background(), opts)
-
 	if err != nil {
 		t.Errorf("BuildCachePrune() error = %v, want nil", err)
 	}
@@ -36,7 +35,6 @@ func TestImageService_BuildCancel(t *testing.T) {
 	service := &ImageService{}
 
 	err := service.BuildCancel(context.Background(), "test-id")
-
 	if err != nil {
 		t.Errorf("BuildCancel() error = %v, want nil", err)
 	}
@@ -47,7 +45,6 @@ func TestImageService_ImageBuild(t *testing.T) {
 	opts := build.ImageBuildOptions{}
 
 	response, err := service.ImageBuild(context.Background(), nil, opts)
-
 	if err != nil {
 		t.Errorf("ImageBuild() error = %v, want nil", err)
 	}
@@ -62,7 +59,6 @@ func TestImageService_ImageCreate(t *testing.T) {
 	opts := image.CreateOptions{}
 
 	response, err := service.ImageCreate(context.Background(), "test-image", opts)
-
 	if err != nil {
 		t.Errorf("ImageCreate() error = %v, want nil", err)
 	}
@@ -76,7 +72,6 @@ func TestImageService_ImageHistory(t *testing.T) {
 	service := &ImageService{}
 
 	history, err := service.ImageHistory(context.Background(), "test-image")
-
 	if err != nil {
 		t.Errorf("ImageHistory() error = %v, want nil", err)
 	}
@@ -92,7 +87,6 @@ func TestImageService_ImageImport(t *testing.T) {
 	opts := image.ImportOptions{}
 
 	response, err := service.ImageImport(context.Background(), source, "test-ref", opts)
-
 	if err != nil {
 		t.Errorf("ImageImport() error = %v, want nil", err)
 	}
@@ -125,7 +119,7 @@ func TestImageService_ImageInspect(t *testing.T) {
 			name:        "notfound image",
 			imageName:   "notfound:latest",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:      "notfound image with ignore",
@@ -136,7 +130,7 @@ func TestImageService_ImageInspect(t *testing.T) {
 			name:        "not-found image",
 			imageName:   "not-found:latest",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:      "not-found image with ignore",
@@ -153,6 +147,7 @@ func TestImageService_ImageInspect(t *testing.T) {
 				if err == nil {
 					t.Errorf("ImageInspect() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("ImageInspect() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -160,6 +155,7 @@ func TestImageService_ImageInspect(t *testing.T) {
 				if err != nil {
 					t.Errorf("ImageInspect() error = %v, wantErr %v", err, tt.wantErr)
 				}
+
 				if response.ID != "" {
 					t.Errorf("ImageInspect() response.ID = %v, want empty", response.ID)
 				}
@@ -193,7 +189,7 @@ func TestImageService_ImageInspectWithRaw(t *testing.T) {
 			name:        "notfound image",
 			imageName:   "notfound:latest",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:      "notfound image with ignore",
@@ -205,7 +201,7 @@ func TestImageService_ImageInspectWithRaw(t *testing.T) {
 			name:        "not-found image",
 			imageName:   "not-found:latest",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:      "not-found image with ignore",
@@ -223,6 +219,7 @@ func TestImageService_ImageInspectWithRaw(t *testing.T) {
 				if err == nil {
 					t.Errorf("ImageInspectWithRaw() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("ImageInspectWithRaw() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -267,7 +264,6 @@ func TestImageService_ImageList(t *testing.T) {
 	opts := image.ListOptions{}
 
 	images, err := service.ImageList(context.Background(), opts)
-
 	if err != nil {
 		t.Errorf("ImageList() error = %v, want nil", err)
 	}
@@ -281,7 +277,6 @@ func TestImageService_ImageLoad(t *testing.T) {
 	service := &ImageService{}
 
 	response, err := service.ImageLoad(context.Background(), nil)
-
 	if err != nil {
 		t.Errorf("ImageLoad() error = %v, want nil", err)
 	}
@@ -317,7 +312,7 @@ func TestImageService_ImagePull(t *testing.T) {
 			name:        "notfound image",
 			imageName:   "notfound:latest",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:      "notfound image with ignore",
@@ -329,7 +324,7 @@ func TestImageService_ImagePull(t *testing.T) {
 			name:        "not-found image",
 			imageName:   "not-found:latest",
 			wantErr:     true,
-			wantErrType: errdefs.NotFound(nil),
+			wantErrType: errdefs.ErrNotFound,
 		},
 		{
 			name:      "not-found image with ignore",
@@ -347,6 +342,7 @@ func TestImageService_ImagePull(t *testing.T) {
 				if err == nil {
 					t.Errorf("ImagePull() error = nil, wantErr %v", tt.wantErr)
 				}
+
 				if tt.wantErrType != nil && !errdefs.IsNotFound(err) {
 					t.Errorf("ImagePull() error type = %v, want %v", err, tt.wantErrType)
 				}
@@ -390,7 +386,6 @@ func TestImageService_ImagePush(t *testing.T) {
 	opts := image.PushOptions{}
 
 	response, err := service.ImagePush(context.Background(), "alpine:latest", opts)
-
 	if err != nil {
 		t.Errorf("ImagePush() error = %v, want nil", err)
 	}
@@ -405,7 +400,6 @@ func TestImageService_ImageRemove(t *testing.T) {
 	opts := image.RemoveOptions{}
 
 	response, err := service.ImageRemove(context.Background(), "alpine:latest", opts)
-
 	if err != nil {
 		t.Errorf("ImageRemove() error = %v, want nil", err)
 	}
@@ -420,7 +414,6 @@ func TestImageService_ImageSave(t *testing.T) {
 	imageIDs := []string{"alpine:latest"}
 
 	response, err := service.ImageSave(context.Background(), imageIDs)
-
 	if err != nil {
 		t.Errorf("ImageSave() error = %v, want nil", err)
 	}
@@ -435,7 +428,6 @@ func TestImageService_ImageSearch(t *testing.T) {
 	opts := registry.SearchOptions{}
 
 	results, err := service.ImageSearch(context.Background(), "alpine", opts)
-
 	if err != nil {
 		t.Errorf("ImageSearch() error = %v, want nil", err)
 	}
@@ -449,7 +441,6 @@ func TestImageService_ImageTag(t *testing.T) {
 	service := &ImageService{}
 
 	err := service.ImageTag(context.Background(), "alpine:latest", "alpine:test")
-
 	if err != nil {
 		t.Errorf("ImageTag() error = %v, want nil", err)
 	}
@@ -460,7 +451,6 @@ func TestImageService_ImagesPrune(t *testing.T) {
 	pruneFilters := filters.Args{}
 
 	report, err := service.ImagesPrune(context.Background(), pruneFilters)
-
 	if err != nil {
 		t.Errorf("ImagesPrune() error = %v, want nil", err)
 	}
@@ -474,6 +464,6 @@ func TestImageService_ImagesPrune(t *testing.T) {
 	}
 }
 
-func TestImageService_InterfaceCompliance(t *testing.T) {
+func TestImageService_InterfaceCompliance(_ *testing.T) {
 	var _ client.ImageAPIClient = (*ImageService)(nil)
 }
