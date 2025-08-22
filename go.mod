@@ -5,24 +5,24 @@ go 1.24.4
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/distribution/reference v0.6.0
-	github.com/docker/docker v28.3.1+incompatible
+	github.com/docker/docker v28.3.3+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.10.1
-	github.com/go-vela/sdk-go v0.27.0-rc1
-	github.com/go-vela/server v0.27.0-rc1
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/go-vela/sdk-go v0.27.0
+	github.com/go-vela/server v0.27.0
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/prometheus/client_golang v1.22.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli/v3 v3.3.8
-	golang.org/x/sync v0.15.0
+	golang.org/x/sync v0.16.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/api v0.33.2
-	k8s.io/apimachinery v0.33.2
-	k8s.io/client-go v0.33.2
-	sigs.k8s.io/yaml v1.5.0
+	k8s.io/api v0.33.3
+	k8s.io/apimachinery v0.33.3
+	k8s.io/client-go v0.33.3
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -39,7 +39,7 @@ require (
 	github.com/expr-lang/expr v1.17.5 // indirect
 	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
-	github.com/google/go-github/v72 v72.0.0 // indirect
+	github.com/google/go-github/v74 v74.0.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
@@ -163,14 +163,14 @@ require (
 	go.opentelemetry.io/otel v1.37.0 // indirect
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
-	go.starlark.net v0.0.0-20250701195324-d457b4515e0e // indirect
+	go.starlark.net v0.0.0-20250717191651-336a4b3a6d1d // indirect
 	golang.org/x/arch v0.18.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/term v0.33.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
