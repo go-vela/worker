@@ -7,9 +7,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"maps"
 	"path/filepath"
 	"strconv"
-	"maps"
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"

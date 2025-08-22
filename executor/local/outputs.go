@@ -108,7 +108,7 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 			"/vela/outputs/base64.env",
 			"/vela/outputs/masked.base64.env",
 		}
-    
+
 		outputMap = make(map[string]string)
 		maskMap   = make(map[string]string)
 	)
