@@ -8,7 +8,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 )
 
-// helper function to setup the vela API client for worker check-in.
+// helper function to setup the vela API client for worker check-in and build executable retrieval.
 func setupClient(s *Server, token string) (*vela.Client, error) {
 	logrus.Debug("creating vela client from worker configuration")
 
