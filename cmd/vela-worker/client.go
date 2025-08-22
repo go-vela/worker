@@ -8,21 +8,30 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 )
 
-// helper function to setup the queue from the CLI arguments.
+// helper function to setup the vela API client for worker check-in.
 func setupClient(s *Server, token string) (*vela.Client, error) {
 	logrus.Debug("creating vela client from worker configuration")
 
-	// create a new Vela client from the server configuration
-	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#NewClient
 	vela, err := vela.NewClient(s.Address, "", nil)
 	if err != nil {
 		return nil, err
 	}
-	// set token for authentication with the server
-	//
-	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#AuthenticationService.SetTokenAuth
+
 	vela.Authentication.SetTokenAuth(token)
+
+	return vela, nil
+}
+
+// helper function to setup the vela API client for executor calls to update build resources.
+func setupExecClient(s *Server, buildToken, scmToken string) (*vela.Client, error) {
+	logrus.Debug("creating vela client from worker configuration")
+
+	vela, err := vela.NewClient(s.Address, "", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	vela.Authentication.SetBuildTokenAuth(buildToken, scmToken)
 
 	return vela, nil
 }

@@ -105,7 +105,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 			return err
 		}
 
-		// set up build client with build token as auth
+		// set up temporary client with build token as auth since we do not have scm token yet
 		execBuildClient, err = setupClient(w.Config.Server, bt.GetToken())
 		if err != nil {
 			// check if the retry limit has been exceeded
@@ -137,6 +137,12 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		p = new(pipeline.Build)
 
 		err = json.Unmarshal(execBuildExecutable.GetData(), p)
+		if err != nil {
+			return err
+		}
+
+		// setup exec client with scm token and build token
+		execBuildClient, err = setupExecClient(w.Config.Server, bt.GetToken(), p.Token)
 		if err != nil {
 			return err
 		}
