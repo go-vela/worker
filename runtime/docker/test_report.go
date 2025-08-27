@@ -26,6 +26,7 @@ func isAllowedExt(ext string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -38,24 +39,30 @@ func (c *client) execContainerLines(ctx context.Context, containerID, cmd string
 		AttachStdout: true,
 		AttachStderr: true,
 	}
+
 	resp, err := c.Docker.ContainerExecCreate(ctx, containerID, execConfig)
 	if err != nil {
 		return nil, fmt.Errorf("create exec: %w", err)
 	}
+
 	attach, err := c.Docker.ContainerExecAttach(ctx, resp.ID, dockerContainerTypes.ExecAttachOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("attach exec: %w", err)
 	}
+
 	defer attach.Close()
 
 	var outBuf, errBuf bytes.Buffer
 	if _, err := stdcopy.StdCopy(&outBuf, &errBuf, attach.Reader); err != nil {
 		return nil, fmt.Errorf("copy exec output: %w", err)
 	}
+
 	if errBuf.Len() > 0 {
 		return nil, fmt.Errorf("exec error: %s", errBuf.String())
 	}
+
 	lines := strings.Split(strings.TrimSpace(outBuf.String()), "\n")
+
 	return lines, nil
 }
 
@@ -105,6 +112,7 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 	}
 
 	c.Logger.Infof("found %d files matching patterns", len(results))
+
 	return results, nil
 }
 
@@ -116,6 +124,7 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 		// return an empty reader instead of nil
 		return bytes.NewReader(nil), 0, fmt.Errorf("empty container image")
 	}
+
 	cmd := []string{"sh", "-c", fmt.Sprintf("base64 %s", path)}
 	execConfig := dockerContainerTypes.ExecOptions{
 		Cmd:          cmd,
@@ -125,11 +134,13 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	}
 
 	c.Logger.Infof("executing command for content: %v", execConfig.Cmd)
+
 	execID, err := c.Docker.ContainerExecCreate(ctx, ctn.ID, execConfig)
 	if err != nil {
 		c.Logger.Debugf("PollFileContent exec-create failed for %q: %v", path, err)
 		return nil, 0, fmt.Errorf("failed to create exec instance: %w", err)
 	}
+
 	resp, err := c.Docker.ContainerExecAttach(ctx, execID.ID, dockerContainerTypes.ExecAttachOptions{})
 	if err != nil {
 		c.Logger.Debugf("PollFileContent exec-attach failed for %q: %v", path, err)
@@ -155,6 +166,7 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	if outputStderr.Len() > 0 {
 		return nil, 0, fmt.Errorf("error: %s", outputStderr.String())
 	}
+
 	data := outputStdout.Bytes()
 
 	// Add logging for empty data in PollFileContent

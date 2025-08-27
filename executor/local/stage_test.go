@@ -29,6 +29,7 @@ func TestLocal_CreateStage(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler from CLI context: %v", err)

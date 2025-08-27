@@ -183,8 +183,8 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 		return nil, fmt.Errorf("newPodTracker expected a pod, got nil")
 	}
 
-	trackedPod := pod.ObjectMeta.Namespace + "/" + pod.ObjectMeta.Name
-	if pod.ObjectMeta.Name == "" || pod.ObjectMeta.Namespace == "" {
+	trackedPod := pod.Namespace + "/" + pod.Name
+	if pod.Name == "" || pod.Namespace == "" {
 		return nil, fmt.Errorf("newPodTracker expects pod to have Name and Namespace, got %s", trackedPod)
 	}
 
@@ -194,7 +194,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	selector, err := labels.NewRequirement(
 		"pipeline",
 		selection.Equals,
-		[]string{fields.EscapeValue(pod.ObjectMeta.Name)},
+		[]string{fields.EscapeValue(pod.Name)},
 	)
 	if err != nil {
 		return nil, err
@@ -204,7 +204,7 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 	informerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(
 		clientset,
 		defaultResync,
-		kubeinformers.WithNamespace(pod.ObjectMeta.Namespace),
+		kubeinformers.WithNamespace(pod.Namespace),
 		kubeinformers.WithTweakListOptions(func(listOptions *metav1.ListOptions) {
 			listOptions.LabelSelector = selector.String()
 		}),
@@ -235,12 +235,12 @@ func newPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Po
 // mockPodTracker returns a new podTracker with the given pod pre-loaded in the cache.
 func mockPodTracker(log *logrus.Entry, clientset kubernetes.Interface, pod *v1.Pod) (*podTracker, error) {
 	// Make sure test pods are valid before passing to PodTracker (ie support &v1.Pod{}).
-	if pod.ObjectMeta.Name == "" {
-		pod.ObjectMeta.Name = "test-pod"
+	if pod.Name == "" {
+		pod.Name = "test-pod"
 	}
 
-	if pod.ObjectMeta.Namespace == "" {
-		pod.ObjectMeta.Namespace = "test"
+	if pod.Namespace == "" {
+		pod.Namespace = "test"
 	}
 
 	tracker, err := newPodTracker(log, clientset, pod, 0*time.Second)

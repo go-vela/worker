@@ -10,7 +10,7 @@ import (
 
 // InspectBuild displays details about the pod for the init step.
 // This is a no-op for docker.
-func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, error) {
+func (c *client) InspectBuild(_ context.Context, b *pipeline.Build) ([]byte, error) {
 	c.Logger.Tracef("no-op: inspecting build for pipeline %s", b.ID)
 
 	return []byte{}, nil
@@ -18,7 +18,7 @@ func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, e
 
 // SetupBuild prepares the pipeline build.
 // This is a no-op for docker.
-func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
+func (c *client) SetupBuild(_ context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("no-op: setting up for build %s", b.ID)
 
 	return nil
@@ -26,7 +26,7 @@ func (c *client) SetupBuild(ctx context.Context, b *pipeline.Build) error {
 
 // StreamBuild initializes log/event streaming for build.
 // This is a no-op for docker.
-func (c *client) StreamBuild(ctx context.Context, b *pipeline.Build) error {
+func (c *client) StreamBuild(_ context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("no-op: streaming build %s", b.ID)
 
 	return nil

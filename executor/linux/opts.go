@@ -4,7 +4,6 @@ package linux
 
 import (
 	"fmt"
-	"github.com/go-vela/server/storage"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -12,6 +11,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 )
@@ -223,13 +223,14 @@ func WithStorage(s *storage.Setup) Opt {
 
 		// set the storage in the client
 		var err error
+
 		c.Storage, err = storage.New(s)
 		if err != nil {
-			return fmt.Errorf("unable to create storage: %v", err)
-
+			return fmt.Errorf("unable to create storage: %w", err)
 		}
+
 		if c.Storage == nil {
-			return fmt.Errorf("empty storage setup: %v", err)
+			return fmt.Errorf("empty storage setup: %w", err)
 		}
 
 		return nil

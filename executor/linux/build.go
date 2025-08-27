@@ -295,7 +295,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	for _, s := range c.pipeline.Stages {
 		// TODO: remove hardcoded reference
 		//
-		//nolint:goconst // ignore making a constant for now
+
 		if s.Name == "init" {
 			continue
 		}
@@ -572,12 +572,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 				testReportCreated = true
 			}
+
 			if len(_step.TestReport.Results) != 0 {
 				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build, tr)
 				if err != nil {
 					c.Logger.Errorf("unable to poll files for results: %v", err)
 				}
 			}
+
 			if len(_step.TestReport.Attachments) != 0 {
 				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build, tr)
 				if err != nil {
@@ -734,7 +736,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 // into the container right before execution, rather than
 // during build planning. It is only available for the Docker runtime.
 //
-//nolint:funlen // explanation takes up a lot of lines
+
 func loadLazySecrets(c *client, _step *pipeline.Container) error {
 	_log := new(api.Log)
 

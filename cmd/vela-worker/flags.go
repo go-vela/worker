@@ -5,13 +5,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-vela/server/storage"
 	"strings"
 	"time"
 
 	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )

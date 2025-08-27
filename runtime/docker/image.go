@@ -87,8 +87,8 @@ func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]b
 
 	// send API call to inspect the image
 	//
-	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
-	i, _, err := c.Docker.ImageInspectWithRaw(ctx, _image)
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspect
+	i, err := c.Docker.ImageInspect(ctx, _image)
 	if err != nil {
 		return output, err
 	}

@@ -3,7 +3,6 @@
 package main
 
 import (
-	"github.com/go-vela/server/storage"
 	"net/url"
 	"sync"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )

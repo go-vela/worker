@@ -4,7 +4,6 @@ package executor
 
 import (
 	"fmt"
-	"github.com/go-vela/server/storage"
 	"strings"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 	"github.com/go-vela/worker/runtime"
@@ -174,7 +174,7 @@ func (s *Setup) Validate() error {
 	}
 
 	// check if the storage client is provided
-	if &s.Storage == nil {
+	if s.Storage == nil {
 		return fmt.Errorf("no storage client provided in setup")
 	}
 

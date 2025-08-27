@@ -27,7 +27,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// get the pod from the local cache, which the Informer keeps up-to-date
 	pod, err := c.PodTracker.PodLister.
 		Pods(c.config.Namespace).
-		Get(c.Pod.ObjectMeta.Name)
+		Get(c.Pod.Name)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *p
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes/typed/core/v1#PodInterface
 	_, err = c.Kubernetes.CoreV1().Pods(c.config.Namespace).Patch(
 		ctx,
-		c.Pod.ObjectMeta.Name,
+		c.Pod.Name,
 		types.StrategicMergePatchType,
 		[]byte(fmt.Sprintf(imagePatch, ctn.ID, _image)),
 		metav1.PatchOptions{},

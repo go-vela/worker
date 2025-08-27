@@ -5,7 +5,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-vela/server/storage"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +17,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -105,7 +105,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver:              c.String("executor.driver"),
-				MaxLogSize:          uint(c.Uint("executor.max_log_size")),
+				MaxLogSize:          c.Uint("executor.max_log_size"),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,
@@ -187,5 +187,6 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// start the worker
+	//nolint: contextcheck
 	return w.Start()
 }

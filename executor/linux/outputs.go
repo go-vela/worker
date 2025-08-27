@@ -11,10 +11,11 @@ import (
 	"path/filepath"
 	"strconv"
 
-	api "github.com/go-vela/server/api/types"
-	"github.com/go-vela/server/compiler/types/pipeline"
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
+
+	api "github.com/go-vela/server/api/types"
+	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
 // outputSvc handles communication with the outputs container during the build.
