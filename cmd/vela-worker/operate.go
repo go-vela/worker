@@ -96,7 +96,6 @@ func (w *Worker) operate(ctx context.Context) error {
 	logrus.Trace("access key: ", w.Config.Executor.Storage.AccessKey)
 	// set secret key in storage config
 	w.Config.Executor.Storage.SecretKey = stCreds.GetSecretKey()
-	logrus.Trace("secret key: ", w.Config.Executor.Storage.SecretKey)
 
 	// set bucket name in storage config
 	w.Config.Executor.Storage.Bucket = stCreds.GetStorageBucket()
