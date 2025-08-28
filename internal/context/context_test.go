@@ -129,6 +129,7 @@ func TestWithDelayedCancelPropagation(t *testing.T) {
 			if d := ctx.Done(); d == nil {
 				t.Errorf("ctx.Done() == %v want non-nil", d)
 			}
+
 			if e := ctx.Err(); e != nil {
 				t.Errorf("ctx.Err() == %v want nil", e)
 			}
@@ -145,6 +146,7 @@ func TestWithDelayedCancelPropagation(t *testing.T) {
 			testCancelPropagated(ctx, "WithDelayedCancelPropagation", t)
 
 			time.Sleep(shortDuration)
+
 			lastLogEntry := loggerHook.LastEntry()
 			if lastLogEntry.Message != test.lastLogMessage {
 				t.Errorf("unexpected last log entry: want = %s ; got = %s", test.lastLogMessage, lastLogEntry.Message)

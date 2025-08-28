@@ -61,7 +61,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 		!strings.Contains(ctn, "ignorenotfound") {
 		return container.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+			errdefs.NotFound(fmt.Errorf("error: No such container: %s", ctn))
 	}
 
 	// check if the container is not-found and
@@ -70,7 +70,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 		!strings.Contains(ctn, "ignore-not-found") {
 		return container.CreateResponse{},
 			//nolint:stylecheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+			errdefs.NotFound(fmt.Errorf("error: No such container: %s", ctn))
 	}
 
 	// check if the image is not found
@@ -79,7 +79,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 		return container.CreateResponse{},
 			errdefs.NotFound(
 				//nolint:stylecheck // messsage is capitalized to match Docker messages
-				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", config.Image),
+				fmt.Errorf("error response from daemon: manifest for %s not found: manifest unknown", config.Image),
 			)
 	}
 

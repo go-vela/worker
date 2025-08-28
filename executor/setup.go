@@ -13,6 +13,7 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 	"github.com/go-vela/worker/runtime"
@@ -60,6 +61,8 @@ type Setup struct {
 	Pipeline *pipeline.Build
 	// id token request token for the build
 	RequestToken string
+	// storage client for interacting with storage resources
+	Storage *storage.Setup
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -91,6 +94,7 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
 		linux.WithOutputCtn(s.OutputCtn),
+		linux.WithStorage(s.Storage),
 	)
 }
 
@@ -111,6 +115,7 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithVersion(s.Version),
 		local.WithMockStdout(s.Mock),
 		local.WithOutputCtn(s.OutputCtn),
+		local.WithStorage(s.Storage),
 	)
 }
 
@@ -167,6 +172,11 @@ func (s *Setup) Validate() error {
 	// check if a Vela user was provided
 	if s.Build.Repo.Owner == nil {
 		return fmt.Errorf("no Vela user provided in setup")
+	}
+
+	// check if the storage client is provided
+	if s.Storage == nil {
+		return fmt.Errorf("no storage client provided in setup")
 	}
 
 	// setup is valid

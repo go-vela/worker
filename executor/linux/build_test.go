@@ -21,6 +21,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -147,6 +148,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -166,6 +168,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -177,6 +180,17 @@ func TestLinux_CreateBuild(t *testing.T) {
 				}
 			}
 
+			_storage := &storage.Setup{
+				Enable:    true,
+				Driver:    "minio",
+				Endpoint:  "http://localhost:9000",
+				AccessKey: "ad",
+				SecretKey: "asd",
+				Bucket:    "vela",
+				Region:    "",
+				Secure:    false,
+			}
+
 			_engine, err := New(
 				WithLogger(logger),
 				WithBuild(test.build),
@@ -184,6 +198,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithRuntime(_runtime),
 
 				WithVelaClient(_client),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -204,16 +219,19 @@ func TestLinux_CreateBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -245,6 +263,17 @@ func TestLinux_PlanBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
 	}
 
 	tests := []struct {
@@ -330,6 +359,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -349,6 +379,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -366,6 +397,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -392,16 +424,19 @@ func TestLinux_PlanBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -437,6 +472,17 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
 
 	tests := []struct {
 		name     string
@@ -619,6 +665,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -656,6 +703,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -706,16 +754,19 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -747,6 +798,17 @@ func TestLinux_ExecBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
 	}
 
 	tests := []struct {
@@ -860,6 +922,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -882,6 +945,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod = testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -904,6 +968,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -965,6 +1030,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 					percents := []int{0, 0, 50, 100}
 					lastIndex := len(percents) - 1
+
 					for index, stepsCompletedPercent := range percents {
 						if index == 0 || index == lastIndex {
 							stepsRunningCount = 0
@@ -1002,16 +1068,19 @@ func TestLinux_ExecBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -1043,6 +1112,17 @@ func TestLinux_StreamBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
 	}
 
 	type planFuncType = func(context.Context, *pipeline.Container) error
@@ -1509,6 +1589,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamRequests := make(chan message.StreamRequest)
 
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -1528,6 +1609,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -1547,6 +1629,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithLogStreamingTimeout(1*time.Second),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -1575,10 +1658,12 @@ func TestLinux_StreamBuild(t *testing.T) {
 					// imitate build getting canceled or otherwise finishing before ExecBuild gets called.
 					done()
 				}
+
 				if test.earlyExecExit {
 					// imitate a failure after ExecBuild starts and before it sends a StreamRequest.
 					close(streamRequests)
 				}
+
 				if test.earlyBuildDone || test.earlyExecExit {
 					return
 				}
@@ -1621,16 +1706,19 @@ func TestLinux_StreamBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -1662,6 +1750,17 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
 	}
 
 	tests := []struct {
@@ -1789,6 +1888,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -1808,6 +1908,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -1826,6 +1927,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -1860,6 +1962,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
@@ -1879,11 +1982,13 @@ func TestLinux_DestroyBuild(t *testing.T) {
 					}
 
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}

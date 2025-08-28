@@ -25,7 +25,7 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
-//nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
+//nolint:funlen // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
 
@@ -156,6 +156,9 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
+	// dereference configured storage config and set the storage config for the executor
+	execStorage := *w.Config.Executor.Storage
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -248,6 +251,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
+		Storage:             &execStorage,
 	})
 
 	// add the executor to the worker

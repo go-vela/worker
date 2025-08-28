@@ -23,7 +23,7 @@ func TestPerm_MustServer_ValidateToken200(t *testing.T) {
 	workerCtx, workerEngine := gin.CreateTestContext(workerResp)
 
 	// fake request made to the worker router
-	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
+	workerCtx.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/build/cancel", nil)
 	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
@@ -71,7 +71,7 @@ func TestPerm_MustServer_ValidateToken401(t *testing.T) {
 	workerCtx, workerEngine := gin.CreateTestContext(workerResp)
 
 	// fake request made to the worker router
-	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
+	workerCtx.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/build/cancel", nil)
 	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router
@@ -119,7 +119,7 @@ func TestPerm_MustServer_ValidateToken404(t *testing.T) {
 	workerCtx, workerEngine := gin.CreateTestContext(workerResp)
 
 	// fake request made to the worker router
-	workerCtx.Request, _ = http.NewRequest(http.MethodGet, "/build/cancel", nil)
+	workerCtx.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/build/cancel", nil)
 	workerCtx.Request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tkn))
 
 	// setup mock server router

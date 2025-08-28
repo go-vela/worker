@@ -52,8 +52,8 @@ func TestNewPodTracker(t *testing.T) {
 			pod: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "github-octocat-1-for-some-odd-reason-this-name-is-way-too-long-and-will-cause-an-error",
-					Namespace: _pod.ObjectMeta.Namespace,
-					Labels:    _pod.ObjectMeta.Labels,
+					Namespace: _pod.Namespace,
+					Labels:    _pod.Labels,
 				},
 				TypeMeta: _pod.TypeMeta,
 				Spec:     _pod.Spec,
@@ -181,7 +181,7 @@ func Test_podTracker_HandlePodAdd(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			p := &podTracker{
 				Logger:     logger,
 				TrackedPod: test.trackedPod,
@@ -255,7 +255,7 @@ func Test_podTracker_HandlePodUpdate(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			p := &podTracker{
 				Logger:     logger,
 				TrackedPod: test.trackedPod,
@@ -324,7 +324,7 @@ func Test_podTracker_HandlePodDelete(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			p := &podTracker{
 				Logger:     logger,
 				TrackedPod: test.trackedPod,
@@ -370,6 +370,7 @@ func Test_podTracker_Stop(t *testing.T) {
 			if test.started {
 				tracker.Start(context.Background())
 			}
+
 			tracker.Stop()
 		})
 	}

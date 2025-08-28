@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -29,6 +30,7 @@ func TestLocal_CreateStage(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler from CLI context: %v", err)
@@ -48,6 +50,17 @@ func TestLocal_CreateStage(t *testing.T) {
 	_runtime, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
 	}
 
 	// setup tests
@@ -102,6 +115,7 @@ func TestLocal_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
