@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-vela/server/storage"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -17,6 +16,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 	"github.com/go-vela/worker/runtime/docker"

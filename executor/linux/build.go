@@ -295,7 +295,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	for _, s := range c.pipeline.Stages {
 		// TODO: remove hardcoded reference
 		//
-
 		if s.Name == "init" {
 			continue
 		}

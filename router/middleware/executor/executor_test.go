@@ -9,12 +9,12 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-vela/server/storage"
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime/docker"
 )

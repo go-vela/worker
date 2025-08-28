@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-vela/server/storage"
 	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )

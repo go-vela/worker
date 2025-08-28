@@ -97,7 +97,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			},
 			// build configuration
 			Build: &Build{
-				Limit:   int(c.Int("build.limit")),
+				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
 			// build configuration
