@@ -115,6 +115,7 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithVersion(s.Version),
 		local.WithMockStdout(s.Mock),
 		local.WithOutputCtn(s.OutputCtn),
+		local.WithStorage(s.Storage),
 	)
 }
 

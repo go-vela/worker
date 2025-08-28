@@ -9,6 +9,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 )
@@ -136,6 +137,31 @@ func withStreamRequests(s chan message.StreamRequest) Opt {
 	return func(c *client) error {
 		// set the streamRequests channel in the client
 		c.streamRequests = s
+
+		return nil
+	}
+}
+
+// WithStorage sets the storage in the executor client for Linux.
+func WithStorage(s *storage.Setup) Opt {
+	return func(c *client) error {
+
+		// check if the storage provided is empty
+		if &s == nil {
+			return fmt.Errorf("empty storage setup provided")
+		}
+
+		// set the storage in the client
+		var err error
+
+		c.Storage, err = storage.New(s)
+		if err != nil {
+			return fmt.Errorf("unable to create storage: %w", err)
+		}
+
+		if c.Storage == nil {
+			return fmt.Errorf("empty storage setup: %w", err)
+		}
 
 		return nil
 	}

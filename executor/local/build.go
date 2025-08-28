@@ -23,6 +23,11 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
 	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
+	// Check if storage client is initialized
+	// and if storage is enabled
+	if c.Storage == nil {
+		return fmt.Errorf("storage client is not initialized")
+	}
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)

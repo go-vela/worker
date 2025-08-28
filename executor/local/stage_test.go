@@ -8,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/go-vela/server/storage"
 	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/compiler/native"
@@ -49,6 +50,17 @@ func TestLocal_CreateStage(t *testing.T) {
 	_runtime, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
 	}
 
 	// setup tests
@@ -103,6 +115,7 @@ func TestLocal_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
+				WithStorage(_storage),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

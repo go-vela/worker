@@ -30,7 +30,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
 	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
 	// Check if storage client is initialized
-	// and if storage is enable
+	// and if storage is enabled
 	if c.Storage == nil {
 		return fmt.Errorf("storage client is not initialized")
 	}

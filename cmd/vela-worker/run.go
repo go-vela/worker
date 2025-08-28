@@ -187,6 +187,6 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// start the worker
-	//nolint: contextcheck
+	//nolint: contextcheck // not using ctx yet
 	return w.Start()
 }

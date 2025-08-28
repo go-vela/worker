@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-vela/server/storage"
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
@@ -33,6 +34,17 @@ func TestExecutor_Retrieve(t *testing.T) {
 	_build := new(api.Build)
 	_build.SetRepo(_repo)
 
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -40,6 +52,7 @@ func TestExecutor_Retrieve(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      _build,
 		Pipeline:   new(pipeline.Build),
+		Storage:    _storage,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)
@@ -72,6 +85,17 @@ func TestExecutor_Establish(t *testing.T) {
 	_build := new(api.Build)
 	_build.SetRepo(_repo)
 
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -79,6 +103,7 @@ func TestExecutor_Establish(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      _build,
 		Pipeline:   new(pipeline.Build),
+		Storage:    _storage,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)

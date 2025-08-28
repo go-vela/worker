@@ -10,6 +10,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 )
@@ -22,6 +23,7 @@ type (
 		Hostname  string
 		Version   string
 		OutputCtn *pipeline.Container
+		Storage   storage.Storage
 
 		// private fields
 		init           *pipeline.Container
