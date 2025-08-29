@@ -5,7 +5,6 @@ package docker
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -76,8 +75,8 @@ func (i *ImageService) ImageImport(_ context.Context, _ image.ImportSource, _ st
 // a mocked call to inspect a Docker image.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspect
-func (i *ImageService) ImageInspect(_ context.Context, _ string, _ ...client.ImageInspectOption) (image.InspectResponse, error) {
-	return image.InspectResponse{}, nil
+func (i *ImageService) ImageInspectWithRaw(_ context.Context, _ string) (image.InspectResponse, []byte, error) {
+	return image.InspectResponse{}, nil, nil
 }
 
 // ImageInspectWithRaw is a helper function to simulate
@@ -85,16 +84,15 @@ func (i *ImageService) ImageInspect(_ context.Context, _ string, _ ...client.Ima
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
-func (i *ImageService) ImageInspectWithRaw(_ context.Context, img string) (image.InspectResponse, []byte, error) {
+func (i *ImageService) ImageInspect(_ context.Context, img string, _ ...client.ImageInspectOption) (image.InspectResponse, error) {
 	// verify an image was provided
 	if len(img) == 0 {
-		return image.InspectResponse{}, nil, errors.New("no image provided")
+		return image.InspectResponse{}, errors.New("no image provided")
 	}
 
 	// check if the image is not found
 	if strings.Contains(img, "notfound") || strings.Contains(img, "not-found") {
 		return image.InspectResponse{},
-			nil,
 			errdefs.NotFound(
 				//nolint:staticcheck // messsage is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", img),
@@ -130,13 +128,7 @@ func (i *ImageService) ImageInspectWithRaw(_ context.Context, img string) (image
 		Metadata: image.Metadata{LastTagTime: time.Now()},
 	}
 
-	// marshal response into raw bytes
-	b, err := json.Marshal(response)
-	if err != nil {
-		return image.InspectResponse{}, nil, err
-	}
-
-	return response, b, nil
+	return response, nil
 }
 
 // ImageList is a helper function to simulate
