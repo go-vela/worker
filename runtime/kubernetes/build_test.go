@@ -311,7 +311,7 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 			}
 
 			// make sure that worker-defined labels are set and cannot be overridden by PipelinePodsTemplate
-			if pipelineLabel, ok := _engine.Pod.ObjectMeta.Labels["pipeline"]; !ok {
+			if pipelineLabel, ok := _engine.Pod.Labels["pipeline"]; !ok {
 				t.Errorf("Pod is missing the pipeline label: %v", _engine.Pod.ObjectMeta)
 			} else if pipelineLabel != test.pipeline.ID {
 				t.Errorf("Pod's pipeline label is %v, want %v", pipelineLabel, test.pipeline.ID)

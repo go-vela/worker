@@ -11,6 +11,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
 )
 
@@ -65,7 +66,7 @@ func TestStep_Snapshot(t *testing.T) {
 		Directory:   "/home/github/octocat",
 		Environment: map[string]string{"FOO": "bar"},
 		Image:       "#init",
-		Name:        "init",
+		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
 	}
@@ -76,7 +77,7 @@ func TestStep_Snapshot(t *testing.T) {
 		Environment: map[string]string{"FOO": "bar"},
 		ExitCode:    137,
 		Image:       "#init",
-		Name:        "init",
+		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
 	}
@@ -189,7 +190,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		Directory:   "/home/github/octocat",
 		Environment: map[string]string{"FOO": "bar"},
 		Image:       "#init",
-		Name:        "init",
+		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
 	}
@@ -200,7 +201,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 		Environment: map[string]string{"FOO": "bar"},
 		ExitCode:    137,
 		Image:       "#init",
-		Name:        "init",
+		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
 	}

@@ -37,7 +37,11 @@ func TestLinux_CreateBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create pipeline compiler: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -147,6 +151,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -166,6 +171,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -204,16 +210,19 @@ func TestLinux_CreateBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -231,7 +240,11 @@ func TestLinux_PlanBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create pipeline compiler: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -330,6 +343,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -349,6 +363,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -392,16 +407,19 @@ func TestLinux_PlanBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -419,7 +437,11 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create pipeline compiler: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -619,6 +641,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -706,16 +729,19 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -733,7 +759,11 @@ func TestLinux_ExecBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create compiler from CLI command: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -860,6 +890,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -882,6 +913,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod = testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -965,6 +997,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 
 					percents := []int{0, 0, 50, 100}
 					lastIndex := len(percents) - 1
+
 					for index, stepsCompletedPercent := range percents {
 						if index == 0 || index == lastIndex {
 							stepsRunningCount = 0
@@ -1002,16 +1035,19 @@ func TestLinux_ExecBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -1029,7 +1065,11 @@ func TestLinux_StreamBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create compiler from CLI command: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -1048,7 +1088,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 	type planFuncType = func(context.Context, *pipeline.Container) error
 
 	// planNothing is a planFuncType that does nothing
-	planNothing := func(ctx context.Context, container *pipeline.Container) error {
+	planNothing := func(_ context.Context, _ *pipeline.Container) error {
 		return nil
 	}
 
@@ -1126,7 +1166,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamService
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanService
 				return planNothing
 			},
@@ -1152,7 +1192,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamService
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanService
 				return planNothing
 			},
@@ -1224,7 +1264,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamStep
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanStep
 				return planNothing
 			},
@@ -1248,7 +1288,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamStep
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanStep
 				return planNothing
 			},
@@ -1318,7 +1358,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.secret.stream
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// no plan function equivalent for secret containers
 				return planNothing
 			},
@@ -1342,7 +1382,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.secret.stream
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// no plan function equivalent for secret containers
 				return planNothing
 			},
@@ -1509,6 +1549,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			streamRequests := make(chan message.StreamRequest)
 
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -1528,6 +1569,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -1575,10 +1617,12 @@ func TestLinux_StreamBuild(t *testing.T) {
 					// imitate build getting canceled or otherwise finishing before ExecBuild gets called.
 					done()
 				}
+
 				if test.earlyExecExit {
 					// imitate a failure after ExecBuild starts and before it sends a StreamRequest.
 					close(streamRequests)
 				}
+
 				if test.earlyBuildDone || test.earlyExecExit {
 					return
 				}
@@ -1621,16 +1665,19 @@ func TestLinux_StreamBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
 				if logEntry.Level == logrus.ErrorLevel {
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}
@@ -1648,7 +1695,11 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create compiler from CLI command: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -1789,6 +1840,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := testLogger.WithFields(logrus.Fields{"test": test.name})
+
 			defer loggerHook.Reset()
 
 			_pipeline, _, err := compiler.
@@ -1808,6 +1860,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(_pipeline)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -1860,6 +1913,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			}
 
 			loggedError := false
+
 			for _, logEntry := range loggerHook.AllEntries() {
 				// Many errors during StreamBuild get logged and ignored.
 				// So, Make sure there are no errors logged during StreamBuild.
@@ -1879,11 +1933,13 @@ func TestLinux_DestroyBuild(t *testing.T) {
 					}
 
 					loggedError = true
+
 					if !test.logError {
 						t.Errorf("%s StreamBuild for %s logged an Error: %v", test.name, test.pipeline, logEntry.Message)
 					}
 				}
 			}
+
 			if test.logError && !loggedError {
 				t.Errorf("%s StreamBuild for %s did not log an Error but should have", test.name, test.pipeline)
 			}

@@ -140,8 +140,8 @@ func (c *client) WaitForPodTrackerReady() {
 func (c *client) WaitForPodCreate(namespace, name string) {
 	created := make(chan struct{})
 
-	c.PodTracker.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
+	_, err := c.PodTracker.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj any) {
 			select {
 			case <-created:
 				// not interested in any other create events.
@@ -164,6 +164,9 @@ func (c *client) WaitForPodCreate(namespace, name string) {
 			}
 		},
 	})
+	if err != nil {
+		return
+	}
 
 	<-created
 }

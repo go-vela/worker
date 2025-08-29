@@ -32,7 +32,7 @@ type ContainerService struct{}
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerAttach
-func (c *ContainerService) ContainerAttach(ctx context.Context, ctn string, options container.AttachOptions) (types.HijackedResponse, error) {
+func (c *ContainerService) ContainerAttach(_ context.Context, _ string, _ container.AttachOptions) (types.HijackedResponse, error) {
 	return types.HijackedResponse{}, nil
 }
 
@@ -40,7 +40,7 @@ func (c *ContainerService) ContainerAttach(ctx context.Context, ctn string, opti
 // a mocked call to apply changes to a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCommit
-func (c *ContainerService) ContainerCommit(ctx context.Context, ctn string, options container.CommitOptions) (container.CommitResponse, error) {
+func (c *ContainerService) ContainerCommit(_ context.Context, _ string, _ container.CommitOptions) (container.CommitResponse, error) {
 	return container.CommitResponse{}, nil
 }
 
@@ -48,7 +48,7 @@ func (c *ContainerService) ContainerCommit(ctx context.Context, ctn string, opti
 // a mocked call to create a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCreate
-func (c *ContainerService) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, p *v1.Platform, ctn string) (container.CreateResponse, error) {
+func (c *ContainerService) ContainerCreate(_ context.Context, config *container.Config, _ *container.HostConfig, _ *network.NetworkingConfig, _ *v1.Platform, ctn string) (container.CreateResponse, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return container.CreateResponse{},
@@ -60,7 +60,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	if strings.Contains(ctn, "notfound") &&
 		!strings.Contains(ctn, "ignorenotfound") {
 		return container.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -69,7 +69,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 	if strings.Contains(ctn, "not-found") &&
 		!strings.Contains(ctn, "ignore-not-found") {
 		return container.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -78,7 +78,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 		strings.Contains(config.Image, "not-found") {
 		return container.CreateResponse{},
 			errdefs.NotFound(
-				//nolint:stylecheck // messsage is capitalized to match Docker messages
+				//nolint:staticcheck // messsage is capitalized to match Docker messages
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", config.Image),
 			)
 	}
@@ -96,7 +96,7 @@ func (c *ContainerService) ContainerCreate(ctx context.Context, config *containe
 // filesystem between two Docker containers.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerDiff
-func (c *ContainerService) ContainerDiff(ctx context.Context, ctn string) ([]container.FilesystemChange, error) {
+func (c *ContainerService) ContainerDiff(_ context.Context, _ string) ([]container.FilesystemChange, error) {
 	return nil, nil
 }
 
@@ -105,7 +105,7 @@ func (c *ContainerService) ContainerDiff(ctx context.Context, ctn string) ([]con
 // running inside a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecAttach
-func (c *ContainerService) ContainerExecAttach(ctx context.Context, execID string, config container.ExecAttachOptions) (types.HijackedResponse, error) {
+func (c *ContainerService) ContainerExecAttach(_ context.Context, _ string, _ container.ExecAttachOptions) (types.HijackedResponse, error) {
 	return types.HijackedResponse{}, nil
 }
 
@@ -114,7 +114,7 @@ func (c *ContainerService) ContainerExecAttach(ctx context.Context, execID strin
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecCreate
-func (c *ContainerService) ContainerExecCreate(ctx context.Context, ctn string, config container.ExecOptions) (container.ExecCreateResponse, error) {
+func (c *ContainerService) ContainerExecCreate(_ context.Context, _ string, _ container.ExecOptions) (container.ExecCreateResponse, error) {
 	return container.ExecCreateResponse{}, nil
 }
 
@@ -123,7 +123,7 @@ func (c *ContainerService) ContainerExecCreate(ctx context.Context, ctn string, 
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecInspect
-func (c *ContainerService) ContainerExecInspect(ctx context.Context, execID string) (container.ExecInspect, error) {
+func (c *ContainerService) ContainerExecInspect(_ context.Context, _ string) (container.ExecInspect, error) {
 	return container.ExecInspect{}, nil
 }
 
@@ -132,7 +132,7 @@ func (c *ContainerService) ContainerExecInspect(ctx context.Context, execID stri
 // inside a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecResize
-func (c *ContainerService) ContainerExecResize(ctx context.Context, execID string, options container.ResizeOptions) error {
+func (c *ContainerService) ContainerExecResize(_ context.Context, _ string, _ container.ResizeOptions) error {
 	return nil
 }
 
@@ -141,7 +141,7 @@ func (c *ContainerService) ContainerExecResize(ctx context.Context, execID strin
 // container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecStart
-func (c *ContainerService) ContainerExecStart(ctx context.Context, execID string, config container.ExecStartOptions) error {
+func (c *ContainerService) ContainerExecStart(_ context.Context, _ string, _ container.ExecStartOptions) error {
 	return nil
 }
 
@@ -150,7 +150,7 @@ func (c *ContainerService) ContainerExecStart(ctx context.Context, execID string
 // container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExport
-func (c *ContainerService) ContainerExport(ctx context.Context, ctn string) (io.ReadCloser, error) {
+func (c *ContainerService) ContainerExport(_ context.Context, _ string) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -158,7 +158,7 @@ func (c *ContainerService) ContainerExport(ctx context.Context, ctn string) (io.
 // a mocked call to inspect a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspect
-func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (container.InspectResponse, error) {
+func (c *ContainerService) ContainerInspect(_ context.Context, ctn string) (container.InspectResponse, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return container.InspectResponse{}, errors.New("no container provided")
@@ -169,7 +169,7 @@ func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (co
 	if strings.Contains(ctn, "notfound") &&
 		!strings.Contains(ctn, "ignorenotfound") {
 		return container.InspectResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -178,7 +178,7 @@ func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (co
 	if strings.Contains(ctn, "not-found") &&
 		!strings.Contains(ctn, "ignore-not-found") {
 		return container.InspectResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -203,7 +203,7 @@ func (c *ContainerService) ContainerInspect(ctx context.Context, ctn string) (co
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspectWithRaw
-func (c *ContainerService) ContainerInspectWithRaw(ctx context.Context, ctn string, getSize bool) (container.InspectResponse, []byte, error) {
+func (c *ContainerService) ContainerInspectWithRaw(_ context.Context, ctn string, _ bool) (container.InspectResponse, []byte, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return container.InspectResponse{}, nil, errors.New("no container provided")
@@ -214,7 +214,7 @@ func (c *ContainerService) ContainerInspectWithRaw(ctx context.Context, ctn stri
 		strings.Contains(ctn, "not-found") {
 		return container.InspectResponse{},
 			nil,
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -244,7 +244,7 @@ func (c *ContainerService) ContainerInspectWithRaw(ctx context.Context, ctn stri
 // a mocked call to kill a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerKill
-func (c *ContainerService) ContainerKill(ctx context.Context, ctn, signal string) error {
+func (c *ContainerService) ContainerKill(_ context.Context, ctn, _ string) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
@@ -253,7 +253,7 @@ func (c *ContainerService) ContainerKill(ctx context.Context, ctn, signal string
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // messsage is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -264,7 +264,7 @@ func (c *ContainerService) ContainerKill(ctx context.Context, ctn, signal string
 // a mocked call to list Docker containers.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerList
-func (c *ContainerService) ContainerList(ctx context.Context, options container.ListOptions) ([]container.Summary, error) {
+func (c *ContainerService) ContainerList(_ context.Context, _ container.ListOptions) ([]container.Summary, error) {
 	return nil, nil
 }
 
@@ -273,7 +273,7 @@ func (c *ContainerService) ContainerList(ctx context.Context, options container.
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerLogs
-func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, options container.LogsOptions) (io.ReadCloser, error) {
+func (c *ContainerService) ContainerLogs(_ context.Context, ctn string, _ container.LogsOptions) (io.ReadCloser, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return nil, errors.New("no container provided")
@@ -282,7 +282,7 @@ func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, option
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // messsage is capitalized to match Docker messages
 		return nil, errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -312,7 +312,7 @@ func (c *ContainerService) ContainerLogs(ctx context.Context, ctn string, option
 // a mocked call to pause a running Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerPause
-func (c *ContainerService) ContainerPause(ctx context.Context, ctn string) error {
+func (c *ContainerService) ContainerPause(_ context.Context, _ string) error {
 	return nil
 }
 
@@ -320,7 +320,7 @@ func (c *ContainerService) ContainerPause(ctx context.Context, ctn string) error
 // a mocked call to remove a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRemove
-func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, options container.RemoveOptions) error {
+func (c *ContainerService) ContainerRemove(_ context.Context, ctn string, _ container.RemoveOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
@@ -328,7 +328,7 @@ func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, opti
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // messsage is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -339,7 +339,7 @@ func (c *ContainerService) ContainerRemove(ctx context.Context, ctn string, opti
 // a mocked call to rename a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRename
-func (c *ContainerService) ContainerRename(ctx context.Context, container, newContainerName string) error {
+func (c *ContainerService) ContainerRename(_ context.Context, _ string, _ string) error {
 	return nil
 }
 
@@ -347,7 +347,7 @@ func (c *ContainerService) ContainerRename(ctx context.Context, container, newCo
 // a mocked call to resize a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerResize
-func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, options container.ResizeOptions) error {
+func (c *ContainerService) ContainerResize(_ context.Context, _ string, _ container.ResizeOptions) error {
 	return nil
 }
 
@@ -355,7 +355,7 @@ func (c *ContainerService) ContainerResize(ctx context.Context, ctn string, opti
 // a mocked call to restart a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRestart
-func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, options container.StopOptions) error {
+func (c *ContainerService) ContainerRestart(_ context.Context, _ string, _ container.StopOptions) error {
 	return nil
 }
 
@@ -363,7 +363,7 @@ func (c *ContainerService) ContainerRestart(ctx context.Context, ctn string, opt
 // a mocked call to start a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStart
-func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, options container.StartOptions) error {
+func (c *ContainerService) ContainerStart(_ context.Context, ctn string, _ container.StartOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
@@ -372,7 +372,7 @@ func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, optio
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // messsage is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -384,7 +384,7 @@ func (c *ContainerService) ContainerStart(ctx context.Context, ctn string, optio
 // inside a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStatPath
-func (c *ContainerService) ContainerStatPath(ctx context.Context, containerID, path string) (container.PathStat, error) {
+func (c *ContainerService) ContainerStatPath(_ context.Context, _ string, _ string) (container.PathStat, error) {
 	return container.PathStat{}, nil
 }
 
@@ -393,7 +393,7 @@ func (c *ContainerService) ContainerStatPath(ctx context.Context, containerID, p
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStats
-func (c *ContainerService) ContainerStats(ctx context.Context, ctn string, stream bool) (container.StatsResponseReader, error) {
+func (c *ContainerService) ContainerStats(_ context.Context, _ string, _ bool) (container.StatsResponseReader, error) {
 	return container.StatsResponseReader{}, nil
 }
 
@@ -401,7 +401,7 @@ func (c *ContainerService) ContainerStats(ctx context.Context, ctn string, strea
 // a mocked call to stop a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStop
-func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, options container.StopOptions) error {
+func (c *ContainerService) ContainerStop(_ context.Context, ctn string, _ container.StopOptions) error {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return errors.New("no container provided")
@@ -409,7 +409,7 @@ func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, option
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // messsage is capitalized to match Docker messages
 		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
@@ -421,7 +421,7 @@ func (c *ContainerService) ContainerStop(ctx context.Context, ctn string, option
 // a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerTop
-func (c *ContainerService) ContainerTop(ctx context.Context, ctn string, arguments []string) (container.TopResponse, error) {
+func (c *ContainerService) ContainerTop(_ context.Context, _ string, _ []string) (container.TopResponse, error) {
 	return container.TopResponse{}, nil
 }
 
@@ -429,7 +429,7 @@ func (c *ContainerService) ContainerTop(ctx context.Context, ctn string, argumen
 // a mocked call to unpause a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerUnpause
-func (c *ContainerService) ContainerUnpause(ctx context.Context, ctn string) error {
+func (c *ContainerService) ContainerUnpause(_ context.Context, _ string) error {
 	return nil
 }
 
@@ -437,7 +437,7 @@ func (c *ContainerService) ContainerUnpause(ctx context.Context, ctn string) err
 // a mocked call to update a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerUpdate
-func (c *ContainerService) ContainerUpdate(ctx context.Context, ctn string, updateConfig container.UpdateConfig) (container.UpdateResponse, error) {
+func (c *ContainerService) ContainerUpdate(_ context.Context, _ string, _ container.UpdateConfig) (container.UpdateResponse, error) {
 	return container.UpdateResponse{}, nil
 }
 
@@ -446,7 +446,7 @@ func (c *ContainerService) ContainerUpdate(ctx context.Context, ctn string, upda
 // container to finish.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerWait
-func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condition container.WaitCondition) (<-chan container.WaitResponse, <-chan error) {
+func (c *ContainerService) ContainerWait(_ context.Context, ctn string, _ container.WaitCondition) (<-chan container.WaitResponse, <-chan error) {
 	ctnCh := make(chan container.WaitResponse, 1)
 	errCh := make(chan error, 1)
 
@@ -461,7 +461,7 @@ func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condit
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
 		// propagate the error to the error channel
-		//nolint:stylecheck // messsage is capitalized to match Docker messages
+		//nolint:staticcheck // messsage is capitalized to match Docker messages
 		errCh <- errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 
 		return ctnCh, errCh
@@ -491,15 +491,15 @@ func (c *ContainerService) ContainerWait(ctx context.Context, ctn string, condit
 // a mocked call to prune Docker containers.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainersPrune
-func (c *ContainerService) ContainersPrune(ctx context.Context, pruneFilters filters.Args) (container.PruneReport, error) {
+func (c *ContainerService) ContainersPrune(_ context.Context, _ filters.Args) (container.PruneReport, error) {
 	return container.PruneReport{}, nil
 }
 
 // ContainerStatsOneShot is a helper function to simulate
 // a mocked call to return near realtime stats for a given container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client#Client.CoontainerStatsOneShot
-func (c *ContainerService) ContainerStatsOneShot(ctx context.Context, containerID string) (container.StatsResponseReader, error) {
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStatsOneShot
+func (c *ContainerService) ContainerStatsOneShot(_ context.Context, _ string) (container.StatsResponseReader, error) {
 	return container.StatsResponseReader{}, nil
 }
 
@@ -507,7 +507,7 @@ func (c *ContainerService) ContainerStatsOneShot(ctx context.Context, containerI
 // a mocked call to copy content from a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.CopyFromContainer
-func (c *ContainerService) CopyFromContainer(ctx context.Context, containerID, srcPath string) (io.ReadCloser, container.PathStat, error) {
+func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, _ string) (io.ReadCloser, container.PathStat, error) {
 	return nil, container.PathStat{}, nil
 }
 
@@ -515,7 +515,7 @@ func (c *ContainerService) CopyFromContainer(ctx context.Context, containerID, s
 // a mocked call to copy content to a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.CopyToContainer
-func (c *ContainerService) CopyToContainer(ctx context.Context, container, path string, content io.Reader, options container.CopyToContainerOptions) error {
+func (c *ContainerService) CopyToContainer(_ context.Context, _ string, _ string, _ io.Reader, _ container.CopyToContainerOptions) error {
 	return nil
 }
 

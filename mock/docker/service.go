@@ -20,7 +20,7 @@ type ServiceService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceCreate
-func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options swarm.ServiceCreateOptions) (swarm.ServiceCreateResponse, error) {
+func (s *ServiceService) ServiceCreate(_ context.Context, _ swarm.ServiceSpec, _ swarm.ServiceCreateOptions) (swarm.ServiceCreateResponse, error) {
 	return swarm.ServiceCreateResponse{}, nil
 }
 
@@ -29,7 +29,7 @@ func (s *ServiceService) ServiceCreate(ctx context.Context, service swarm.Servic
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceInspectWithRaw
-func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID string, options swarm.ServiceInspectOptions) (swarm.Service, []byte, error) {
+func (s *ServiceService) ServiceInspectWithRaw(_ context.Context, _ string, _ swarm.ServiceInspectOptions) (swarm.Service, []byte, error) {
 	return swarm.Service{}, nil, nil
 }
 
@@ -38,7 +38,7 @@ func (s *ServiceService) ServiceInspectWithRaw(ctx context.Context, serviceID st
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceList
-func (s *ServiceService) ServiceList(ctx context.Context, options swarm.ServiceListOptions) ([]swarm.Service, error) {
+func (s *ServiceService) ServiceList(_ context.Context, _ swarm.ServiceListOptions) ([]swarm.Service, error) {
 	return nil, nil
 }
 
@@ -47,7 +47,7 @@ func (s *ServiceService) ServiceList(ctx context.Context, options swarm.ServiceL
 // service for a Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceLogs
-func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, options container.LogsOptions) (io.ReadCloser, error) {
+func (s *ServiceService) ServiceLogs(_ context.Context, _ string, _ container.LogsOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 
@@ -56,7 +56,7 @@ func (s *ServiceService) ServiceLogs(ctx context.Context, serviceID string, opti
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceRemove
-func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) error {
+func (s *ServiceService) ServiceRemove(_ context.Context, _ string) error {
 	return nil
 }
 
@@ -65,7 +65,7 @@ func (s *ServiceService) ServiceRemove(ctx context.Context, serviceID string) er
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServiceUpdate
-func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options swarm.ServiceUpdateOptions) (swarm.ServiceUpdateResponse, error) {
+func (s *ServiceService) ServiceUpdate(_ context.Context, _ string, _ swarm.Version, _ swarm.ServiceSpec, _ swarm.ServiceUpdateOptions) (swarm.ServiceUpdateResponse, error) {
 	return swarm.ServiceUpdateResponse{}, nil
 }
 
@@ -74,7 +74,7 @@ func (s *ServiceService) ServiceUpdate(ctx context.Context, serviceID string, ve
 // cluster and return the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.TaskInspectWithRaw
-func (s *ServiceService) TaskInspectWithRaw(ctx context.Context, taskID string) (swarm.Task, []byte, error) {
+func (s *ServiceService) TaskInspectWithRaw(_ context.Context, _ string) (swarm.Task, []byte, error) {
 	return swarm.Task{}, nil, nil
 }
 
@@ -83,14 +83,14 @@ func (s *ServiceService) TaskInspectWithRaw(ctx context.Context, taskID string) 
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.TaskList
-func (s *ServiceService) TaskList(ctx context.Context, options swarm.TaskListOptions) ([]swarm.Task, error) {
+func (s *ServiceService) TaskList(_ context.Context, _ swarm.TaskListOptions) ([]swarm.Task, error) {
 	return nil, nil
 }
 
 // TaskLogs is a helper function to simulate
 // a mocked call to capture the logs from a
 // task for a Docker swarm cluster.
-func (s *ServiceService) TaskLogs(ctx context.Context, taskID string, options container.LogsOptions) (io.ReadCloser, error) {
+func (s *ServiceService) TaskLogs(_ context.Context, _ string, _ container.LogsOptions) (io.ReadCloser, error) {
 	return nil, nil
 }
 

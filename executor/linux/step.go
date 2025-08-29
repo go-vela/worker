@@ -28,7 +28,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	logger := c.Logger.WithField("step", ctn.Name)
 
 	// TODO: remove hardcoded reference
-	if ctn.Name == "init" {
+	if ctn.Name == constants.InitName {
 		return nil
 	}
 
@@ -79,7 +79,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 }
 
 // PlanStep prepares the step for execution.
-func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) PlanStep(_ context.Context, ctn *pipeline.Container) error {
 	var err error
 
 	// update engine logger with step metadata
@@ -148,7 +148,7 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 // ExecStep runs a step.
 func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
-	if ctn.Name == "init" {
+	if ctn.Name == constants.InitName {
 		return nil
 	}
 
@@ -229,7 +229,7 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 // StreamStep tails the output for a step.
 func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
-	if ctn.Name == "init" {
+	if ctn.Name == constants.InitName {
 		return nil
 	}
 
@@ -384,7 +384,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 // DestroyStep cleans up steps after execution.
 func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error {
 	// TODO: remove hardcoded reference
-	if ctn.Name == "init" {
+	if ctn.Name == constants.InitName {
 		return nil
 	}
 

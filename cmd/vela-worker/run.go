@@ -96,7 +96,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			},
 			// build configuration
 			Build: &Build{
-				Limit:   int(c.Int("build.limit")),
+				Limit:   c.Int32("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
 			// build configuration
@@ -104,7 +104,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver:              c.String("executor.driver"),
-				MaxLogSize:          uint(c.Uint("executor.max_log_size")),
+				MaxLogSize:          c.Uint("executor.max_log_size"),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,
@@ -172,5 +172,5 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// start the worker
-	return w.Start()
+	return w.Start(ctx)
 }
