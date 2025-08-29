@@ -8,6 +8,7 @@ import (
 	"gotest.tools/v3/env"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 )
 
 func TestDocker_New(t *testing.T) {
@@ -92,7 +93,7 @@ var (
 				Directory:   "/vela/src/github.com/octocat/helloworld",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},

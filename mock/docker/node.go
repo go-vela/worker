@@ -18,7 +18,7 @@ type NodeService struct{}
 // cluster and return the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeInspectWithRaw
-func (n *NodeService) NodeInspectWithRaw(ctx context.Context, nodeID string) (swarm.Node, []byte, error) {
+func (n *NodeService) NodeInspectWithRaw(_ context.Context, _ string) (swarm.Node, []byte, error) {
 	return swarm.Node{}, nil, nil
 }
 
@@ -27,7 +27,7 @@ func (n *NodeService) NodeInspectWithRaw(ctx context.Context, nodeID string) (sw
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeList
-func (n *NodeService) NodeList(ctx context.Context, options swarm.NodeListOptions) ([]swarm.Node, error) {
+func (n *NodeService) NodeList(_ context.Context, _ swarm.NodeListOptions) ([]swarm.Node, error) {
 	return nil, nil
 }
 
@@ -36,7 +36,7 @@ func (n *NodeService) NodeList(ctx context.Context, options swarm.NodeListOption
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeRemove
-func (n *NodeService) NodeRemove(ctx context.Context, nodeID string, options swarm.NodeRemoveOptions) error {
+func (n *NodeService) NodeRemove(_ context.Context, _ string, _ swarm.NodeRemoveOptions) error {
 	return nil
 }
 
@@ -45,7 +45,7 @@ func (n *NodeService) NodeRemove(ctx context.Context, nodeID string, options swa
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeUpdate
-func (n *NodeService) NodeUpdate(ctx context.Context, nodeID string, version swarm.Version, node swarm.NodeSpec) error {
+func (n *NodeService) NodeUpdate(_ context.Context, _ string, _ swarm.Version, _ swarm.NodeSpec) error {
 	return nil
 }
 

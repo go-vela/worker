@@ -35,8 +35,6 @@ func (c *client) GetPipeline() (*pipeline.Build, error) {
 }
 
 // CancelBuild cancels the current build in execution.
-//
-//nolint:funlen // process of going through steps/services/stages is verbose and could be funcitonalized
 func (c *client) CancelBuild() (*api.Build, error) {
 	// get the current build from the client
 	b, err := c.GetBuild()
@@ -76,16 +74,12 @@ func (c *client) CancelBuild() (*api.Build, error) {
 		switch s.GetStatus() {
 		// service is in a error state
 		case constants.StatusError:
-			break
 		// service is in a failure state
 		case constants.StatusFailure:
-			break
 		// service is in a killed state
 		case constants.StatusKilled:
-			break
 		// service is in a success state
 		case constants.StatusSuccess:
-			break
 		default:
 			// update the service with a canceled state
 			s.SetStatus(constants.StatusCanceled)
@@ -117,16 +111,12 @@ func (c *client) CancelBuild() (*api.Build, error) {
 		switch s.GetStatus() {
 		// step is in a error state
 		case constants.StatusError:
-			break
 		// step is in a failure state
 		case constants.StatusFailure:
-			break
 		// step is in a killed state
 		case constants.StatusKilled:
-			break
 		// step is in a success state
 		case constants.StatusSuccess:
-			break
 		default:
 			// update the step with a canceled state
 			s.SetStatus(constants.StatusCanceled)
@@ -160,16 +150,12 @@ func (c *client) CancelBuild() (*api.Build, error) {
 			switch s.GetStatus() {
 			// stage is in a error state
 			case constants.StatusError:
-				break
 			// stage is in a failure state
 			case constants.StatusFailure:
-				break
 			// stage is in a killed state
 			case constants.StatusKilled:
-				break
 			// stage is in a success state
 			case constants.StatusSuccess:
-				break
 			default:
 				// update the step with a canceled state
 				s.SetStatus(constants.StatusCanceled)

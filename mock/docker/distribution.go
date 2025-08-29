@@ -16,7 +16,7 @@ type DistributionService struct{}
 // DistributionInspect is a helper function to simulate
 // a mocked call to inspect a Docker image and return
 // the digest and manifest.
-func (d *DistributionService) DistributionInspect(ctx context.Context, image, encodedRegistryAuth string) (registry.DistributionInspect, error) {
+func (d *DistributionService) DistributionInspect(_ context.Context, _ string, _ string) (registry.DistributionInspect, error) {
 	return registry.DistributionInspect{}, nil
 }
 

@@ -25,7 +25,7 @@ type NetworkService struct{}
 // a mocked call to connect to a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkConnect
-func (n *NetworkService) NetworkConnect(ctx context.Context, network, container string, config *network.EndpointSettings) error {
+func (n *NetworkService) NetworkConnect(_ context.Context, _, _ string, _ *network.EndpointSettings) error {
 	return nil
 }
 
@@ -33,7 +33,7 @@ func (n *NetworkService) NetworkConnect(ctx context.Context, network, container 
 // a mocked call to create a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkCreate
-func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options network.CreateOptions) (network.CreateResponse, error) {
+func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ network.CreateOptions) (network.CreateResponse, error) {
 	// verify a network was provided
 	if len(name) == 0 {
 		return network.CreateResponse{}, errors.New("no network provided")
@@ -44,7 +44,7 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 	if strings.Contains(name, "notfound") &&
 		!strings.Contains(name, "ignorenotfound") {
 		return network.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
 
@@ -53,7 +53,7 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 	if strings.Contains(name, "not-found") &&
 		!strings.Contains(name, "ignore-not-found") {
 		return network.CreateResponse{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
 
@@ -69,7 +69,7 @@ func (n *NetworkService) NetworkCreate(ctx context.Context, name string, options
 // a mocked call to disconnect from a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkDisconnect
-func (n *NetworkService) NetworkDisconnect(ctx context.Context, network, container string, force bool) error {
+func (n *NetworkService) NetworkDisconnect(_ context.Context, _, _ string, _ bool) error {
 	return nil
 }
 
@@ -77,7 +77,7 @@ func (n *NetworkService) NetworkDisconnect(ctx context.Context, network, contain
 // a mocked call to inspect a Docker network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspect
-func (n *NetworkService) NetworkInspect(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, error) {
+func (n *NetworkService) NetworkInspect(_ context.Context, networkID string, _ network.InspectOptions) (network.Inspect, error) {
 	// verify a network was provided
 	if len(networkID) == 0 {
 		return network.Inspect{}, errors.New("no network provided")
@@ -86,14 +86,14 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, networkID string, o
 	// check if the network is notfound
 	if strings.Contains(networkID, "notfound") {
 		return network.Inspect{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
 	}
 
 	// check if the network is not-found
 	if strings.Contains(networkID, "not-found") {
 		return network.Inspect{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
 	}
 
@@ -118,7 +118,7 @@ func (n *NetworkService) NetworkInspect(ctx context.Context, networkID string, o
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspectWithRaw
-func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, []byte, error) {
+func (n *NetworkService) NetworkInspectWithRaw(_ context.Context, networkID string, _ network.InspectOptions) (network.Inspect, []byte, error) {
 	// verify a network was provided
 	if len(networkID) == 0 {
 		return network.Inspect{}, nil, errors.New("no network provided")
@@ -150,7 +150,7 @@ func (n *NetworkService) NetworkInspectWithRaw(ctx context.Context, networkID st
 // a mocked call to list Docker networks.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkList
-func (n *NetworkService) NetworkList(ctx context.Context, options network.ListOptions) ([]network.Summary, error) {
+func (n *NetworkService) NetworkList(_ context.Context, _ network.ListOptions) ([]network.Summary, error) {
 	return nil, nil
 }
 
@@ -158,7 +158,7 @@ func (n *NetworkService) NetworkList(ctx context.Context, options network.ListOp
 // a mocked call to remove Docker a network.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkRemove
-func (n *NetworkService) NetworkRemove(ctx context.Context, network string) error {
+func (n *NetworkService) NetworkRemove(_ context.Context, network string) error {
 	// verify a network was provided
 	if len(network) == 0 {
 		return errors.New("no network provided")
@@ -171,7 +171,7 @@ func (n *NetworkService) NetworkRemove(ctx context.Context, network string) erro
 // a mocked call to prune Docker networks.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NetworksPrune
-func (n *NetworkService) NetworksPrune(ctx context.Context, pruneFilter filters.Args) (network.PruneReport, error) {
+func (n *NetworkService) NetworksPrune(_ context.Context, _ filters.Args) (network.PruneReport, error) {
 	return network.PruneReport{}, nil
 }
 

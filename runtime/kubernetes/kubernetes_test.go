@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 )
 
 func TestKubernetes_New(t *testing.T) {
@@ -172,14 +173,14 @@ var (
 		},
 		Stages: pipeline.StageSlice{
 			{
-				Name: "init",
+				Name: constants.InitName,
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "step-github-octocat-1-init-init",
 						Directory:   "/vela/src/github.com/octocat/helloworld",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "#init",
-						Name:        "init",
+						Name:        constants.InitName,
 						Number:      1,
 						Pull:        "always",
 					},
@@ -187,7 +188,7 @@ var (
 			},
 			{
 				Name:  "clone",
-				Needs: []string{"init"},
+				Needs: []string{constants.InitName},
 				Steps: pipeline.ContainerSlice{
 					{
 						ID:          "step-github-octocat-1-clone-clone",
@@ -240,7 +241,7 @@ var (
 				Directory:   "/vela/src/github.com/octocat/helloworld",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},

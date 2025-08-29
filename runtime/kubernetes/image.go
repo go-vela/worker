@@ -29,14 +29,14 @@ const (
 )
 
 // CreateImage creates the pipeline container image.
-func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) CreateImage(_ context.Context, ctn *pipeline.Container) error {
 	c.Logger.Tracef("no-op: creating image for container %s", ctn.ID)
 
 	return nil
 }
 
 // InspectImage inspects the pipeline container image.
-func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]byte, error) {
+func (c *client) InspectImage(_ context.Context, ctn *pipeline.Container) ([]byte, error) {
 	c.Logger.Tracef("inspecting image for container %s", ctn.ID)
 
 	// TODO: consider updating this command

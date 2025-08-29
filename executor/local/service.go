@@ -44,7 +44,7 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 }
 
 // PlanService prepares the service for execution.
-func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error {
+func (c *client) PlanService(_ context.Context, ctn *pipeline.Container) error {
 	// update the engine service object
 	_service := new(api.Service)
 	_service.SetName(ctn.Name)

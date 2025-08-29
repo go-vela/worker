@@ -146,7 +146,6 @@ func TestKubernetes_ClientOpt_WithHostVolumes(t *testing.T) {
 				WithConfigFile("testdata/config"),
 				WithHostVolumes(test.volumes),
 			)
-
 			if err != nil {
 				t.Errorf("WithHostVolumes returned err: %v", err)
 			}
@@ -184,7 +183,6 @@ func TestKubernetes_ClientOpt_WithPrivilegedImages(t *testing.T) {
 				WithConfigFile("testdata/config"),
 				WithPrivilegedImages(test.images),
 			)
-
 			if err != nil {
 				t.Errorf("WithPrivilegedImages returned err: %v", err)
 			}

@@ -112,6 +112,7 @@ func getBuild(c *gin.Context) {
 	data := []byte(BuildResp)
 
 	var body api.Build
+
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)

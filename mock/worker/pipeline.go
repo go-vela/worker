@@ -51,6 +51,7 @@ func getPipeline(c *gin.Context) {
 	data := []byte(PipelineResp)
 
 	var body api.Pipeline
+
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)

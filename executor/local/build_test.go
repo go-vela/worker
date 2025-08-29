@@ -25,6 +25,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
@@ -110,6 +111,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
@@ -201,6 +203,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
@@ -326,6 +329,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
@@ -436,6 +440,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)
@@ -451,7 +456,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 	type planFuncType = func(context.Context, *pipeline.Container) error
 
 	// planNothing is a planFuncType that does nothing
-	planNothing := func(ctx context.Context, container *pipeline.Container) error {
+	planNothing := func(_ context.Context, _ *pipeline.Container) error {
 		return nil
 	}
 
@@ -495,7 +500,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamService
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanService
 				return planNothing
 			},
@@ -540,7 +545,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 			streamFunc: func(c *client) message.StreamFunc {
 				return c.StreamStep
 			},
-			planFunc: func(c *client) planFuncType {
+			planFunc: func(_ *client) planFuncType {
 				// simulate failure to call PlanStep
 				return planNothing
 			},
@@ -658,6 +663,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler engine: %v", err)

@@ -197,7 +197,7 @@ var (
 				ID:        "step_github_octocat_1_init",
 				Directory: "/home/github/octocat",
 				Image:     "#init",
-				Name:      "init",
+				Name:      constants.InitName,
 				Number:    1,
 				Pull:      "always",
 			},

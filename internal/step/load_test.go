@@ -9,6 +9,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 )
 
 func TestStep_Load(t *testing.T) {
@@ -18,7 +19,7 @@ func TestStep_Load(t *testing.T) {
 		Directory:   "/home/github/octocat",
 		Environment: map[string]string{"FOO": "bar"},
 		Image:       "#init",
-		Name:        "init",
+		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
 	}
@@ -107,14 +108,14 @@ func TestStep_LoadInit(t *testing.T) {
 				ID:      "github_octocat_1",
 				Stages: pipeline.StageSlice{
 					{
-						Name: "init",
+						Name: constants.InitName,
 						Steps: pipeline.ContainerSlice{
 							{
 								ID:          "github_octocat_1_init_init",
 								Directory:   "/vela/src/github.com/github/octocat",
 								Environment: map[string]string{"FOO": "bar"},
 								Image:       "#init",
-								Name:        "init",
+								Name:        constants.InitName,
 								Number:      1,
 								Pull:        "always",
 							},
@@ -127,7 +128,7 @@ func TestStep_LoadInit(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},
@@ -144,7 +145,7 @@ func TestStep_LoadInit(t *testing.T) {
 						Directory:   "/vela/src/github.com/github/octocat",
 						Environment: map[string]string{"FOO": "bar"},
 						Image:       "#init",
-						Name:        "init",
+						Name:        constants.InitName,
 						Number:      1,
 						Pull:        "always",
 					},
@@ -155,7 +156,7 @@ func TestStep_LoadInit(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},
@@ -199,7 +200,7 @@ func TestStep_LoadLogs(t *testing.T) {
 		Directory:   "/home/github/octocat",
 		Environment: map[string]string{"FOO": "bar"},
 		Image:       "#init",
-		Name:        "init",
+		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
 	}

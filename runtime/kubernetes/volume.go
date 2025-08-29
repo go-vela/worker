@@ -16,7 +16,7 @@ import (
 )
 
 // CreateVolume creates the pipeline volume.
-func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
+func (c *client) CreateVolume(_ context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("creating volume for pipeline %s", b.ID)
 
 	// create the workspace volume for the pod
@@ -89,7 +89,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 }
 
 // InspectVolume inspects the pipeline volume.
-func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, error) {
+func (c *client) InspectVolume(_ context.Context, b *pipeline.Build) ([]byte, error) {
 	c.Logger.Tracef("inspecting volume for pipeline %s", b.ID)
 
 	// TODO: consider updating this command
@@ -113,7 +113,7 @@ func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, 
 // Currently, this is comparable to a no-op because in Kubernetes the
 // volume lives and dies with the pod it's attached to. However, Vela
 // uses it to cleanup the volume definition for the pod.
-func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
+func (c *client) RemoveVolume(_ context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("removing volume for pipeline %s", b.ID)
 
 	// remove the volume definition from the pod spec
@@ -128,7 +128,7 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 // setupVolumeMounts generates the VolumeMounts for a given container.
 //
 //nolint:unparam // keep signature similar to Engine interface methods despite unused ctx and err
-func (c *client) setupVolumeMounts(ctx context.Context, ctn *pipeline.Container) (
+func (c *client) setupVolumeMounts(_ context.Context, ctn *pipeline.Container) (
 	volumeMounts []v1.VolumeMount,
 	err error,
 ) {

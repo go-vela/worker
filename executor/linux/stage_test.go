@@ -35,7 +35,11 @@ func TestLinux_CreateStage(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create pipeline compiler: %v", err)
+	}
 
 	_pipeline, _, err := compiler.
 		Duplicate().
@@ -229,6 +233,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	dtm, _ := dockerTestMap.Load("foo")
 	dtm.(chan error) <- nil
+
 	close(dtm.(chan error))
 
 	kubernetesTestMap := new(sync.Map)
@@ -236,6 +241,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	ktm, _ := kubernetesTestMap.Load("foo")
 	ktm.(chan error) <- nil
+
 	close(ktm.(chan error))
 
 	dockerErrMap := new(sync.Map)
@@ -243,6 +249,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	dem, _ := dockerErrMap.Load("foo")
 	dem.(chan error) <- errors.New("bar")
+
 	close(dem.(chan error))
 
 	kubernetesErrMap := new(sync.Map)
@@ -250,6 +257,7 @@ func TestLinux_PlanStage(t *testing.T) {
 
 	kem, _ := kubernetesErrMap.Load("foo")
 	kem.(chan error) <- errors.New("bar")
+
 	close(kem.(chan error))
 
 	// setup tests
