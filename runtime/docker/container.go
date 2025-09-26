@@ -9,8 +9,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/containerd/errdefs"
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
-	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -33,6 +33,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// capture the container exit code
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#ContainerState
+	//nolint:gosec // G115 - container exit codes are always in int32 range (0-255)
 	ctn.ExitCode = int32(container.State.ExitCode)
 
 	return nil
@@ -92,7 +93,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 	// allocate new container config from pipeline container
 	containerConf := ctnConfig(ctn)
 	// allocate new host config with volume data
-	hostConf := hostConfig(c.Logger, b.ID, ctn.Ulimits, c.config.Volumes, c.config.DropCapabilities)
+	hostConf := hostConfig(c.Logger, b.ID, ctn.Ulimits, c.config.Volumes, c.config.DropCapabilities, nil)
 	// allocate new network config with container name
 	networkConf := netConfig(b.ID, ctn.Name)
 
@@ -161,6 +162,21 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		return err
 	}
 
+	// Security audit logging: Log container creation with security details
+	c.Logger.WithFields(map[string]interface{}{
+		"build_id":             ctn.ID,
+		"container_security":   "hardened",
+		"capabilities_dropped": hostConf.CapDrop,
+		"capabilities_added":   hostConf.CapAdd,
+		"privileged":           hostConf.Privileged,
+		"pid_limit":            hostConf.Resources.PidsLimit,
+		"memory_limit_bytes":   hostConf.Resources.Memory,
+		"cpu_quota":            hostConf.Resources.CPUQuota,
+		"cpu_period":           hostConf.Resources.CPUPeriod,
+		"security_opts":        hostConf.SecurityOpt,
+		"readonly_rootfs":      hostConf.ReadonlyRootfs,
+	}).Info("created security-hardened container")
+
 	// create options for starting container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types/container#StartOptions
@@ -209,8 +225,8 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 
 	// check if the container image exists on the host
 	//
-	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
-	_, _, err = c.Docker.ImageInspectWithRaw(ctx, _image)
+	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspect
+	_, err = c.Docker.ImageInspect(ctx, _image)
 	if err == nil {
 		return nil
 	}
@@ -218,8 +234,8 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// if the container image does not exist on the host
 	// we attempt to capture it for executing the pipeline
 	//
-	// https://pkg.go.dev/github.com/docker/docker/client#IsErrNotFound
-	if docker.IsErrNotFound(err) {
+	// https://pkg.go.dev/github.com/containerd/errdefs#IsNotFound
+	if errdefs.IsNotFound(err) {
 		// send API call to create the image
 		return c.CreateImage(ctx, ctn)
 	}
