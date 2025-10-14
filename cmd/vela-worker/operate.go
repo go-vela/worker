@@ -6,6 +6,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
@@ -105,14 +106,30 @@ func (w *Worker) operate(ctx context.Context) error {
 		// set bucket name in storage config
 		w.Config.Storage.Bucket = stCreds.GetStorageBucket()
 		logrus.Trace("bucket name: ", w.Config.Storage.Bucket)
+
+		s, err := storage.New(w.Config.Storage)
+		if err != nil {
+			logrus.Error("storage setup failed")
+			// set to error as storage setup fails
+			w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
+			return err
+		}
+		w.Storage = &s
+		logrus.WithFields(logrus.Fields{
+			"driver":   w.Config.Storage.Driver,
+			"bucket":   w.Config.Storage.Bucket,
+			"endpoint": w.Config.Storage.Endpoint,
+		}).Debug("storage initialized")
 	} else {
 		logrus.Trace("storage not enabled")
 		// storage disabled; nothing to validate
-		w.Config.Storage.Driver = ""
-		w.Config.Storage.Endpoint = ""
-		w.Config.Storage.AccessKey = ""
-		w.Config.Storage.SecretKey = ""
-		w.Config.Storage.Bucket = ""
+		w.Storage = nil
+		logrus.Debug("storage disabled: worker storage unset")
+		//w.Config.Storage.Driver = ""
+		//w.Config.Storage.Endpoint = ""
+		//w.Config.Storage.AccessKey = ""
+		//w.Config.Storage.SecretKey = ""
+		//w.Config.Storage.Bucket = ""
 	}
 
 	// spawn goroutine for phoning home
