@@ -143,23 +143,17 @@ func withStreamRequests(s chan message.StreamRequest) Opt {
 }
 
 // WithStorage sets the storage in the executor client for Linux.
-func WithStorage(s *storage.Setup) Opt {
+func WithStorage(s *storage.Storage) Opt {
 	return func(c *client) error {
 		// check if the storage provided is empty
 		if &s == nil {
 			return fmt.Errorf("empty storage setup provided")
 		}
 
-		// set the storage in the client
-		var err error
-
-		c.Storage, err = storage.New(s)
-		if err != nil {
-			return fmt.Errorf("unable to create storage: %w", err)
-		}
+		c.Storage = *s
 
 		if c.Storage == nil {
-			return fmt.Errorf("empty storage setup: %w", err)
+			return fmt.Errorf("empty storage setup: %v", s)
 		}
 
 		return nil

@@ -50,6 +50,11 @@ func TestLocal_CreateBuild(t *testing.T) {
 		Secure:    false,
 	}
 
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	tests := []struct {
 		name     string
 		failure  bool
@@ -91,7 +96,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -148,6 +153,11 @@ func TestLocal_PlanBuild(t *testing.T) {
 		Secure:    false,
 	}
 
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	tests := []struct {
 		name     string
 		failure  bool
@@ -189,7 +199,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -250,6 +260,10 @@ func TestLocal_AssembleBuild(t *testing.T) {
 		Bucket:    "vela",
 		Region:    "",
 		Secure:    false,
+	}
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -327,7 +341,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -388,6 +402,10 @@ func TestLocal_ExecBuild(t *testing.T) {
 		Bucket:    "vela",
 		Region:    "",
 		Secure:    false,
+	}
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -450,7 +468,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -511,6 +529,10 @@ func TestLocal_StreamBuild(t *testing.T) {
 		Bucket:    "vela",
 		Region:    "",
 		Secure:    false,
+	}
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	type planFuncType = func(context.Context, *pipeline.Container) error
@@ -665,7 +687,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -747,6 +769,10 @@ func TestLocal_DestroyBuild(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -804,7 +830,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

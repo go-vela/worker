@@ -31,9 +31,9 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
 	// Check if storage client is initialized
 	// and if storage is enabled
-	if c.Storage == nil {
-		return fmt.Errorf("storage client is not initialized")
-	}
+	//if c.Storage == nil && c.Storage.StorageEnable() {
+	//	return fmt.Errorf("storage client is not initialized")
+	//}
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -517,7 +517,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build, c.build.GetStatus())
+		skip, err := step.Skip(_step, c.build, c.build.GetStatus(), c.Storage)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
@@ -525,6 +525,64 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		if skip {
 			continue
 		}
+
+		// Check if this step has test_report and storage is disabled
+		//if !_step.TestReport.Empty() && c.Storage == nil {
+		//	c.Logger.Infof("skipping %s step: storage is disabled but test_report is defined", _step.Name)
+		//
+		//	//// Load step model
+		//	//stepData, err := step.Load(_step, &c.steps)
+		//	//if err != nil {
+		//	//	return fmt.Errorf("unable to load step: %w", err)
+		//	//}
+		//	//
+		//	//// Load or create logs for this step
+		//	////stepLog, err := step.LoadLogs(_step, &c.stepLogs)
+		//	////if err != nil {
+		//	////	return fmt.Errorf("unable to load step logs: %w", err)
+		//	////}
+		//	//
+		//	//// Ensure timestamps
+		//	//now := time.Now().UTC().Unix()
+		//	//if stepData.GetStarted() == 0 {
+		//	//	stepData.SetStarted(now)
+		//	//}
+		//	//
+		//	//stepData.SetStatus(constants.StatusError)
+		//	//stepData.SetExitCode(0)
+		//	//stepData.SetFinished(now)
+		//
+		//	// send API call to update the step
+		//	//
+		//	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
+		//	//_tsstep, _, err := c.Vela.Step.Update(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), stepData)
+		//	//if err != nil {
+		//	//	return err
+		//	//}
+		//	//
+		//	//// send API call to capture the step log
+		//	////
+		//	//// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.GetStep
+		//	//_log, _, err := c.Vela.Log.GetStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _tsstep.GetNumber())
+		//	//if err != nil {
+		//	//	return err
+		//	//}
+		//	//_log.AppendData([]byte("Storage is disabled, contact Vela Admins\n"))
+		//	//
+		//	//// add a step log to a map
+		//	//c.stepLogs.Store(_step.ID, _log)
+		//	//stepLog.AppendData([]byte("Storage is disabled, contact Vela Admins\n"))
+		//	//stepLog.SetData([]byte("Storage is disabled, contact Vela Admins\n"))
+		//	//// Upload logs so UI can display the message
+		//	//if _, err := c.Vela.Log.
+		//	//	UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), *stepData.Number, stepLog); err != nil {
+		//	//	c.Logger.Errorf("unable to upload skipped step logs: %v", err)
+		//	//}
+		//	// Upload step status
+		//	//step.Upload(_step, c.build, c.Vela, c.Logger, stepData)
+		//
+		//	continue
+		//}
 
 		// add netrc to secrets for masking in logs
 		sec := &pipeline.StepSecret{
@@ -556,36 +614,42 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// logic for polling files only if the test-report step is present
 		// iterate through the steps in the build
 
-		if !_step.TestReport.Empty() {
-			c.Logger.Debug("creating test report record in database")
-			// send API call to update the test report
-			//
-			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#TestReportService.Add
-			// TODO: .Add should be .Update
-			// TODO: handle somewhere if multiple test report keys exist in pipeline
-			if !testReportCreated {
-				tr, c.err = c.CreateTestReport()
-				if c.err != nil {
-					return fmt.Errorf("unable to create test report: %w", c.err)
-				}
-
-				testReportCreated = true
+		// TODO: API to return if storage is enabled
+		//if c.Storage == nil && _step.TestReport.Empty() || c.Storage == nil && !_step.TestReport.Empty() {
+		//	c.Logger.Infof("storage disabled, skipping test report for %s step", _step.Name)
+		//	// skip if no storage client
+		//	// but test report is defined in step
+		//	continue
+		//} else if !_step.TestReport.Empty() && c.Storage != nil {
+		c.Logger.Debug("creating test report record in database")
+		// send API call to update the test report
+		//
+		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#TestReportService.Add
+		// TODO: .Add should be .Update
+		// TODO: handle somewhere if multiple test report keys exist in pipeline
+		if !testReportCreated {
+			tr, c.err = c.CreateTestReport()
+			if c.err != nil {
+				return fmt.Errorf("unable to create test report: %w", c.err)
 			}
 
-			if len(_step.TestReport.Results) != 0 {
-				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build, tr)
-				if err != nil {
-					c.Logger.Errorf("unable to poll files for results: %v", err)
-				}
-			}
+			testReportCreated = true
+		}
 
-			if len(_step.TestReport.Attachments) != 0 {
-				err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build, tr)
-				if err != nil {
-					c.Logger.Errorf("unable to poll files for attachments: %v", err)
-				}
+		if len(_step.TestReport.Results) != 0 {
+			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build, tr)
+			if err != nil {
+				c.Logger.Errorf("unable to poll files for results: %v", err)
 			}
 		}
+
+		if len(_step.TestReport.Attachments) != 0 {
+			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build, tr)
+			if err != nil {
+				c.Logger.Errorf("unable to poll files for attachments: %v", err)
+			}
+		}
+		//}
 
 		// perform any substitution on dynamic variables
 		err = _step.Substitute()

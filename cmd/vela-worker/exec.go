@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -28,6 +29,8 @@ import (
 //nolint:funlen // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
+	var execStorage *storage.Storage
+	var _executor executor.Engine
 
 	// setup the version
 	v := version.New()
@@ -156,8 +159,12 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
+	logrus.Debugf("storage config: %+v", w.Config.Storage.Enable)
 	// dereference configured storage config and set the storage config for the executor
-	execStorage := *w.Config.Executor.Storage
+	if w.Config.Storage.Enable {
+		logrus.Debugf("executor storage is enabled")
+		execStorage = w.Config.Executor.Storage
+	}
 
 	// create logger with extra metadata
 	//
@@ -233,26 +240,51 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		return err
 	}
 
-	// setup the executor
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor#New
-	_executor, err := executor.New(&executor.Setup{
-		Logger:              logger,
-		Mock:                w.Config.Mock,
-		Driver:              w.Config.Executor.Driver,
-		MaxLogSize:          w.Config.Executor.MaxLogSize,
-		LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
-		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
-		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
-		Client:              execBuildClient,
-		Hostname:            w.Config.API.Address.Hostname(),
-		Runtime:             w.Runtime,
-		Build:               item.Build,
-		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
-		Version:             v.Semantic(),
-		OutputCtn:           &execOutputCtn,
-		Storage:             &execStorage,
-	})
+	if w.Config.Storage.Enable {
+		logrus.Debugf("executor storage is enabled")
+		logrus.Debugf("storage config: %+v", execStorage)
+		// setup the executor
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/executor#New
+		_executor, err = executor.New(&executor.Setup{
+			Logger:              logger,
+			Mock:                w.Config.Mock,
+			Driver:              w.Config.Executor.Driver,
+			MaxLogSize:          w.Config.Executor.MaxLogSize,
+			LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
+			EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
+			PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
+			Client:              execBuildClient,
+			Hostname:            w.Config.API.Address.Hostname(),
+			Runtime:             w.Runtime,
+			Build:               item.Build,
+			Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
+			Version:             v.Semantic(),
+			OutputCtn:           &execOutputCtn,
+			Storage:             execStorage,
+		})
+	} else {
+		logrus.Debugf("executor storage is disabled")
+		// setup the executor
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/executor#New
+		_executor, err = executor.New(&executor.Setup{
+			Logger:              logger,
+			Mock:                w.Config.Mock,
+			Driver:              w.Config.Executor.Driver,
+			MaxLogSize:          w.Config.Executor.MaxLogSize,
+			LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
+			EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
+			PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
+			Client:              execBuildClient,
+			Hostname:            w.Config.API.Address.Hostname(),
+			Runtime:             w.Runtime,
+			Build:               item.Build,
+			Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
+			Version:             v.Semantic(),
+			OutputCtn:           &execOutputCtn,
+		})
+	}
 
 	// add the executor to the worker
 	w.Executors[index] = _executor

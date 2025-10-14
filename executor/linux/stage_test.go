@@ -78,6 +78,11 @@ func TestLinux_CreateStage(t *testing.T) {
 		Secure:    false,
 	}
 
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	// setup tests
 	tests := []struct {
 		name    string
@@ -183,7 +188,7 @@ func TestLinux_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -246,6 +251,11 @@ func TestLinux_PlanStage(t *testing.T) {
 		Bucket:    "vela",
 		Region:    "",
 		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	dockerTestMap := new(sync.Map)
@@ -418,7 +428,7 @@ func TestLinux_PlanStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -478,6 +488,11 @@ func TestLinux_ExecStage(t *testing.T) {
 		Bucket:    "vela",
 		Region:    "",
 		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	// setup tests
@@ -619,7 +634,7 @@ func TestLinux_ExecStage(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -674,6 +689,11 @@ func TestLinux_DestroyStage(t *testing.T) {
 		Bucket:    "vela",
 		Region:    "",
 		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	// setup tests
@@ -731,7 +751,7 @@ func TestLinux_DestroyStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)

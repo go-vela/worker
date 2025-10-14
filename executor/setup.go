@@ -62,7 +62,7 @@ type Setup struct {
 	// id token request token for the build
 	RequestToken string
 	// storage client for interacting with storage resources
-	Storage *storage.Setup
+	Storage *storage.Storage
 }
 
 // Darwin creates and returns a Vela engine capable of
@@ -78,10 +78,8 @@ func (s *Setup) Darwin() (Engine, error) {
 func (s *Setup) Linux() (Engine, error) {
 	logrus.Trace("creating linux executor client from setup")
 
-	// create new Linux executor engine
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux#New
-	return linux.New(
+	// create options for Linux executor
+	opts := []linux.Opt{
 		linux.WithBuild(s.Build),
 		linux.WithMaxLogSize(s.MaxLogSize),
 		linux.WithLogStreamingTimeout(s.LogStreamingTimeout),
@@ -94,8 +92,18 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
 		linux.WithOutputCtn(s.OutputCtn),
-		linux.WithStorage(s.Storage),
-	)
+	}
+
+	// Conditionally add storage option
+	if s.Storage != nil {
+		opts = append(opts, linux.WithStorage(s.Storage))
+	}
+
+	// create new Linux executor engine
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux#New
+	return linux.New(opts...)
+
 }
 
 // Local creates and returns a Vela engine capable of
@@ -103,10 +111,7 @@ func (s *Setup) Linux() (Engine, error) {
 func (s *Setup) Local() (Engine, error) {
 	logrus.Trace("creating local executor client from setup")
 
-	// create new Local executor engine
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/local#New
-	return local.New(
+	opts := []local.Opt{
 		local.WithBuild(s.Build),
 		local.WithHostname(s.Hostname),
 		local.WithPipeline(s.Pipeline),
@@ -115,8 +120,17 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithVersion(s.Version),
 		local.WithMockStdout(s.Mock),
 		local.WithOutputCtn(s.OutputCtn),
-		local.WithStorage(s.Storage),
-	)
+	}
+
+	// Conditionally add storage option
+	if s.Storage != nil {
+		opts = append(opts, local.WithStorage(s.Storage))
+	}
+
+	// create new Local executor engine
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/local#New
+	return local.New(opts...)
 }
 
 // Windows creates and returns a Vela engine capable of
@@ -174,9 +188,9 @@ func (s *Setup) Validate() error {
 		return fmt.Errorf("no Vela user provided in setup")
 	}
 
-	// check if the storage client is provided
+	// If storage is provided, ensure it's enabled
 	if s.Storage == nil {
-		return fmt.Errorf("no storage client provided in setup")
+		return fmt.Errorf("storage client provided but not enabled in setup")
 	}
 
 	// setup is valid

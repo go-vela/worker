@@ -62,6 +62,10 @@ func TestLocal_CreateStage(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
 
 	// setup tests
 	tests := []struct {
@@ -115,7 +119,7 @@ func TestLocal_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
-				WithStorage(_storage),
+				WithStorage(&_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

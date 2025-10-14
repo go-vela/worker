@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"
 
@@ -17,7 +18,6 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -109,13 +109,6 @@ func run(ctx context.Context, c *cli.Command) error {
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,
-				Storage: &storage.Setup{
-					Driver:    c.String("storage.driver"),
-					Endpoint:  c.String("storage.endpoint.name"),
-					AccessKey: c.String("storage.access.key"),
-					SecretKey: c.String("storage.secret.key"),
-					Bucket:    c.String("storage.bucket.name"),
-				},
 			},
 			// logger configuration
 			Logger: &Logger{

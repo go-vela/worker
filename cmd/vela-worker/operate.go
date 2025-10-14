@@ -81,25 +81,40 @@ func (w *Worker) operate(ctx context.Context) error {
 	// fetching queue credentials using registration token
 	stCreds, _, err := w.VelaClient.Storage.GetInfo()
 	if err != nil {
-		logrus.Trace("error getting storage creds")
+		logrus.Tracef("error getting storage creds: %v", err)
 		return err
 	}
+	w.Config.Storage.Enable = stCreds.GetEnabled()
 
-	// if an address was given at start up, use that — else use what is returned from server
-	if len(w.Config.Executor.Storage.Endpoint) == 0 {
-		w.Config.Executor.Storage.Endpoint = stCreds.GetStorageAddress()
-		logrus.Trace("storage address: ", w.Config.Executor.Storage.Driver)
+	logrus.Trace("Storage enabled: ", w.Config.Storage.Enable)
+
+	if w.Config.Storage.Enable {
+		logrus.Trace("storage enabled")
+		// if an address was given at start up, use that — else use what is returned from server
+		if len(w.Config.Storage.Endpoint) == 0 {
+			w.Config.Storage.Endpoint = stCreds.GetStorageAddress()
+			logrus.Trace("storage address: ", w.Config.Storage.Driver)
+		}
+
+		// set access key in storage config
+		w.Config.Storage.AccessKey = stCreds.GetAccessKey()
+		logrus.Trace("access key: ", w.Config.Storage.AccessKey)
+		// set secret key in storage config
+		w.Config.Storage.SecretKey = stCreds.GetSecretKey()
+
+		// set bucket name in storage config
+		w.Config.Storage.Bucket = stCreds.GetStorageBucket()
+		logrus.Trace("bucket name: ", w.Config.Storage.Bucket)
+	} else {
+		logrus.Trace("storage not enabled")
+		// storage disabled; nothing to validate
+		w.Config.Storage.Driver = ""
+		w.Config.Storage.Endpoint = ""
+		w.Config.Storage.AccessKey = ""
+		w.Config.Storage.SecretKey = ""
+		w.Config.Storage.Bucket = ""
 	}
 
-	// set access key in storage config
-	w.Config.Executor.Storage.AccessKey = stCreds.GetAccessKey()
-	logrus.Trace("access key: ", w.Config.Executor.Storage.AccessKey)
-	// set secret key in storage config
-	w.Config.Executor.Storage.SecretKey = stCreds.GetSecretKey()
-
-	// set bucket name in storage config
-	w.Config.Executor.Storage.Bucket = stCreds.GetStorageBucket()
-	logrus.Trace("bucket name: ", w.Config.Executor.Storage.Bucket)
 	// spawn goroutine for phoning home
 	executors.Go(func() error {
 		// five second ticker for signal handling

@@ -81,6 +81,11 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		Secure:    false,
 	}
 
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	want, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithMaxLogSize(2097152),
@@ -90,7 +95,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithRuntime(_runtime),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
-		linux.WithStorage(_storage),
+		linux.WithStorage(&_s),
 	)
 	if err != nil {
 		t.Errorf("unable to create linux engine: %v", err)
@@ -105,7 +110,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		Pipeline:   _pipeline,
 		Runtime:    _runtime,
 		Version:    "v1.0.0",
-		Storage:    _storage,
+		Storage:    &_s,
 	}
 
 	// run test
@@ -148,6 +153,11 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		Secure:    false,
 	}
 
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	want, err := local.New(
 		local.WithBuild(_build),
 		local.WithHostname("localhost"),
@@ -155,7 +165,7 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		local.WithRuntime(_runtime),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
-		local.WithStorage(_storage),
+		local.WithStorage(&_s),
 	)
 	if err != nil {
 		t.Errorf("unable to create local engine: %v", err)
@@ -169,7 +179,7 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		Pipeline: _pipeline,
 		Runtime:  _runtime,
 		Version:  "v1.0.0",
-		Storage:  _storage,
+		Storage:  &_s,
 	}
 
 	// run test
@@ -246,6 +256,11 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 		Secure:    false,
 	}
 
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	_emptyOwnerBuild := new(api.Build)
 	_emptyOwnerBuild.SetRepo(new(api.Repo))
 
@@ -266,7 +281,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
 				Runtime:    _runtime,
-				Storage:    _storage,
+				Storage:    &_s,
 			},
 			failure: false,
 		},
