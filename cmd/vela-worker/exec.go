@@ -29,7 +29,7 @@ import (
 //nolint:funlen // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
-	var execStorage *storage.Storage
+	var execStorage storage.Storage
 	var _executor executor.Engine
 
 	// setup the version

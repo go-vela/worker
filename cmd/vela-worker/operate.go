@@ -85,11 +85,11 @@ func (w *Worker) operate(ctx context.Context) error {
 		logrus.Tracef("error getting storage creds: %v", err)
 		return err
 	}
-	w.Config.Storage.Enable = stCreds.GetEnabled()
+	//w.Config.Storage.Enable = stCreds.GetEnabled()
 
 	logrus.Trace("Storage enabled: ", w.Config.Storage.Enable)
 
-	if w.Config.Storage.Enable {
+	if stCreds.GetEnabled() {
 		logrus.Trace("storage enabled")
 		// if an address was given at start up, use that — else use what is returned from server
 		if len(w.Config.Storage.Endpoint) == 0 {
@@ -114,16 +114,19 @@ func (w *Worker) operate(ctx context.Context) error {
 			w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
 			return err
 		}
-		w.Storage = &s
+		w.Storage = s
 		logrus.WithFields(logrus.Fields{
 			"driver":   w.Config.Storage.Driver,
 			"bucket":   w.Config.Storage.Bucket,
 			"endpoint": w.Config.Storage.Endpoint,
 		}).Debug("storage initialized")
+		w.Config.Storage.Enable = true
+
 	} else {
 		logrus.Trace("storage not enabled")
 		// storage disabled; nothing to validate
 		w.Storage = nil
+		w.Config.Storage.Enable = false
 		logrus.Debug("storage disabled: worker storage unset")
 		//w.Config.Storage.Driver = ""
 		//w.Config.Storage.Endpoint = ""

@@ -95,7 +95,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithRuntime(_runtime),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
-		linux.WithStorage(&_s),
+		linux.WithStorage(_s),
 	)
 	if err != nil {
 		t.Errorf("unable to create linux engine: %v", err)
@@ -110,7 +110,7 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		Pipeline:   _pipeline,
 		Runtime:    _runtime,
 		Version:    "v1.0.0",
-		Storage:    &_s,
+		Storage:    _s,
 	}
 
 	// run test
@@ -165,7 +165,7 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		local.WithRuntime(_runtime),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
-		local.WithStorage(&_s),
+		local.WithStorage(_s),
 	)
 	if err != nil {
 		t.Errorf("unable to create local engine: %v", err)
@@ -179,7 +179,7 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		Pipeline: _pipeline,
 		Runtime:  _runtime,
 		Version:  "v1.0.0",
-		Storage:  &_s,
+		Storage:  _s,
 	}
 
 	// run test
@@ -281,7 +281,7 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
 				Runtime:    _runtime,
-				Storage:    &_s,
+				Storage:    _s,
 			},
 			failure: false,
 		},

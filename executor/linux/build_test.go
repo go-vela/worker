@@ -203,7 +203,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithRuntime(_runtime),
 
 				WithVelaClient(_client),
-				WithStorage(&_s),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -406,7 +406,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
-				WithStorage(&_s),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -717,7 +717,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
-				WithStorage(&_s),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -987,7 +987,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
-				WithStorage(&_s),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -1653,7 +1653,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithLogStreamingTimeout(1*time.Second),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
-				WithStorage(&_s),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -1956,7 +1956,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
-				WithStorage(&_s),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)

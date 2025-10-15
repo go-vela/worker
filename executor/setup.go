@@ -62,7 +62,7 @@ type Setup struct {
 	// id token request token for the build
 	RequestToken string
 	// storage client for interacting with storage resources
-	Storage *storage.Storage
+	Storage storage.Storage
 }
 
 // Darwin creates and returns a Vela engine capable of

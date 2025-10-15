@@ -16,14 +16,20 @@ import (
 // information and returns true if the data does not match
 // the ruleset for the given container.
 func Skip(c *pipeline.Container, b *api.Build, status string, storage storage.Storage) (bool, error) {
+	fmt.Printf("evaluating step %s for skip\n", c.Name)
 	// check if the container provided is empty
 	if c == nil {
 		return true, nil
 	}
-	if !storage.StorageEnable() {
-		fmt.Printf("Skipping step %s, storage is nil", c.Name)
-		return true, nil
+
+	if !c.TestReport.Empty() {
+		fmt.Printf("test report step detected\n")
+		if !storage.StorageEnable() {
+			fmt.Printf("Skipping step %s, storage is nil", c.Name)
+			return true, nil
+		}
 	}
+
 	event := b.GetEvent()
 	action := b.GetEventAction()
 

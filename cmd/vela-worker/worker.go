@@ -74,6 +74,6 @@ type (
 		RunningBuilds      []*api.Build
 		QueueCheckedIn     bool
 		RunningBuildsMutex sync.Mutex
-		Storage            *storage.Storage
+		Storage            storage.Storage
 	}
 )

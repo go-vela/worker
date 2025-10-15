@@ -56,7 +56,7 @@ func TestExecutor_Retrieve(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      _build,
 		Pipeline:   new(pipeline.Build),
-		Storage:    &_s,
+		Storage:    _s,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)
@@ -99,6 +99,7 @@ func TestExecutor_Establish(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_s, err := storage.New(_storage)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)
@@ -111,7 +112,7 @@ func TestExecutor_Establish(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      _build,
 		Pipeline:   new(pipeline.Build),
-		Storage:    &_s,
+		Storage:    _s,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)

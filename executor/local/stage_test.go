@@ -119,7 +119,7 @@ func TestLocal_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
-				WithStorage(&_s),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
