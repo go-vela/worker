@@ -107,6 +107,9 @@ func (w *Worker) operate(ctx context.Context) error {
 		w.Config.Storage.Bucket = stCreds.GetStorageBucket()
 		logrus.Trace("bucket name: ", w.Config.Storage.Bucket)
 
+		// set storage enabled to true
+		w.Config.Storage.Enable = stCreds.GetEnabled()
+		
 		s, err := storage.New(w.Config.Storage)
 		if err != nil {
 			logrus.Error("storage setup failed")
@@ -120,7 +123,6 @@ func (w *Worker) operate(ctx context.Context) error {
 			"bucket":   w.Config.Storage.Bucket,
 			"endpoint": w.Config.Storage.Endpoint,
 		}).Debug("storage initialized")
-		w.Config.Storage.Enable = true
 
 	} else {
 		logrus.Trace("storage not enabled")

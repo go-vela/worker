@@ -264,6 +264,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	}
 
 	if execStorage != nil {
+		fmt.Printf("setting up executor storage\n")
 		setup.Storage = execStorage
 	}
 	_executor, err = executor.New(setup)

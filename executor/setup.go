@@ -96,6 +96,7 @@ func (s *Setup) Linux() (Engine, error) {
 
 	// Conditionally add storage option
 	if s.Storage != nil {
+		fmt.Printf("Adding storage to linux executor\n")
 		opts = append(opts, linux.WithStorage(s.Storage))
 	}
 
