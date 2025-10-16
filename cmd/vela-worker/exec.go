@@ -159,17 +159,13 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
-	//logrus.Debugf("storage config: %+v", w.Config.Storage.Enable)
-	//// dereference configured storage config and set the storage config for the executor
-	//if w.Config.Storage.Enable {
-	//	logrus.Debugf("executor storage is enabled")
-	//	execStorage = w.Config.Executor.Storage
-	//}
-	execStorage = w.Storage
-	if execStorage == nil {
+	if w.Storage != nil {
+		execStorage = w.Storage
+		logrus.Debugf("executor storage is available, setting up storage")
+	} else {
 		logrus.Debugf("executor storage is nil, skipping storage setup")
 	}
-
+	
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -268,7 +264,10 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		setup.Storage = execStorage
 	}
 	_executor, err = executor.New(setup)
-
+	if err != nil {
+		logger.Errorf("unable to setup executor: %v", err)
+		return err
+	}
 	// add the executor to the worker
 	w.Executors[index] = _executor
 

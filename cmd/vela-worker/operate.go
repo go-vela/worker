@@ -77,6 +77,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		// set to error as queue setup fails
 		w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
 	}
+
 	// getting storage creds
 	logrus.Trace("getting storage s3 creds..")
 	// fetching queue credentials using registration token
@@ -85,7 +86,6 @@ func (w *Worker) operate(ctx context.Context) error {
 		logrus.Tracef("error getting storage creds: %v", err)
 		return err
 	}
-	//w.Config.Storage.Enable = stCreds.GetEnabled()
 
 	logrus.Trace("Storage enabled: ", w.Config.Storage.Enable)
 
@@ -94,22 +94,20 @@ func (w *Worker) operate(ctx context.Context) error {
 		// if an address was given at start up, use that — else use what is returned from server
 		if len(w.Config.Storage.Endpoint) == 0 {
 			w.Config.Storage.Endpoint = stCreds.GetStorageAddress()
-			logrus.Trace("storage address: ", w.Config.Storage.Driver)
 		}
 
 		// set access key in storage config
 		w.Config.Storage.AccessKey = stCreds.GetAccessKey()
-		logrus.Trace("access key: ", w.Config.Storage.AccessKey)
+
 		// set secret key in storage config
 		w.Config.Storage.SecretKey = stCreds.GetSecretKey()
 
 		// set bucket name in storage config
 		w.Config.Storage.Bucket = stCreds.GetStorageBucket()
-		logrus.Trace("bucket name: ", w.Config.Storage.Bucket)
 
 		// set storage enabled to true
 		w.Config.Storage.Enable = stCreds.GetEnabled()
-		
+
 		s, err := storage.New(w.Config.Storage)
 		if err != nil {
 			logrus.Error("storage setup failed")
@@ -127,14 +125,9 @@ func (w *Worker) operate(ctx context.Context) error {
 	} else {
 		logrus.Trace("storage not enabled")
 		// storage disabled; nothing to validate
-		w.Storage = nil
 		w.Config.Storage.Enable = false
+		w.Storage = nil
 		logrus.Debug("storage disabled: worker storage unset")
-		//w.Config.Storage.Driver = ""
-		//w.Config.Storage.Endpoint = ""
-		//w.Config.Storage.AccessKey = ""
-		//w.Config.Storage.SecretKey = ""
-		//w.Config.Storage.Bucket = ""
 	}
 
 	// spawn goroutine for phoning home

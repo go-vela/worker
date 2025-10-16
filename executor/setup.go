@@ -190,7 +190,7 @@ func (s *Setup) Validate() error {
 	}
 
 	// If storage is provided, ensure it's enabled
-	if s.Storage == nil {
+	if s.Storage != nil && !s.Storage.StorageEnable() {
 		return fmt.Errorf("storage client provided but not enabled in setup")
 	}
 
