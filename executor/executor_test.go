@@ -89,6 +89,7 @@ func TestExecutor_New(t *testing.T) {
 		local.WithRuntime(_runtime),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
+		local.WithStorage(_sT),
 	)
 	if err != nil {
 		t.Errorf("unable to create local engine: %v", err)

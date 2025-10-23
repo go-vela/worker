@@ -87,8 +87,6 @@ func (w *Worker) operate(ctx context.Context) error {
 		return err
 	}
 
-	logrus.Trace("Storage enabled: ", w.Config.Storage.Enable)
-
 	if stCreds.GetEnabled() {
 		logrus.Trace("storage enabled")
 		// if an address was given at start up, use that — else use what is returned from server

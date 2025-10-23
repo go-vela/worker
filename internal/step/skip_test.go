@@ -280,7 +280,7 @@ func TestStep_Skip(t *testing.T) {
 			name:      "skip nil",
 			build:     nil,
 			container: nil,
-			storage:   nil,
+			storage:   &_storage,
 			want:      true,
 		},
 	}
