@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -25,9 +26,11 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
-//nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
+//nolint:funlen // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
+	var execStorage storage.Storage
+	var _executor executor.Engine
 
 	// setup the version
 	v := version.New()
@@ -156,6 +159,13 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
+	if w.Storage != nil {
+		execStorage = w.Storage
+		logrus.Debugf("executor storage is available, setting up storage")
+	} else {
+		logrus.Debugf("executor storage is nil, skipping storage setup")
+	}
+	
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -229,11 +239,10 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	if err != nil {
 		return err
 	}
-
 	// setup the executor
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/executor#New
-	_executor, err := executor.New(&executor.Setup{
+	setup := &executor.Setup{
 		Logger:              logger,
 		Mock:                w.Config.Mock,
 		Driver:              w.Config.Executor.Driver,
@@ -248,8 +257,17 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
-	})
+	}
 
+	if execStorage != nil {
+		fmt.Printf("setting up executor storage\n")
+		setup.Storage = execStorage
+	}
+	_executor, err = executor.New(setup)
+	if err != nil {
+		logger.Errorf("unable to setup executor: %v", err)
+		return err
+	}
 	// add the executor to the worker
 	w.Executors[index] = _executor
 

@@ -10,6 +10,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -57,6 +58,7 @@ type (
 		Server        *Server
 		Certificate   *Certificate
 		TLSMinVersion string
+		Storage       *storage.Setup
 	}
 
 	// Worker represents all configuration and
@@ -72,5 +74,6 @@ type (
 		RunningBuilds      []*api.Build
 		QueueCheckedIn     bool
 		RunningBuildsMutex sync.Mutex
+		Storage            storage.Storage
 	}
 )

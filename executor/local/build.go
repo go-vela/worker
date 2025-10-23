@@ -23,6 +23,11 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
 	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
+	// Check if storage client is initialized
+	// and if storage is enabled
+	//if c.Storage == nil && c.Storage. {
+	//	return fmt.Errorf("storage client is not initialized")
+	//}
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -194,7 +199,6 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	for _, _stage := range c.pipeline.Stages {
 		// TODO: remove hardcoded reference
 		//
-		//nolint:goconst // ignore making a constant for now
 		if _stage.Name == "init" {
 			continue
 		}
@@ -293,7 +297,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// check if the step should be skipped
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Skip
-		skip, err := step.Skip(_step, c.build, c.build.GetStatus())
+		skip, err := step.Skip(_step, c.build, c.build.GetStatus(), c.Storage)
 		if err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}

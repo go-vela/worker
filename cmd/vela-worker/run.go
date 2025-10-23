@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"
 
@@ -96,7 +97,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			},
 			// build configuration
 			Build: &Build{
-				Limit:   int(c.Int("build.limit")),
+				Limit:   c.Int("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
 			// build configuration
@@ -104,7 +105,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			// executor configuration
 			Executor: &executor.Setup{
 				Driver:              c.String("executor.driver"),
-				MaxLogSize:          uint(c.Uint("executor.max_log_size")),
+				MaxLogSize:          c.Uint("executor.max_log_size"),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,
@@ -137,6 +138,13 @@ func run(ctx context.Context, c *cli.Command) error {
 			Server: &Server{
 				Address: c.String("server.addr"),
 				Secret:  c.String("server.secret"),
+			},
+			Storage: &storage.Setup{
+				Driver:    c.String("storage.driver"),
+				Endpoint:  c.String("storage.endpoint.name"),
+				AccessKey: c.String("storage.access.key"),
+				SecretKey: c.String("storage.secret.key"),
+				Bucket:    c.String("storage.bucket.name"),
 			},
 			// Certificate configuration
 			Certificate: &Certificate{
@@ -172,5 +180,6 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// start the worker
+	//nolint: contextcheck // not using ctx yet
 	return w.Start()
 }
