@@ -17,6 +17,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/message"
+	"github.com/go-vela/worker/internal/outputs"
 	"github.com/go-vela/worker/internal/step"
 )
 
@@ -130,12 +131,32 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		}
 	}()
 
+	var opEnv, maskEnv map[string]string
+
 	// execute the secrets for the pipeline
 	for _, _secret := range *p {
 		// skip over non-plugin secrets
 		if _secret.Origin.Empty() {
 			continue
 		}
+
+		opEnv, maskEnv, s.client.err = s.client.outputs.poll(ctx, s.client.OutputCtn)
+		if s.client.err != nil {
+			return fmt.Errorf("unable to exec outputs container: %w", s.client.err)
+		}
+
+		opEnv = outputs.Sanitize(_secret.Origin, opEnv)
+		maskEnv = outputs.Sanitize(_secret.Origin, maskEnv)
+
+		// merge env from outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_secret.Origin.MergeEnv(opEnv)
+
+		// merge env from masked outputs
+		//
+		//nolint:errcheck // only errors with empty environment input, which does not matter here
+		_secret.Origin.MergeEnv(maskEnv)
 
 		// update engine logger with secret metadata
 		//
