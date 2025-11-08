@@ -8,6 +8,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -35,7 +36,7 @@ func TestLocal_CreateStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -192,7 +193,7 @@ func TestLocal_ExecStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -301,7 +302,7 @@ func TestLocal_StreamStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -391,7 +392,7 @@ func TestLocal_DestroyStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},

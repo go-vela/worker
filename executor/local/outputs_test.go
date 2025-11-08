@@ -284,7 +284,12 @@ func TestLinux_Outputs_exec(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create pipeline compiler: %v", err)
+	}
+
 	_build := testBuild()
 
 	gin.SetMode(gin.TestMode)

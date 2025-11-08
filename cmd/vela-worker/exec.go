@@ -25,7 +25,7 @@ import (
 // exec is a helper function to poll the queue
 // and execute Vela pipelines for the Worker.
 //
-//nolint:nilerr,funlen // ignore returning nil - don't want to crash worker
+//nolint:gocyclo,funlen // ignore cyclomatic complexity and function length
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
 
@@ -347,6 +347,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	go func() {
 		defer wg.Done()
+
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)
@@ -372,9 +373,9 @@ func (w *Worker) getWorkerStatusFromConfig(config *api.Worker) string {
 	switch rb := len(config.GetRunningBuilds()); {
 	case rb == 0:
 		return constants.WorkerStatusIdle
-	case rb < w.Config.Build.Limit:
+	case rb < int(w.Config.Build.Limit):
 		return constants.WorkerStatusAvailable
-	case rb == w.Config.Build.Limit:
+	case rb == int(w.Config.Build.Limit):
 		return constants.WorkerStatusBusy
 	default:
 		return constants.WorkerStatusError

@@ -22,9 +22,9 @@ import (
 // serve traffic for web and API requests. The
 // operator subprocess enables the Worker to
 // poll the queue and execute Vela pipelines.
-func (w *Worker) Start() error {
+func (w *Worker) Start(ctx context.Context) error {
 	// create the context for controlling the worker subprocesses
-	ctx, done := context.WithCancel(context.Background())
+	ctx, done := context.WithCancel(ctx)
 	// create the errgroup for managing worker subprocesses
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup#Group
@@ -47,17 +47,21 @@ func (w *Worker) Start() error {
 		select {
 		case sig := <-signalChannel:
 			logrus.Infof("Received signal: %s", sig)
+
 			err := server.Shutdown(ctx)
 			if err != nil {
 				logrus.Error(err)
 			}
+
 			done()
 		case <-gctx.Done():
 			logrus.Info("Closing signal goroutine")
+
 			err := server.Shutdown(ctx)
 			if err != nil {
 				logrus.Error(err)
 			}
+
 			return gctx.Err()
 		}
 
@@ -67,7 +71,9 @@ func (w *Worker) Start() error {
 	// spawn goroutine for starting the server
 	g.Go(func() error {
 		var err error
+
 		logrus.Info("starting worker server")
+
 		if tlsCfg != nil {
 			if err := server.ListenAndServeTLS(w.Config.Certificate.Cert, w.Config.Certificate.Key); !errors.Is(err, http.ErrServerClosed) {
 				// log a message indicating the start of the server
