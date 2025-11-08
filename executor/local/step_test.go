@@ -8,6 +8,7 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -275,6 +276,110 @@ func TestLocal_ExecStep(t *testing.T) {
 				t.Errorf("ExecStep returned err: %v", err)
 			}
 		})
+	}
+}
+
+func TestLocal_ExecStep_WaitTimeout(t *testing.T) {
+	_build := testBuild()
+
+	_runtime, err := docker.NewMock()
+	if err != nil {
+		t.Fatalf("unable to create runtime engine: %v", err)
+	}
+
+	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
+	defer done()
+
+	_engine, err := New(
+		WithBuild(_build),
+		WithPipeline(new(pipeline.Build)),
+		WithRuntime(_runtime),
+		withStreamRequests(streamRequests),
+	)
+	if err != nil {
+		t.Fatalf("unable to create executor engine: %v", err)
+	}
+
+	container := &pipeline.Container{
+		ID:          "step_github_octocat_1_wait-timeout",
+		Directory:   "/vela/src/github.com/github/octocat",
+		Environment: map[string]string{"FOO": "bar"},
+		Image:       "alpine:latest",
+		Name:        "echo",
+		Number:      1,
+		Pull:        "not_present",
+	}
+
+	stepEntry := api.StepFromBuildContainer(_build, container)
+	_engine.steps.Store(container.ID, stepEntry)
+
+	err = _engine.ExecStep(context.Background(), container)
+	if err == nil {
+		t.Fatalf("ExecStep should have returned err")
+	}
+
+	if got := stepEntry.GetStatus(); got != constants.StatusFailure {
+		t.Errorf("step status = %s, want %s", got, constants.StatusFailure)
+	}
+
+	if container.ExitCode != 137 {
+		t.Errorf("container exit code = %d, want %d", container.ExitCode, 137)
+	}
+
+	if stepEntry.GetError() == "" {
+		t.Error("expected step error to be recorded")
+	}
+}
+
+func TestLocal_ExecStep_WaitError(t *testing.T) {
+	_build := testBuild()
+
+	_runtime, err := docker.NewMock()
+	if err != nil {
+		t.Fatalf("unable to create runtime engine: %v", err)
+	}
+
+	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
+	defer done()
+
+	_engine, err := New(
+		WithBuild(_build),
+		WithPipeline(new(pipeline.Build)),
+		WithRuntime(_runtime),
+		withStreamRequests(streamRequests),
+	)
+	if err != nil {
+		t.Fatalf("unable to create executor engine: %v", err)
+	}
+
+	container := &pipeline.Container{
+		ID:          "step_github_octocat_1_wait-error",
+		Directory:   "/vela/src/github.com/github/octocat",
+		Environment: map[string]string{"FOO": "bar"},
+		Image:       "alpine:latest",
+		Name:        "echo",
+		Number:      1,
+		Pull:        "not_present",
+	}
+
+	stepEntry := api.StepFromBuildContainer(_build, container)
+	_engine.steps.Store(container.ID, stepEntry)
+
+	err = _engine.ExecStep(context.Background(), container)
+	if err == nil {
+		t.Fatalf("ExecStep should have returned err")
+	}
+
+	if got := stepEntry.GetStatus(); got != constants.StatusError {
+		t.Errorf("step status = %s, want %s", got, constants.StatusError)
+	}
+
+	if container.ExitCode != 1 {
+		t.Errorf("container exit code = %d, want %d", container.ExitCode, 1)
+	}
+
+	if stepEntry.GetError() == "" {
+		t.Error("expected step error to be recorded")
 	}
 }
 
