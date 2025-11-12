@@ -6,13 +6,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/storage"
 )
 
 // operate is a helper function to initiate all
@@ -111,20 +111,22 @@ func (w *Worker) operate(ctx context.Context) error {
 			logrus.Error("storage setup failed")
 			// set to error as storage setup fails
 			w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
+
 			return err
 		}
+
 		w.Storage = s
 		logrus.WithFields(logrus.Fields{
 			"driver":   w.Config.Storage.Driver,
 			"bucket":   w.Config.Storage.Bucket,
 			"endpoint": w.Config.Storage.Endpoint,
 		}).Debug("storage initialized")
-
 	} else {
 		logrus.Trace("storage not enabled")
 		// storage disabled; nothing to validate
 		w.Config.Storage.Enable = false
 		w.Storage = nil
+
 		logrus.Debug("storage disabled: worker storage unset")
 	}
 

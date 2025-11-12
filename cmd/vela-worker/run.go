@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )

@@ -258,10 +258,17 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
 		}
 
-		logger.Debugf("successfully uploaded file %s (%d bytes)", fileName, size)
+		presignURL, err := o.client.Storage.PresignedGetObject(ctx, &api.Object{
+			ObjectName: objectName,
+			Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
+			FilePath:   filePath,
+		})
+		if err != nil {
+			return fmt.Errorf("unable to generate presign URL for %s: %w", fileName, err)
+		}
 
 		// create test attachment record in database after successful upload
-		err = o.client.CreateTestAttachment(fileName, filePath, size, tr)
+		err = o.client.CreateTestAttachment(fileName, presignURL, size, tr)
 		if err != nil {
 			logger.Errorf("unable to create test attachment record for %s: %v", fileName, err)
 			// don't return error here to avoid blocking the upload process

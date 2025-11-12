@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-vela/server/storage"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -18,6 +17,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue/models"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -29,7 +29,9 @@ import (
 //nolint:funlen // ignore returning nil - don't want to crash worker
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
+
 	var execStorage storage.Storage
+
 	var _executor executor.Engine
 
 	// setup the version
@@ -161,11 +163,12 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 	if w.Storage != nil {
 		execStorage = w.Storage
+
 		logrus.Debugf("executor storage is available, setting up storage")
 	} else {
 		logrus.Debugf("executor storage is nil, skipping storage setup")
 	}
-	
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -261,8 +264,10 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 	if execStorage != nil {
 		fmt.Printf("setting up executor storage\n")
+
 		setup.Storage = execStorage
 	}
+
 	_executor, err = executor.New(setup)
 	if err != nil {
 		logger.Errorf("unable to setup executor: %v", err)

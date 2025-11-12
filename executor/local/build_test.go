@@ -261,6 +261,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_s, err := storage.New(_storage)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)
@@ -403,6 +404,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_s, err := storage.New(_storage)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)
@@ -530,6 +532,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_s, err := storage.New(_storage)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)
@@ -769,6 +772,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_s, err := storage.New(_storage)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)

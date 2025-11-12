@@ -146,10 +146,11 @@ func withStreamRequests(s chan message.StreamRequest) Opt {
 func WithStorage(s storage.Storage) Opt {
 	return func(c *client) error {
 		// check if the storage provided is empty
-		if &s == nil {
+		if s == nil {
 			return fmt.Errorf("empty storage setup provided")
 		}
 
+		// set the storage in the client
 		c.Storage = s
 
 		if c.Storage == nil {

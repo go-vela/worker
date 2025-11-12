@@ -97,6 +97,7 @@ func (s *Setup) Linux() (Engine, error) {
 	// Conditionally add storage option
 	if s.Storage != nil {
 		fmt.Printf("Adding storage to linux executor\n")
+
 		opts = append(opts, linux.WithStorage(s.Storage))
 	}
 
@@ -104,7 +105,6 @@ func (s *Setup) Linux() (Engine, error) {
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux#New
 	return linux.New(opts...)
-
 }
 
 // Local creates and returns a Vela engine capable of

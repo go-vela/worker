@@ -217,14 +217,14 @@ func WithStorage(s storage.Storage) Opt {
 		c.Logger.Trace("configuring storage in linux executor client")
 
 		// check if the storage provided is empty
-		if &s == nil {
+		if s == nil {
 			return fmt.Errorf("empty storage setup provided")
 		}
 
 		c.Storage = s
 
 		if c.Storage == nil {
-			return fmt.Errorf("empty storage setup: %v", s)
+			return fmt.Errorf("empty storage setup in linux executor client")
 		}
 
 		return nil

@@ -21,14 +21,17 @@ func Skip(c *pipeline.Container, b *api.Build, status string, storage storage.St
 	}
 
 	if !c.TestReport.Empty() {
-		if &storage == nil {
+		if storage == nil {
 			return true, nil
 		}
+
 		if !storage.StorageEnable() {
 			return true, nil
 		}
+
 		return false, nil
 	}
+
 	event := b.GetEvent()
 	action := b.GetEventAction()
 

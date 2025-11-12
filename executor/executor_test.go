@@ -48,6 +48,7 @@ func TestExecutor_New(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_sT, err := storage.New(_storageT)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)
@@ -63,6 +64,7 @@ func TestExecutor_New(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_sF, err := storage.New(_storageF)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)

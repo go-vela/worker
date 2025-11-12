@@ -280,6 +280,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 		Region:    "",
 		Secure:    false,
 	}
+
 	_s, err := storage.New(_storage)
 	if err != nil {
 		t.Errorf("unable to create storage engine: %v", err)
