@@ -34,7 +34,6 @@ func TestDocker_ClientOpt_WithPrivilegedImages(t *testing.T) {
 			_service, err := New(
 				WithPrivilegedImages(test.images),
 			)
-
 			if err != nil {
 				t.Errorf("WithPrivilegedImages returned err: %v", err)
 			}
@@ -71,7 +70,6 @@ func TestDocker_ClientOpt_WithHostVolumes(t *testing.T) {
 			_service, err := New(
 				WithHostVolumes(test.volumes),
 			)
-
 			if err != nil {
 				t.Errorf("WithHostVolumes returned err: %v", err)
 			}
@@ -157,7 +155,6 @@ func TestDocker_ClientOpt_WithDropCapabilities(t *testing.T) {
 			_service, err := New(
 				WithDropCapabilities(test.caps),
 			)
-
 			if err != nil {
 				t.Errorf("WithDropCapabilities returned err: %v", err)
 			}

@@ -366,7 +366,11 @@ func TestLinux_Secret_exec(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create pipeline compiler: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -438,6 +442,7 @@ func TestLinux_Secret_exec(t *testing.T) {
 			switch test.runtime {
 			case constants.DriverKubernetes:
 				_pod := testPodFor(p)
+
 				_runtime, err = kubernetes.NewMock(_pod)
 				if err != nil {
 					t.Errorf("unable to create kubernetes runtime engine: %v", err)
@@ -841,7 +846,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				Directory:   "/home/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},
@@ -856,7 +861,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				Directory:   "/home/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},

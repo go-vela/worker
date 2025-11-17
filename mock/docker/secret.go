@@ -19,7 +19,7 @@ type SecretService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretCreate
-func (s *SecretService) SecretCreate(ctx context.Context, secret swarm.SecretSpec) (swarm.SecretCreateResponse, error) {
+func (s *SecretService) SecretCreate(_ context.Context, _ swarm.SecretSpec) (swarm.SecretCreateResponse, error) {
 	return swarm.SecretCreateResponse{}, nil
 }
 
@@ -28,7 +28,7 @@ func (s *SecretService) SecretCreate(ctx context.Context, secret swarm.SecretSpe
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretInspectWithRaw
-func (s *SecretService) SecretInspectWithRaw(ctx context.Context, name string) (swarm.Secret, []byte, error) {
+func (s *SecretService) SecretInspectWithRaw(_ context.Context, _ string) (swarm.Secret, []byte, error) {
 	return swarm.Secret{}, nil, nil
 }
 
@@ -37,7 +37,7 @@ func (s *SecretService) SecretInspectWithRaw(ctx context.Context, name string) (
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretList
-func (s *SecretService) SecretList(ctx context.Context, options swarm.SecretListOptions) ([]swarm.Secret, error) {
+func (s *SecretService) SecretList(_ context.Context, _ swarm.SecretListOptions) ([]swarm.Secret, error) {
 	return nil, nil
 }
 
@@ -46,7 +46,7 @@ func (s *SecretService) SecretList(ctx context.Context, options swarm.SecretList
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretRemove
-func (s *SecretService) SecretRemove(ctx context.Context, id string) error {
+func (s *SecretService) SecretRemove(_ context.Context, _ string) error {
 	return nil
 }
 
@@ -55,7 +55,7 @@ func (s *SecretService) SecretRemove(ctx context.Context, id string) error {
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretUpdate
-func (s *SecretService) SecretUpdate(ctx context.Context, id string, version swarm.Version, secret swarm.SecretSpec) error {
+func (s *SecretService) SecretUpdate(_ context.Context, _ string, _ swarm.Version, _ swarm.SecretSpec) error {
 	return nil
 }
 

@@ -9,8 +9,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/containerd/errdefs"
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
-	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -33,6 +33,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// capture the container exit code
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#ContainerState
+	//nolint:gosec // exit codes are truncated by OS
 	ctn.ExitCode = int32(container.State.ExitCode)
 
 	return nil
@@ -210,7 +211,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// check if the container image exists on the host
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
-	_, _, err = c.Docker.ImageInspectWithRaw(ctx, _image)
+	_, err = c.Docker.ImageInspect(ctx, _image)
 	if err == nil {
 		return nil
 	}
@@ -219,7 +220,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// we attempt to capture it for executing the pipeline
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#IsErrNotFound
-	if docker.IsErrNotFound(err) {
+	if errdefs.IsNotFound(err) {
 		// send API call to create the image
 		return c.CreateImage(ctx, ctn)
 	}

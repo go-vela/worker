@@ -288,10 +288,8 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// create the stages for the pipeline
 	for _, s := range c.pipeline.Stages {
-		// TODO: remove hardcoded reference
 		//
-		//nolint:goconst // ignore making a constant for now
-		if s.Name == "init" {
+		if s.Name == constants.InitName {
 			continue
 		}
 
@@ -308,8 +306,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 	// create the steps for the pipeline
 	for _, s := range c.pipeline.Steps {
-		// TODO: remove hardcoded reference
-		if s.Name == "init" {
+		if s.Name == constants.InitName {
 			continue
 		}
 
@@ -480,8 +477,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// execute the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {
-		// TODO: remove hardcoded reference
-		if _step.Name == "init" {
+		if _step.Name == constants.InitName {
 			continue
 		}
 
@@ -573,8 +569,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 	// iterate through each stage in the pipeline
 	for _, _stage := range c.pipeline.Stages {
-		// TODO: remove hardcoded reference
-		if _stage.Name == "init" {
+		if _stage.Name == constants.InitName {
 			continue
 		}
 
@@ -691,7 +686,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 // into the container right before execution, rather than
 // during build planning. It is only available for the Docker runtime.
 //
-//nolint:funlen // explanation takes up a lot of lines
+
 func loadLazySecrets(c *client, _step *pipeline.Container) error {
 	_log := new(api.Log)
 
@@ -872,8 +867,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 	// destroy the steps for the pipeline
 	for _, _step := range c.pipeline.Steps {
-		// TODO: remove hardcoded reference
-		if _step.Name == "init" {
+		if _step.Name == constants.InitName {
 			continue
 		}
 
@@ -887,8 +881,7 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 
 	// destroy the stages for the pipeline
 	for _, _stage := range c.pipeline.Stages {
-		// TODO: remove hardcoded reference
-		if _stage.Name == "init" {
+		if _stage.Name == constants.InitName {
 			continue
 		}
 

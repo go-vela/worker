@@ -37,7 +37,7 @@ type config struct {
 type client struct {
 	config *config
 	// https://pkg.go.dev/github.com/docker/docker/client#CommonAPIClient
-	Docker docker.CommonAPIClient
+	Docker docker.APIClient
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry
 	Logger *logrus.Entry
 }

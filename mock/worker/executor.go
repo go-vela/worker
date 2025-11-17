@@ -35,6 +35,7 @@ func getExecutors(c *gin.Context) {
 	data := []byte(ExecutorsResp)
 
 	var body []api.Executor
+
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)
@@ -55,6 +56,7 @@ func getExecutor(c *gin.Context) {
 	data := []byte(ExecutorResp)
 
 	var body api.Executor
+
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)
