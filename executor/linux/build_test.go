@@ -1920,9 +1920,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				if logEntry.Level == logrus.ErrorLevel {
 					// Ignore error from not mocking something in the VelaClient
 					if strings.HasPrefix(logEntry.Message, "unable to upload") ||
-						(strings.HasPrefix(logEntry.Message, "unable to destroy") &&
-							strings.Contains(logEntry.Message, "No such container") &&
-							strings.HasSuffix(logEntry.Message, "_notfound")) {
+						strings.HasSuffix(logEntry.Message, "not found") {
 						// unable to upload final step state: Step 0 does not exist
 						// unable to upload service snapshot: Service 0 does not exist
 						// unable to destroy secret: Error: No such container: secret_github_octocat_1_notfound

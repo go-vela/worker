@@ -7,10 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/go-units"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/mount"
+	mobyClient "github.com/moby/moby/client"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -25,7 +25,7 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 	// create options for creating volume
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types/volume#CreateOptions
-	opts := volume.CreateOptions{
+	opts := mobyClient.VolumeCreateOptions{
 		Name:   b.ID,
 		Driver: "local",
 	}
@@ -42,6 +42,8 @@ func (c *client) CreateVolume(ctx context.Context, b *pipeline.Build) error {
 }
 
 // InspectVolume inspects the pipeline volume.
+//
+//nolint:dupl // ignore similar code with InspectNetwork
 func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, error) {
 	c.Logger.Tracef("inspecting volume for pipeline %s", b.ID)
 
@@ -53,7 +55,7 @@ func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, 
 	// send API call to inspect the volume
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspect
-	v, err := c.Docker.VolumeInspect(ctx, b.ID)
+	v, err := c.Docker.VolumeInspect(ctx, b.ID, mobyClient.VolumeInspectOptions{})
 	if err != nil {
 		return output, err
 	}
@@ -77,7 +79,9 @@ func (c *client) RemoveVolume(ctx context.Context, b *pipeline.Build) error {
 	// send API call to remove the volume
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeRemove
-	err := c.Docker.VolumeRemove(ctx, b.ID, true)
+	_, err := c.Docker.VolumeRemove(ctx, b.ID, mobyClient.VolumeRemoveOptions{
+		Force: true,
+	})
 	if err != nil {
 		return err
 	}

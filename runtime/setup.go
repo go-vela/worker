@@ -4,9 +4,7 @@ package runtime
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/docker/docker/oci/caps"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 
@@ -110,23 +108,6 @@ func (s *Setup) Validate() error {
 	// process the secret driver being provided
 	switch s.Driver {
 	case constants.DriverDocker:
-		// check to make sure drop capabilities is configured correctly
-		if len(s.DropCapabilities) != 0 {
-			for _, configCap := range s.DropCapabilities {
-				valid := false
-
-				for _, validCap := range caps.DefaultCapabilities() {
-					if strings.EqualFold(configCap, validCap) {
-						valid = true
-						break
-					}
-				}
-
-				if !valid {
-					return fmt.Errorf("invalid capability %s provided in RUNTIME_DROP_CAPABILITIES", configCap)
-				}
-			}
-		}
 	case constants.DriverKubernetes:
 		// check if a runtime namespace was provided
 		if len(s.Namespace) == 0 {

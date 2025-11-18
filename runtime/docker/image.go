@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	dockerImageTypes "github.com/docker/docker/api/types/image"
+	mobyClient "github.com/moby/moby/client"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
@@ -29,15 +29,10 @@ func (c *client) CreateImage(ctx context.Context, ctn *pipeline.Container) error
 		return err
 	}
 
-	// create options for pulling image
-	//
-	// https://pkg.go.dev/github.com/docker/docker/api/types/image#PullOptions
-	opts := dockerImageTypes.PullOptions{}
-
 	// send API call to pull the image for the container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePull
-	reader, err := c.Docker.ImagePull(ctx, _image, opts)
+	reader, err := c.Docker.ImagePull(ctx, _image, mobyClient.ImagePullOptions{})
 	if err != nil {
 		return err
 	}
