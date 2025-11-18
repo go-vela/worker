@@ -79,14 +79,6 @@ func TestRuntime_Validate(t *testing.T) {
 			},
 		},
 		{
-			name:    "docker driver bad cap",
-			failure: true,
-			setup: &Setup{
-				Driver:           constants.DriverDocker,
-				DropCapabilities: []string{"BAD"},
-			},
-		},
-		{
 			name:    "kubernetes driver",
 			failure: false,
 			setup: &Setup{

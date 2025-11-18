@@ -5,267 +5,130 @@ package docker
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
-	"github.com/docker/docker/errdefs"
-	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/docker/docker/pkg/stringid"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	cerrdefs "github.com/containerd/errdefs"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/client"
+	"github.com/moby/moby/client/pkg/stringid"
 )
 
 // ContainerService implements all the container
 // related functions for the Docker mock.
 type ContainerService struct{}
 
-// ContainerAttach is a helper function to simulate
-// a mocked call to attach a connection to a
-// Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerAttach
-func (c *ContainerService) ContainerAttach(_ context.Context, _ string, _ container.AttachOptions) (types.HijackedResponse, error) {
-	return types.HijackedResponse{}, nil
-}
-
-// ContainerCommit is a helper function to simulate
-// a mocked call to apply changes to a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCommit
-func (c *ContainerService) ContainerCommit(_ context.Context, _ string, _ container.CommitOptions) (container.CommitResponse, error) {
-	return container.CommitResponse{}, nil
-}
-
 // ContainerCreate is a helper function to simulate
 // a mocked call to create a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCreate
-func (c *ContainerService) ContainerCreate(_ context.Context, config *container.Config, _ *container.HostConfig, _ *network.NetworkingConfig, _ *v1.Platform, ctn string) (container.CreateResponse, error) {
+func (c *ContainerService) ContainerCreate(_ context.Context, opts client.ContainerCreateOptions) (client.ContainerCreateResult, error) {
 	// verify a container was provided
-	if len(ctn) == 0 {
-		return container.CreateResponse{},
+	if len(opts.Name) == 0 {
+		return client.ContainerCreateResult{},
 			errors.New("no container provided")
-	}
-
-	// check if the container is notfound and
-	// check if the notfound should be ignored
-	if strings.Contains(ctn, "notfound") &&
-		!strings.Contains(ctn, "ignorenotfound") {
-		return container.CreateResponse{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 
 	// check if the container is not-found and
 	// check if the not-found should be ignored
-	if strings.Contains(ctn, "not-found") &&
-		!strings.Contains(ctn, "ignore-not-found") {
-		return container.CreateResponse{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+	if strings.Contains(opts.Name, "not-found") &&
+		!strings.Contains(opts.Name, "ignore-not-found") {
+		return client.ContainerCreateResult{}, cerrdefs.ErrNotFound
 	}
 
 	// check if the image is not found
-	if strings.Contains(config.Image, "notfound") ||
-		strings.Contains(config.Image, "not-found") {
-		return container.CreateResponse{},
-			errdefs.NotFound(
-				//nolint:staticcheck // messsage is capitalized to match Docker messages
-				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", config.Image),
-			)
+	if strings.Contains(opts.Config.Image, "notfound") ||
+		strings.Contains(opts.Config.Image, "not-found") {
+		return client.ContainerCreateResult{}, cerrdefs.ErrNotFound
 	}
 
 	// create response object to return
-	response := container.CreateResponse{
+	response := client.ContainerCreateResult{
 		ID: stringid.GenerateRandomID(),
 	}
 
 	return response, nil
 }
 
-// ContainerDiff is a helper function to simulate
-// a mocked call to show the differences in the
-// filesystem between two Docker containers.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerDiff
-func (c *ContainerService) ContainerDiff(_ context.Context, _ string) ([]container.FilesystemChange, error) {
-	return nil, nil
-}
-
-// ContainerExecAttach is a helper function to simulate
-// a mocked call to attach a connection to a process
-// running inside a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecAttach
-func (c *ContainerService) ContainerExecAttach(_ context.Context, _ string, _ container.ExecAttachOptions) (types.HijackedResponse, error) {
-	return types.HijackedResponse{}, nil
-}
-
-// ContainerExecCreate is a helper function to simulate
-// a mocked call to create a process to run inside a
-// Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecCreate
-func (c *ContainerService) ContainerExecCreate(_ context.Context, _ string, _ container.ExecOptions) (container.ExecCreateResponse, error) {
-	return container.ExecCreateResponse{}, nil
-}
-
-// ContainerExecInspect is a helper function to simulate
-// a mocked call to inspect a process running inside a
-// Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecInspect
-func (c *ContainerService) ContainerExecInspect(_ context.Context, _ string) (container.ExecInspect, error) {
-	return container.ExecInspect{}, nil
-}
-
-// ContainerExecResize is a helper function to simulate
-// a mocked call to resize the tty for a process running
-// inside a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecResize
-func (c *ContainerService) ContainerExecResize(_ context.Context, _ string, _ container.ResizeOptions) error {
-	return nil
-}
-
-// ContainerExecStart is a helper function to simulate
-// a mocked call to start a process inside a Docker
-// container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecStart
-func (c *ContainerService) ContainerExecStart(_ context.Context, _ string, _ container.ExecStartOptions) error {
-	return nil
-}
-
-// ContainerExport is a helper function to simulate
-// a mocked call to expore the contents of a Docker
-// container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExport
-func (c *ContainerService) ContainerExport(_ context.Context, _ string) (io.ReadCloser, error) {
-	return nil, nil
-}
-
 // ContainerInspect is a helper function to simulate
 // a mocked call to inspect a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspect
-func (c *ContainerService) ContainerInspect(_ context.Context, ctn string) (container.InspectResponse, error) {
+func (c *ContainerService) ContainerInspect(_ context.Context, ctn string, _ client.ContainerInspectOptions) (client.ContainerInspectResult, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
-		return container.InspectResponse{}, errors.New("no container provided")
+		return client.ContainerInspectResult{}, errors.New("no container provided")
 	}
 
 	// check if the container is notfound and
 	// check if the notfound should be ignored
 	if strings.Contains(ctn, "notfound") &&
 		!strings.Contains(ctn, "ignorenotfound") {
-		return container.InspectResponse{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+		return client.ContainerInspectResult{}, cerrdefs.ErrNotFound
 	}
 
 	// check if the container is not-found and
 	// check if the not-found should be ignored
 	if strings.Contains(ctn, "not-found") &&
 		!strings.Contains(ctn, "ignore-not-found") {
-		return container.InspectResponse{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+		return client.ContainerInspectResult{}, cerrdefs.ErrNotFound
 	}
 
 	// create response object to return
-	response := container.InspectResponse{
-		ContainerJSONBase: &container.ContainerJSONBase{
+	response := client.ContainerInspectResult{
+		Container: container.InspectResponse{
 			ID:    stringid.GenerateRandomID(),
 			Image: "alpine:latest",
 			Name:  ctn,
 			State: &container.State{Running: true},
-		},
-		Config: &container.Config{
-			Image: "alpine:latest",
 		},
 	}
 
 	return response, nil
 }
 
-// ContainerInspectWithRaw is a helper function to simulate
-// a mocked call to inspect a Docker container and return
-// the raw body received from the API.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspectWithRaw
-func (c *ContainerService) ContainerInspectWithRaw(_ context.Context, ctn string, _ bool) (container.InspectResponse, []byte, error) {
-	// verify a container was provided
-	if len(ctn) == 0 {
-		return container.InspectResponse{}, nil, errors.New("no container provided")
-	}
-
-	// check if the container is not found
-	if strings.Contains(ctn, "notfound") ||
-		strings.Contains(ctn, "not-found") {
-		return container.InspectResponse{},
-			nil,
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
-			errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
-	}
-
-	// create response object to return
-	response := container.InspectResponse{
-		ContainerJSONBase: &container.ContainerJSONBase{
-			ID:    stringid.GenerateRandomID(),
-			Image: "alpine:latest",
-			Name:  ctn,
-			State: &container.State{Running: true},
-		},
-		Config: &container.Config{
-			Image: "alpine:latest",
-		},
-	}
-
-	// marshal response into raw bytes
-	b, err := json.Marshal(response)
-	if err != nil {
-		return container.InspectResponse{}, nil, err
-	}
-
-	return response, b, nil
-}
-
-// ContainerKill is a helper function to simulate
-// a mocked call to kill a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerKill
-func (c *ContainerService) ContainerKill(_ context.Context, ctn, _ string) error {
-	// verify a container was provided
-	if len(ctn) == 0 {
-		return errors.New("no container provided")
-	}
-
-	// check if the container is not found
-	if strings.Contains(ctn, "notfound") ||
-		strings.Contains(ctn, "not-found") {
-		//nolint:staticcheck // messsage is capitalized to match Docker messages
-		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
-	}
-
-	return nil
-}
-
 // ContainerList is a helper function to simulate
 // a mocked call to list Docker containers.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerList
-func (c *ContainerService) ContainerList(_ context.Context, _ container.ListOptions) ([]container.Summary, error) {
-	return nil, nil
+func (c *ContainerService) ContainerList(_ context.Context, _ client.ContainerListOptions) (client.ContainerListResult, error) {
+	return client.ContainerListResult{}, nil
+}
+
+// ContainerUpdate is a helper function to simulate
+// a mocked call to update a Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerUpdate
+func (c *ContainerService) ContainerUpdate(_ context.Context, _ string, _ client.ContainerUpdateOptions) (client.ContainerUpdateResult, error) {
+	return client.ContainerUpdateResult{}, nil
+}
+
+// ContainerRemove is a helper function to simulate
+// a mocked call to remove a Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRemove
+func (c *ContainerService) ContainerRemove(_ context.Context, ctn string, _ client.ContainerRemoveOptions) (client.ContainerRemoveResult, error) {
+	// verify a container was provided
+	if len(ctn) == 0 {
+		return client.ContainerRemoveResult{}, errors.New("no container provided")
+	}
+
+	// check if the container is not found
+	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
+		return client.ContainerRemoveResult{}, cerrdefs.ErrNotFound
+	}
+
+	return client.ContainerRemoveResult{}, nil
+}
+
+// ContainersPrune is a helper function to simulate
+// a mocked call to prune Docker containers.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainersPrune
+func (c *ContainerService) ContainerPrune(_ context.Context, _ client.ContainerPruneOptions) (client.ContainerPruneResult, error) {
+	return client.ContainerPruneResult{}, nil
 }
 
 // ContainerLogs is a helper function to simulate
@@ -273,7 +136,7 @@ func (c *ContainerService) ContainerList(_ context.Context, _ container.ListOpti
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerLogs
-func (c *ContainerService) ContainerLogs(_ context.Context, ctn string, _ container.LogsOptions) (io.ReadCloser, error) {
+func (c *ContainerService) ContainerLogs(_ context.Context, ctn string, _ client.ContainerLogsOptions) (client.ContainerLogsResult, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
 		return nil, errors.New("no container provided")
@@ -282,163 +145,75 @@ func (c *ContainerService) ContainerLogs(_ context.Context, ctn string, _ contai
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:staticcheck // messsage is capitalized to match Docker messages
-		return nil, errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+		return nil, cerrdefs.ErrNotFound
 	}
 
-	// create response object to return
-	response := new(bytes.Buffer)
+	var buf bytes.Buffer
+	buf.WriteString("hello to stdout from github.com/go-vela/worker/mock/docker\n")
+	buf.WriteString("hello to stderr from github.com/go-vela/worker/mock/docker\n")
 
-	// write stdout logs to response buffer
-	_, err := stdcopy.
-		NewStdWriter(response, stdcopy.Stdout).
-		Write([]byte("hello to stdout from github.com/go-vela/worker/mock/docker"))
-	if err != nil {
-		return nil, err
-	}
-
-	// write stderr logs to response buffer
-	_, err = stdcopy.
-		NewStdWriter(response, stdcopy.Stderr).
-		Write([]byte("hello to stderr from github.com/go-vela/worker/mock/docker"))
-	if err != nil {
-		return nil, err
-	}
-
-	return io.NopCloser(response), nil
-}
-
-// ContainerPause is a helper function to simulate
-// a mocked call to pause a running Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerPause
-func (c *ContainerService) ContainerPause(_ context.Context, _ string) error {
-	return nil
-}
-
-// ContainerRemove is a helper function to simulate
-// a mocked call to remove a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRemove
-func (c *ContainerService) ContainerRemove(_ context.Context, ctn string, _ container.RemoveOptions) error {
-	// verify a container was provided
-	if len(ctn) == 0 {
-		return errors.New("no container provided")
-	}
-
-	// check if the container is not found
-	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
-		//nolint:staticcheck // messsage is capitalized to match Docker messages
-		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
-	}
-
-	return nil
-}
-
-// ContainerRename is a helper function to simulate
-// a mocked call to rename a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRename
-func (c *ContainerService) ContainerRename(_ context.Context, _ string, _ string) error {
-	return nil
-}
-
-// ContainerResize is a helper function to simulate
-// a mocked call to resize a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerResize
-func (c *ContainerService) ContainerResize(_ context.Context, _ string, _ container.ResizeOptions) error {
-	return nil
-}
-
-// ContainerRestart is a helper function to simulate
-// a mocked call to restart a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRestart
-func (c *ContainerService) ContainerRestart(_ context.Context, _ string, _ container.StopOptions) error {
-	return nil
+	return io.NopCloser(&buf), nil
 }
 
 // ContainerStart is a helper function to simulate
 // a mocked call to start a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStart
-func (c *ContainerService) ContainerStart(_ context.Context, ctn string, _ container.StartOptions) error {
+func (c *ContainerService) ContainerStart(_ context.Context, ctn string, _ client.ContainerStartOptions) (client.ContainerStartResult, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
-		return errors.New("no container provided")
+		return client.ContainerStartResult{}, errors.New("no container provided")
 	}
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") ||
 		strings.Contains(ctn, "not-found") {
-		//nolint:staticcheck // messsage is capitalized to match Docker messages
-		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+		return client.ContainerStartResult{}, cerrdefs.ErrNotFound
 	}
 
-	return nil
-}
-
-// ContainerStatPath is a helper function to simulate
-// a mocked call to capture information about a path
-// inside a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStatPath
-func (c *ContainerService) ContainerStatPath(_ context.Context, _ string, _ string) (container.PathStat, error) {
-	return container.PathStat{}, nil
-}
-
-// ContainerStats is a helper function to simulate
-// a mocked call to capture information about a
-// Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStats
-func (c *ContainerService) ContainerStats(_ context.Context, _ string, _ bool) (container.StatsResponseReader, error) {
-	return container.StatsResponseReader{}, nil
+	return client.ContainerStartResult{}, nil
 }
 
 // ContainerStop is a helper function to simulate
 // a mocked call to stop a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStop
-func (c *ContainerService) ContainerStop(_ context.Context, ctn string, _ container.StopOptions) error {
+func (c *ContainerService) ContainerStop(_ context.Context, ctn string, _ client.ContainerStopOptions) (client.ContainerStopResult, error) {
 	// verify a container was provided
 	if len(ctn) == 0 {
-		return errors.New("no container provided")
+		return client.ContainerStopResult{}, errors.New("no container provided")
 	}
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
-		//nolint:staticcheck // messsage is capitalized to match Docker messages
-		return errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+		return client.ContainerStopResult{}, cerrdefs.ErrNotFound
 	}
 
-	return nil
+	return client.ContainerStopResult{}, nil
 }
 
-// ContainerTop is a helper function to simulate
-// a mocked call to show running processes inside
-// a Docker container.
+// ContainerRestart is a helper function to simulate
+// a mocked call to restart a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerTop
-func (c *ContainerService) ContainerTop(_ context.Context, _ string, _ []string) (container.TopResponse, error) {
-	return container.TopResponse{}, nil
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRestart
+func (c *ContainerService) ContainerRestart(_ context.Context, _ string, _ client.ContainerRestartOptions) (client.ContainerRestartResult, error) {
+	return client.ContainerRestartResult{}, nil
+}
+
+// ContainerPause is a helper function to simulate
+// a mocked call to pause a running Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerPause
+func (c *ContainerService) ContainerPause(_ context.Context, _ string, _ client.ContainerPauseOptions) (client.ContainerPauseResult, error) {
+	return client.ContainerPauseResult{}, nil
 }
 
 // ContainerUnpause is a helper function to simulate
 // a mocked call to unpause a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerUnpause
-func (c *ContainerService) ContainerUnpause(_ context.Context, _ string) error {
-	return nil
-}
-
-// ContainerUpdate is a helper function to simulate
-// a mocked call to update a Docker container.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerUpdate
-func (c *ContainerService) ContainerUpdate(_ context.Context, _ string, _ container.UpdateConfig) (container.UpdateResponse, error) {
-	return container.UpdateResponse{}, nil
+func (c *ContainerService) ContainerUnpause(_ context.Context, _ string, _ client.ContainerUnpauseOptions) (client.ContainerUnpauseResult, error) {
+	return client.ContainerUnpauseResult{}, nil
 }
 
 // ContainerWait is a helper function to simulate
@@ -446,25 +221,29 @@ func (c *ContainerService) ContainerUpdate(_ context.Context, _ string, _ contai
 // container to finish.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerWait
-func (c *ContainerService) ContainerWait(_ context.Context, ctn string, _ container.WaitCondition) (<-chan container.WaitResponse, <-chan error) {
+func (c *ContainerService) ContainerWait(_ context.Context, ctn string, _ client.ContainerWaitOptions) client.ContainerWaitResult {
 	ctnCh := make(chan container.WaitResponse, 1)
 	errCh := make(chan error, 1)
+
+	result := client.ContainerWaitResult{
+		Result: ctnCh,
+		Error:  errCh,
+	}
 
 	// verify a container was provided
 	if len(ctn) == 0 {
 		// propagate the error to the error channel
 		errCh <- errors.New("no container provided")
 
-		return ctnCh, errCh
+		return result
 	}
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
 		// propagate the error to the error channel
-		//nolint:staticcheck // messsage is capitalized to match Docker messages
-		errCh <- errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+		errCh <- cerrdefs.ErrNotFound
 
-		return ctnCh, errCh
+		return result
 	}
 
 	// create goroutine for responding to call
@@ -484,39 +263,120 @@ func (c *ContainerService) ContainerWait(_ context.Context, ctn string, _ contai
 		errCh <- nil
 	}()
 
-	return ctnCh, errCh
+	return result
 }
 
-// ContainersPrune is a helper function to simulate
-// a mocked call to prune Docker containers.
+// ContainerKill is a helper function to simulate
+// a mocked call to kill a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainersPrune
-func (c *ContainerService) ContainersPrune(_ context.Context, _ filters.Args) (container.PruneReport, error) {
-	return container.PruneReport{}, nil
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerKill
+func (c *ContainerService) ContainerKill(_ context.Context, ctn string, _ client.ContainerKillOptions) (client.ContainerKillResult, error) {
+	// verify a container was provided
+	if len(ctn) == 0 {
+		return client.ContainerKillResult{}, errors.New("no container provided")
+	}
+
+	// check if the container is not found
+	if strings.Contains(ctn, "notfound") ||
+		strings.Contains(ctn, "not-found") {
+		return client.ContainerKillResult{}, cerrdefs.ErrNotFound
+	}
+
+	return client.ContainerKillResult{}, nil
 }
 
-// ContainerStatsOneShot is a helper function to simulate
-// a mocked call to return near realtime stats for a given container.
+// ContainerRename is a helper function to simulate
+// a mocked call to rename a Docker container.
 //
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStatsOneShot
-func (c *ContainerService) ContainerStatsOneShot(_ context.Context, _ string) (container.StatsResponseReader, error) {
-	return container.StatsResponseReader{}, nil
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRename
+func (c *ContainerService) ContainerRename(_ context.Context, _ string, _ client.ContainerRenameOptions) (client.ContainerRenameResult, error) {
+	return client.ContainerRenameResult{}, nil
+}
+
+// ContainerResize is a helper function to simulate
+// a mocked call to resize a Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerResize
+func (c *ContainerService) ContainerResize(_ context.Context, _ string, _ client.ContainerResizeOptions) (client.ContainerResizeResult, error) {
+	return client.ContainerResizeResult{}, nil
+}
+
+// ContainerAttach is a helper function to simulate
+// a mocked call to attach a connection to a
+// Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerAttach
+func (c *ContainerService) ContainerAttach(_ context.Context, _ string, _ client.ContainerAttachOptions) (client.ContainerAttachResult, error) {
+	return client.ContainerAttachResult{}, nil
+}
+
+// ContainerCommit is a helper function to simulate
+// a mocked call to apply changes to a Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerCommit
+func (c *ContainerService) ContainerCommit(_ context.Context, _ string, _ client.ContainerCommitOptions) (client.ContainerCommitResult, error) {
+	return client.ContainerCommitResult{}, nil
+}
+
+// ContainerDiff is a helper function to simulate
+// a mocked call to show the differences in the
+// filesystem between two Docker containers.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerDiff
+func (c *ContainerService) ContainerDiff(_ context.Context, _ string, _ client.ContainerDiffOptions) (client.ContainerDiffResult, error) {
+	return client.ContainerDiffResult{}, nil
+}
+
+// ContainerExport is a helper function to simulate
+// a mocked call to expore the contents of a Docker
+// container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExport
+func (c *ContainerService) ContainerExport(_ context.Context, _ string, _ client.ContainerExportOptions) (client.ContainerExportResult, error) {
+	return nil, nil
+}
+
+// ContainerStats is a helper function to simulate
+// a mocked call to capture information about a
+// Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStats
+func (c *ContainerService) ContainerStats(_ context.Context, _ string, _ client.ContainerStatsOptions) (client.ContainerStatsResult, error) {
+	return client.ContainerStatsResult{}, nil
+}
+
+// ContainerTop is a helper function to simulate
+// a mocked call to show running processes inside
+// a Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerTop
+func (c *ContainerService) ContainerTop(_ context.Context, _ string, _ client.ContainerTopOptions) (client.ContainerTopResult, error) {
+	return client.ContainerTopResult{}, nil
+}
+
+// ContainerStatPath is a helper function to simulate
+// a mocked call to capture information about a path
+// inside a Docker container.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStatPath
+func (c *ContainerService) ContainerStatPath(_ context.Context, _ string, _ client.ContainerStatPathOptions) (client.ContainerStatPathResult, error) {
+	return client.ContainerStatPathResult{}, nil
 }
 
 // CopyFromContainer is a helper function to simulate
 // a mocked call to copy content from a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.CopyFromContainer
-func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, _ string) (io.ReadCloser, container.PathStat, error) {
-	return nil, container.PathStat{}, nil
+func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, _ client.CopyFromContainerOptions) (client.CopyFromContainerResult, error) {
+	return client.CopyFromContainerResult{}, nil
 }
 
 // CopyToContainer is a helper function to simulate
 // a mocked call to copy content to a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.CopyToContainer
-func (c *ContainerService) CopyToContainer(_ context.Context, _ string, _ string, _ io.Reader, _ container.CopyToContainerOptions) error {
-	return nil
+func (c *ContainerService) CopyToContainer(_ context.Context, _ string, _ client.CopyToContainerOptions) (client.CopyToContainerResult, error) {
+	return client.CopyToContainerResult{}, nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
