@@ -41,23 +41,14 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container, reqToke
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := s.client.Logger.WithField("secret", ctn.Name)
 
-	ctn.Environment["VELA_DISTRIBUTION"] = s.client.build.GetDistribution()
-	ctn.Environment["BUILD_HOST"] = s.client.build.GetHost()
-	ctn.Environment["VELA_HOST"] = s.client.build.GetHost()
-	ctn.Environment["VELA_RUNTIME"] = s.client.build.GetRuntime()
-	ctn.Environment["VELA_VERSION"] = s.client.Version
-	ctn.Environment["VELA_OUTPUTS"] = "/vela/outputs/.env"
-	ctn.Environment["VELA_MASKED_OUTPUTS"] = "/vela/outputs/masked.env"
-	ctn.Environment["VELA_BASE64_OUTPUTS"] = "/vela/outputs/base64.env"
-	ctn.Environment["VELA_MASKED_BASE64_OUTPUTS"] = "/vela/outputs/masked.base64.env"
-
-	if len(reqToken) > 0 {
-		ctn.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
+	err := step.Environment(ctn, s.client.build, nil, s.client.Version, reqToken)
+	if err != nil {
+		return fmt.Errorf("unable to set up container environment: %w", err)
 	}
 
 	logger.Debug("setting up container")
 	// setup the runtime container
-	err := s.client.Runtime.SetupContainer(ctx, ctn)
+	err = s.client.Runtime.SetupContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
