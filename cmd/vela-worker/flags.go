@@ -50,7 +50,7 @@ func flags() []cli.Flag {
 
 		// Build Flags
 
-		&cli.IntFlag{
+		&cli.Int32Flag{
 			Name:    "build.limit",
 			Usage:   "maximum amount of builds that can run concurrently",
 			Sources: cli.EnvVars("WORKER_BUILD_LIMIT", "VELA_BUILD_LIMIT", "BUILD_LIMIT"),

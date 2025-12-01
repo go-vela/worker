@@ -32,7 +32,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	registryWorker.SetHostname(w.Config.API.Address.Hostname())
 	registryWorker.SetAddress(w.Config.API.Address.String())
 	registryWorker.SetActive(true)
-	registryWorker.SetBuildLimit(int32(w.Config.Build.Limit))
+	registryWorker.SetBuildLimit(w.Config.Build.Limit)
 
 	// set routes from config if set or defaulted to `vela`
 	if (len(w.Config.Queue.Routes) > 0) && (w.Config.Queue.Routes[0] != "NONE" && w.Config.Queue.Routes[0] != "") {
@@ -184,7 +184,6 @@ func (w *Worker) operate(ctx context.Context) error {
 					}
 
 					w.QueueCheckedIn, err = w.queueCheckIn(gctx, registryWorker)
-
 					if err != nil {
 						// queue check in failed, retry
 						logrus.Errorf("unable to ping queue %v", err)
@@ -215,7 +214,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	})
 
 	// iterate till the configured build limit
-	for i := 0; i < w.Config.Build.Limit; i++ {
+	for i := 0; i < int(w.Config.Build.Limit); i++ {
 		// evaluate and capture i at each iteration
 		//
 		// https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables
@@ -246,6 +245,7 @@ func (w *Worker) operate(ctx context.Context) error {
 
 					continue
 				}
+
 				select {
 				case <-gctx.Done():
 					logrus.WithFields(logrus.Fields{

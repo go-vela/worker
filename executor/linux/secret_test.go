@@ -366,7 +366,11 @@ func TestLinux_Secret_exec(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
+	if err != nil {
+		t.Errorf("unable to create pipeline compiler: %v", err)
+	}
 
 	_build := testBuild()
 
@@ -450,12 +454,23 @@ func TestLinux_Secret_exec(t *testing.T) {
 				}
 			}
 
+			outputsCtn := &pipeline.Container{
+				ID:          "outputs_github_octocat_1",
+				Directory:   "/vela/src/vcs.company.com/github/octocat",
+				Environment: map[string]string{"FOO": "bar"},
+				Image:       "alpine:latest",
+				Name:        "outputs",
+				Number:      2,
+				Pull:        "always",
+			}
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(p),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
+				WithOutputCtn(outputsCtn),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -831,7 +846,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				Directory:   "/home/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},
@@ -846,7 +861,7 @@ func TestLinux_Secret_stream(t *testing.T) {
 				Directory:   "/home/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},

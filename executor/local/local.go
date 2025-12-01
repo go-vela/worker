@@ -3,6 +3,7 @@
 package local
 
 import (
+	"errors"
 	"os"
 	"reflect"
 	"sync"
@@ -73,7 +74,7 @@ func Equal(a, b *client) bool {
 		reflect.DeepEqual(a.pipeline, b.pipeline) &&
 		reflect.DeepEqual(&a.services, &b.services) &&
 		reflect.DeepEqual(&a.steps, &b.steps) &&
-		reflect.DeepEqual(a.err, b.err)
+		errors.Is(a.err, b.err)
 }
 
 // New returns an Executor implementation that integrates with the local system.

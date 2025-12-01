@@ -97,7 +97,7 @@ func run(ctx context.Context, c *cli.Command) error {
 			},
 			// build configuration
 			Build: &Build{
-				Limit:   c.Int("build.limit"),
+				Limit:   c.Int32("build.limit"),
 				Timeout: c.Duration("build.timeout"),
 			},
 			// build configuration
@@ -180,6 +180,5 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// start the worker
-	//nolint: contextcheck // not using ctx yet
-	return w.Start()
+	return w.Start(ctx)
 }

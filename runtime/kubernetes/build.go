@@ -15,11 +15,12 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/worker/runtime/kubernetes/apis/vela/v1alpha1"
 )
 
 // InspectBuild displays details about the pod for the init step.
-func (c *client) InspectBuild(ctx context.Context, b *pipeline.Build) ([]byte, error) {
+func (c *client) InspectBuild(_ context.Context, b *pipeline.Build) ([]byte, error) {
 	c.Logger.Tracef("inspecting build pod for pipeline %s", b.ID)
 
 	output := []byte(fmt.Sprintf("> Inspecting pod for pipeline %s\n", b.ID))
@@ -173,8 +174,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	}
 
 	for _, _stage := range b.Stages {
-		// TODO: remove hardcoded reference
-		if _stage.Name == "init" {
+		if _stage.Name == constants.InitName {
 			continue
 		}
 
@@ -187,8 +187,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	}
 
 	for _, _step := range b.Steps {
-		// TODO: remove hardcoded reference
-		if _step.Name == "init" {
+		if _step.Name == constants.InitName {
 			continue
 		}
 

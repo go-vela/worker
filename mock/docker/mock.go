@@ -13,6 +13,7 @@ import (
 
 type mock struct {
 	// Services
+	CheckpointService
 	ConfigService
 	ContainerService
 	DistributionService
@@ -55,14 +56,14 @@ func (m *mock) DaemonHost() string {
 // DialSession is a helper function to simulate
 // returning a connection that can be used
 // for communication with daemon.
-func (m *mock) DialSession(ctx context.Context, proto string, meta map[string][]string) (net.Conn, error) {
+func (m *mock) DialSession(_ context.Context, _ string, _ map[string][]string) (net.Conn, error) {
 	return nil, nil
 }
 
 // DialHijack is a helper function to simulate
 // returning a hijacked connection with
 // negotiated protocol proto.
-func (m *mock) DialHijack(ctx context.Context, url, proto string, meta map[string][]string) (net.Conn, error) {
+func (m *mock) DialHijack(_ context.Context, _ string, _ string, _ map[string][]string) (net.Conn, error) {
 	return nil, nil
 }
 
@@ -84,7 +85,7 @@ func (m *mock) HTTPClient() *http.Client {
 // NegotiateAPIVersion is a helper function to simulate
 // a mocked call to query the API and update the client
 // version to match the API version.
-func (m *mock) NegotiateAPIVersion(ctx context.Context) {}
+func (m *mock) NegotiateAPIVersion(_ context.Context) {}
 
 // NegotiateAPIVersionPing is a helper function to simulate
 // a mocked call to update the client version to match
@@ -96,7 +97,7 @@ func (m *mock) NegotiateAPIVersionPing(types.Ping) {}
 // Docker client and server host.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ServerVersion
-func (m *mock) ServerVersion(ctx context.Context) (types.Version, error) {
+func (m *mock) ServerVersion(_ context.Context) (types.Version, error) {
 	return types.Version{}, nil
 }
 
@@ -107,4 +108,4 @@ func (m *mock) ServerVersion(ctx context.Context) (types.Version, error) {
 // Docker client expects.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#CommonAPIClient
-var _ client.CommonAPIClient = (*mock)(nil)
+var _ client.APIClient = (*mock)(nil)

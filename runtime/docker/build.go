@@ -34,7 +34,7 @@ func (c *client) StreamBuild(_ context.Context, b *pipeline.Build) error {
 
 // AssembleBuild finalizes pipeline build setup.
 // This is a no-op for docker.
-func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
+func (c *client) AssembleBuild(_ context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("no-op: assembling build %s", b.ID)
 
 	return nil
@@ -42,7 +42,7 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 
 // RemoveBuild deletes (kill, remove) the pipeline build metadata.
 // This is a no-op for docker.
-func (c *client) RemoveBuild(ctx context.Context, b *pipeline.Build) error {
+func (c *client) RemoveBuild(_ context.Context, b *pipeline.Build) error {
 	c.Logger.Tracef("no-op: removing build %s", b.ID)
 
 	return nil

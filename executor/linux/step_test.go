@@ -14,6 +14,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
@@ -60,7 +61,7 @@ func TestLinux_CreateStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -74,7 +75,7 @@ func TestLinux_CreateStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -353,7 +354,7 @@ func TestLinux_ExecStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -367,7 +368,7 @@ func TestLinux_ExecStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -569,7 +570,7 @@ func TestLinux_StreamStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -584,7 +585,7 @@ func TestLinux_StreamStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -740,7 +741,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -754,7 +755,7 @@ func TestLinux_DestroyStep(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},
@@ -866,7 +867,7 @@ func TestLinux_getSecretValues(t *testing.T) {
 				Directory:   "/vela/src/github.com/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "not_present",
 			},

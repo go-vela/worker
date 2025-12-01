@@ -26,7 +26,7 @@ type VolumeService struct{}
 // a mocked call to create a Docker volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeCreate
-func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error) {
+func (v *VolumeService) VolumeCreate(_ context.Context, options volume.CreateOptions) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(options.Name) == 0 {
 		return volume.Volume{}, errors.New("no volume provided")
@@ -37,7 +37,7 @@ func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateO
 	if strings.Contains(options.Name, "notfound") &&
 		!strings.Contains(options.Name, "ignorenotfound") {
 		return volume.Volume{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
 	}
 
@@ -46,7 +46,7 @@ func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateO
 	if strings.Contains(options.Name, "not-found") &&
 		!strings.Contains(options.Name, "ignore-not-found") {
 		return volume.Volume{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
 	}
 
@@ -68,7 +68,7 @@ func (v *VolumeService) VolumeCreate(ctx context.Context, options volume.CreateO
 // a mocked call to inspect a Docker volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspect
-func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (volume.Volume, error) {
+func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string) (volume.Volume, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
 		return volume.Volume{}, errors.New("no volume provided")
@@ -77,14 +77,14 @@ func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (vol
 	// check if the volume is notfound
 	if strings.Contains(volumeID, "notfound") {
 		return volume.Volume{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
 	if strings.Contains(volumeID, "not-found") {
 		return volume.Volume{},
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
@@ -105,7 +105,7 @@ func (v *VolumeService) VolumeInspect(ctx context.Context, volumeID string) (vol
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspectWithRaw
-func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID string) (volume.Volume, []byte, error) {
+func (v *VolumeService) VolumeInspectWithRaw(_ context.Context, volumeID string) (volume.Volume, []byte, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
 		return volume.Volume{}, nil, errors.New("no volume provided")
@@ -114,14 +114,14 @@ func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID strin
 	// check if the volume is notfound
 	if strings.Contains(volumeID, "notfound") {
 		return volume.Volume{}, nil,
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
 	if strings.Contains(volumeID, "not-found") {
 		return volume.Volume{}, nil,
-			//nolint:stylecheck // messsage is capitalized to match Docker messages
+			//nolint:staticcheck // messsage is capitalized to match Docker messages
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
@@ -147,7 +147,7 @@ func (v *VolumeService) VolumeInspectWithRaw(ctx context.Context, volumeID strin
 // a mocked call to list Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeList
-func (v *VolumeService) VolumeList(ctx context.Context, options volume.ListOptions) (volume.ListResponse, error) {
+func (v *VolumeService) VolumeList(_ context.Context, _ volume.ListOptions) (volume.ListResponse, error) {
 	return volume.ListResponse{}, nil
 }
 
@@ -155,7 +155,7 @@ func (v *VolumeService) VolumeList(ctx context.Context, options volume.ListOptio
 // a mocked call to remove Docker a volume.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeRemove
-func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force bool) error {
+func (v *VolumeService) VolumeRemove(_ context.Context, volumeID string, _ bool) error {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
 		return errors.New("no volume provided")
@@ -168,7 +168,7 @@ func (v *VolumeService) VolumeRemove(ctx context.Context, volumeID string, force
 // a mocked call to prune Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumesPrune
-func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Args) (volume.PruneReport, error) {
+func (v *VolumeService) VolumesPrune(_ context.Context, _ filters.Args) (volume.PruneReport, error) {
 	return volume.PruneReport{}, nil
 }
 
@@ -176,7 +176,7 @@ func (v *VolumeService) VolumesPrune(ctx context.Context, pruneFilter filters.Ar
 // a mocked call to update Docker volumes.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeUpdate
-func (v *VolumeService) VolumeUpdate(ctx context.Context, volumeID string, version swarm.Version, options volume.UpdateOptions) error {
+func (v *VolumeService) VolumeUpdate(_ context.Context, _ string, _ swarm.Version, _ volume.UpdateOptions) error {
 	return nil
 }
 

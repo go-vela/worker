@@ -11,6 +11,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -248,7 +249,7 @@ func testSteps() *pipeline.Build {
 				Directory:   "/home/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},

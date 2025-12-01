@@ -21,7 +21,7 @@ type SystemService struct{}
 // from the Docker daemon.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.DiskUsage
-func (s *SystemService) DiskUsage(ctx context.Context, options types.DiskUsageOptions) (types.DiskUsage, error) {
+func (s *SystemService) DiskUsage(_ context.Context, _ types.DiskUsageOptions) (types.DiskUsage, error) {
 	return types.DiskUsage{}, nil
 }
 
@@ -30,7 +30,7 @@ func (s *SystemService) DiskUsage(ctx context.Context, options types.DiskUsageOp
 // from the Docker daemon.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.Events
-func (s *SystemService) Events(ctx context.Context, options events.ListOptions) (<-chan events.Message, <-chan error) {
+func (s *SystemService) Events(_ context.Context, _ events.ListOptions) (<-chan events.Message, <-chan error) {
 	return nil, nil
 }
 
@@ -39,7 +39,7 @@ func (s *SystemService) Events(ctx context.Context, options events.ListOptions) 
 // information from the Docker daemon.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.Info
-func (s *SystemService) Info(ctx context.Context) (system.Info, error) {
+func (s *SystemService) Info(_ context.Context) (system.Info, error) {
 	return system.Info{}, nil
 }
 
@@ -48,7 +48,7 @@ func (s *SystemService) Info(ctx context.Context) (system.Info, error) {
 // daemon and return version information.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.Ping
-func (s *SystemService) Ping(ctx context.Context) (types.Ping, error) {
+func (s *SystemService) Ping(_ context.Context) (types.Ping, error) {
 	return types.Ping{}, nil
 }
 
@@ -57,7 +57,7 @@ func (s *SystemService) Ping(ctx context.Context) (types.Ping, error) {
 // daemon against a Docker registry.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.RegistryLogin
-func (s *SystemService) RegistryLogin(ctx context.Context, auth registry.AuthConfig) (registry.AuthenticateOKBody, error) {
+func (s *SystemService) RegistryLogin(_ context.Context, _ registry.AuthConfig) (registry.AuthenticateOKBody, error) {
 	return registry.AuthenticateOKBody{}, nil
 }
 

@@ -18,7 +18,7 @@ type SwarmService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmGetUnlockKey
-func (s *SwarmService) SwarmGetUnlockKey(ctx context.Context) (swarm.UnlockKeyResponse, error) {
+func (s *SwarmService) SwarmGetUnlockKey(_ context.Context) (swarm.UnlockKeyResponse, error) {
 	return swarm.UnlockKeyResponse{}, nil
 }
 
@@ -27,7 +27,7 @@ func (s *SwarmService) SwarmGetUnlockKey(ctx context.Context) (swarm.UnlockKeyRe
 // swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmInit
-func (s *SwarmService) SwarmInit(ctx context.Context, req swarm.InitRequest) (string, error) {
+func (s *SwarmService) SwarmInit(_ context.Context, _ swarm.InitRequest) (string, error) {
 	return "", nil
 }
 
@@ -36,7 +36,7 @@ func (s *SwarmService) SwarmInit(ctx context.Context, req swarm.InitRequest) (st
 // cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmInspect
-func (s *SwarmService) SwarmInspect(ctx context.Context) (swarm.Swarm, error) {
+func (s *SwarmService) SwarmInspect(_ context.Context) (swarm.Swarm, error) {
 	return swarm.Swarm{}, nil
 }
 
@@ -45,7 +45,7 @@ func (s *SwarmService) SwarmInspect(ctx context.Context) (swarm.Swarm, error) {
 // cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmJoin
-func (s *SwarmService) SwarmJoin(ctx context.Context, req swarm.JoinRequest) error {
+func (s *SwarmService) SwarmJoin(_ context.Context, _ swarm.JoinRequest) error {
 	return nil
 }
 
@@ -54,7 +54,7 @@ func (s *SwarmService) SwarmJoin(ctx context.Context, req swarm.JoinRequest) err
 // cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmLeave
-func (s *SwarmService) SwarmLeave(ctx context.Context, force bool) error {
+func (s *SwarmService) SwarmLeave(_ context.Context, _ bool) error {
 	return nil
 }
 
@@ -63,7 +63,7 @@ func (s *SwarmService) SwarmLeave(ctx context.Context, force bool) error {
 // cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmUnlock
-func (s *SwarmService) SwarmUnlock(ctx context.Context, req swarm.UnlockRequest) error {
+func (s *SwarmService) SwarmUnlock(_ context.Context, _ swarm.UnlockRequest) error {
 	return nil
 }
 
@@ -72,7 +72,7 @@ func (s *SwarmService) SwarmUnlock(ctx context.Context, req swarm.UnlockRequest)
 // cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SwarmUpdate
-func (s *SwarmService) SwarmUpdate(ctx context.Context, version swarm.Version, swarm swarm.Spec, flags swarm.UpdateFlags) error {
+func (s *SwarmService) SwarmUpdate(_ context.Context, _ swarm.Version, _ swarm.Spec, _ swarm.UpdateFlags) error {
 	return nil
 }
 
