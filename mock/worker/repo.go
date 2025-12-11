@@ -54,6 +54,7 @@ func getRepo(c *gin.Context) {
 	data := []byte(RepoResp)
 
 	var body api.Repo
+
 	_ = json.Unmarshal(data, &body)
 
 	c.JSON(http.StatusOK, body)

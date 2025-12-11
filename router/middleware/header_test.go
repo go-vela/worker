@@ -24,7 +24,7 @@ func TestMiddleware_NoCache(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(NoCache)
@@ -69,7 +69,7 @@ func TestMiddleware_Options(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodOptions, "/health", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodOptions, "/health", nil)
 
 	// setup mock server
 	engine.Use(Options)
@@ -117,7 +117,7 @@ func TestMiddleware_Options_InvalidMethod(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(Options)
@@ -170,7 +170,7 @@ func TestMiddleware_Secure(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/health", nil)
 
 	// setup mock server
 	engine.Use(Secure)
@@ -214,7 +214,7 @@ func TestMiddleware_Secure_TLS(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/health", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/health", nil)
 	context.Request.TLS = new(tls.ConnectionState)
 
 	// setup mock server

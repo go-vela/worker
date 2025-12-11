@@ -252,7 +252,7 @@ func testSteps(runtime string) *pipeline.Build {
 				Directory:   "/home/github/octocat",
 				Environment: map[string]string{"FOO": "bar"},
 				Image:       "#init",
-				Name:        "init",
+				Name:        constants.InitName,
 				Number:      1,
 				Pull:        "always",
 			},
@@ -458,7 +458,7 @@ func testPodFor(build *pipeline.Build) *v1.Pod {
 
 	for _, stage := range build.Stages {
 		for _, step := range stage.Steps {
-			if step.Name == "init" {
+			if step.Name == constants.InitName {
 				continue
 			}
 
@@ -473,7 +473,7 @@ func testPodFor(build *pipeline.Build) *v1.Pod {
 	}
 
 	for _, step := range build.Steps {
-		if step.Name == "init" {
+		if step.Name == constants.InitName {
 			continue
 		}
 
@@ -512,7 +512,7 @@ func countBuildSteps(build *pipeline.Build) int {
 
 	for _, stage := range build.Stages {
 		for _, step := range stage.Steps {
-			if step.Name == "init" {
+			if step.Name == constants.InitName {
 				continue
 			}
 
@@ -521,7 +521,7 @@ func countBuildSteps(build *pipeline.Build) int {
 	}
 
 	for _, step := range build.Steps {
-		if step.Name == "init" {
+		if step.Name == constants.InitName {
 			continue
 		}
 
@@ -582,7 +582,7 @@ func testContainerStatuses(build *pipeline.Build, servicesRunning bool, stepsRun
 
 	for _, stage := range build.Stages {
 		for _, step := range stage.Steps {
-			if step.Name == "init" {
+			if step.Name == constants.InitName {
 				continue
 			}
 
@@ -615,7 +615,7 @@ func testContainerStatuses(build *pipeline.Build, servicesRunning bool, stepsRun
 	}
 
 	for _, step := range build.Steps {
-		if step.Name == "init" {
+		if step.Name == constants.InitName {
 			continue
 		}
 

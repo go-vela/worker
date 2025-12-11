@@ -29,6 +29,7 @@ func TestLocal_CreateStage(t *testing.T) {
 			Usage: "doc",
 		},
 	}
+
 	compiler, err := native.FromCLICommand(context.Background(), cmd)
 	if err != nil {
 		t.Errorf("unable to create compiler from CLI context: %v", err)
@@ -144,6 +145,7 @@ func TestLocal_PlanStage(t *testing.T) {
 
 	tm, _ := testMap.Load("foo")
 	tm.(chan error) <- nil
+
 	close(tm.(chan error))
 
 	errMap := new(sync.Map)
@@ -151,6 +153,7 @@ func TestLocal_PlanStage(t *testing.T) {
 
 	em, _ := errMap.Load("foo")
 	em.(chan error) <- errors.New("bar")
+
 	close(em.(chan error))
 
 	// setup tests

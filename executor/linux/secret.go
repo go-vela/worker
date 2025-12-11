@@ -235,7 +235,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, "*", key)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
+			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
 
 		secret.Value = _secret.GetValue()
@@ -252,7 +252,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, repo, key)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
+			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
 
 		secret.Value = _secret.GetValue()
@@ -269,7 +269,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
 		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, team, key)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", ErrUnableToRetrieve, err)
+			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
 
 		secret.Value = _secret.GetValue()
@@ -387,7 +387,7 @@ func escapeNewlineSecrets(m map[string]*api.Secret) {
 	for i, secret := range m {
 		// only double-escape secrets that have been manually escaped
 		if !strings.Contains(secret.GetValue(), "\\\\n") {
-			s := strings.Replace(secret.GetValue(), "\\n", "\\\n", -1)
+			s := strings.ReplaceAll(secret.GetValue(), "\\n", "\\\n")
 			m[i].Value = &s
 		}
 	}

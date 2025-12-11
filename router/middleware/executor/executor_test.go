@@ -92,7 +92,7 @@ func TestExecutor_Establish(t *testing.T) {
 	// setup context
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/executors/0", nil)
 
 	// setup mock server
 	engine.Use(func(c *gin.Context) { c.Set("executors", _executors) })
@@ -122,7 +122,7 @@ func TestExecutor_Establish_NoParam(t *testing.T) {
 	// setup context
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/executors/", nil)
 
 	// setup mock server
 	engine.Use(Establish())
@@ -145,7 +145,7 @@ func TestExecutor_Establish_InvalidParam(t *testing.T) {
 	// setup context
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/foo", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/executors/foo", nil)
 
 	// setup mock server
 	engine.Use(Establish())
@@ -168,7 +168,7 @@ func TestExecutor_Establish_NoExecutors(t *testing.T) {
 	// setup context
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/executors/0", nil)
 
 	// setup mock server
 	engine.Use(Establish())
@@ -191,7 +191,7 @@ func TestExecutor_Establish_InvalidExecutors(t *testing.T) {
 	// setup context
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/executors/0", nil)
 
 	// setup mock server
 	engine.Use(func(c *gin.Context) { c.Set("executors", "invalid") })
@@ -215,7 +215,7 @@ func TestExecutor_Establish_ExecutorNotFound(t *testing.T) {
 	// setup context
 	resp := httptest.NewRecorder()
 	context, engine := gin.CreateTestContext(resp)
-	context.Request, _ = http.NewRequest(http.MethodGet, "/executors/0", nil)
+	context.Request, _ = http.NewRequestWithContext(t.Context(), http.MethodGet, "/executors/0", nil)
 
 	// setup mock server
 	engine.Use(func(c *gin.Context) { c.Set("executors", make(map[int]executor.Engine)) })

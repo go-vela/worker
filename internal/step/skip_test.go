@@ -8,6 +8,7 @@ import (
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
 )
 
 func TestStep_Skip(t *testing.T) {
@@ -207,7 +208,7 @@ func TestStep_Skip(t *testing.T) {
 		Directory:   "/home/github/octocat",
 		Environment: map[string]string{"FOO": "bar"},
 		Image:       "#init",
-		Name:        "init",
+		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
 	}

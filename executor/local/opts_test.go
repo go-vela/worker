@@ -38,7 +38,6 @@ func TestLocal_Opt_WithBuild(t *testing.T) {
 			_engine, err := New(
 				WithBuild(test.build),
 			)
-
 			if err != nil {
 				t.Errorf("WithBuild returned err: %v", err)
 			}
@@ -213,7 +212,6 @@ func TestLocal_Opt_WithVelaClient(t *testing.T) {
 			_engine, err := New(
 				WithVelaClient(test.client),
 			)
-
 			if err != nil {
 				t.Errorf("WithVelaClient returned err: %v", err)
 			}
