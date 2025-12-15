@@ -8,15 +8,28 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/storage"
 )
 
 // Skip creates the ruledata from the build and repository
 // information and returns true if the data does not match
 // the ruleset for the given container.
-func Skip(c *pipeline.Container, b *api.Build, status string) (bool, error) {
+func Skip(c *pipeline.Container, b *api.Build, status string, storage storage.Storage) (bool, error) {
 	// check if the container provided is empty
 	if c == nil {
 		return true, nil
+	}
+
+	if !c.TestReport.Empty() {
+		if storage == nil {
+			return true, nil
+		}
+
+		if !storage.StorageEnable() {
+			return true, nil
+		}
+
+		return false, nil
 	}
 
 	event := b.GetEvent()

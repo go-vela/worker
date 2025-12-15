@@ -11,6 +11,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/queue"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -119,6 +120,9 @@ func flags() []cli.Flag {
 	// Runtime Flags
 
 	f = append(f, runtime.Flags...)
+
+	// Storage Flags
+	f = append(f, storage.Flags...)
 
 	return f
 }

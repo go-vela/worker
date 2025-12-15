@@ -16,6 +16,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 	"github.com/go-vela/worker/runtime/docker"
@@ -37,6 +38,38 @@ func TestExecutor_New(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_storageT := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_sT, err := storage.New(_storageT)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
+	_storageF := &storage.Setup{
+		Enable:    false,
+		Driver:    "",
+		Endpoint:  "",
+		AccessKey: "",
+		SecretKey: "",
+		Bucket:    "",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_sF, err := storage.New(_storageF)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	_linux, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithHostname("localhost"),
@@ -45,6 +78,7 @@ func TestExecutor_New(t *testing.T) {
 		linux.WithRuntime(_runtime),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
+		linux.WithStorage(_sT),
 	)
 	if err != nil {
 		t.Errorf("unable to create linux engine: %v", err)
@@ -57,6 +91,7 @@ func TestExecutor_New(t *testing.T) {
 		local.WithRuntime(_runtime),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
+		local.WithStorage(_sT),
 	)
 	if err != nil {
 		t.Errorf("unable to create local engine: %v", err)
@@ -80,6 +115,7 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
+				Storage:  _sF,
 			},
 			want:  nil,
 			equal: reflect.DeepEqual,
@@ -95,6 +131,7 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline:   _pipeline,
 				Runtime:    _runtime,
 				Version:    "v1.0.0",
+				Storage:    _sT,
 			},
 			want:  _linux,
 			equal: linux.Equal,
@@ -109,6 +146,7 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
+				Storage:  _sT,
 			},
 			want:  _local,
 			equal: local.Equal,
@@ -123,6 +161,7 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
+				Storage:  _sT,
 			},
 			want:  nil,
 			equal: reflect.DeepEqual,
@@ -137,6 +176,7 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
+				Storage:  _sT,
 			},
 			want:  nil,
 			equal: reflect.DeepEqual,
@@ -151,6 +191,7 @@ func TestExecutor_New(t *testing.T) {
 				Pipeline: _pipeline,
 				Runtime:  _runtime,
 				Version:  "v1.0.0",
+				Storage:  _sT,
 			},
 			want:  nil,
 			equal: reflect.DeepEqual,

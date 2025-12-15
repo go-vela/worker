@@ -21,6 +21,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -183,6 +184,22 @@ func TestLinux_CreateBuild(t *testing.T) {
 				}
 			}
 
+			_storage := &storage.Setup{
+				Enable:    true,
+				Driver:    "minio",
+				Endpoint:  "http://localhost:9000",
+				AccessKey: "ad",
+				SecretKey: "asd",
+				Bucket:    "vela",
+				Region:    "",
+				Secure:    false,
+			}
+
+			_s, err := storage.New(_storage)
+			if err != nil {
+				t.Errorf("unable to create storage engine: %v", err)
+			}
+
 			_engine, err := New(
 				WithLogger(logger),
 				WithBuild(test.build),
@@ -190,6 +207,7 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithRuntime(_runtime),
 
 				WithVelaClient(_client),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -258,6 +276,22 @@ func TestLinux_PlanBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	tests := []struct {
@@ -381,6 +415,7 @@ func TestLinux_PlanBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -459,6 +494,22 @@ func TestLinux_AssembleBuild(t *testing.T) {
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -679,6 +730,7 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -777,6 +829,22 @@ func TestLinux_ExecBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	tests := []struct {
@@ -936,6 +1004,7 @@ func TestLinux_ExecBuild(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -1083,6 +1152,22 @@ func TestLinux_StreamBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	type planFuncType = func(context.Context, *pipeline.Container) error
@@ -1589,6 +1674,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				WithLogStreamingTimeout(1*time.Second),
 				WithVelaClient(_client),
 				withStreamRequests(streamRequests),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -1713,6 +1799,22 @@ func TestLinux_DestroyBuild(t *testing.T) {
 	_client, err := vela.NewClient(s.URL, "", nil)
 	if err != nil {
 		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	tests := []struct {
@@ -1879,6 +1981,7 @@ func TestLinux_DestroyBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)

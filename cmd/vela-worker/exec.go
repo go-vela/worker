@@ -17,6 +17,7 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue/models"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -28,6 +29,10 @@ import (
 //nolint:gocyclo,funlen // ignore cyclomatic complexity and function length
 func (w *Worker) exec(index int, config *api.Worker) error {
 	var err error
+
+	var execStorage storage.Storage
+
+	var _executor executor.Engine
 
 	// setup the version
 	v := version.New()
@@ -156,6 +161,14 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
+	if w.Storage != nil {
+		execStorage = w.Storage
+
+		logrus.Debugf("executor storage is available, setting up storage")
+	} else {
+		logrus.Debugf("executor storage is nil, skipping storage setup")
+	}
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -233,7 +246,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	// setup the executor
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/executor#New
-	_executor, err := executor.New(&executor.Setup{
+	setup := &executor.Setup{
 		Logger:              logger,
 		Mock:                w.Config.Mock,
 		Driver:              w.Config.Executor.Driver,
@@ -248,8 +261,19 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
-	})
+	}
 
+	if execStorage != nil {
+		fmt.Printf("setting up executor storage\n")
+
+		setup.Storage = execStorage
+	}
+
+	_executor, err = executor.New(setup)
+	if err != nil {
+		logger.Errorf("unable to setup executor: %v", err)
+		return err
+	}
 	// add the executor to the worker
 	w.Executors[index] = _executor
 

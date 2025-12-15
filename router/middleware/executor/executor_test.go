@@ -14,6 +14,7 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -33,6 +34,22 @@ func TestExecutor_Retrieve(t *testing.T) {
 	_build := new(api.Build)
 	_build.SetRepo(_repo)
 
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -40,6 +57,7 @@ func TestExecutor_Retrieve(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      _build,
 		Pipeline:   new(pipeline.Build),
+		Storage:    _s,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)
@@ -72,6 +90,22 @@ func TestExecutor_Establish(t *testing.T) {
 	_build := new(api.Build)
 	_build.SetRepo(_repo)
 
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	want, err := executor.New(&executor.Setup{
 		Driver:     constants.DriverLinux,
 		MaxLogSize: 2097152,
@@ -79,6 +113,7 @@ func TestExecutor_Establish(t *testing.T) {
 		Runtime:    _runtime,
 		Build:      _build,
 		Pipeline:   new(pipeline.Build),
+		Storage:    _s,
 	})
 	if err != nil {
 		t.Errorf("unable to create executor engine: %v", err)
