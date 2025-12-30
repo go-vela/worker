@@ -3,6 +3,7 @@
 package step
 
 import (
+	"context"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -15,7 +16,7 @@ import (
 
 // Upload tracks the final state of the step
 // and attempts to upload it to the server.
-func Upload(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Step) {
+func Upload(ctx context.Context, ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Step) {
 	// handle the step based off the status provided
 	switch s.GetStatus() {
 	// step is in a canceled state
@@ -80,7 +81,7 @@ func Upload(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Ent
 		// send API call to update the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		_, _, err := c.Step.Update(b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
+		_, _, err := c.Step.Update(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
 		if err != nil {
 			l.Errorf("unable to upload final step state: %v", err)
 		}

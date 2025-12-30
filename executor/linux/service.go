@@ -65,7 +65,7 @@ func (c *client) CreateService(ctx context.Context, ctn *pipeline.Container) err
 }
 
 // PlanService prepares the service for execution.
-func (c *client) PlanService(_ context.Context, ctn *pipeline.Container) error {
+func (c *client) PlanService(ctx context.Context, ctn *pipeline.Container) error {
 	var err error
 	// update engine logger with service metadata
 	//
@@ -87,7 +87,7 @@ func (c *client) PlanService(_ context.Context, ctn *pipeline.Container) error {
 	// send API call to update the service
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SvcService.Update
-	_service, _, err = c.Vela.Svc.Update(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _service)
+	_service, _, err = c.Vela.Svc.Update(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _service)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (c *client) PlanService(_ context.Context, ctn *pipeline.Container) error {
 	// send API call to capture the service log
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.GetService
-	_log, _, err := c.Vela.Log.GetService(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _service.GetNumber())
+	_log, _, err := c.Vela.Log.GetService(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _service.GetNumber())
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,20 @@ func (c *client) ExecService(ctx context.Context, ctn *pipeline.Container) error
 	// defer taking a snapshot of the service
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Snapshot
-	defer func() { service.Snapshot(ctn, c.build, c.Vela, c.Logger, _service) }()
+	defer func() {
+		// if context has been canceled, do a final upload for service
+		if err := ctx.Err(); err != nil {
+			logger.Debug("context exceeded during service execution, marking service as failure")
+			_service.SetStatus(constants.StatusFailure)
+
+			//nolint:contextcheck // ctx canceled. need to pass background context here
+			service.Upload(context.Background(), ctn, c.build, c.Vela, c.Logger, _service)
+
+			return
+		}
+
+		service.Snapshot(ctx, ctn, c.build, c.Vela, c.Logger, _service)
+	}()
 
 	// verify service is allowed to run
 	if c.enforceTrustedRepos {
@@ -218,7 +231,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 		// send API call to update the logs for the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
-		_, err = c.Vela.Log.UpdateService(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
+		_, err = c.Vela.Log.UpdateService(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -275,7 +288,7 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 					// send API call to append the logs for the service
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
-					_, err = c.Vela.Log.UpdateService(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
+					_, err = c.Vela.Log.UpdateService(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 					if err != nil {
 						logger.Error(err)
 					}
@@ -318,23 +331,9 @@ func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) er
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
-	// load the service from the client
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Load
-	_service, err := service.Load(ctn, &c.services)
-	if err != nil {
-		// create the service from the container
-		_service = api.ServiceFromContainerEnvironment(ctn)
-	}
-
-	// defer an upload of the service
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#LoaUploadd
-	defer func() { service.Upload(ctn, c.build, c.Vela, logger, _service) }()
-
 	logger.Debug("inspecting container")
 	// inspect the runtime container
-	err = c.Runtime.InspectContainer(ctx, ctn)
+	err := c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
