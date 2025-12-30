@@ -261,6 +261,8 @@ func (w *Worker) operate(ctx context.Context) error {
 					// exec operator subprocess to poll and execute builds
 					// (pass background context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
+					//
+					//nolint:contextcheck // see above
 					err = w.exec(context.Background(), id, registryWorker)
 					if err != nil {
 						// log the error received from the executor
