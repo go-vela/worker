@@ -26,7 +26,7 @@ import (
 // and execute Vela pipelines for the Worker.
 //
 //nolint:gocyclo,funlen // ignore cyclomatic complexity and function length
-func (w *Worker) exec(index int, config *api.Worker) error {
+func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error {
 	var err error
 
 	// setup the version
@@ -50,7 +50,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		logrus.Debugf("queue item prep - attempt %d", i+1)
 
 		// get worker from database
-		worker, _, err := w.VelaClient.Worker.Get(w.Config.API.Address.Hostname())
+		worker, _, err := w.VelaClient.Worker.Get(ctx, w.Config.API.Address.Hostname())
 		if err != nil {
 			logrus.Errorf("unable to retrieve worker from server: %s", err)
 
@@ -66,7 +66,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 		// capture an item from the queue only on first loop iteration (failures here return nil)
 		if i == 0 {
-			item, err = w.Queue.Pop(context.Background(), worker.GetRoutes())
+			item, err = w.Queue.Pop(ctx, worker.GetRoutes())
 			if err != nil {
 				logrus.Errorf("queue pop failed: %v", err)
 
@@ -85,7 +85,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		}
 
 		// retrieve a build token from the server to setup the execBuildClient
-		bt, resp, err := w.VelaClient.Build.GetBuildToken(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
+		bt, resp, err := w.VelaClient.Build.GetBuildToken(ctx, item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
 		if err != nil {
 			logrus.Errorf("unable to retrieve build token: %s", err)
 
@@ -120,7 +120,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		}
 
 		// request build executable containing pipeline.Build data using exec client
-		execBuildExecutable, _, err = execBuildClient.Build.GetBuildExecutable(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
+		execBuildExecutable, _, err = execBuildClient.Build.GetBuildExecutable(ctx, item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber())
 		if err != nil {
 			// check if the retry limit has been exceeded
 			if i < retries-1 {
@@ -141,8 +141,10 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 			return err
 		}
 
+		logrus.Debugf("setting up exec client with scm token %s with expiration %d", p.Token, p.TokenExp)
+
 		// setup exec client with scm token and build token
-		execBuildClient, err = setupExecClient(w.Config.Server, bt.GetToken(), p.Token)
+		execBuildClient, err = setupExecClient(w.Config.Server, bt.GetToken(), p.Token, p.TokenExp, item.Build)
 		if err != nil {
 			return err
 		}
@@ -185,7 +187,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 	config.SetLastBuildStartedAt(time.Now().Unix())
 
 	// update worker in the database
-	_, _, err = w.VelaClient.Worker.Update(config.GetHostname(), config)
+	_, _, err = w.VelaClient.Worker.Update(ctx, config.GetHostname(), config)
 	if err != nil {
 		logger.Errorf("unable to update worker: %v", err)
 	}
@@ -202,7 +204,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		build.SetStatus(constants.StatusError)
 		build.SetFinished(time.Now().UTC().Unix())
 
-		_, _, err := execBuildClient.Build.Update(build)
+		_, _, err := execBuildClient.Build.Update(ctx, build)
 		if err != nil {
 			logrus.Errorf("Unable to set build status to %s: %s", constants.StatusFailure, err)
 			return err
@@ -264,9 +266,8 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 
 		logger.Info("destroying build")
 
-		// destroy the build with the executor (pass a background
-		// context to guarantee all build resources are destroyed).
-		err = _executor.DestroyBuild(context.Background())
+		// destroy the build with the executor
+		err = _executor.DestroyBuild(ctx)
 		if err != nil {
 			logger.Errorf("unable to destroy build: %v", err)
 		}
@@ -293,7 +294,7 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		config.SetLastBuildFinishedAt(time.Now().Unix())
 
 		// update worker in the database
-		_, _, err := w.VelaClient.Worker.Update(config.GetHostname(), config)
+		_, _, err := w.VelaClient.Worker.Update(ctx, config.GetHostname(), config)
 		if err != nil {
 			logger.Errorf("unable to update worker: %v", err)
 		}
@@ -307,9 +308,8 @@ func (w *Worker) exec(index int, config *api.Worker) error {
 		t = time.Duration(item.Build.GetRepo().GetTimeout()) * time.Minute
 	}
 
-	// create a build context (from a background context
-	// so that other builds can't inadvertently cancel this build)
-	buildCtx, done := context.WithCancel(context.Background())
+	// create a build context
+	buildCtx, done := context.WithCancel(ctx)
 	defer done()
 
 	// add to the background context with a timeout

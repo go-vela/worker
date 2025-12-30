@@ -40,7 +40,7 @@ var Flags = []cli.Flag{
 		Name:    "executor.log_streaming_timeout",
 		Usage:   "maximum amount of time to wait for log streaming after build completes",
 		Sources: cli.EnvVars("WORKER_LOG_STREAMING_TIMEOUT", "VELA_LOG_STREAMING_TIMEOUT", "LOG_STREAMING_TIMEOUT"),
-		Value:   5 * time.Minute,
+		Value:   1 * time.Minute,
 	},
 	&cli.BoolFlag{
 		Name:  "executor.enforce-trusted-repos",

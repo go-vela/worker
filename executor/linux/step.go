@@ -78,7 +78,7 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 }
 
 // PlanStep prepares the step for execution.
-func (c *client) PlanStep(_ context.Context, ctn *pipeline.Container) error {
+func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 	var err error
 
 	// update engine logger with step metadata
@@ -95,7 +95,7 @@ func (c *client) PlanStep(_ context.Context, ctn *pipeline.Container) error {
 	// send API call to update the step
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-	_step, _, err = c.Vela.Step.Update(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step)
+	_step, _, err = c.Vela.Step.Update(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (c *client) PlanStep(_ context.Context, ctn *pipeline.Container) error {
 			Commands: len(ctn.Commands) > 0 || len(ctn.Entrypoint) > 0,
 		}
 
-		tkn, _, err := c.Vela.Build.GetIDRequestToken(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), opts)
+		tkn, _, err := c.Vela.Build.GetIDRequestToken(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), opts)
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func (c *client) PlanStep(_ context.Context, ctn *pipeline.Container) error {
 	// send API call to capture the step log
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.GetStep
-	_log, _, err := c.Vela.Log.GetStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.GetNumber())
+	_log, _, err := c.Vela.Log.GetStep(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.GetNumber())
 	if err != nil {
 		return err
 	}
@@ -166,7 +166,20 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// defer taking a snapshot of the step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Snapshot
-	defer func() { step.Snapshot(ctn, c.build, c.Vela, c.Logger, _step) }()
+	defer func() {
+		// if context has been canceled, do a final upload for step
+		if err := ctx.Err(); err != nil {
+			logger.Debug("context exceeded during step execution, marking step as failure")
+			_step.SetStatus(constants.StatusFailure)
+
+			//nolint:contextcheck // ctx canceled. need to pass background context here
+			step.Upload(context.Background(), ctn, c.build, c.Vela, c.Logger, _step)
+
+			return
+		}
+
+		step.Snapshot(ctx, ctn, c.build, c.Vela, c.Logger, _step)
+	}()
 
 	// verify step is allowed to run
 	if c.enforceTrustedRepos {
@@ -282,7 +295,9 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-		_, err = c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
+		//
+		//nolint:contextcheck // ctx can be canceled by build timing out. need to pass background context here
+		_, err = c.Vela.Log.UpdateStep(context.Background(), c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -342,7 +357,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 					// send API call to append the logs for the step
 					//
 					// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogStep.UpdateStep
-					_, err := c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
+					_, err := c.Vela.Log.UpdateStep(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), ctn.Number, _log)
 					if err != nil {
 						logger.Error(err)
 					}
@@ -389,23 +404,9 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
-	// load the step from the client
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Load
-	_step, err := step.Load(ctn, &c.steps)
-	if err != nil {
-		// create the step from the container
-		_step = api.StepFromContainerEnvironment(ctn)
-	}
-
-	// defer an upload of the step
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
-	defer func() { step.Upload(ctn, c.build, c.Vela, logger, _step) }()
-
 	logger.Debug("inspecting container")
 	// inspect the runtime container
-	err = c.Runtime.InspectContainer(ctx, ctn)
+	err := c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
