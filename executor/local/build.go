@@ -22,7 +22,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
+	defer func() { build.Snapshot(ctx, c.build, nil, c.err, nil) }()
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -65,7 +65,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
+	defer func() { build.Snapshot(ctx, c.build, nil, c.err, nil) }()
 
 	// load the init step from the client
 	//
@@ -78,7 +78,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#SnapshotInit
-	defer func() { step.SnapshotInit(c.init, c.build, nil, nil, _init, nil) }()
+	defer func() { step.SnapshotInit(ctx, c.init, c.build, nil, nil, _init, nil) }()
 
 	// create a step pattern for log output
 	_pattern := fmt.Sprintf(stepPattern, c.init.Name)
@@ -136,7 +136,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, nil, c.err, nil) }()
+	defer func() { build.Snapshot(ctx, c.build, nil, c.err, nil) }()
 
 	// load the init step from the client
 	//
@@ -149,7 +149,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer an upload of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
-	defer func() { step.Upload(c.init, c.build, nil, nil, _init) }()
+	defer func() { step.Upload(ctx, c.init, c.build, nil, nil, _init) }()
 
 	// create a step pattern for log output
 	_pattern := fmt.Sprintf(stepPattern, c.init.Name)
@@ -254,7 +254,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// defer an upload of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
-	defer func() { build.Upload(c.build, nil, c.err, nil) }()
+	defer func() { build.Upload(ctx, c.build, nil, c.err, nil) }()
 
 	// output maps for dynamic environment variables captured from volume
 	var opEnv, maskEnv map[string]string

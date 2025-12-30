@@ -3,6 +3,7 @@
 package service
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 
 // Snapshot creates a moment in time record of the
 // service and attempts to upload it to the server.
-func Snapshot(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Service) {
+func Snapshot(ctx context.Context, ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Service) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) {
 		// check if the container is running in headless mode
@@ -55,7 +56,7 @@ func Snapshot(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.E
 		// send API call to update the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SvcService.Update
-		_, _, err := c.Svc.Update(b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
+		_, _, err := c.Svc.Update(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
 		if err != nil {
 			l.Errorf("unable to upload service snapshot: %v", err)
 		}

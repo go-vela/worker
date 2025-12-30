@@ -141,6 +141,11 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			continue
 		}
 
+		c.err = c.UpdateSCMAuth(ctx, _step)
+		if c.err != nil {
+			return fmt.Errorf("unable to update SCM auth: %w", c.err)
+		}
+
 		// add netrc to secrets for masking in logs
 		sec := &pipeline.StepSecret{
 			Target: "VELA_NETRC_PASSWORD",
@@ -148,7 +153,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		_step.Secrets = append(_step.Secrets, sec)
 
 		// load any lazy secrets and inject them into container environment
-		err = loadLazySecrets(c, _step)
+		err = loadLazySecrets(ctx, c, _step)
 		if err != nil {
 			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}

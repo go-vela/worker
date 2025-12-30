@@ -9,8 +9,8 @@ require (
 	github.com/docker/docker v28.5.1+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-vela/sdk-go v0.27.2-0.20251023182037-f8a9d8e9a0a9
-	github.com/go-vela/server v0.27.3-0.20251023181434-3790af6cb5db
+	github.com/go-vela/sdk-go v0.27.2-0.20251230154052-e1dae5f07d93
+	github.com/go-vela/server v0.27.3-0.20251230152334-d014b0feb8db
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
@@ -98,7 +98,6 @@ require (
 	github.com/PuerkitoBio/purell v1.2.1 // indirect
 	github.com/alicebob/miniredis/v2 v2.35.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/buildkite/yaml v0.0.0-20230306222819-0e4e032d4835 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
