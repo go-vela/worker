@@ -3,7 +3,7 @@
 package docker
 
 import (
-	docker "github.com/docker/docker/client"
+	docker "github.com/moby/moby/client"
 	"github.com/sirupsen/logrus"
 
 	mock "github.com/go-vela/worker/mock/docker"
@@ -74,18 +74,10 @@ func New(opts ...ClientOpt) (*client, error) {
 	// create new Docker client from environment
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#NewClientWithOpts
-	_docker, err := docker.NewClientWithOpts(docker.FromEnv)
+	_docker, err := docker.New(docker.FromEnv, docker.WithVersionFromEnv())
 	if err != nil {
 		return nil, err
 	}
-
-	// pin version to ensure we know what Docker API version we're using
-	//
-	// typically this would be inherited from the host environment
-	// but this ensures the version of client being used
-	//
-	// https://pkg.go.dev/github.com/docker/docker/client#WithVersion
-	_ = docker.WithVersion(Version)(_docker)
 
 	// set the Docker client in the runtime client
 	c.Docker = _docker
