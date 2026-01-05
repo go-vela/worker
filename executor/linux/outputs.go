@@ -268,7 +268,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 		}
 
 		// create test attachment record in database after successful upload
-		err = o.client.CreateTestAttachment(fileName, presignURL, size, tr)
+		err = o.client.CreateTestAttachment(ctx, fileName, presignURL, size, tr)
 		if err != nil {
 			logger.Errorf("unable to create test attachment record for %s: %v", fileName, err)
 			// don't return error here to avoid blocking the upload process

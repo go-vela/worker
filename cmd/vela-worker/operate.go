@@ -19,7 +19,7 @@ import (
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
 //
-//nolint:funlen // refactor candidate
+//nolint:funlen,gocyclo // refactor candidate
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 	// create the errgroup for managing operator subprocesses
@@ -81,7 +81,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	// getting storage creds
 	logrus.Trace("getting storage s3 creds..")
 	// fetching queue credentials using registration token
-	stCreds, _, err := w.VelaClient.Storage.GetInfo()
+	stCreds, _, err := w.VelaClient.Storage.GetInfo(ctx)
 	if err != nil {
 		logrus.Tracef("error getting storage creds: %v", err)
 		return err
@@ -110,7 +110,7 @@ func (w *Worker) operate(ctx context.Context) error {
 		if err != nil {
 			logrus.Error("storage setup failed")
 			// set to error as storage setup fails
-			w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
+			w.updateWorkerStatus(ctx, registryWorker, constants.WorkerStatusError)
 
 			return err
 		}

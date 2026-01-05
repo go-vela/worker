@@ -3,18 +3,20 @@
 package linux
 
 import (
+	"context"
 	"fmt"
 
 	api "github.com/go-vela/server/api/types"
 )
 
 // CreateTestReport creates a test report record in the database for the current build.
-func (c *client) CreateTestReport() (*api.TestReport, error) {
+func (c *client) CreateTestReport(ctx context.Context) (*api.TestReport, error) {
 	// create empty test report for the build
 	testReport := &api.TestReport{}
 
 	// update test report in database
 	tr, resp, err := c.Vela.TestReport.Update(
+		ctx,
 		c.build.GetRepo().GetOrg(),
 		c.build.GetRepo().GetName(),
 		c.build.GetNumber(),

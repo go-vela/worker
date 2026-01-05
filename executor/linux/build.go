@@ -638,7 +638,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// TODO: .Add should be .Update
 		// TODO: handle somewhere if multiple test report keys exist in pipeline
 		if !testReportCreated {
-			tr, c.err = c.CreateTestReport()
+			tr, c.err = c.CreateTestReport(ctx)
 			if c.err != nil {
 				return fmt.Errorf("unable to create test report: %w", c.err)
 			}
