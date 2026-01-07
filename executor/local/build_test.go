@@ -74,6 +74,8 @@ func TestLocal_CreateBuild(t *testing.T) {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), true)
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
@@ -159,6 +161,8 @@ func TestLocal_PlanBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
+
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), true)
 
 			_engine, err := New(
 				WithBuild(_build),
@@ -285,6 +289,8 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), true)
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
@@ -395,6 +401,8 @@ func TestLocal_ExecBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
+
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), true)
 
 			_engine, err := New(
 				WithBuild(_build),
@@ -599,6 +607,8 @@ func TestLocal_StreamBuild(t *testing.T) {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), true)
+
 			_engine, err := New(
 				WithBuild(_build),
 				WithPipeline(_pipeline),
@@ -726,6 +736,8 @@ func TestLocal_DestroyBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
+
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), true)
 
 			_engine, err := New(
 				WithBuild(_build),
