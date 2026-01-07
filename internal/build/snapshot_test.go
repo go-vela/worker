@@ -103,7 +103,7 @@ func TestBuild_Snapshot(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(_ *testing.T) {
-			Snapshot(test.build, test.client, test.err, nil)
+			Snapshot(t.Context(), test.build, test.client, test.err, nil)
 		})
 	}
 }

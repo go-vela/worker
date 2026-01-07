@@ -787,7 +787,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
-			_, err = _engine.secret.pull(test.secret)
+			_, err = _engine.secret.pull(t.Context(), test.secret)
 
 			if test.failure {
 				if err == nil {

@@ -134,7 +134,7 @@ func TestStep_Snapshot(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(_ *testing.T) {
-			Snapshot(test.container, test.build, test.client, nil, test.step)
+			Snapshot(t.Context(), test.container, test.build, test.client, nil, test.step)
 		})
 	}
 }
@@ -261,7 +261,7 @@ func TestStep_SnapshotInit(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(_ *testing.T) {
-			SnapshotInit(test.container, test.build, test.client, nil, test.step, test.log)
+			SnapshotInit(t.Context(), test.container, test.build, test.client, nil, test.step, test.log)
 		})
 	}
 }

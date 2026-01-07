@@ -3,6 +3,7 @@
 package step
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 
 // Snapshot creates a moment in time record of the
 // step and attempts to upload it to the server.
-func Snapshot(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Step) {
+func Snapshot(ctx context.Context, ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Step) {
 	// check if the build is not in a canceled status or error status
 	logrus.Debugf("Snapshot s: %s %s", s.GetName(), s.GetStatus())
 
@@ -58,7 +59,7 @@ func Snapshot(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.E
 		// send API call to update the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		_, _, err := c.Step.Update(b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
+		_, _, err := c.Step.Update(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
 		if err != nil {
 			l.Errorf("unable to upload step snapshot: %v", err)
 		}
@@ -67,7 +68,7 @@ func Snapshot(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.E
 
 // SnapshotInit creates a moment in time record of the
 // init step and attempts to upload it to the server.
-func SnapshotInit(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Step, lg *api.Log) {
+func SnapshotInit(ctx context.Context, ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logrus.Entry, s *api.Step, lg *api.Log) {
 	// check if the build is not in a canceled status
 	if !strings.EqualFold(s.GetStatus(), constants.StatusCanceled) {
 		// check if the container has an unsuccessful exit code
@@ -99,7 +100,7 @@ func SnapshotInit(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logr
 		// send API call to update the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		_, _, err := c.Step.Update(b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
+		_, _, err := c.Step.Update(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s)
 		if err != nil {
 			l.Errorf("unable to upload step snapshot: %v", err)
 		}
@@ -109,7 +110,7 @@ func SnapshotInit(ctn *pipeline.Container, b *api.Build, c *vela.Client, l *logr
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-		_, err = c.Log.UpdateStep(b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s.GetNumber(), lg)
+		_, err = c.Log.UpdateStep(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(), b.GetNumber(), s.GetNumber(), lg)
 		if err != nil {
 			l.Errorf("unable to upload step logs: %v", err)
 		}

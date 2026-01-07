@@ -53,7 +53,7 @@ func (w *Worker) operate(ctx context.Context) error {
 
 	logrus.Trace("getting queue creds")
 	// fetching queue credentials using registration token
-	creds, _, err := w.VelaClient.Queue.GetInfo()
+	creds, _, err := w.VelaClient.Queue.GetInfo(ctx)
 	if err != nil {
 		logrus.Trace("error getting creds")
 		return err
@@ -74,7 +74,7 @@ func (w *Worker) operate(ctx context.Context) error {
 	if err != nil {
 		logrus.Error("queue setup failed")
 		// set to error as queue setup fails
-		w.updateWorkerStatus(registryWorker, constants.WorkerStatusError)
+		w.updateWorkerStatus(ctx, registryWorker, constants.WorkerStatusError)
 	}
 
 	// spawn goroutine for phoning home
@@ -95,7 +95,7 @@ func (w *Worker) operate(ctx context.Context) error {
 				// check in attempt loop
 				for {
 					// register or update the worker
-					w.CheckedIn, token, err = w.checkIn(registryWorker)
+					w.CheckedIn, token, err = w.checkIn(ctx, registryWorker)
 					// check in failed
 					if err != nil {
 						// check if token is expired
@@ -206,17 +206,18 @@ func (w *Worker) operate(ctx context.Context) error {
 					}).Info("running worker executor exec")
 
 					// exec operator subprocess to poll and execute builds
-					// (do not pass the context to avoid errors in one
+					// (pass background context to avoid errors in one
 					// executor+build inadvertently canceling other builds)
-					//nolint:contextcheck // ignore passing context
-					err = w.exec(id, registryWorker)
+					//
+					//nolint:contextcheck // see above
+					err = w.exec(context.Background(), id, registryWorker)
 					if err != nil {
 						// log the error received from the executor
 						//
 						// https://pkg.go.dev/github.com/sirupsen/logrus#Errorf
 						logrus.Errorf("failing worker executor: %v", err)
 						registryWorker.SetStatus(constants.WorkerStatusError)
-						_, resp, logErr := w.VelaClient.Worker.Update(registryWorker.GetHostname(), registryWorker)
+						_, resp, logErr := w.VelaClient.Worker.Update(ctx, registryWorker.GetHostname(), registryWorker)
 
 						if resp == nil {
 							// log the error instead of returning so the operation doesn't block worker deployment

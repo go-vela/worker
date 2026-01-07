@@ -28,7 +28,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
+	defer func() { build.Snapshot(ctx, c.build, c.Vela, c.err, c.Logger) }()
 
 	// update the build fields
 	c.build.SetStatus(constants.StatusRunning)
@@ -41,7 +41,7 @@ func (c *client) CreateBuild(ctx context.Context) error {
 	// send API call to update the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#BuildService.Update
-	c.build, _, c.err = c.Vela.Build.Update(c.build)
+	c.build, _, c.err = c.Vela.Build.Update(ctx, c.build)
 	if c.err != nil {
 		return fmt.Errorf("unable to upload build state: %w", c.err)
 	}
@@ -82,7 +82,9 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
+	//
+	//nolint:contextcheck // ctx can be canceled by build timing out. need to pass background context here
+	defer func() { build.Snapshot(context.Background(), c.build, c.Vela, c.err, c.Logger) }()
 
 	// load the init step from the client
 	//
@@ -106,12 +108,14 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	// defer taking a snapshot of the init step
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#SnapshotInit
+	//
+	//nolint:contextcheck // ctx can be canceled by build timing out. need to pass background context here
 	defer func() {
 		if c.err != nil {
 			_init.SetStatus(constants.StatusFailure)
 		}
 
-		step.SnapshotInit(c.init, c.build, c.Vela, c.Logger, _init, _log)
+		step.SnapshotInit(context.Background(), c.init, c.build, c.Vela, c.Logger, _init, _log)
 	}()
 
 	c.Logger.Info("creating network")
@@ -173,7 +177,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 		c.Logger.Infof("pulling secret: %s", secret.Name)
 
-		s, err := c.secret.pull(secret)
+		s, err := c.secret.pull(ctx, secret)
 		if err != nil {
 			c.err = err
 			return fmt.Errorf("unable to pull secrets: %w", err)
@@ -212,7 +216,9 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 	// defer taking a snapshot of the build
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Snapshot
-	defer func() { build.Snapshot(c.build, c.Vela, c.err, c.Logger) }()
+	//
+	//nolint:contextcheck // ctx can be canceled by build timing out. need to pass background context here
+	defer func() { build.Snapshot(context.Background(), c.build, c.Vela, c.err, c.Logger) }()
 
 	// load the init step from the client
 	//
@@ -238,15 +244,16 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 			_init.SetStatus(constants.StatusFailure)
 		}
 
-		step.Upload(c.init, c.build, c.Vela, c.Logger, _init)
+		step.Upload(ctx, c.init, c.build, c.Vela, c.Logger, _init)
 	}()
 
+	//nolint:contextcheck // ctx can be canceled by build timing out. need to pass background context here
 	defer func() {
 		c.Logger.Infof("uploading %s step logs", c.init.Name)
 		// send API call to update the logs for the step
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-		_, err = c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), c.init.Number, _log)
+		_, err = c.Vela.Log.UpdateStep(context.Background(), c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), c.init.Number, _log)
 		if err != nil {
 			c.Logger.Errorf("unable to upload %s logs: %v", c.init.Name, err)
 		}
@@ -366,7 +373,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 				Commands: len(s.Origin.Commands) > 0 || len(s.Origin.Entrypoint) > 0,
 			}
 
-			tkn, _, err := c.Vela.Build.GetIDRequestToken(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), opts)
+			tkn, _, err := c.Vela.Build.GetIDRequestToken(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), opts)
 			if err != nil {
 				return err
 			}
@@ -427,6 +434,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 //
 //nolint:funlen // there is a lot going on here and will probably always be long
 func (c *client) ExecBuild(ctx context.Context) error {
+	//nolint:contextcheck // ctx can be canceled by build timing out. need to pass background context here
 	defer func() {
 		// Exec* calls are responsible for sending StreamRequest messages.
 		// close the channel at the end of ExecBuild to signal that
@@ -436,7 +444,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		// defer an upload of the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/worker/internal/build#Upload
-		build.Upload(c.build, c.Vela, c.err, c.Logger)
+		build.Upload(context.Background(), c.build, c.Vela, c.err, c.Logger)
 	}()
 
 	// output maps for dynamic environment variables captured from volume
@@ -467,6 +475,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan service: %w", c.err)
 		}
 
+		c.err = c.UpdateSCMAuth(ctx, _service)
+		if c.err != nil {
+			return fmt.Errorf("unable to update SCM auth: %w", c.err)
+		}
+
 		c.Logger.Infof("executing %s service", _service.Name)
 		// execute the service
 		c.err = c.ExecService(ctx, _service)
@@ -479,6 +492,11 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	for _, _step := range c.pipeline.Steps {
 		if _step.Name == constants.InitName {
 			continue
+		}
+
+		c.err = c.UpdateSCMAuth(ctx, _step)
+		if c.err != nil {
+			return fmt.Errorf("unable to update SCM auth: %w", c.err)
 		}
 
 		// poll outputs
@@ -519,7 +537,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		_step.Secrets = append(_step.Secrets, sec)
 
 		// load any lazy secrets into the container environment
-		c.err = loadLazySecrets(c, _step)
+		c.err = loadLazySecrets(ctx, c, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
@@ -687,7 +705,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 // during build planning. It is only available for the Docker runtime.
 //
 
-func loadLazySecrets(c *client, _step *pipeline.Container) error {
+func loadLazySecrets(ctx context.Context, c *client, _step *pipeline.Container) error {
 	_log := new(api.Log)
 
 	lazySecrets := make(map[string]*api.Secret)
@@ -757,7 +775,7 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 				_log.AppendData([]byte(
 					fmt.Sprintf("unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source)))
 
-				_, err := c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.Number, _log)
+				_, err := c.Vela.Log.UpdateStep(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.Number, _log)
 				if err != nil {
 					return err
 				}
@@ -767,7 +785,7 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 
 			c.Logger.Infof("pulling secret %s", secret.Name)
 
-			s, err := c.secret.pull(secret)
+			s, err := c.secret.pull(ctx, secret)
 			if err != nil {
 				c.err = err
 				return fmt.Errorf("unable to pull secrets: %w", err)
@@ -785,7 +803,7 @@ func loadLazySecrets(c *client, _step *pipeline.Container) error {
 
 			_log.AppendData(append(sRaw, "\n"...))
 
-			_, err = c.Vela.Log.UpdateStep(c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.Number, _log)
+			_, err = c.Vela.Log.UpdateStep(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.Number, _log)
 			if err != nil {
 				return err
 			}
@@ -939,4 +957,23 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 	}
 
 	return err
+}
+
+func (c *client) UpdateSCMAuth(ctx context.Context, ctn *pipeline.Container) error {
+	// refresh SCM token if within 45 minutes of expiration
+	//
+	// this is an arbitrary range. We want the installation token to always be fresh for steps but don't want to refresh for every step.
+	if c.Vela.Authentication.SCMExpiration() != 0 && time.Now().Unix() >= c.Vela.Authentication.SCMExpiration()-int64((45*time.Minute).Seconds()) {
+		c.Logger.Info("refreshing SCM token")
+
+		_, err := c.Vela.Authentication.RefreshInstallToken(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber())
+		if err != nil {
+			return fmt.Errorf("unable to refresh SCM token: %w", err)
+		}
+
+		ctn.Environment["VELA_NETRC_PASSWORD"] = c.Vela.Authentication.SCMToken()
+		ctn.Environment["VELA_GIT_TOKEN"] = c.Vela.Authentication.SCMToken()
+	}
+
+	return nil
 }
