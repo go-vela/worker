@@ -51,6 +51,8 @@ func TestLinux_CreateStage(t *testing.T) {
 		t.Errorf("unable to compile pipeline %s: %v", _file, err)
 	}
 
+	_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
+
 	gin.SetMode(gin.TestMode)
 
 	s := httptest.NewServer(server.FakeHandler())
