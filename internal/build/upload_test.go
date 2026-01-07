@@ -130,7 +130,7 @@ func TestBuild_Upload(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(_ *testing.T) {
-			Upload(test.build, test.client, test.err, nil)
+			Upload(t.Context(), test.build, test.client, test.err, nil)
 		})
 	}
 }
