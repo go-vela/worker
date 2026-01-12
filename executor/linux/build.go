@@ -450,12 +450,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// output maps for dynamic environment variables captured from volume
 	var opEnv, maskEnv map[string]string
 
-	// test report object for storing the test report information
-	var tr *api.TestReport
-
-	// Flag to track if we've already created the test report record
-	testReportCreated := false
-
 	// fire up output container to run with the build
 	c.Logger.Infof("creating outputs container %s", c.OutputCtn.ID)
 
@@ -536,9 +530,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
-		// Check if this step has test_report and storage is disabled
-		//if !_step.TestReport.Empty() && c.Storage == nil {
-		//	c.Logger.Infof("skipping %s step: storage is disabled but test_report is defined", _step.Name)
+		// Check if this step has artifacts and storage is disabled
+		//if !_step.Artifacts.Empty() && c.Storage == nil {
+		//	c.Logger.Infof("skipping %s step: storage is disabled but artifacts is defined", _step.Name)
 		//
 		//	//// Load step model
 		//	//stepData, err := step.Load(_step, &c.steps)
@@ -621,42 +615,20 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			_step.Secrets = append(_step.Secrets, sec)
 		}
 
-		// logic for polling files only if the test-report step is present
+		// logic for polling files only if the artifacts step is present
 		// iterate through the steps in the build
 
 		// TODO: API to return if storage is enabled
-		//if c.Storage == nil && _step.TestReport.Empty() || c.Storage == nil && !_step.TestReport.Empty() {
-		//	c.Logger.Infof("storage disabled, skipping test report for %s step", _step.Name)
+		//if c.Storage == nil && _step.Artifacts.Empty() || c.Storage == nil && !_step.Artifacts.Empty() {
+		//	c.Logger.Infof("storage disabled, skipping artifacts for %s step", _step.Name)
 		//	// skip if no storage client
-		//	// but test report is defined in step
+		//	// but artifacts is defined in step
 		//	continue
-		//} else if !_step.TestReport.Empty() && c.Storage != nil {
-		c.Logger.Debug("creating test report record in database")
-		// send API call to update the test report
-		//
-		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#TestReportService.Add
-		// TODO: .Add should be .Update
-		// TODO: handle somewhere if multiple test report keys exist in pipeline
-		if !testReportCreated {
-			tr, c.err = c.CreateTestReport(ctx)
-			if c.err != nil {
-				return fmt.Errorf("unable to create test report: %w", c.err)
-			}
-
-			testReportCreated = true
-		}
-
-		if len(_step.TestReport.Results) != 0 {
-			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Results, c.build, tr)
+		//} else if !_step.Artifacts.Empty() && c.Storage != nil {
+		if len(_step.Artifacts.Paths) != 0 {
+			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.Artifacts.Paths, c.build)
 			if err != nil {
-				c.Logger.Errorf("unable to poll files for results: %v", err)
-			}
-		}
-
-		if len(_step.TestReport.Attachments) != 0 {
-			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.TestReport.Attachments, c.build, tr)
-			if err != nil {
-				c.Logger.Errorf("unable to poll files for attachments: %v", err)
+				c.Logger.Errorf("unable to poll files for artifacts: %v", err)
 			}
 		}
 		//}

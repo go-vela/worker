@@ -10,7 +10,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-vela/sdk-go v0.27.2-0.20251230154052-e1dae5f07d93
-	github.com/go-vela/server v0.27.3-0.20251230152334-d014b0feb8db
+	github.com/go-vela/server v0.27.3-0.20260107161845-56fd3db7dbff
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
@@ -37,11 +37,11 @@ require (
 	github.com/containerd/containerd/v2 v2.1.3 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/expr-lang/expr v1.17.6 // indirect
+	github.com/expr-lang/expr v1.17.7 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/goccy/go-yaml v1.19.0 // indirect
-	github.com/google/go-github/v74 v74.0.0 // indirect
+	github.com/google/go-github/v81 v81.0.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect

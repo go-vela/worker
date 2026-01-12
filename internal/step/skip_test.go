@@ -212,9 +212,8 @@ func TestStep_Skip(t *testing.T) {
 		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
-		TestReport: pipeline.TestReport{
-			Results:     []string{"foo.xml", "bar.xml"},
-			Attachments: []string{"foo.txt", "bar.txt"},
+		Artifacts: pipeline.Artifacts{
+			Paths: []string{"foo.xml", "bar.xml", "foo.txt", "bar.txt"},
 		},
 	}
 

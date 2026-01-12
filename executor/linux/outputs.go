@@ -209,7 +209,7 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 }
 
 // pollFiles polls the output for files from the sidecar container.
-func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build, tr *api.TestReport) error {
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
 		return fmt.Errorf("no outputs container configured")
@@ -267,10 +267,10 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 			return fmt.Errorf("unable to generate presign URL for %s: %w", fileName, err)
 		}
 
-		// create test attachment record in database after successful upload
-		err = o.client.CreateTestAttachment(ctx, fileName, presignURL, size, tr)
+		// create artifact record in database after successful upload
+		err = o.client.CreateArtifact(ctx, fileName, presignURL, size)
 		if err != nil {
-			logger.Errorf("unable to create test attachment record for %s: %v", fileName, err)
+			logger.Errorf("unable to create artifact record for %s: %v", fileName, err)
 			// don't return error here to avoid blocking the upload process
 		}
 	}

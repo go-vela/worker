@@ -20,7 +20,7 @@ func Skip(c *pipeline.Container, b *api.Build, status string, storage storage.St
 		return true, nil
 	}
 
-	if !c.TestReport.Empty() {
+	if !c.Artifacts.Empty() {
 		if storage == nil {
 			return true, nil
 		}

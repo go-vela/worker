@@ -164,6 +164,8 @@ func TestLinux_CreateBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
+
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
 
@@ -388,6 +390,8 @@ func TestLinux_PlanBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
+
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
 
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
@@ -704,6 +708,8 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
+
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
 
@@ -969,6 +975,8 @@ func TestLinux_ExecBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
+
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
 
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
@@ -1646,6 +1654,8 @@ func TestLinux_StreamBuild(t *testing.T) {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
 
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
+
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
 
@@ -1953,6 +1963,8 @@ func TestLinux_DestroyBuild(t *testing.T) {
 			if err != nil {
 				t.Errorf("unable to compile %s pipeline %s: %v", test.name, test.pipeline, err)
 			}
+
+			_pipeline.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
 
 			// Docker uses _ while Kubernetes uses -
 			_pipeline = _pipeline.Sanitize(test.runtime)
