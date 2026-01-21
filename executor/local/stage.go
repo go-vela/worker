@@ -90,7 +90,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		close(errChan.(chan error))
 	}()
 
-	stageStatus := c.build.GetStatus()
+	stageStatus := constants.StatusRunning
 
 	// execute the steps for the stage
 	for _, _step := range s.Steps {
