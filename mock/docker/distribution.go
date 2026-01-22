@@ -5,8 +5,7 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/api/types/registry"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 )
 
 // DistributionService implements all the distribution
@@ -16,8 +15,8 @@ type DistributionService struct{}
 // DistributionInspect is a helper function to simulate
 // a mocked call to inspect a Docker image and return
 // the digest and manifest.
-func (d *DistributionService) DistributionInspect(_ context.Context, _ string, _ string) (registry.DistributionInspect, error) {
-	return registry.DistributionInspect{}, nil
+func (d *DistributionService) DistributionInspect(_ context.Context, _ string, _ client.DistributionInspectOptions) (client.DistributionInspectResult, error) {
+	return client.DistributionInspectResult{}, nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES

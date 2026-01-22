@@ -5,8 +5,7 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/api/types/swarm"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 )
 
 // NodeService implements all the node
@@ -18,8 +17,8 @@ type NodeService struct{}
 // cluster and return the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeInspectWithRaw
-func (n *NodeService) NodeInspectWithRaw(_ context.Context, _ string) (swarm.Node, []byte, error) {
-	return swarm.Node{}, nil, nil
+func (n *NodeService) NodeInspect(_ context.Context, _ string, _ client.NodeInspectOptions) (client.NodeInspectResult, error) {
+	return client.NodeInspectResult{}, nil
 }
 
 // NodeList is a helper function to simulate
@@ -27,17 +26,8 @@ func (n *NodeService) NodeInspectWithRaw(_ context.Context, _ string) (swarm.Nod
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeList
-func (n *NodeService) NodeList(_ context.Context, _ swarm.NodeListOptions) ([]swarm.Node, error) {
-	return nil, nil
-}
-
-// NodeRemove is a helper function to simulate
-// a mocked call to remove a node from a
-// Docker swarm cluster.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NodeRemove
-func (n *NodeService) NodeRemove(_ context.Context, _ string, _ swarm.NodeRemoveOptions) error {
-	return nil
+func (n *NodeService) NodeList(_ context.Context, _ client.NodeListOptions) (client.NodeListResult, error) {
+	return client.NodeListResult{}, nil
 }
 
 // NodeUpdate is a helper function to simulate
@@ -45,8 +35,17 @@ func (n *NodeService) NodeRemove(_ context.Context, _ string, _ swarm.NodeRemove
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.NodeUpdate
-func (n *NodeService) NodeUpdate(_ context.Context, _ string, _ swarm.Version, _ swarm.NodeSpec) error {
-	return nil
+func (n *NodeService) NodeUpdate(_ context.Context, _ string, _ client.NodeUpdateOptions) (client.NodeUpdateResult, error) {
+	return client.NodeUpdateResult{}, nil
+}
+
+// NodeRemove is a helper function to simulate
+// a mocked call to remove a node from a
+// Docker swarm cluster.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.NodeRemove
+func (n *NodeService) NodeRemove(_ context.Context, _ string, _ client.NodeRemoveOptions) (client.NodeRemoveResult, error) {
+	return client.NodeRemoveResult{}, nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
