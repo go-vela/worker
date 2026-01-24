@@ -8,10 +8,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"maps"
+	"path/filepath"
+	"strconv"
 
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
@@ -203,4 +206,74 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	}
 
 	return outputMap, maskMap, nil
+}
+
+// pollFiles polls the output for files from the sidecar container.
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build) error {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return fmt.Errorf("no outputs container configured")
+	}
+
+	// update engine logger with outputs metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
+	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
+
+	// grab file paths from the container
+	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
+	if err != nil {
+		return fmt.Errorf("unable to poll file names: %w", err)
+	}
+
+	if len(filesPath) == 0 {
+		return fmt.Errorf("no files found for file list: %v", fileList)
+	}
+
+	// process each file found
+	for _, filePath := range filesPath {
+		fileName := filepath.Base(filePath)
+		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
+
+		// get file content from container
+		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
+		if err != nil {
+			return fmt.Errorf("unable to poll file content for %s: %w", filePath, err)
+		}
+
+		// create storage object path
+		objectName := fmt.Sprintf("%s/%s/%s/%s",
+			b.GetRepo().GetOrg(),
+			b.GetRepo().GetName(),
+			strconv.FormatInt(b.GetNumber(), 10),
+			fileName)
+
+		// upload file to storage
+		err = o.client.Storage.UploadObject(ctx, &api.Object{
+			ObjectName: objectName,
+			Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
+			FilePath:   filePath,
+		}, reader, size)
+		if err != nil {
+			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
+		}
+
+		presignURL, err := o.client.Storage.PresignedGetObject(ctx, &api.Object{
+			ObjectName: objectName,
+			Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
+			FilePath:   filePath,
+		})
+		if err != nil {
+			return fmt.Errorf("unable to generate presign URL for %s: %w", fileName, err)
+		}
+
+		// create artifact record in database after successful upload
+		err = o.client.CreateArtifact(ctx, fileName, presignURL, size)
+		if err != nil {
+			logger.Errorf("unable to create artifact record for %s: %v", fileName, err)
+			// don't return error here to avoid blocking the upload process
+		}
+	}
+
+	return nil
 }

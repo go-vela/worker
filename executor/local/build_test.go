@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -36,6 +37,22 @@ func TestLocal_CreateBuild(t *testing.T) {
 	_runtime, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	tests := []struct {
@@ -81,6 +98,7 @@ func TestLocal_CreateBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -126,6 +144,22 @@ func TestLocal_PlanBuild(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	tests := []struct {
 		name     string
 		failure  bool
@@ -169,6 +203,7 @@ func TestLocal_PlanBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -218,6 +253,22 @@ func TestLocal_AssembleBuild(t *testing.T) {
 	_runtime, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -297,6 +348,7 @@ func TestLocal_AssembleBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -346,6 +398,22 @@ func TestLocal_ExecBuild(t *testing.T) {
 	_runtime, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
@@ -410,6 +478,7 @@ func TestLocal_ExecBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -459,6 +528,22 @@ func TestLocal_StreamBuild(t *testing.T) {
 	_runtime, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
+	}
+
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	type planFuncType = func(context.Context, *pipeline.Container) error
@@ -615,6 +700,7 @@ func TestLocal_StreamBuild(t *testing.T) {
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
@@ -686,6 +772,22 @@ func TestLocal_DestroyBuild(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
+	_storage := &storage.Setup{
+		Enable:    true,
+		Driver:    "minio",
+		Endpoint:  "http://localhost:9000",
+		AccessKey: "ad",
+		SecretKey: "asd",
+		Bucket:    "vela",
+		Region:    "",
+		Secure:    false,
+	}
+
+	_s, err := storage.New(_storage)
+	if err != nil {
+		t.Errorf("unable to create storage engine: %v", err)
+	}
+
 	tests := []struct {
 		name     string
 		failure  bool
@@ -744,6 +846,7 @@ func TestLocal_DestroyBuild(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
+				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)
