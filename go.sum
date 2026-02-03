@@ -123,6 +123,11 @@ github.com/go-playground/validator/v10 v10.29.0 h1:lQlF5VNJWNlRbRZNeOIkWElR+1LL/
 github.com/go-playground/validator/v10 v10.29.0/go.mod h1:D6QxqeMlgIPuT02L66f2ccrZ7AGgHkzKmmTMZhk/Kc4=
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
 github.com/go-task/slim-sprig/v3 v3.0.0/go.mod h1:W848ghGpv3Qj3dhTPRyJypKRiqCdHZiAzKg9hl15HA8=
+github.com/go-vela/sdk-go v0.27.2-0.20251230154052-e1dae5f07d93/go.mod h1:hTkiVuPlurq/r/bAO0e74oDl0YeBfeHGbRI9H9MZVFA=
+github.com/go-vela/sdk-go v0.27.2-0.20260203190443-c7ae4e25a718 h1:sFPUqpHVbBC9tviYakmhEtpSgUvbyd2xrAotme84/eE=
+github.com/go-vela/sdk-go v0.27.2-0.20260203190443-c7ae4e25a718/go.mod h1:OXizg0doBUj9R4kKMCIx3KNoNxI8hyByjKTlLK86QRI=
+github.com/go-vela/server v0.27.3-0.20260203190253-90deb1b0fdd7 h1:iXEnIUxBYWxnKqQfDtJJh3vHYod7KYzKVXDGsP1o37M=
+github.com/go-vela/server v0.27.3-0.20260203190253-90deb1b0fdd7/go.mod h1:L83ces3y+5yNaPT5v35zPAzN5le8OROEYoTjldwgT88=
 github.com/goccy/go-json v0.10.5 h1:Fq85nIqj+gXn/S5ahsiTlK3TmC85qgirsdTP/+DeaC4=
 github.com/goccy/go-json v0.10.5/go.mod h1:oq7eo15ShAhp70Anwd5lgX2pLfOS3QCiwU/PULtXL6M=
 github.com/goccy/go-yaml v1.19.0 h1:EmkZ9RIsX+Uq4DYFowegAuJo8+xdX3T/2dwNPXbxEYE=
