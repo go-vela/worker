@@ -14,7 +14,6 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor/linux"
 	"github.com/go-vela/worker/executor/local"
 	"github.com/go-vela/worker/runtime/docker"
@@ -70,22 +69,6 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
-	}
-
 	want, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithMaxLogSize(2097152),
@@ -95,7 +78,6 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		linux.WithRuntime(_runtime),
 		linux.WithVelaClient(_client),
 		linux.WithVersion("v1.0.0"),
-		linux.WithStorage(_s),
 	)
 	if err != nil {
 		t.Errorf("unable to create linux engine: %v", err)
@@ -110,7 +92,6 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 		Pipeline:   _pipeline,
 		Runtime:    _runtime,
 		Version:    "v1.0.0",
-		Storage:    _s,
 	}
 
 	// run test
@@ -142,22 +123,6 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
-	}
-
 	want, err := local.New(
 		local.WithBuild(_build),
 		local.WithHostname("localhost"),
@@ -165,7 +130,6 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		local.WithRuntime(_runtime),
 		local.WithVelaClient(_client),
 		local.WithVersion("v1.0.0"),
-		local.WithStorage(_s),
 	)
 	if err != nil {
 		t.Errorf("unable to create local engine: %v", err)
@@ -179,7 +143,6 @@ func TestExecutor_Setup_Local(t *testing.T) {
 		Pipeline: _pipeline,
 		Runtime:  _runtime,
 		Version:  "v1.0.0",
-		Storage:  _s,
 	}
 
 	// run test
@@ -245,22 +208,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 		t.Errorf("unable to create runtime engine: %v", err)
 	}
 
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
-	}
-
 	_emptyOwnerBuild := new(api.Build)
 	_emptyOwnerBuild.SetRepo(new(api.Repo))
 
@@ -281,7 +228,6 @@ func TestExecutor_Setup_Validate(t *testing.T) {
 				MaxLogSize: 2097152,
 				Pipeline:   _pipeline,
 				Runtime:    _runtime,
-				Storage:    _s,
 			},
 			failure: false,
 		},

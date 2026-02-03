@@ -17,7 +17,6 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue/models"
-	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/version"
@@ -29,9 +28,6 @@ import (
 //nolint:gocyclo,funlen // ignore cyclomatic complexity and function length
 func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error {
 	var err error
-
-	var execStorage storage.Storage
-
 	var _executor executor.Engine
 
 	// setup the version
@@ -166,14 +162,6 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 
-	if w.Storage != nil {
-		execStorage = w.Storage
-
-		logrus.Debugf("executor storage is available, setting up storage")
-	} else {
-		logrus.Debugf("executor storage is nil, skipping storage setup")
-	}
-
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields
@@ -266,12 +254,6 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
-	}
-
-	if execStorage != nil {
-		fmt.Printf("setting up executor storage\n")
-
-		setup.Storage = execStorage
 	}
 
 	_executor, err = executor.New(setup)

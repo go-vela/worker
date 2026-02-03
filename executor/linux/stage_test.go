@@ -16,7 +16,6 @@ import (
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/mock/server"
-	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime"
 	"github.com/go-vela/worker/runtime/docker"
@@ -71,22 +70,6 @@ func TestLinux_CreateStage(t *testing.T) {
 	_kubernetes, err := kubernetes.NewMock(testPod(true))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
-	}
-
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	// setup tests
@@ -194,7 +177,6 @@ func TestLinux_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
-				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -246,22 +228,6 @@ func TestLinux_PlanStage(t *testing.T) {
 	_kubernetes, err := kubernetes.NewMock(testPod(true))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
-	}
-
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	dockerTestMap := new(sync.Map)
@@ -438,7 +404,6 @@ func TestLinux_PlanStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
-				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -488,22 +453,6 @@ func TestLinux_ExecStage(t *testing.T) {
 
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
-
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
-	}
 
 	// setup tests
 	tests := []struct {
@@ -644,7 +593,6 @@ func TestLinux_ExecStage(t *testing.T) {
 				WithVelaClient(_client),
 				WithOutputCtn(testOutputsCtn()),
 				withStreamRequests(streamRequests),
-				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
@@ -688,22 +636,6 @@ func TestLinux_DestroyStage(t *testing.T) {
 	_kubernetes, err := kubernetes.NewMock(testPod(true))
 	if err != nil {
 		t.Errorf("unable to create kubernetes runtime engine: %v", err)
-	}
-
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	// setup tests
@@ -761,7 +693,6 @@ func TestLinux_DestroyStage(t *testing.T) {
 				WithPipeline(new(pipeline.Build)),
 				WithRuntime(test.runtime),
 				WithVelaClient(_client),
-				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)

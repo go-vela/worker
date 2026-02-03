@@ -9,7 +9,6 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
-	"github.com/go-vela/server/storage"
 )
 
 func TestStep_Skip(t *testing.T) {
@@ -212,75 +211,54 @@ func TestStep_Skip(t *testing.T) {
 		Name:        constants.InitName,
 		Number:      1,
 		Pull:        "always",
-		Artifacts: pipeline.Artifacts{
-			Paths: []string{"foo.xml", "bar.xml", "foo.txt", "bar.txt"},
-		},
 	}
-
-	s := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "minioadmin",
-		SecretKey: "minioadmin",
-		Bucket:    "vela",
-	}
-	_storage, _ := storage.New(s)
 
 	tests := []struct {
 		name      string
 		build     *api.Build
 		container *pipeline.Container
-		storage   *storage.Storage
 		want      bool
 	}{
 		{
 			name:      "build",
 			build:     _build,
 			container: _container,
-			storage:   &_storage,
 			want:      false,
 		},
 		{
 			name:      "comment",
 			build:     _comment,
 			container: _container,
-			storage:   &_storage,
 			want:      false,
 		},
 		{
 			name:      "deploy",
 			build:     _deploy,
 			container: _container,
-			storage:   &_storage,
 			want:      false,
 		},
 		{
 			name:      "deployFromTag",
 			build:     _deployFromTag,
 			container: _container,
-			storage:   &_storage,
 			want:      false,
 		},
 		{
 			name:      "schedule",
 			build:     _schedule,
 			container: _container,
-			storage:   &_storage,
 			want:      false,
 		},
 		{
 			name:      "tag",
 			build:     _tag,
 			container: _container,
-			storage:   &_storage,
 			want:      false,
 		},
 		{
 			name:      "skip nil",
 			build:     nil,
 			container: nil,
-			storage:   &_storage,
 			want:      true,
 		},
 	}
@@ -288,7 +266,7 @@ func TestStep_Skip(t *testing.T) {
 	// run test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := Skip(test.container, test.build, test.build.GetStatus(), *test.storage)
+			got, err := Skip(test.container, test.build, test.build.GetStatus())
 			if err != nil {
 				t.Errorf("Skip returned error: %s", err)
 			}

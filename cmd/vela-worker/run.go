@@ -17,7 +17,6 @@ import (
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -138,13 +137,6 @@ func run(ctx context.Context, c *cli.Command) error {
 			Server: &Server{
 				Address: c.String("server.addr"),
 				Secret:  c.String("server.secret"),
-			},
-			Storage: &storage.Setup{
-				Driver:    c.String("storage.driver"),
-				Endpoint:  c.String("storage.endpoint.name"),
-				AccessKey: c.String("storage.access.key"),
-				SecretKey: c.String("storage.secret.key"),
-				Bucket:    c.String("storage.bucket.name"),
 			},
 			// Certificate configuration
 			Certificate: &Certificate{

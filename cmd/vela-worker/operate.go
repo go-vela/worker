@@ -12,7 +12,6 @@ import (
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/server/storage"
 )
 
 // operate is a helper function to initiate all
@@ -76,58 +75,6 @@ func (w *Worker) operate(ctx context.Context) error {
 		logrus.Error("queue setup failed")
 		// set to error as queue setup fails
 		w.updateWorkerStatus(ctx, registryWorker, constants.WorkerStatusError)
-	}
-
-	// getting storage creds
-	logrus.Trace("getting storage s3 creds..")
-	// fetching queue credentials using registration token
-	stCreds, _, err := w.VelaClient.Storage.GetInfo(ctx)
-	if err != nil {
-		logrus.Tracef("error getting storage creds: %v", err)
-		return err
-	}
-
-	if stCreds.GetEnabled() {
-		logrus.Trace("storage enabled")
-		// if an address was given at start up, use that — else use what is returned from server
-		if len(w.Config.Storage.Endpoint) == 0 {
-			w.Config.Storage.Endpoint = stCreds.GetStorageAddress()
-		}
-
-		// set access key in storage config
-		w.Config.Storage.AccessKey = stCreds.GetAccessKey()
-
-		// set secret key in storage config
-		w.Config.Storage.SecretKey = stCreds.GetSecretKey()
-
-		// set bucket name in storage config
-		w.Config.Storage.Bucket = stCreds.GetStorageBucket()
-
-		// set storage enabled to true
-		w.Config.Storage.Enable = stCreds.GetEnabled()
-
-		s, err := storage.New(w.Config.Storage)
-		if err != nil {
-			logrus.Error("storage setup failed")
-			// set to error as storage setup fails
-			w.updateWorkerStatus(ctx, registryWorker, constants.WorkerStatusError)
-
-			return err
-		}
-
-		w.Storage = s
-		logrus.WithFields(logrus.Fields{
-			"driver":   w.Config.Storage.Driver,
-			"bucket":   w.Config.Storage.Bucket,
-			"endpoint": w.Config.Storage.Endpoint,
-		}).Debug("storage initialized")
-	} else {
-		logrus.Trace("storage not enabled")
-		// storage disabled; nothing to validate
-		w.Config.Storage.Enable = false
-		w.Storage = nil
-
-		logrus.Debug("storage disabled: worker storage unset")
 	}
 
 	// spawn goroutine for phoning home

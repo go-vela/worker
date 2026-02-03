@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-vela/server/compiler/native"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/internal/message"
 	"github.com/go-vela/worker/runtime/docker"
 )
@@ -50,22 +49,6 @@ func TestLocal_CreateStage(t *testing.T) {
 	_runtime, err := docker.NewMock()
 	if err != nil {
 		t.Errorf("unable to create runtime engine: %v", err)
-	}
-
-	_storage := &storage.Setup{
-		Enable:    true,
-		Driver:    "minio",
-		Endpoint:  "http://localhost:9000",
-		AccessKey: "ad",
-		SecretKey: "asd",
-		Bucket:    "vela",
-		Region:    "",
-		Secure:    false,
-	}
-
-	_s, err := storage.New(_storage)
-	if err != nil {
-		t.Errorf("unable to create storage engine: %v", err)
 	}
 
 	// setup tests
@@ -120,7 +103,6 @@ func TestLocal_CreateStage(t *testing.T) {
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
 				WithOutputCtn(testOutputsCtn()),
-				WithStorage(_s),
 			)
 			if err != nil {
 				t.Errorf("unable to create executor engine: %v", err)

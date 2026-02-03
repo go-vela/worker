@@ -12,6 +12,8 @@ import (
 	"strconv"
 
 	envparse "github.com/hashicorp/go-envparse"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/sirupsen/logrus"
 
 	api "github.com/go-vela/server/api/types"
@@ -220,6 +222,24 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
 
+	creds, res, err := o.client.Vela.Storage.GetSTSCreds(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
+		b.GetNumber())
+	if err != nil {
+		return fmt.Errorf("unable to get sts storage creds %w with response code %d", err, res.StatusCode)
+	}
+	logrus.Debugf("STS endpoint at: %s and res code %d", creds.Endpoint, res.StatusCode)
+	// 3) build a storage engine using the temp creds (or build a minio client directly)
+	stsStorageClient, err := minio.New(creds.Endpoint,
+		&minio.Options{
+			Creds: credentials.NewStaticV4(creds.AccessKey, creds.SecretKey, creds.SessionToken),
+		})
+	if err != nil {
+		return fmt.Errorf("unable to create sts storage client %w with response code %d", err, res.StatusCode)
+	}
+	if stsStorageClient == nil {
+		return fmt.Errorf("sts storage client is nil")
+	}
+
 	// grab file paths from the container
 	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
 	if err != nil {
@@ -249,31 +269,10 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 			fileName)
 
 		// upload file to storage
-		err = o.client.Storage.UploadObject(ctx, &api.Object{
-			ObjectName: objectName,
-			Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
-			FilePath:   filePath,
-		}, reader, size)
+		_, err = stsStorageClient.PutObject(ctx, creds.Bucket, objectName, reader, size, minio.PutObjectOptions{})
 		if err != nil {
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
 		}
-
-		presignURL, err := o.client.Storage.PresignedGetObject(ctx, &api.Object{
-			ObjectName: objectName,
-			Bucket:     api.Bucket{BucketName: o.client.Storage.GetBucket(ctx)},
-			FilePath:   filePath,
-		})
-		if err != nil {
-			return fmt.Errorf("unable to generate presign URL for %s: %w", fileName, err)
-		}
-
-		// create artifact record in database after successful upload
-		err = o.client.CreateArtifact(ctx, fileName, presignURL, size)
-		if err != nil {
-			logger.Errorf("unable to create artifact record for %s: %v", fileName, err)
-			// don't return error here to avoid blocking the upload process
-		}
 	}
-
 	return nil
 }
