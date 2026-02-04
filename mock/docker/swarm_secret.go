@@ -6,8 +6,7 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/api/types/swarm"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 )
 
 // SecretService implements all the secret
@@ -19,8 +18,8 @@ type SecretService struct{}
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretCreate
-func (s *SecretService) SecretCreate(_ context.Context, _ swarm.SecretSpec) (swarm.SecretCreateResponse, error) {
-	return swarm.SecretCreateResponse{}, nil
+func (s *SecretService) SecretCreate(_ context.Context, _ client.SecretCreateOptions) (client.SecretCreateResult, error) {
+	return client.SecretCreateResult{}, nil
 }
 
 // SecretInspectWithRaw is a helper function to simulate
@@ -28,8 +27,8 @@ func (s *SecretService) SecretCreate(_ context.Context, _ swarm.SecretSpec) (swa
 // the raw body received from the API.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretInspectWithRaw
-func (s *SecretService) SecretInspectWithRaw(_ context.Context, _ string) (swarm.Secret, []byte, error) {
-	return swarm.Secret{}, nil, nil
+func (s *SecretService) SecretInspect(_ context.Context, _ string, _ client.SecretInspectOptions) (client.SecretInspectResult, error) {
+	return client.SecretInspectResult{}, nil
 }
 
 // SecretList is a helper function to simulate
@@ -37,17 +36,8 @@ func (s *SecretService) SecretInspectWithRaw(_ context.Context, _ string) (swarm
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretList
-func (s *SecretService) SecretList(_ context.Context, _ swarm.SecretListOptions) ([]swarm.Secret, error) {
-	return nil, nil
-}
-
-// SecretRemove is a helper function to simulate
-// a mocked call to remove a secret for a
-// Docker swarm cluster.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.SecretRemove
-func (s *SecretService) SecretRemove(_ context.Context, _ string) error {
-	return nil
+func (s *SecretService) SecretList(_ context.Context, _ client.SecretListOptions) (client.SecretListResult, error) {
+	return client.SecretListResult{}, nil
 }
 
 // SecretUpdate is a helper function to simulate
@@ -55,8 +45,17 @@ func (s *SecretService) SecretRemove(_ context.Context, _ string) error {
 // Docker swarm cluster.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.SecretUpdate
-func (s *SecretService) SecretUpdate(_ context.Context, _ string, _ swarm.Version, _ swarm.SecretSpec) error {
-	return nil
+func (s *SecretService) SecretUpdate(_ context.Context, _ string, _ client.SecretUpdateOptions) (client.SecretUpdateResult, error) {
+	return client.SecretUpdateResult{}, nil
+}
+
+// SecretRemove is a helper function to simulate
+// a mocked call to remove a secret for a
+// Docker swarm cluster.
+//
+// https://pkg.go.dev/github.com/docker/docker/client#Client.SecretRemove
+func (s *SecretService) SecretRemove(_ context.Context, _ string, _ client.SecretRemoveOptions) (client.SecretRemoveResult, error) {
+	return client.SecretRemoveResult{}, nil
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES

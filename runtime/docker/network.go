@@ -7,7 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/docker/docker/api/types/network"
+	"github.com/moby/moby/api/types/network"
+	mobyClient "github.com/moby/moby/client"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
 )
@@ -19,7 +20,7 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 	// create options for creating network
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#NetworkCreate
-	opts := network.CreateOptions{
+	opts := mobyClient.NetworkCreateOptions{
 		Driver: "bridge",
 	}
 
@@ -35,13 +36,10 @@ func (c *client) CreateNetwork(ctx context.Context, b *pipeline.Build) error {
 }
 
 // InspectNetwork inspects the pipeline network.
+//
+//nolint:dupl // ignore similar code with InspectVolume
 func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte, error) {
 	c.Logger.Tracef("inspecting network for pipeline %s", b.ID)
-
-	// create options for inspecting network
-	//
-	// https://pkg.go.dev/github.com/docker/docker/api/types#NetworkInspectOptions
-	opts := network.InspectOptions{}
 
 	// create output for inspecting network
 	output := []byte(
@@ -51,7 +49,7 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 	// send API call to inspect the network
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspect
-	n, err := c.Docker.NetworkInspect(ctx, b.ID, opts)
+	n, err := c.Docker.NetworkInspect(ctx, b.ID, mobyClient.NetworkInspectOptions{})
 	if err != nil {
 		return output, err
 	}
@@ -75,7 +73,7 @@ func (c *client) RemoveNetwork(ctx context.Context, b *pipeline.Build) error {
 	// send API call to remove the network
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkRemove
-	err := c.Docker.NetworkRemove(ctx, b.ID)
+	_, err := c.Docker.NetworkRemove(ctx, b.ID, mobyClient.NetworkRemoveOptions{})
 	if err != nil {
 		return err
 	}
