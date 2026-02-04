@@ -60,7 +60,7 @@ func MustServer() gin.HandlerFunc {
 		vela.Authentication.SetTokenAuth(tkn)
 
 		// validate the token with the configured vela server
-		resp, err := vela.Authentication.ValidateToken()
+		resp, err := vela.Authentication.ValidateToken(c.Request.Context())
 		if err != nil {
 			msg := fmt.Sprintf("error validating token: %s", err)
 

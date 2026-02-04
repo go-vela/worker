@@ -41,23 +41,14 @@ func (s *secretSvc) create(ctx context.Context, ctn *pipeline.Container, reqToke
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := s.client.Logger.WithField("secret", ctn.Name)
 
-	ctn.Environment["VELA_DISTRIBUTION"] = s.client.build.GetDistribution()
-	ctn.Environment["BUILD_HOST"] = s.client.build.GetHost()
-	ctn.Environment["VELA_HOST"] = s.client.build.GetHost()
-	ctn.Environment["VELA_RUNTIME"] = s.client.build.GetRuntime()
-	ctn.Environment["VELA_VERSION"] = s.client.Version
-	ctn.Environment["VELA_OUTPUTS"] = "/vela/outputs/.env"
-	ctn.Environment["VELA_MASKED_OUTPUTS"] = "/vela/outputs/masked.env"
-	ctn.Environment["VELA_BASE64_OUTPUTS"] = "/vela/outputs/base64.env"
-	ctn.Environment["VELA_MASKED_BASE64_OUTPUTS"] = "/vela/outputs/masked.base64.env"
-
-	if len(reqToken) > 0 {
-		ctn.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
+	err := step.Environment(ctn, s.client.build, nil, s.client.Version, reqToken)
+	if err != nil {
+		return fmt.Errorf("unable to set up container environment: %w", err)
 	}
 
 	logger.Debug("setting up container")
 	// setup the runtime container
-	err := s.client.Runtime.SetupContainer(ctx, ctn)
+	err = s.client.Runtime.SetupContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
@@ -118,6 +109,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		return err
 	}
 
+	//nolint:contextcheck // ctx can be canceled by build timing out
 	defer func() {
 		_init.SetFinished(time.Now().UTC().Unix())
 
@@ -125,7 +117,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		_, _, err = s.client.Vela.Step.Update(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), _init)
+		_, _, err = s.client.Vela.Step.Update(context.Background(), s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
 			s.client.Logger.Errorf("unable to upload init state: %v", err)
 		}
@@ -138,6 +130,11 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// skip over non-plugin secrets
 		if _secret.Origin.Empty() {
 			continue
+		}
+
+		s.client.err = s.client.UpdateSCMAuth(ctx, _secret.Origin)
+		if s.client.err != nil {
+			return fmt.Errorf("unable to update SCM auth: %w", s.client.err)
 		}
 
 		opEnv, maskEnv, s.client.err = s.client.outputs.poll(ctx, s.client.OutputCtn)
@@ -209,7 +206,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 		// send API call to update the build
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#StepService.Update
-		_, _, err = s.client.Vela.Step.Update(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), _init)
+		_, _, err = s.client.Vela.Step.Update(ctx, s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), _init)
 		if err != nil {
 			s.client.Logger.Errorf("unable to upload init state: %v", err)
 		}
@@ -219,7 +216,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 }
 
 // pull defines a function that pulls the secrets from the server for a given pipeline.
-func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
+func (s *secretSvc) pull(ctx context.Context, secret *pipeline.Secret) (*api.Secret, error) {
 	_secret := new(api.Secret)
 
 	switch secret.Type {
@@ -233,7 +230,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// send API call to capture the org secret
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
-		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, "*", key)
+		_secret, _, err = s.client.Vela.Secret.Get(ctx, secret.Engine, secret.Type, org, "*", key)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
@@ -250,7 +247,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// send API call to capture the repo secret
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
-		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, repo, key)
+		_secret, _, err = s.client.Vela.Secret.Get(ctx, secret.Engine, secret.Type, org, repo, key)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
@@ -267,7 +264,7 @@ func (s *secretSvc) pull(secret *pipeline.Secret) (*api.Secret, error) {
 		// send API call to capture the repo secret
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#SecretService.Get
-		_secret, _, err = s.client.Vela.Secret.Get(secret.Engine, secret.Type, org, team, key)
+		_secret, _, err = s.client.Vela.Secret.Get(ctx, secret.Engine, secret.Type, org, team, key)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrUnableToRetrieve, err)
 		}
@@ -310,7 +307,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 		// send API call to update the logs for the service
 		//
 		// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateService
-		_, err = s.client.Vela.Log.UpdateStep(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
+		_, err = s.client.Vela.Log.UpdateStep(ctx, s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
 		if err != nil {
 			logger.Errorf("unable to upload container logs: %v", err)
 		}
@@ -343,7 +340,7 @@ func (s *secretSvc) stream(ctx context.Context, ctn *pipeline.Container) error {
 			// send API call to append the logs for the init step
 			//
 			// https://pkg.go.dev/github.com/go-vela/sdk-go/vela#LogService.UpdateStep
-			_, err = s.client.Vela.Log.UpdateStep(s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
+			_, err = s.client.Vela.Log.UpdateStep(ctx, s.client.build.GetRepo().GetOrg(), s.client.build.GetRepo().GetName(), s.client.build.GetNumber(), s.client.init.Number, _log)
 			if err != nil {
 				return err
 			}

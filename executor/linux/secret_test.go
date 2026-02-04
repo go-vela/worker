@@ -434,6 +434,8 @@ func TestLinux_Secret_exec(t *testing.T) {
 				t.Errorf("unable to compile pipeline %s: %v", test.pipeline, err)
 			}
 
+			p.Prepare(_build.GetRepo().GetOrg(), _build.GetRepo().GetName(), _build.GetNumber(), false)
+
 			// Docker uses _ while Kubernetes uses -
 			p = p.Sanitize(test.runtime)
 
@@ -787,7 +789,7 @@ func TestLinux_Secret_pull(t *testing.T) {
 				t.Errorf("unable to create %s executor engine: %v", test.name, err)
 			}
 
-			_, err = _engine.secret.pull(test.secret)
+			_, err = _engine.secret.pull(t.Context(), test.secret)
 
 			if test.failure {
 				if err == nil {

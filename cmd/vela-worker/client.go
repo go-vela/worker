@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-vela/sdk-go/vela"
+	api "github.com/go-vela/server/api/types"
 )
 
 // helper function to setup the vela API client for worker check-in and build executable retrieval.
@@ -23,7 +24,7 @@ func setupClient(s *Server, token string) (*vela.Client, error) {
 }
 
 // helper function to setup the vela API client for executor calls to update build resources.
-func setupExecClient(s *Server, buildToken, scmToken string) (*vela.Client, error) {
+func setupExecClient(s *Server, buildToken, scmToken string, exp int64, build *api.Build) (*vela.Client, error) {
 	logrus.Debug("creating vela client from worker configuration")
 
 	vela, err := vela.NewClient(s.Address, "", nil)
@@ -31,7 +32,7 @@ func setupExecClient(s *Server, buildToken, scmToken string) (*vela.Client, erro
 		return nil, err
 	}
 
-	vela.Authentication.SetBuildTokenAuth(buildToken, scmToken)
+	vela.Authentication.SetBuildTokenAuth(buildToken, scmToken, exp, build.GetRepo().GetFullName(), build.GetNumber())
 
 	return vela, nil
 }
