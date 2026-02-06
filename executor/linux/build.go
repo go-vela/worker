@@ -557,20 +557,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			_step.Secrets = append(_step.Secrets, sec)
 		}
 
-		// TODO: API to return if storage is enabled
-		//if c.Storage == nil && _step.Artifacts.Empty() || c.Storage == nil && !_step.Artifacts.Empty() {
-		//	c.Logger.Infof("storage disabled, skipping artifacts for %s step", _step.Name)
-		//	// skip if no storage client
-		//	// but artifacts is defined in step
-		//	continue
-		//} else if !_step.Artifacts.Empty() && c.Storage != nil {
-		if len(_step.Artifacts.Paths) != 0 {
-			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.Artifacts.Paths, c.build)
-			if err != nil {
-				c.Logger.Errorf("unable to poll files for artifacts: %v", err)
-			}
-		}
-
 		// perform any substitution on dynamic variables
 		err = _step.Substitute()
 		if err != nil {
@@ -588,6 +574,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		c.err = c.ExecStep(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to execute step: %w", c.err)
+		}
+
+		if len(_step.Artifacts.Paths) != 0 {
+			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step.Artifacts.Paths, c.build)
+			if err != nil {
+				c.Logger.Errorf("unable to poll files for artifacts: %v", err)
+			}
 		}
 	}
 

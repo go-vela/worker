@@ -220,18 +220,21 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	// update engine logger with outputs metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
-	logger := o.client.Logger.WithField("test-outputs", ctn.Name)
+	logger := o.client.Logger.WithField("artifact-outputs", ctn.Name)
 
-	creds, res, err := o.client.Vela.Storage.GetSTSCreds(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
+	creds, res, err := o.client.Vela.Build.GetSTSCreds(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
 		b.GetNumber())
 	if err != nil {
 		return fmt.Errorf("unable to get sts storage creds %w with response code %d", err, res.StatusCode)
 	}
-	logrus.Debugf("STS endpoint at: %s and res code %d", creds.Endpoint, res.StatusCode)
-	// 3) build a storage engine using the temp creds (or build a minio client directly)
+
 	stsStorageClient, err := minio.New(creds.Endpoint,
 		&minio.Options{
-			Creds: credentials.NewStaticV4(creds.AccessKey, creds.SecretKey, creds.SessionToken),
+			Creds: credentials.NewStaticV4(
+				creds.AccessKey,
+				creds.SecretKey,
+				creds.SessionToken),
+			Secure: creds.Secure,
 		})
 	if err != nil {
 		return fmt.Errorf("unable to create sts storage client %w with response code %d", err, res.StatusCode)
