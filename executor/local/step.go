@@ -5,6 +5,7 @@ package local
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -109,16 +110,57 @@ func (c *client) ExecStep(ctx context.Context, ctn *pipeline.Container) error {
 	// wait for the runtime container
 	err = c.Runtime.WaitContainer(ctx, ctn)
 	if err != nil {
+		recordStepRuntimeError(ctn, _step, err)
 		return err
 	}
 
 	// inspect the runtime container
 	err = c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
+		recordStepRuntimeError(ctn, _step, err)
 		return err
 	}
 
 	return nil
+}
+
+// recordStepRuntimeError updates the in-memory step so Snapshot/Upload won't report success.
+func recordStepRuntimeError(ctn *pipeline.Container, s *api.Step, err error) {
+	if s == nil || err == nil {
+		return
+	}
+
+	s.SetError(err.Error())
+
+	exitCode := int32(0)
+	if ctn != nil {
+		exitCode = ctn.ExitCode
+	}
+
+	switch {
+	case errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
+		s.SetStatus(constants.StatusFailure)
+
+		if exitCode == 0 {
+			exitCode = 137
+		}
+	default:
+		s.SetStatus(constants.StatusError)
+
+		if exitCode == 0 {
+			exitCode = 1
+		}
+	}
+
+	if exitCode != 0 {
+		if ctn != nil {
+			ctn.ExitCode = exitCode
+		}
+
+		if s.GetExitCode() == 0 {
+			s.SetExitCode(exitCode)
+		}
+	}
 }
 
 // StreamStep tails the output for a step.
