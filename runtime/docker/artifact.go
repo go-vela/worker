@@ -3,14 +3,16 @@
 package docker
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
-	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
 
+	"github.com/containerd/errdefs"
 	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 
@@ -120,66 +122,59 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, path string) (io.Reader, int64, error) {
 	c.Logger.Tracef("gathering test results and attachments from container %s", ctn.ID)
 
-	if len(ctn.Image) == 0 {
-		// return an empty reader instead of nil
-		return bytes.NewReader(nil), 0, fmt.Errorf("empty container image")
+	if len(ctn.Image) == 0 || len(path) == 0 {
+		return nil, 0, nil
 	}
 
-	cmd := []string{"sh", "-c", fmt.Sprintf("base64 %s", path)}
-	execConfig := dockerContainerTypes.ExecOptions{
-		Cmd:          cmd,
-		AttachStdout: true,
-		AttachStderr: false,
-		Tty:          false,
-	}
-
-	c.Logger.Infof("executing command for content: %v", execConfig.Cmd)
-
-	execID, err := c.Docker.ContainerExecCreate(ctx, ctn.ID, execConfig)
+	// copy file from outputs container
+	reader, _, err := c.Docker.CopyFromContainer(ctx, ctn.ID, path)
 	if err != nil {
-		c.Logger.Debugf("PollFileContent exec-create failed for %q: %v", path, err)
-		return nil, 0, fmt.Errorf("failed to create exec instance: %w", err)
+		c.Logger.Debugf("PollFileContent CopyFromContainer failed for %q: %v", path, err)
+		// early non-error exit if not found
+		if errdefs.IsNotFound(err) {
+			return nil, 0, nil
+		}
+		return nil, 0, err
 	}
 
-	resp, err := c.Docker.ContainerExecAttach(ctx, execID.ID, dockerContainerTypes.ExecAttachOptions{})
+	defer reader.Close()
+
+	// docker returns a tar archive for the path
+	tr := tar.NewReader(reader)
+
+	header, err := tr.Next()
 	if err != nil {
-		c.Logger.Debugf("PollFileContent exec-attach failed for %q: %v", path, err)
-		return nil, 0, fmt.Errorf("failed to attach to exec instance: %w", err)
-	}
-
-	defer func() {
-		if resp.Conn != nil {
-			resp.Close()
+		// if the tar has no entries or is finished unexpectedly
+		if errors.Is(err, io.EOF) {
+			c.Logger.Debugf("PollFileContent: no tar entries for %q", path)
+			return nil, 0, nil
 		}
-	}()
+		c.Logger.Debugf("PollFileContent tr.Next failed for %q: %v", path, err)
 
-	outputStdout := new(bytes.Buffer)
-	outputStderr := new(bytes.Buffer)
-
-	if resp.Reader != nil {
-		_, err := stdcopy.StdCopy(outputStdout, outputStderr, resp.Reader)
-		if err != nil {
-			c.Logger.Errorf("unable to copy logs for container: %v", err)
-		}
+		return nil, 0, err
 	}
 
-	if outputStderr.Len() > 0 {
-		return nil, 0, fmt.Errorf("error: %s", outputStderr.String())
+	// Ensure the tar entry is a regular file (not dir, symlink, etc.)
+	if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeRegA {
+		c.Logger.Debugf("PollFileContent unexpected tar entry type %v for %q", header.Typeflag, path)
+
+		return nil, 0, fmt.Errorf("unexpected tar entry type %v for %q", header.Typeflag, path)
 	}
 
-	data := outputStdout.Bytes()
+	// Read file contents. Use io.ReadAll to avoid dealing with CopyN EOF nuances.
+	fileBytes, err := io.ReadAll(tr)
+	if err != nil {
+		c.Logger.Debugf("PollFileContent ReadAll failed for %q: %v", path, err)
+		return nil, 0, err
+	}
 
-	// Add logging for empty data in PollFileContent
-	if len(data) == 0 {
+	if len(fileBytes) == 0 {
 		c.Logger.Errorf("PollFileContent returned no data for path: %s", path)
-		return nil, 0, fmt.Errorf("no data returned from base64 command")
+
+		return nil, 0, fmt.Errorf("no data returned from container for %q", path)
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(string(data))
-	if err != nil {
-		c.Logger.Errorf("unable to decode base64 data: %v", err)
-		return nil, 0, fmt.Errorf("failed to decode base64 data: %w", err)
-	}
+	// Return a reader and length (use int64 for size)
+	return bytes.NewReader(fileBytes), int64(len(fileBytes)), nil
 
-	return bytes.NewReader(decoded), int64(len(decoded)), nil
 }
