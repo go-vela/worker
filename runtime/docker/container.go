@@ -3,8 +3,10 @@
 package docker
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -294,52 +296,46 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	return nil
 }
 
-// PollOutputsContainer captures the `cat` response for a given path in the Docker volume.
+// PollOutputsContainer copies the contents from a given path in the Docker volume.
 func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Container, path string) ([]byte, error) {
-	if len(ctn.Image) == 0 {
+	if len(ctn.Image) == 0 || len(path) == 0 {
 		return nil, nil
 	}
 
-	execConfig := dockerContainerTypes.ExecOptions{
-		Tty:          true,
-		Cmd:          []string{"sh", "-c", fmt.Sprintf("cat %s", path)},
-		AttachStderr: true,
-		AttachStdout: true,
+	// copy file from outputs container
+	reader, _, err := c.Docker.CopyFromContainer(ctx, ctn.ID, path)
+	if err != nil {
+		// early non-error exit if not found
+		if errdefs.IsNotFound(err) {
+			return nil, nil
+		}
+
+		return nil, err
 	}
 
-	responseExec, err := c.Docker.ContainerExecCreate(ctx, ctn.ID, execConfig)
+	defer reader.Close()
+
+	// docker returns tar archive for file
+	tr := tar.NewReader(reader)
+
+	header, err := tr.Next()
 	if err != nil {
 		return nil, err
 	}
 
-	hijackedResponse, err := c.Docker.ContainerExecAttach(ctx, responseExec.ID, dockerContainerTypes.ExecAttachOptions{})
-	if err != nil {
+	// check if the file size exceeds the maximum allowed size
+	if header.Size > MaxOutputsSize {
+		return nil, fmt.Errorf("outputs file size %d exceeds maximum allowed size of %d", header.Size, MaxOutputsSize)
+	}
+
+	content := new(bytes.Buffer)
+
+	_, err = io.CopyN(content, tr, header.Size)
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, err
 	}
 
-	defer func() {
-		if hijackedResponse.Conn != nil {
-			hijackedResponse.Close()
-		}
-	}()
-
-	outputStdout := new(bytes.Buffer)
-	outputStderr := new(bytes.Buffer)
-
-	if hijackedResponse.Reader != nil {
-		_, err := stdcopy.StdCopy(outputStdout, outputStderr, hijackedResponse.Reader)
-		if err != nil {
-			c.Logger.Errorf("unable to copy logs for container: %v", err)
-		}
-	}
-
-	if outputStderr.Len() > 0 {
-		return nil, fmt.Errorf("error: %s", outputStderr.String())
-	}
-
-	data := outputStdout.Bytes()
-
-	return data, nil
+	return content.Bytes(), nil
 }
 
 // ctnConfig is a helper function to
