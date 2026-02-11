@@ -18,7 +18,7 @@ import (
 // subprocesses for the operator to poll the
 // queue and execute Vela pipelines.
 //
-//nolint:funlen,gocyclo // refactor candidate
+//nolint:funlen // refactor candidate
 func (w *Worker) operate(ctx context.Context) error {
 	var err error
 	// create the errgroup for managing operator subprocesses

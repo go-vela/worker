@@ -239,6 +239,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	if err != nil {
 		return fmt.Errorf("unable to create sts storage client %w with response code %d", err, res.StatusCode)
 	}
+
 	if stsStorageClient == nil {
 		return fmt.Errorf("sts storage client is nil")
 	}
@@ -277,5 +278,6 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
 		}
 	}
+
 	return nil
 }

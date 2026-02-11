@@ -27,8 +27,10 @@ import (
 //
 //nolint:gocyclo,funlen // ignore cyclomatic complexity and function length
 func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error {
-	var err error
-	var _executor executor.Engine
+	var (
+		err       error
+		_executor executor.Engine
+	)
 
 	// setup the version
 	v := version.New()
