@@ -171,26 +171,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			return fmt.Errorf("unable to exec outputs container: %w", err)
 		}
 
-		opEnv = outputs.Sanitize(_step, opEnv)
-		maskEnv = outputs.Sanitize(_step, maskEnv)
-
-		// merge env from outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(opEnv)
-
-		// merge env from masked outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(maskEnv)
-
-		// add masked outputs to secret map so they can be masked in logs
-		for key := range maskEnv {
-			sec := &pipeline.StepSecret{
-				Target: key,
-			}
-			_step.Secrets = append(_step.Secrets, sec)
-		}
+		outputs.Process(_step, opEnv, maskEnv)
 
 		// perform any substitution on dynamic variables
 		err = _step.Substitute()
