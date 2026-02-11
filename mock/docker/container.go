@@ -520,45 +520,40 @@ func (c *ContainerService) ContainerStatsOneShot(_ context.Context, _ string) (c
 // a mocked call to copy content from a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.CopyFromContainer
-func (c *ContainerService) CopyFromContainer(_ context.Context, ctnID string, path string) (io.ReadCloser, container.PathStat, error) {
+func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, path string) (io.ReadCloser, container.PathStat, error) {
 	if path == "not-found" {
 		return nil, container.PathStat{}, errdefs.NotFound(fmt.Errorf("error: No such file or directory: %s", path))
 	}
+	// create a tar archive in memory with the specified path and content
+	var buf bytes.Buffer
 
-	if ctnID == "outputs" {
-		// create a tar archive in memory with the specified path and content
-		var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
 
-		tw := tar.NewWriter(&buf)
+	content := []byte("key=value")
 
-		content := []byte("key=value")
-
-		hdr := &tar.Header{
-			Name: path,
-			Mode: 0600,
-			Size: int64(len(content)),
-		}
-
-		if err := tw.WriteHeader(hdr); err != nil {
-			return nil, container.PathStat{}, err
-		}
-
-		if _, err := tw.Write(content); err != nil {
-			return nil, container.PathStat{}, err
-		}
-
-		if err := tw.Close(); err != nil {
-			return nil, container.PathStat{}, err
-		}
-
-		return io.NopCloser(&buf), container.PathStat{
-			Name: path,
-			Size: int64(len(content)),
-			Mode: 0600,
-		}, nil
+	hdr := &tar.Header{
+		Name: path,
+		Mode: 0600,
+		Size: int64(len(content)),
 	}
 
-	return nil, container.PathStat{}, nil
+	if err := tw.WriteHeader(hdr); err != nil {
+		return nil, container.PathStat{}, err
+	}
+
+	if _, err := tw.Write(content); err != nil {
+		return nil, container.PathStat{}, err
+	}
+
+	if err := tw.Close(); err != nil {
+		return nil, container.PathStat{}, err
+	}
+
+	return io.NopCloser(&buf), container.PathStat{
+		Name: path,
+		Size: int64(len(content)),
+		Mode: 0600,
+	}, nil
 }
 
 // CopyToContainer is a helper function to simulate
