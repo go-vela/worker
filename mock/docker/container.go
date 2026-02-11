@@ -467,6 +467,18 @@ func (c *ContainerService) ContainerWait(_ context.Context, ctn string, _ contai
 		return ctnCh, errCh
 	}
 
+	if strings.Contains(ctn, "wait-timeout") {
+		errCh <- context.DeadlineExceeded
+
+		return ctnCh, errCh
+	}
+
+	if strings.Contains(ctn, "wait-error") {
+		errCh <- errors.New("container wait error")
+
+		return ctnCh, errCh
+	}
+
 	// create goroutine for responding to call
 	go func() {
 		// create response object to return
