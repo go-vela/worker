@@ -134,6 +134,7 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 		if errdefs.IsNotFound(err) {
 			return nil, 0, nil
 		}
+
 		return nil, 0, err
 	}
 
@@ -147,15 +148,17 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 		// if the tar has no entries or is finished unexpectedly
 		if errors.Is(err, io.EOF) {
 			c.Logger.Debugf("PollFileContent: no tar entries for %q", path)
+
 			return nil, 0, nil
 		}
+
 		c.Logger.Debugf("PollFileContent tr.Next failed for %q: %v", path, err)
 
 		return nil, 0, err
 	}
 
 	// Ensure the tar entry is a regular file (not dir, symlink, etc.)
-	if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeRegA {
+	if header.Typeflag != tar.TypeReg {
 		c.Logger.Debugf("PollFileContent unexpected tar entry type %v for %q", header.Typeflag, path)
 
 		return nil, 0, fmt.Errorf("unexpected tar entry type %v for %q", header.Typeflag, path)
@@ -165,6 +168,7 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 	fileBytes, err := io.ReadAll(tr)
 	if err != nil {
 		c.Logger.Debugf("PollFileContent ReadAll failed for %q: %v", path, err)
+
 		return nil, 0, err
 	}
 
@@ -176,5 +180,4 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 
 	// Return a reader and length (use int64 for size)
 	return bytes.NewReader(fileBytes), int64(len(fileBytes)), nil
-
 }
