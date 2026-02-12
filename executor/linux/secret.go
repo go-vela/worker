@@ -142,18 +142,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 			return fmt.Errorf("unable to exec outputs container: %w", s.client.err)
 		}
 
-		opEnv = outputs.Sanitize(_secret.Origin, opEnv)
-		maskEnv = outputs.Sanitize(_secret.Origin, maskEnv)
-
-		// merge env from outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_secret.Origin.MergeEnv(opEnv)
-
-		// merge env from masked outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_secret.Origin.MergeEnv(maskEnv)
+		outputs.Process(_secret.Origin, opEnv, maskEnv)
 
 		// update engine logger with secret metadata
 		//
