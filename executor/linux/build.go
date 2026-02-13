@@ -505,18 +505,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to exec outputs container: %w", c.err)
 		}
 
-		opEnv = outputs.Sanitize(_step, opEnv)
-		maskEnv = outputs.Sanitize(_step, maskEnv)
-
-		// merge env from outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(opEnv)
-
-		// merge env from masked outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(maskEnv)
+		outputs.Process(_step, opEnv, maskEnv)
 
 		// check if the step should be skipped
 		//
@@ -547,14 +536,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		c.err = c.PlanStep(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to plan step: %w", c.err)
-		}
-
-		// add masked outputs to secret map so they can be masked in logs
-		for key := range maskEnv {
-			sec := &pipeline.StepSecret{
-				Target: key,
-			}
-			_step.Secrets = append(_step.Secrets, sec)
 		}
 
 		// perform any substitution on dynamic variables
