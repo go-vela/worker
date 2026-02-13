@@ -190,7 +190,6 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
-
 				WithVelaClient(_client),
 			)
 			if err != nil {

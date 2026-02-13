@@ -8,10 +8,15 @@ import (
 	"encoding/base64"
 	"fmt"
 	"maps"
+	"path/filepath"
+	"strconv"
 
 	envparse "github.com/hashicorp/go-envparse"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/sirupsen/logrus"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
@@ -203,4 +208,76 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	}
 
 	return outputMap, maskMap, nil
+}
+
+// pollFiles polls the output for files from the sidecar container.
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build) error {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return fmt.Errorf("no outputs container configured")
+	}
+
+	// update engine logger with outputs metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
+	logger := o.client.Logger.WithField("artifact-outputs", ctn.Name)
+
+	creds, res, err := o.client.Vela.Build.GetSTSCreds(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
+		b.GetNumber())
+	if err != nil {
+		return fmt.Errorf("unable to get sts storage creds %w with response code %d", err, res.StatusCode)
+	}
+
+	stsStorageClient, err := minio.New(creds.Endpoint,
+		&minio.Options{
+			Creds: credentials.NewStaticV4(
+				creds.AccessKey,
+				creds.SecretKey,
+				creds.SessionToken),
+			Secure: creds.Secure,
+		})
+	if err != nil {
+		return fmt.Errorf("unable to create sts storage client %w with response code %d", err, res.StatusCode)
+	}
+
+	if stsStorageClient == nil {
+		return fmt.Errorf("sts storage client is nil")
+	}
+
+	// grab file paths from the container
+	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
+	if err != nil {
+		return fmt.Errorf("unable to poll file names: %w", err)
+	}
+
+	if len(filesPath) == 0 {
+		return fmt.Errorf("no files found for file list: %v", fileList)
+	}
+
+	// process each file found
+	for _, filePath := range filesPath {
+		fileName := filepath.Base(filePath)
+		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
+
+		// get file content from container
+		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
+		if err != nil {
+			return fmt.Errorf("unable to poll file content for %s: %w", filePath, err)
+		}
+
+		// create storage object path
+		objectName := fmt.Sprintf("%s/%s/%s/%s",
+			b.GetRepo().GetOrg(),
+			b.GetRepo().GetName(),
+			strconv.FormatInt(b.GetNumber(), 10),
+			fileName)
+
+		// upload file to storage
+		_, err = stsStorageClient.PutObject(ctx, creds.Bucket, objectName, reader, size, minio.PutObjectOptions{})
+		if err != nil {
+			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
+		}
+	}
+
+	return nil
 }

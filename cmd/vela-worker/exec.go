@@ -27,7 +27,10 @@ import (
 //
 //nolint:gocyclo,funlen // ignore cyclomatic complexity and function length
 func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error {
-	var err error
+	var (
+		err       error
+		_executor executor.Engine
+	)
 
 	// setup the version
 	v := version.New()
@@ -238,7 +241,7 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 	// setup the executor
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/executor#New
-	_executor, err := executor.New(&executor.Setup{
+	setup := &executor.Setup{
 		Logger:              logger,
 		Mock:                w.Config.Mock,
 		Driver:              w.Config.Executor.Driver,
@@ -253,8 +256,13 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
-	})
+	}
 
+	_executor, err = executor.New(setup)
+	if err != nil {
+		logger.Errorf("unable to setup executor: %v", err)
+		return err
+	}
 	// add the executor to the worker
 	w.Executors[index] = _executor
 
