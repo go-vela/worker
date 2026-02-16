@@ -81,7 +81,7 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _st
 
 	for _, pattern := range paths {
 		// use find command to locate files matching the pattern
-		cmd := fmt.Sprintf("find / -type f -path '%s/*%s' -print", _step.Environment["VELA_WORKSPACE"], pattern)
+		cmd := fmt.Sprintf("find %s -type f -path '*%s' -print", _step.Environment["VELA_WORKSPACE"], pattern)
 		c.Logger.Debugf("searching for files with pattern: %s", pattern)
 
 		lines, err := c.execContainerLines(ctx, ctn.ID, cmd)
