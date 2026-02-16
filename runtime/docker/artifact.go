@@ -77,6 +77,7 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _st
 	}
 
 	var results []string
+	
 	paths := _step.Artifacts.Paths
 
 	for _, pattern := range paths {

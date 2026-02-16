@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bytedance/gopkg/util/logger"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-vela/sdk-go/vela"
@@ -559,7 +558,6 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 
 		if len(_step.Artifacts.Paths) != 0 {
-			logger.Debugf("pipeline workspace env: %v", _step.Environment["VELA_WORKSPACE"])
 			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step, c.build)
 			if err != nil {
 				c.Logger.Errorf("unable to poll files for artifacts: %v", err)
