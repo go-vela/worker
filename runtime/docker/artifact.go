@@ -69,7 +69,7 @@ func (c *client) execContainerLines(ctx context.Context, containerID, cmd string
 }
 
 // PollFileNames searches for files matching the provided patterns within a container.
-func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, paths []string) ([]string, error) {
+func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _step *pipeline.Container) ([]string, error) {
 	c.Logger.Tracef("gathering files from container %s", ctn.ID)
 
 	if ctn.Image == "" {
@@ -77,10 +77,11 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 	}
 
 	var results []string
+	paths := _step.Artifacts.Paths
 
 	for _, pattern := range paths {
 		// use find command to locate files matching the pattern
-		cmd := fmt.Sprintf("find / -type f -path '*%s' -print", pattern)
+		cmd := fmt.Sprintf("find / -type f -path '%s/*%s' -print", _step.Environment["VELA_WORKSPACE"], pattern)
 		c.Logger.Debugf("searching for files with pattern: %s", pattern)
 
 		lines, err := c.execContainerLines(ctx, ctn.ID, cmd)
@@ -112,8 +113,6 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, pat
 	if len(results) == 0 {
 		return results, fmt.Errorf("no matching files found for patterns: %v", paths)
 	}
-
-	c.Logger.Infof("found %d files matching patterns", len(results))
 
 	return results, nil
 }

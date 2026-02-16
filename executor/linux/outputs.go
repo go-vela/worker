@@ -211,7 +211,7 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 }
 
 // pollFiles polls the output for files from the sidecar container.
-func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, fileList []string, b *api.Build) error {
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _step *pipeline.Container, b *api.Build) error {
 	// exit if outputs container has not been configured
 	if len(ctn.Image) == 0 {
 		return fmt.Errorf("no outputs container configured")
@@ -245,13 +245,13 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, file
 	}
 
 	// grab file paths from the container
-	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, fileList)
+	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, _step)
 	if err != nil {
 		return fmt.Errorf("unable to poll file names: %w", err)
 	}
 
 	if len(filesPath) == 0 {
-		return fmt.Errorf("no files found for file list: %v", fileList)
+		return fmt.Errorf("no files found for file list: %v", _step.Artifacts.Paths)
 	}
 
 	// process each file found

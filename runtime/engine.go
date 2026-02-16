@@ -98,7 +98,7 @@ type Engine interface {
 
 	// PollFileNames defines a function that
 	// captures the artifacts from the pipeline container.
-	PollFileNames(ctx context.Context, ctn *pipeline.Container, paths []string) ([]string, error)
+	PollFileNames(ctx context.Context, ctn *pipeline.Container, _step *pipeline.Container) ([]string, error)
 	// PollFileContent defines a function that
 	// captures the content and size of a file from the pipeline container.
 	PollFileContent(ctx context.Context, ctn *pipeline.Container, path string) (io.Reader, int64, error)
