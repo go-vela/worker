@@ -17,20 +17,7 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/server/constants"
 )
-
-// isAllowedExt returns true if ext (".xml", ".png", etc.) is in your allow-list.
-func isAllowedExt(ext string) bool {
-	ext = strings.ToLower(ext)
-	for _, a := range constants.AllAllowedExtensions {
-		if ext == a {
-			return true
-		}
-	}
-
-	return false
-}
 
 // execContainerLines runs `sh -c cmd` in the named container and
 // returns its stdout split by newline (error if anything on stderr).
@@ -77,7 +64,7 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _st
 	}
 
 	var results []string
-	
+
 	paths := _step.Artifacts.Paths
 
 	for _, pattern := range paths {
@@ -96,13 +83,6 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _st
 		for _, line := range lines {
 			filePath := filepath.Clean(strings.TrimSpace(line))
 			if filePath == "" {
-				continue
-			}
-
-			// check if file extension is allowed
-			ext := strings.ToLower(filepath.Ext(filePath))
-			if !isAllowedExt(ext) {
-				c.Logger.Debugf("skipping file %s (extension %s not allowed)", filePath, ext)
 				continue
 			}
 
