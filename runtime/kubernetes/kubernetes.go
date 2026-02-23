@@ -51,7 +51,7 @@ type client struct {
 // New returns an Engine implementation that
 // integrates with a Kubernetes runtime.
 //
-//nolint:revive // ignore returning unexported client
+
 func New(opts ...ClientOpt) (*client, error) {
 	// create new Kubernetes client
 	c := new(client)
