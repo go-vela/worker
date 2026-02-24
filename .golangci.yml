@@ -60,6 +60,10 @@ linters:
         - G101
         - G117
         - G705
+    revive:
+        rules:
+          - name: var-naming
+            disabled: true
   exclusions:
     generated: lax
     presets:
