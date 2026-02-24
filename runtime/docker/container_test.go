@@ -419,7 +419,7 @@ func TestDocker_PollOutputsContainer(t *testing.T) {
 				ID:    "outputs",
 				Image: "alpine:latest",
 			},
-			path:      "/vela/outputs/.env",
+			path:      "outputs",
 			wantBytes: []byte("key=value"),
 		},
 		{

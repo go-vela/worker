@@ -147,8 +147,6 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		// prepare pipeline by hydrating container ID values based on build information
 		p.Prepare(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber(), false)
 
-		logrus.Debugf("setting up exec client with scm token %s with expiration %d", p.Token, p.TokenExp)
-
 		// setup exec client with scm token and build token
 		execBuildClient, err = setupExecClient(w.Config.Server, bt.GetToken(), p.Token, p.TokenExp, item.Build)
 		if err != nil {

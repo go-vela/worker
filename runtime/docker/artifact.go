@@ -13,47 +13,9 @@ import (
 	"strings"
 
 	"github.com/containerd/errdefs"
-	dockerContainerTypes "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
 )
-
-// execContainerLines runs `sh -c cmd` in the named container and
-// returns its stdout split by newline (error if anything on stderr).
-func (c *client) execContainerLines(ctx context.Context, containerID, cmd string) ([]string, error) {
-	execConfig := dockerContainerTypes.ExecOptions{
-		Tty:          true,
-		Cmd:          []string{"sh", "-c", cmd},
-		AttachStdout: true,
-		AttachStderr: true,
-	}
-
-	resp, err := c.Docker.ContainerExecCreate(ctx, containerID, execConfig)
-	if err != nil {
-		return nil, fmt.Errorf("create exec: %w", err)
-	}
-
-	attach, err := c.Docker.ContainerExecAttach(ctx, resp.ID, dockerContainerTypes.ExecAttachOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("attach exec: %w", err)
-	}
-
-	defer attach.Close()
-
-	var outBuf, errBuf bytes.Buffer
-	if _, err := stdcopy.StdCopy(&outBuf, &errBuf, attach.Reader); err != nil {
-		return nil, fmt.Errorf("copy exec output: %w", err)
-	}
-
-	if errBuf.Len() > 0 {
-		return nil, fmt.Errorf("exec error: %s", errBuf.String())
-	}
-
-	lines := strings.Split(strings.TrimSpace(outBuf.String()), "\n")
-
-	return lines, nil
-}
 
 // PollFileNames searches for files matching the provided patterns within a container.
 func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _step *pipeline.Container) ([]string, error) {
@@ -65,30 +27,51 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _st
 
 	var results []string
 
+	seen := make(map[string]bool)
 	paths := _step.Artifacts.Paths
+	workspacePrefix := _step.Environment["VELA_WORKSPACE"] + "/"
 
 	for _, pattern := range paths {
-		// use find command to locate files matching the pattern
-		cmd := fmt.Sprintf("find %s -type f -path '*%s' -print", _step.Environment["VELA_WORKSPACE"], pattern)
-		c.Logger.Debugf("searching for files with pattern: %s", pattern)
+		searchDir := extractSearchDir(workspacePrefix + pattern)
 
-		lines, err := c.execContainerLines(ctx, ctn.ID, cmd)
+		reader, _, err := c.Docker.CopyFromContainer(ctx, ctn.ID, searchDir)
 		if err != nil {
-			return nil, fmt.Errorf("failed to search for pattern %q: %w", pattern, err)
-		}
-
-		c.Logger.Tracef("found %d candidates for pattern %s", len(lines), pattern)
-
-		// process each found file
-		for _, line := range lines {
-			filePath := filepath.Clean(strings.TrimSpace(line))
-			if filePath == "" {
+			if errdefs.IsNotFound(err) {
+				c.Logger.Debugf("search directory %q not found in container: %v", searchDir, err)
 				continue
 			}
 
-			c.Logger.Debugf("accepted file: %s", filePath)
-			results = append(results, filePath)
+			return nil, fmt.Errorf("copy from container for search dir %q: %w", searchDir, err)
 		}
+
+		tr := tar.NewReader(reader)
+
+		for {
+			header, err := tr.Next()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break
+				}
+
+				reader.Close()
+
+				return nil, fmt.Errorf("read tar entry for search dir %q: %w", searchDir, err)
+			}
+
+			if header.Typeflag != tar.TypeReg {
+				continue
+			}
+
+			filePath := filepath.Clean(header.Name)
+
+			matched, err := filepath.Match(pattern, filePath)
+			if err == nil && matched && !seen[filePath] {
+				results = append(results, workspacePrefix+filePath)
+				seen[filePath] = true
+			}
+		}
+
+		reader.Close()
 	}
 
 	if len(results) == 0 {
@@ -96,6 +79,23 @@ func (c *client) PollFileNames(ctx context.Context, ctn *pipeline.Container, _st
 	}
 
 	return results, nil
+}
+
+// extractSearchDir extracts a search directory from a glob pattern.
+func extractSearchDir(pattern string) string {
+	// if no wildcard, determine directory
+	idx := strings.IndexAny(pattern, "*?[")
+	if idx == -1 {
+		return filepath.Dir(pattern)
+	}
+
+	// determine directory before wildcard
+	dir := filepath.Dir(pattern[:idx])
+	if dir == "" || dir == "." {
+		return "/"
+	}
+
+	return dir
 }
 
 // PollFileContent retrieves the content and size of a file inside a container.

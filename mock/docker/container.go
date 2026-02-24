@@ -521,7 +521,7 @@ func (c *ContainerService) ContainerStatsOneShot(_ context.Context, _ string) (c
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.CopyFromContainer
 func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, path string) (io.ReadCloser, container.PathStat, error) {
-	if path == "not-found" {
+	if strings.Contains(path, "not-found") {
 		return nil, container.PathStat{}, errdefs.NotFound(fmt.Errorf("error: No such file or directory: %s", path))
 	}
 	// create a tar archive in memory with the specified path and content
@@ -529,31 +529,118 @@ func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, path s
 
 	tw := tar.NewWriter(&buf)
 
-	content := []byte("key=value")
+	// Handle workspace paths for artifact searches
+	if strings.Contains(path, "workspace") {
+		// Create nested directory structure with files
+		entries := []struct {
+			name    string
+			isDir   bool
+			content []byte
+		}{
+			{"artifacts", true, nil},
+			{"artifacts/test_results", true, nil},
+			{"artifacts/test_results/alpha.txt", false, []byte("test alpha content")},
+			{"artifacts/test_results/beta.txt", false, []byte("test beta content")},
+			{"artifacts/build_results", true, nil},
+			{"artifacts/build_results/alpha.txt", false, []byte("build alpha content")},
+			{"artifacts/build_results/beta.txt", false, []byte("build beta content")},
+		}
 
-	hdr := &tar.Header{
-		Name: path,
-		Mode: 0600,
-		Size: int64(len(content)),
+		for _, entry := range entries {
+			var hdr *tar.Header
+			if entry.isDir {
+				hdr = &tar.Header{
+					Name:     entry.name + "/",
+					Mode:     0755,
+					Typeflag: tar.TypeDir,
+				}
+			} else {
+				hdr = &tar.Header{
+					Name:     entry.name,
+					Mode:     0644,
+					Size:     int64(len(entry.content)),
+					Typeflag: tar.TypeReg,
+				}
+			}
+
+			if err := tw.WriteHeader(hdr); err != nil {
+				return nil, container.PathStat{}, err
+			}
+
+			if !entry.isDir {
+				if _, err := tw.Write(entry.content); err != nil {
+					return nil, container.PathStat{}, err
+				}
+			}
+		}
+
+		if err := tw.Close(); err != nil {
+			return nil, container.PathStat{}, err
+		}
+
+		return io.NopCloser(&buf), container.PathStat{
+			Name: "artifacts",
+			Mode: 0755,
+		}, nil
 	}
 
-	if err := tw.WriteHeader(hdr); err != nil {
-		return nil, container.PathStat{}, err
-	}
+	switch path {
+	case "outputs":
+		content := []byte("key=value")
 
-	if _, err := tw.Write(content); err != nil {
-		return nil, container.PathStat{}, err
-	}
+		hdr := &tar.Header{
+			Name: path,
+			Mode: 0600,
+			Size: int64(len(content)),
+		}
 
-	if err := tw.Close(); err != nil {
-		return nil, container.PathStat{}, err
-	}
+		if err := tw.WriteHeader(hdr); err != nil {
+			return nil, container.PathStat{}, err
+		}
 
-	return io.NopCloser(&buf), container.PathStat{
-		Name: path,
-		Size: int64(len(content)),
-		Mode: 0600,
-	}, nil
+		if _, err := tw.Write(content); err != nil {
+			return nil, container.PathStat{}, err
+		}
+
+		if err := tw.Close(); err != nil {
+			return nil, container.PathStat{}, err
+		}
+
+		return io.NopCloser(&buf), container.PathStat{
+			Name: path,
+			Size: int64(len(content)),
+			Mode: 0600,
+		}, nil
+
+	default:
+		// Default case: return simple file content
+		content := []byte("results")
+
+		hdr := &tar.Header{
+			Name:     path,
+			Mode:     0644,
+			Size:     int64(len(content)),
+			Typeflag: tar.TypeReg,
+		}
+
+		if err := tw.WriteHeader(hdr); err != nil {
+			return nil, container.PathStat{}, err
+		}
+
+		if _, err := tw.Write(content); err != nil {
+			return nil, container.PathStat{}, err
+		}
+
+		if err := tw.Close(); err != nil {
+			return nil, container.PathStat{}, err
+		}
+
+		return io.NopCloser(&buf), container.PathStat{
+			Name: path,
+			Size: int64(len(content)),
+			Mode: 0644,
+		}, nil
+	}
 }
 
 // CopyToContainer is a helper function to simulate
