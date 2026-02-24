@@ -83,6 +83,17 @@ services:
       VELA_DISABLE_WEBHOOK_VALIDATION: 'true'
       VELA_ENABLE_SECURE_COOKIE: 'false'
       VELA_REPO_ALLOWLIST: '*'
+      VELA_SCHEDULE_ALLOWLIST: '*'
+      VELA_OTEL_TRACING_ENABLE: true
+      VELA_OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      VELA_OTEL_TRACING_SAMPLER_RATELIMIT_PER_SECOND: 100
+      VELA_STORAGE_ENABLE: true
+      VELA_STORAGE_DRIVER: minio
+      VELA_STORAGE_ADDRESS: 'http://minio:9001' # Address of the MinIO server
+      VELA_STORAGE_ACCESS_KEY: minioadmin
+      VELA_STORAGE_SECRET_KEY: minioadmin
+      VELA_STORAGE_USE_SSL: 'false'
+      VELA_STORAGE_BUCKET: vela
     env_file:
       - .env
     restart: always
@@ -160,6 +171,43 @@ services:
       - '8200:8200'
     cap_add:
       - IPC_LOCK
+
+  # The `minio` compose service hosts the MinIO server instance.
+  #
+  # This component is used for storing build artifacts.
+  #
+  # https://min.io/
+  minio:
+    container_name: minio
+    image: minio/minio
+    restart: always
+    ports:
+      - '9001:9001'
+      - '9002:9002'
+    networks:
+      - vela
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: minio server --address ":9001" --console-address ":9002" /data
+
+  # The `minio-setup` compose service is used for setting up the MinIO server instance.
+  #
+  # This component is used for creating the bucket and setting permissions.
+  minio-setup:
+    image: minio/mc
+    container_name: minio-setup
+    depends_on:
+      - minio
+    networks:
+      - vela
+    entrypoint: >
+      /bin/sh -c '
+      until mc alias set local http://minio:9001 minioadmin minioadmin; do sleep 1; done;
+      mc mb --ignore-existing local/vela;
+      mc anonymous set none local/vela;
+      '
+    restart: "no"
 
 networks:
   vela:
