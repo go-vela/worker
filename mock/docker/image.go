@@ -94,7 +94,7 @@ func (i *ImageService) ImageInspect(_ context.Context, img string, _ ...client.I
 	if strings.Contains(img, "notfound") || strings.Contains(img, "not-found") {
 		return image.InspectResponse{},
 			errdefs.NotFound(
-				//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", img),
 			)
 	}
@@ -163,7 +163,7 @@ func (i *ImageService) ImagePull(_ context.Context, image string, _ image.PullOp
 		!strings.Contains(image, "ignorenotfound") {
 		return nil,
 			errdefs.NotFound(
-				//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
 			)
 	}
@@ -174,7 +174,7 @@ func (i *ImageService) ImagePull(_ context.Context, image string, _ image.PullOp
 		!strings.Contains(image, "ignore-not-found") {
 		return nil,
 			errdefs.NotFound(
-				//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 				fmt.Errorf("Error response from daemon: manifest for %s not found: manifest unknown", image),
 			)
 	}

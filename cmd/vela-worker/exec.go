@@ -348,7 +348,6 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	wg.Go(func() {
-
 		logger.Info("streaming build logs")
 		// execute the build with the executor
 		err = _executor.StreamBuild(buildCtx)
