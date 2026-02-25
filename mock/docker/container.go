@@ -181,7 +181,6 @@ func (c *ContainerService) ContainerExecCreate(_ context.Context, ctn string, co
 
 	// check if the container is not found
 	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
-
 		return container.ExecCreateResponse{}, errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
 	}
 

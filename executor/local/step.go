@@ -195,8 +195,6 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 	// scan entire container output
 	for scanner.Scan() {
 		// ensure we output to stdout
-		//
-
 		fmt.Fprintln(c.stdout, _pattern, scanner.Text())
 	}
 
