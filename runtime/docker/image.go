@@ -66,15 +66,13 @@ func (c *client) InspectImage(ctx context.Context, ctn *pipeline.Container) ([]b
 	c.Logger.Tracef("inspecting image for container %s", ctn.ID)
 
 	// create output for inspecting image
-	output := []byte(
-		fmt.Sprintf("$ docker image inspect %s\n", ctn.Image),
-	)
+	output := 
+		fmt.Appendf(nil, "$ docker image inspect %s\n", ctn.Image)
 
 	// check if the container pull policy is on start
 	if strings.EqualFold(ctn.Pull, constants.PullOnStart) || strings.EqualFold(ctn.Pull, constants.PullNever) {
-		return []byte(
-			fmt.Sprintf("skipped for container %s due to pull policy %s\n", ctn.ID, ctn.Pull),
-		), nil
+		return 
+			fmt.Appendf(nil, "skipped for container %s due to pull policy %s\n", ctn.ID, ctn.Pull), nil
 	}
 
 	// parse image from container

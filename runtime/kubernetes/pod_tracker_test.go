@@ -80,7 +80,7 @@ func Test_podTracker_getTrackedPod(t *testing.T) {
 	tests := []struct {
 		name       string
 		trackedPod string // namespace/podName
-		obj        interface{}
+		obj        any
 		want       *v1.Pod
 	}{
 		{
@@ -157,7 +157,7 @@ func Test_podTracker_HandlePodAdd(t *testing.T) {
 	tests := []struct {
 		name       string
 		trackedPod string // namespace/podName
-		obj        interface{}
+		obj        any
 	}{
 		{
 			name:       "got-tracked-pod",
@@ -202,8 +202,8 @@ func Test_podTracker_HandlePodUpdate(t *testing.T) {
 	tests := []struct {
 		name       string
 		trackedPod string // namespace/podName
-		oldObj     interface{}
-		newObj     interface{}
+		oldObj     any
+		newObj     any
 	}{
 		{
 			name:       "re-sync event without change",
@@ -276,7 +276,7 @@ func Test_podTracker_HandlePodDelete(t *testing.T) {
 	tests := []struct {
 		name       string
 		trackedPod string // namespace/podName
-		obj        interface{}
+		obj        any
 	}{
 		{
 			name:       "got-tracked-pod",

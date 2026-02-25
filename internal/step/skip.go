@@ -45,9 +45,9 @@ func Skip(c *pipeline.Container, b *api.Build, status string) (bool, error) {
 	// check if the build event is deployment
 	if strings.EqualFold(b.GetEvent(), constants.EventDeploy) {
 		// handle when deployment event is for a tag
-		if strings.HasPrefix(b.GetRef(), "refs/tags/") {
+		if after, ok := strings.CutPrefix(b.GetRef(), "refs/tags/"); ok {
 			// add tag information to ruledata with refs/tags prefix removed
-			ruledata.Tag = strings.TrimPrefix(b.GetRef(), "refs/tags/")
+			ruledata.Tag = after
 		}
 		// add deployment target information to ruledata
 		ruledata.Target = b.GetDeploy()

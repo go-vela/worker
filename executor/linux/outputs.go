@@ -30,7 +30,7 @@ func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container, timeout
 
 	// Encode script content to Base64
 	script := base64.StdEncoding.EncodeToString(
-		[]byte(fmt.Sprintf("mkdir /vela/outputs\nsleep %d\n", timeout)),
+		fmt.Appendf(nil, "mkdir /vela/outputs\nsleep %d\n", timeout),
 	)
 
 	// set the entrypoint for the ctn

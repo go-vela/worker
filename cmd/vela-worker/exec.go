@@ -40,7 +40,7 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		retries             = 3
 	)
 
-	for i := 0; i < retries; i++ {
+	for i := range retries {
 		// check if we're on the first iteration of the loop
 		if i > 0 {
 			// incrementally sleep in between retries
@@ -345,11 +345,9 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 	}
 
 	// add StreamBuild goroutine to WaitGroup
-	wg.Add(1)
 
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 
 		logger.Info("streaming build logs")
 		// execute the build with the executor
@@ -357,7 +355,7 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		if err != nil {
 			logger.Errorf("unable to stream build logs: %v", err)
 		}
-	}()
+	})
 
 	logger.Info("executing build")
 	// execute the build with the executor

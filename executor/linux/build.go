@@ -103,7 +103,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 	}
 
 	// put worker information into init logs
-	_log.AppendData([]byte(fmt.Sprintf("> Worker Information:\n Host: %s\n Version: %s\n Runtime: %s\n", c.Hostname, c.Version, c.Runtime.Driver())))
+	_log.AppendData(fmt.Appendf(nil, "> Worker Information:\n Host: %s\n Version: %s\n Runtime: %s\n", c.Hostname, c.Version, c.Runtime.Driver()))
 
 	// defer taking a snapshot of the init step
 	//
@@ -170,7 +170,7 @@ func (c *client) PlanBuild(ctx context.Context) error {
 
 		// only pull in secrets that are set to be pulled in at the start
 		if strings.EqualFold(secret.Pull, constants.SecretPullStep) {
-			_log.AppendData([]byte(fmt.Sprintf("> Skipping pull: secret <%s> lazy loaded\n", secret.Name)))
+			_log.AppendData(fmt.Appendf(nil, "> Skipping pull: secret <%s> lazy loaded\n", secret.Name))
 
 			continue
 		}
@@ -183,9 +183,9 @@ func (c *client) PlanBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to pull secrets: %w", err)
 		}
 
-		_log.AppendData([]byte(
-			fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
-				secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
+		_log.AppendData(
+			fmt.Appendf(nil, "$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
+				secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName()))
 
 		sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
 		if err != nil {
@@ -269,7 +269,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		c.Logger.Infof("creating %s service", s.Name)
 
-		_log.AppendData([]byte(fmt.Sprintf("> Preparing service image %s...\n", s.Image)))
+		_log.AppendData(fmt.Appendf(nil, "> Preparing service image %s...\n", s.Image))
 
 		// create the service
 		c.err = c.CreateService(ctx, s)
@@ -319,7 +319,7 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 
 		c.Logger.Infof("creating %s step", s.Name)
 
-		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", s.Image)))
+		_log.AppendData(fmt.Appendf(nil, "> Preparing step image %s...\n", s.Image))
 
 		// create the step
 		c.err = c.CreateStep(ctx, s)
@@ -753,8 +753,8 @@ func loadLazySecrets(ctx context.Context, c *client, _step *pipeline.Container) 
 
 			// lazy loading not supported with Kubernetes, log info and continue
 			if strings.EqualFold(constants.DriverKubernetes, c.Runtime.Driver()) {
-				_log.AppendData([]byte(
-					fmt.Sprintf("unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source)))
+				_log.AppendData(
+					fmt.Appendf(nil, "unable to pull secret %s: lazy loading secrets not available with Kubernetes runtime\n", s.Source))
 
 				_, err := c.Vela.Log.UpdateStep(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), _step.Number, _log)
 				if err != nil {
@@ -772,9 +772,9 @@ func loadLazySecrets(ctx context.Context, c *client, _step *pipeline.Container) 
 				return fmt.Errorf("unable to pull secrets: %w", err)
 			}
 
-			_log.AppendData([]byte(
-				fmt.Sprintf("$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
-					secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName())))
+			_log.AppendData(
+				fmt.Appendf(nil, "$ vela view secret --secret.engine %s --secret.type %s --org %s --repo %s --name %s \n",
+					secret.Engine, secret.Type, s.GetOrg(), s.GetRepo(), s.GetName()))
 
 			sRaw, err := json.MarshalIndent(s.Sanitize(), "", " ")
 			if err != nil {

@@ -29,14 +29,14 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	logger := c.Logger.WithField("stage", s.Name)
 
 	// update the init log with progress
-	_log.AppendData([]byte(fmt.Sprintf("> Preparing step images for stage %s...\n", s.Name)))
+	_log.AppendData(fmt.Appendf(nil, "> Preparing step images for stage %s...\n", s.Name))
 
 	// create the steps for the stage
 	for _, _step := range s.Steps {
 		// update the container environment with stage name
 		_step.Environment["VELA_STEP_STAGE"] = s.Name
 
-		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", _step.Image)))
+		_log.AppendData(fmt.Appendf(nil, "> Preparing step image %s...\n", _step.Image))
 
 		logger.Debugf("creating %s step", _step.Name)
 		// create the step

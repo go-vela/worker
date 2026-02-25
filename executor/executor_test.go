@@ -68,7 +68,7 @@ func TestExecutor_New(t *testing.T) {
 		failure bool
 		setup   *Setup
 		want    Engine
-		equal   interface{}
+		equal   any
 	}{
 		{
 			name:    "driver-darwin",

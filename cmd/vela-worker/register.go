@@ -24,7 +24,7 @@ func (w *Worker) checkIn(ctx context.Context, config *api.Worker) (bool, string,
 		retries = 3
 	)
 
-	for i := 0; i < retries; i++ {
+	for i := range retries {
 		logrus.Debugf("check in loop - attempt %d", i+1)
 		// check if we're on the first iteration of the loop
 		if i > 0 {

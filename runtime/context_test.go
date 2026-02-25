@@ -71,7 +71,7 @@ func TestRuntime_FromGinContext(t *testing.T) {
 	tests := []struct {
 		name    string
 		context *gin.Context
-		value   interface{}
+		value   any
 		want    Engine
 	}{
 		{

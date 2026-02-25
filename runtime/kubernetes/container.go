@@ -96,7 +96,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *p
 		ctx,
 		c.Pod.Name,
 		types.StrategicMergePatchType,
-		[]byte(fmt.Sprintf(imagePatch, ctn.ID, _image)),
+		fmt.Appendf(nil, imagePatch, ctn.ID, _image),
 		metav1.PatchOptions{},
 	)
 	if err != nil {

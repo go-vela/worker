@@ -182,13 +182,12 @@ func (i *ImageService) ImagePull(_ context.Context, image string, _ image.PullOp
 	// create response object to return
 	response := io.NopCloser(
 		bytes.NewReader(
-			[]byte(
-				fmt.Sprintf("%s\n%s\n%s\n%s\n",
-					fmt.Sprintf("latest: Pulling from %s", image),
-					fmt.Sprintf("Digest: sha256:%s", stringid.GenerateRandomID()),
-					fmt.Sprintf("Status: Image is up to date for %s", image),
-					image,
-				),
+
+			fmt.Appendf(nil, "%s\n%s\n%s\n%s\n",
+				fmt.Sprintf("latest: Pulling from %s", image),
+				fmt.Sprintf("Digest: sha256:%s", stringid.GenerateRandomID()),
+				fmt.Sprintf("Status: Image is up to date for %s", image),
+				image,
 			),
 		),
 	)
