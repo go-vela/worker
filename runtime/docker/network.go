@@ -44,9 +44,8 @@ func (c *client) InspectNetwork(ctx context.Context, b *pipeline.Build) ([]byte,
 	opts := network.InspectOptions{}
 
 	// create output for inspecting network
-	output := []byte(
-		fmt.Sprintf("$ docker network inspect %s\n", b.ID),
-	)
+	output :=
+		fmt.Appendf(nil, "$ docker network inspect %s\n", b.ID)
 
 	// send API call to inspect the network
 	//

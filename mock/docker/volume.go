@@ -37,7 +37,7 @@ func (v *VolumeService) VolumeCreate(_ context.Context, options volume.CreateOpt
 	if strings.Contains(options.Name, "notfound") &&
 		!strings.Contains(options.Name, "ignorenotfound") {
 		return volume.Volume{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
 	}
 
@@ -46,7 +46,7 @@ func (v *VolumeService) VolumeCreate(_ context.Context, options volume.CreateOpt
 	if strings.Contains(options.Name, "not-found") &&
 		!strings.Contains(options.Name, "ignore-not-found") {
 		return volume.Volume{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", options.Name))
 	}
 
@@ -77,14 +77,14 @@ func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string) (volum
 	// check if the volume is notfound
 	if strings.Contains(volumeID, "notfound") {
 		return volume.Volume{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
 	if strings.Contains(volumeID, "not-found") {
 		return volume.Volume{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
@@ -114,14 +114,14 @@ func (v *VolumeService) VolumeInspectWithRaw(_ context.Context, volumeID string)
 	// check if the volume is notfound
 	if strings.Contains(volumeID, "notfound") {
 		return volume.Volume{}, nil,
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 
 	// check if the volume is not-found
 	if strings.Contains(volumeID, "not-found") {
 		return volume.Volume{}, nil,
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such volume: %s", volumeID))
 	}
 

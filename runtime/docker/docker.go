@@ -49,7 +49,7 @@ type client struct {
 // New returns an Engine implementation that
 // integrates with a Docker runtime.
 //
-//nolint:revive // ignore returning unexported client
+
 func New(opts ...ClientOpt) (*client, error) {
 	// create new Docker client
 	c := new(client)
@@ -102,7 +102,7 @@ func New(opts ...ClientOpt) (*client, error) {
 //
 // This function is intended for running tests only.
 //
-//nolint:revive // ignore returning unexported client
+
 func NewMock(opts ...ClientOpt) (*client, error) {
 	// create new Docker runtime client
 	c, err := New(opts...)
