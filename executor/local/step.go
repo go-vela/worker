@@ -196,7 +196,7 @@ func (c *client) StreamStep(ctx context.Context, ctn *pipeline.Container) error 
 	for scanner.Scan() {
 		// ensure we output to stdout
 		//
-		//nolint:gosec // false positive
+
 		fmt.Fprintln(c.stdout, _pattern, scanner.Text())
 	}
 
