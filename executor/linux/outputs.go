@@ -265,6 +265,17 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 			return fmt.Errorf("unable to poll file content for %s: %w", filePath, err)
 		}
 
+		// TODO: surface this skip to the user
+		if o.client.fileSizeLimit > 0 && size > o.client.fileSizeLimit {
+			logger.Infof("skipping file %s due to file size limit", filePath)
+			continue
+		}
+
+		if o.client.buildFileSizeLimit > 0 && size+o.client.Uploaded > o.client.buildFileSizeLimit {
+			logger.Infof("skipping file %s due to build file size limit", filePath)
+			continue
+		}
+
 		// create storage object path
 		objectName := fmt.Sprintf("%s/%s/%s/%s",
 			b.GetRepo().GetOrg(),
@@ -277,6 +288,8 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		if err != nil {
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
 		}
+
+		o.client.Uploaded += size
 	}
 
 	return nil

@@ -244,6 +244,8 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		Mock:                w.Config.Mock,
 		Driver:              w.Config.Executor.Driver,
 		MaxLogSize:          w.Config.Executor.MaxLogSize,
+		FileSizeLimit:       w.Config.Executor.FileSizeLimit,
+		BuildFileSizeLimit:  w.Config.Executor.BuildFileSizeLimit,
 		LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
 		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
 		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,

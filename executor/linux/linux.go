@@ -29,6 +29,7 @@ type (
 		Hostname     string
 		Version      string
 		OutputCtn    *pipeline.Container
+		Uploaded     int64
 
 		// clients for build actions
 		secret  *secretSvc
@@ -37,6 +38,8 @@ type (
 		// private fields
 		init                *pipeline.Container
 		maxLogSize          uint
+		fileSizeLimit       int64
+		buildFileSizeLimit  int64
 		logStreamingTimeout time.Duration
 		privilegedImages    []string
 		enforceTrustedRepos bool
@@ -74,6 +77,8 @@ func Equal(a, b *client) bool {
 		a.Version == b.Version &&
 		reflect.DeepEqual(a.init, b.init) &&
 		a.maxLogSize == b.maxLogSize &&
+		a.fileSizeLimit == b.fileSizeLimit &&
+		a.buildFileSizeLimit == b.buildFileSizeLimit &&
 		reflect.DeepEqual(a.privilegedImages, b.privilegedImages) &&
 		a.enforceTrustedRepos == b.enforceTrustedRepos &&
 		reflect.DeepEqual(a.build, b.build) &&

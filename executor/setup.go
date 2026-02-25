@@ -34,6 +34,10 @@ type Setup struct {
 	Driver string
 	// specifies the maximum log size
 	MaxLogSize uint
+	// specifies file size limit for artifacts
+	FileSizeLimit int
+	// specifies build file size limit for artifacts
+	BuildFileSizeLimit int
 	// specifies how long to wait after the build finishes
 	// for log streaming to complete
 	LogStreamingTimeout time.Duration
@@ -79,6 +83,8 @@ func (s *Setup) Linux() (Engine, error) {
 	opts := []linux.Opt{
 		linux.WithBuild(s.Build),
 		linux.WithMaxLogSize(s.MaxLogSize),
+		linux.WithFileSizeLimit(s.FileSizeLimit),
+		linux.WithBuildFileSizeLimit(s.BuildFileSizeLimit),
 		linux.WithLogStreamingTimeout(s.LogStreamingTimeout),
 		linux.WithPrivilegedImages(s.PrivilegedImages),
 		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),

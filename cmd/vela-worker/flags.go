@@ -11,7 +11,6 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/go-vela/server/queue"
-	"github.com/go-vela/server/storage"
 	"github.com/go-vela/worker/executor"
 	"github.com/go-vela/worker/runtime"
 )
@@ -61,6 +60,16 @@ func flags() []cli.Flag {
 			Usage:   "maximum amount of time a build can run for",
 			Sources: cli.EnvVars("WORKER_BUILD_TIMEOUT", "VELA_BUILD_TIMEOUT", "BUILD_TIMEOUT"),
 			Value:   30 * time.Minute,
+		},
+		&cli.IntFlag{
+			Name:    "storage.file-size-limit",
+			Usage:   "maximum file size (in MB) for a single file upload. 0 means no limit.",
+			Sources: cli.EnvVars("WORKER_STORAGE_FILE_SIZE_LIMIT", "VELA_STORAGE_FILE_SIZE_LIMIT", "STORAGE_FILE_SIZE_LIMIT"),
+		},
+		&cli.IntFlag{
+			Name:    "storage.build-file-size-limit",
+			Usage:   "maximum total size (in MB) for all file uploads in a single build. 0 means no limit.",
+			Sources: cli.EnvVars("WORKER_STORAGE_BUILD_FILE_SIZE_LIMIT", "VELA_STORAGE_BUILD_FILE_SIZE_LIMIT", "STORAGE_BUILD_FILE_SIZE_LIMIT"),
 		},
 
 		// Logger Flags
@@ -120,9 +129,6 @@ func flags() []cli.Flag {
 	// Runtime Flags
 
 	f = append(f, runtime.Flags...)
-
-	// Storage Flags
-	f = append(f, storage.Flags...)
 
 	return f
 }
