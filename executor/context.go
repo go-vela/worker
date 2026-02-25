@@ -51,8 +51,6 @@ func FromGinContext(c *gin.Context) Engine {
 // WithContext inserts the executor Engine into the context.Context.
 func WithContext(c context.Context, e Engine) context.Context {
 	// set the executor Engine in the context.Context
-	//
-	//nolint:staticcheck // ignore using string with context value
 	return context.WithValue(c, key, e)
 }
 

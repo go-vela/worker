@@ -42,15 +42,12 @@ func (c *client) InspectImage(_ context.Context, ctn *pipeline.Container) ([]byt
 	// TODO: consider updating this command
 	//
 	// create output for inspecting image
-	output := []byte(
-		fmt.Sprintf("$ kubectl get pod -o=jsonpath='{.spec.containers[%d].image}' %s\n", ctn.Number, ctn.ID),
-	)
+	output :=
+		fmt.Appendf(nil, "$ kubectl get pod -o=jsonpath='{.spec.containers[%d].image}' %s\n", ctn.Number, ctn.ID)
 
 	// check if the container pull policy is on start
 	if strings.EqualFold(ctn.Pull, constants.PullOnStart) {
-		return []byte(
-			fmt.Sprintf("skipped for container %s due to pull policy %s\n", ctn.ID, ctn.Pull),
-		), nil
+		return fmt.Appendf(nil, "skipped for container %s due to pull policy %s\n", ctn.ID, ctn.Pull), nil
 	}
 
 	// marshal the image information from the container

@@ -23,7 +23,7 @@ import (
 func (c *client) InspectBuild(_ context.Context, b *pipeline.Build) ([]byte, error) {
 	c.Logger.Tracef("inspecting build pod for pipeline %s", b.ID)
 
-	output := []byte(fmt.Sprintf("> Inspecting pod for pipeline %s\n", b.ID))
+	output := fmt.Appendf(nil, "> Inspecting pod for pipeline %s\n", b.ID)
 
 	// TODO: The environment gets populated in AssembleBuild, after InspectBuild runs.
 	//       But, we should make sure that secrets can't be leaked here anyway.

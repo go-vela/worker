@@ -46,9 +46,8 @@ func (c *client) InspectVolume(ctx context.Context, b *pipeline.Build) ([]byte, 
 	c.Logger.Tracef("inspecting volume for pipeline %s", b.ID)
 
 	// create output for inspecting volume
-	output := []byte(
-		fmt.Sprintf("$ docker volume inspect %s\n", b.ID),
-	)
+	output :=
+		fmt.Appendf(nil, "$ docker volume inspect %s\n", b.ID)
 
 	// send API call to inspect the volume
 	//

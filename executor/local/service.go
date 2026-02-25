@@ -119,6 +119,8 @@ func (c *client) StreamService(ctx context.Context, ctn *pipeline.Container) err
 	// scan entire container output
 	for scanner.Scan() {
 		// ensure we output to stdout
+		//
+		//nolint:gosec // false positive
 		fmt.Fprintln(c.stdout, _pattern, scanner.Text())
 	}
 

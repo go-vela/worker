@@ -44,7 +44,7 @@ func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ network
 	if strings.Contains(name, "notfound") &&
 		!strings.Contains(name, "ignorenotfound") {
 		return network.CreateResponse{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
 
@@ -53,7 +53,7 @@ func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ network
 	if strings.Contains(name, "not-found") &&
 		!strings.Contains(name, "ignore-not-found") {
 		return network.CreateResponse{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", name))
 	}
 
@@ -86,14 +86,14 @@ func (n *NetworkService) NetworkInspect(_ context.Context, networkID string, _ n
 	// check if the network is notfound
 	if strings.Contains(networkID, "notfound") {
 		return network.Inspect{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
 	}
 
 	// check if the network is not-found
 	if strings.Contains(networkID, "not-found") {
 		return network.Inspect{},
-			//nolint:staticcheck // messsage is capitalized to match Docker messages
+
 			errdefs.NotFound(fmt.Errorf("Error: No such network: %s", networkID))
 	}
 
