@@ -12,12 +12,12 @@ import (
 	"strconv"
 
 	envparse "github.com/hashicorp/go-envparse"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/sirupsen/logrus"
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/constants"
+	"github.com/go-vela/server/storage"
 )
 
 // outputSvc handles communication with the outputs container during the build.
@@ -228,14 +228,16 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		return fmt.Errorf("unable to get sts storage creds %w with response code %d", err, res.StatusCode)
 	}
 
-	stsStorageClient, err := minio.New(creds.Endpoint,
-		&minio.Options{
-			Creds: credentials.NewStaticV4(
-				creds.AccessKey,
-				creds.SecretKey,
-				creds.SessionToken),
-			Secure: creds.Secure,
-		})
+	stsStorageClient, err := storage.New(&storage.Setup{
+		Enable:    true,
+		Driver:    constants.DriverMinio,
+		Endpoint:  creds.Endpoint,
+		AccessKey: creds.AccessKey,
+		SecretKey: creds.SecretKey,
+		Bucket:    creds.Bucket,
+		Secure:    creds.Secure,
+		Token:     creds.SessionToken,
+	})
 	if err != nil {
 		return fmt.Errorf("unable to create sts storage client %w with response code %d", err, res.StatusCode)
 	}
@@ -283,8 +285,15 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 			strconv.FormatInt(b.GetNumber(), 10),
 			fileName)
 
+		obj := &api.Object{
+			Bucket: api.Bucket{
+				BucketName: creds.Bucket,
+			},
+			ObjectName: objectName,
+			FilePath:   filePath,
+		}
 		// upload file to storage
-		_, err = stsStorageClient.PutObject(ctx, creds.Bucket, objectName, reader, size, minio.PutObjectOptions{})
+		err = stsStorageClient.UploadObject(ctx, obj, reader, size)
 		if err != nil {
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
 		}
