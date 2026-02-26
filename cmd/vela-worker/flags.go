@@ -65,11 +65,13 @@ func flags() []cli.Flag {
 			Name:    "storage.file-size-limit",
 			Usage:   "maximum file size (in MB) for a single file upload. 0 means no limit.",
 			Sources: cli.EnvVars("WORKER_STORAGE_FILE_SIZE_LIMIT", "VELA_STORAGE_FILE_SIZE_LIMIT", "STORAGE_FILE_SIZE_LIMIT"),
+			Value:   100,
 		},
 		&cli.IntFlag{
 			Name:    "storage.build-file-size-limit",
 			Usage:   "maximum total size (in MB) for all file uploads in a single build. 0 means no limit.",
 			Sources: cli.EnvVars("WORKER_STORAGE_BUILD_FILE_SIZE_LIMIT", "VELA_STORAGE_BUILD_FILE_SIZE_LIMIT", "STORAGE_BUILD_FILE_SIZE_LIMIT"),
+			Value:   500,
 		},
 
 		// Logger Flags
