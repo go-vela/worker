@@ -16,7 +16,6 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/server/constants"
 	"github.com/go-vela/server/storage"
 )
 
@@ -229,8 +228,8 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 	}
 
 	stsStorageClient, err := storage.New(&storage.Setup{
-		Enable:    true,
-		Driver:    constants.DriverMinio,
+		Enable:    creds.Enable,
+		Driver:    creds.Driver,
 		Endpoint:  creds.Endpoint,
 		AccessKey: creds.AccessKey,
 		SecretKey: creds.SecretKey,
