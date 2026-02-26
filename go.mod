@@ -9,8 +9,8 @@ require (
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-vela/sdk-go v0.28.0-rc1
-	github.com/go-vela/server v0.28.0-rc1
+	github.com/go-vela/sdk-go v0.28.0-rc2
+	github.com/go-vela/server v0.28.0-rc2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
@@ -98,7 +98,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/PuerkitoBio/purell v1.2.1 // indirect
-	github.com/alicebob/miniredis/v2 v2.36.1 // indirect
+	github.com/alicebob/miniredis/v2 v2.37.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
