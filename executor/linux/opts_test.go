@@ -72,6 +72,53 @@ func TestLinux_Opt_WithBuild(t *testing.T) {
 func TestLinux_Opt_WithMaxLogSize(t *testing.T) {
 	// setup tests
 	tests := []struct {
+		name               string
+		failure            bool
+		fileSizeLimit      int
+		buildFileSizeLimit int
+	}{
+		{
+			name:               "defined",
+			failure:            false,
+			fileSizeLimit:      200,
+			buildFileSizeLimit: 1000,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithFileSizeLimit(test.fileSizeLimit),
+				WithBuildFileSizeLimit(test.buildFileSizeLimit),
+			)
+
+			if test.failure {
+				if err == nil {
+					t.Errorf("WithFileSizeLimit should have returned err")
+				}
+
+				return // continue to next test
+			}
+
+			if err != nil {
+				t.Errorf("WithFileSizeLimit returned err: %v", err)
+			}
+
+			if !reflect.DeepEqual(_engine.fileSizeLimit, int64(test.fileSizeLimit*1024*1024)) {
+				t.Errorf("WithFileSizeLimit is %v, want %v", _engine.fileSizeLimit, int64(test.fileSizeLimit*1024*1024))
+			}
+
+			if !reflect.DeepEqual(_engine.buildFileSizeLimit, int64(test.buildFileSizeLimit*1024*1024)) {
+				t.Errorf("WithBuildFileSizeLimit is %v, want %v", _engine.buildFileSizeLimit, int64(test.buildFileSizeLimit*1024*1024))
+			}
+		})
+	}
+}
+
+func TestLinux_Opt_WithFileSizeLimit(t *testing.T) {
+	// setup tests
+	tests := []struct {
 		name       string
 		failure    bool
 		maxLogSize uint

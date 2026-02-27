@@ -8,11 +8,15 @@ import (
 	"encoding/base64"
 	"fmt"
 	"maps"
+	"path/filepath"
+	"strconv"
 
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
+	"github.com/go-vela/server/storage"
 )
 
 // outputSvc handles communication with the outputs container during the build.
@@ -203,4 +207,98 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	}
 
 	return outputMap, maskMap, nil
+}
+
+// pollFiles polls the output for files from the sidecar container.
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _step *pipeline.Container, b *api.Build) error {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return fmt.Errorf("no outputs container configured")
+	}
+
+	// update engine logger with outputs metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
+	logger := o.client.Logger.WithField("artifact-outputs", ctn.Name)
+
+	creds, res, err := o.client.Vela.Build.GetSTSCreds(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
+		b.GetNumber())
+	if err != nil {
+		return fmt.Errorf("unable to get sts storage creds %w with response code %d", err, res.StatusCode)
+	}
+
+	stsStorageClient, err := storage.New(&storage.Setup{
+		Enable:    creds.Enable,
+		Driver:    creds.Driver,
+		Endpoint:  creds.Endpoint,
+		AccessKey: creds.AccessKey,
+		SecretKey: creds.SecretKey,
+		Bucket:    creds.Bucket,
+		Secure:    creds.Secure,
+		Token:     creds.SessionToken,
+	})
+	if err != nil {
+		return fmt.Errorf("unable to create sts storage client %w with response code %d", err, res.StatusCode)
+	}
+
+	if stsStorageClient == nil {
+		return fmt.Errorf("sts storage client is nil")
+	}
+
+	// grab file paths from the container
+	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, _step)
+	if err != nil {
+		return fmt.Errorf("unable to poll file names: %w", err)
+	}
+
+	if len(filesPath) == 0 {
+		return fmt.Errorf("no files found for file list: %v", _step.Artifacts.Paths)
+	}
+
+	// process each file found
+	for _, filePath := range filesPath {
+		fileName := filepath.Base(filePath)
+		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
+
+		// get file content from container
+		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
+		if err != nil {
+			return fmt.Errorf("unable to poll file content for %s: %w", filePath, err)
+		}
+
+		// TODO: surface this skip to the user
+		if o.client.fileSizeLimit > 0 && size > o.client.fileSizeLimit {
+			logger.Infof("skipping file %s due to file size limit", filePath)
+			continue
+		}
+
+		if o.client.buildFileSizeLimit > 0 && size+o.client.Uploaded > o.client.buildFileSizeLimit {
+			logger.Infof("skipping file %s due to build file size limit", filePath)
+			continue
+		}
+
+		// create storage object path
+		objectName := fmt.Sprintf("%s/%s/%s/%s",
+			b.GetRepo().GetOrg(),
+			b.GetRepo().GetName(),
+			strconv.FormatInt(b.GetNumber(), 10),
+			fileName)
+
+		obj := &api.Object{
+			Bucket: api.Bucket{
+				BucketName: creds.Bucket,
+			},
+			ObjectName: objectName,
+			FilePath:   filePath,
+		}
+		// upload file to storage
+		err = stsStorageClient.UploadObject(ctx, obj, reader, size)
+		if err != nil {
+			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
+		}
+
+		o.client.Uploaded += size
+	}
+
+	return nil
 }

@@ -4,12 +4,14 @@ package docker
 
 import (
 	"archive/tar"
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"strings"
 	"time"
 
@@ -23,6 +25,19 @@ import (
 	"github.com/docker/docker/pkg/stringid"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
+
+// mockConn is a mock implementation of net.Conn for testing purposes.
+// It provides no-op implementations of all net.Conn methods.
+type mockConn struct{}
+
+func (m *mockConn) Read(b []byte) (n int, err error)   { return 0, io.EOF }
+func (m *mockConn) Write(b []byte) (n int, err error)  { return len(b), nil }
+func (m *mockConn) Close() error                       { return nil }
+func (m *mockConn) LocalAddr() net.Addr                { return nil }
+func (m *mockConn) RemoteAddr() net.Addr               { return nil }
+func (m *mockConn) SetDeadline(t time.Time) error      { return nil }
+func (m *mockConn) SetReadDeadline(t time.Time) error  { return nil }
+func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
 
 // ContainerService implements all the container
 // related functions for the Docker mock.
@@ -106,8 +121,51 @@ func (c *ContainerService) ContainerDiff(_ context.Context, _ string) ([]contain
 // running inside a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecAttach
-func (c *ContainerService) ContainerExecAttach(_ context.Context, _ string, _ container.ExecAttachOptions) (types.HijackedResponse, error) {
-	return types.HijackedResponse{}, nil
+func (c *ContainerService) ContainerExecAttach(_ context.Context, execID string, _ container.ExecAttachOptions) (types.HijackedResponse, error) {
+	// create a buffer to hold mock output
+	var buf bytes.Buffer
+
+	// write mock stdout using stdcopy format
+	stdoutWriter := stdcopy.NewStdWriter(&buf, stdcopy.Stdout)
+	stderrWriter := stdcopy.NewStdWriter(&buf, stdcopy.Stderr)
+
+	// check for specific test scenarios based on execID
+	if strings.Contains(execID, "error") {
+		// write to stderr to simulate an error
+		_, _ = stderrWriter.Write([]byte("mock exec error"))
+	} else if strings.Contains(execID, "multiline") {
+		// write multiple lines for testing
+		_, _ = stdoutWriter.Write([]byte("line1\nline2\nline3"))
+	} else if strings.Contains(execID, "artifacts-find") {
+		// simulate find command for artifacts - return file paths
+		_, _ = stdoutWriter.Write([]byte("/vela/artifacts/test_results/alpha.txt\n/vela/artifacts/test_results/beta.txt\n/vela/artifacts/build_results/alpha.txt\n/vela/artifacts/build_results/beta.txt"))
+	} else if strings.Contains(execID, "test-results-xml") {
+		// simulate find command for test results XML files
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/test-results/junit.xml\n/vela/workspace/test-results/report.xml"))
+	} else if strings.Contains(execID, "cypress-screenshots") {
+		// simulate find command for cypress screenshots
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/cypress/screenshots/test1/screenshot1.png\n/vela/workspace/cypress/screenshots/test1/screenshot2.png\n/vela/workspace/cypress/screenshots/test2/error.png"))
+	} else if strings.Contains(execID, "cypress-videos") {
+		// simulate find command for cypress videos
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/cypress/videos/test1.mp4\n/vela/workspace/cypress/videos/test2.mp4"))
+	} else if strings.Contains(execID, "cypress-all") {
+		// simulate find command for all cypress artifacts (screenshots + videos)
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/cypress/screenshots/test1/screenshot1.png\n/vela/workspace/cypress/screenshots/test2/error.png\n/vela/workspace/cypress/videos/test1.mp4\n/vela/workspace/cypress/videos/test2.mp4"))
+	} else if strings.Contains(execID, "not-found") {
+		// simulate path not found
+		_, _ = stderrWriter.Write([]byte("find: '/not-found': No such file or directory"))
+	} else {
+		// default mock output
+		_, _ = stdoutWriter.Write([]byte("mock exec output"))
+	}
+
+	// create a HijackedResponse with the mock data
+	response := types.HijackedResponse{
+		Reader: bufio.NewReader(&buf),
+		Conn:   &mockConn{}, // Use mock connection to avoid nil pointer dereference
+	}
+
+	return response, nil
 }
 
 // ContainerExecCreate is a helper function to simulate
@@ -115,8 +173,52 @@ func (c *ContainerService) ContainerExecAttach(_ context.Context, _ string, _ co
 // Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerExecCreate
-func (c *ContainerService) ContainerExecCreate(_ context.Context, _ string, _ container.ExecOptions) (container.ExecCreateResponse, error) {
-	return container.ExecCreateResponse{}, nil
+func (c *ContainerService) ContainerExecCreate(_ context.Context, ctn string, config container.ExecOptions) (container.ExecCreateResponse, error) {
+	// verify a container was provided
+	if len(ctn) == 0 {
+		return container.ExecCreateResponse{}, errors.New("no container provided")
+	}
+
+	// check if the container is not found
+	if strings.Contains(ctn, "notfound") || strings.Contains(ctn, "not-found") {
+		return container.ExecCreateResponse{}, errdefs.NotFound(fmt.Errorf("Error: No such container: %s", ctn))
+	}
+
+	// create exec ID based on command for testing scenarios
+	execID := stringid.GenerateRandomID()
+
+	// check command for specific test scenarios
+	if len(config.Cmd) > 0 {
+		cmdStr := strings.Join(config.Cmd, " ")
+		if strings.Contains(cmdStr, "error") {
+			execID = "exec-error-" + execID
+		} else if strings.Contains(cmdStr, "multiline") {
+			execID = "exec-multiline-" + execID
+		} else if strings.Contains(cmdStr, "find") {
+			// For artifact file search commands
+			if strings.Contains(cmdStr, "/not-found") {
+				execID = "exec-not-found-" + execID
+			} else if strings.Contains(cmdStr, "artifacts") {
+				execID = "exec-artifacts-find-" + execID
+			} else if strings.Contains(cmdStr, "test-results") && strings.Contains(cmdStr, ".xml") {
+				execID = "exec-test-results-xml-" + execID
+			} else if strings.Contains(cmdStr, "cypress/screenshots") && strings.Contains(cmdStr, ".png") {
+				execID = "exec-cypress-screenshots-" + execID
+			} else if strings.Contains(cmdStr, "cypress/videos") && strings.Contains(cmdStr, ".mp4") {
+				execID = "exec-cypress-videos-" + execID
+			} else if strings.Contains(cmdStr, "cypress") {
+				// Generic cypress pattern for combined searches
+				execID = "exec-cypress-all-" + execID
+			}
+		}
+	}
+
+	// create response object to return
+	response := container.ExecCreateResponse{
+		ID: execID,
+	}
+
+	return response, nil
 }
 
 // ContainerExecInspect is a helper function to simulate
@@ -523,7 +625,19 @@ func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, path s
 
 	tw := tar.NewWriter(&buf)
 
-	content := []byte("key=value")
+	// Determine content based on path for test scenarios
+	var content []byte
+	if strings.Contains(path, "artifacts") && strings.Contains(path, "alpha.txt") {
+		content = []byte("results")
+	} else if strings.Contains(path, "test-results") && strings.Contains(path, ".xml") {
+		content = []byte("<?xml version=\"1.0\"?><testsuites></testsuites>")
+	} else if strings.Contains(path, "cypress/screenshots") && strings.Contains(path, ".png") {
+		content = []byte("PNG_BINARY_DATA")
+	} else if strings.Contains(path, "cypress/videos") && strings.Contains(path, ".mp4") {
+		content = []byte("MP4_BINARY_DATA")
+	} else {
+		content = []byte("key=value")
+	}
 
 	hdr := &tar.Header{
 		Name: path,

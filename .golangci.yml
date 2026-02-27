@@ -125,7 +125,8 @@ linters:
     gosec:
       excludes:
         - G101 # hardcoded credentials
-        - G117 # exported field of "Secret" style
+        - G117
+        - G705 # exported field of "Secret" style
     # https://github.com/client9/misspell
     misspell:
       locale: US
@@ -158,6 +159,7 @@ linters:
       allow-first-in-block: true
       allow-whole-block: false
       branch-max-lines: 2
+
   exclusions:
     generated: lax
     presets:

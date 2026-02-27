@@ -198,6 +198,13 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		if _step.ExitCode != 0 && !_step.Ruleset.Continue {
 			stageStatus = constants.StatusFailure
 		}
+
+		if len(_step.Artifacts.Paths) != 0 {
+			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step, c.build)
+			if err != nil {
+				c.Logger.Errorf("unable to poll files for artifacts: %v", err)
+			}
+		}
 	}
 
 	return nil

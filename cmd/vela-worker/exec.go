@@ -27,7 +27,10 @@ import (
 //
 //nolint:gocyclo,funlen // ignore cyclomatic complexity and function length
 func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error {
-	var err error
+	var (
+		err       error
+		_executor executor.Engine
+	)
 
 	// setup the version
 	v := version.New()
@@ -144,8 +147,6 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		// prepare pipeline by hydrating container ID values based on build information
 		p.Prepare(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber(), false)
 
-		logrus.Debugf("setting up exec client with scm token %s with expiration %d", p.Token, p.TokenExp)
-
 		// setup exec client with scm token and build token
 		execBuildClient, err = setupExecClient(w.Config.Server, bt.GetToken(), p.Token, p.TokenExp, item.Build)
 		if err != nil {
@@ -238,11 +239,13 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 	// setup the executor
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/executor#New
-	_executor, err := executor.New(&executor.Setup{
+	setup := &executor.Setup{
 		Logger:              logger,
 		Mock:                w.Config.Mock,
 		Driver:              w.Config.Executor.Driver,
 		MaxLogSize:          w.Config.Executor.MaxLogSize,
+		FileSizeLimit:       w.Config.Executor.FileSizeLimit,
+		BuildFileSizeLimit:  w.Config.Executor.BuildFileSizeLimit,
 		LogStreamingTimeout: w.Config.Executor.LogStreamingTimeout,
 		EnforceTrustedRepos: w.Config.Executor.EnforceTrustedRepos,
 		PrivilegedImages:    w.Config.Runtime.PrivilegedImages,
@@ -253,8 +256,13 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		Pipeline:            p.Sanitize(w.Config.Runtime.Driver),
 		Version:             v.Semantic(),
 		OutputCtn:           &execOutputCtn,
-	})
+	}
 
+	_executor, err = executor.New(setup)
+	if err != nil {
+		logger.Errorf("unable to setup executor: %v", err)
+		return err
+	}
 	// add the executor to the worker
 	w.Executors[index] = _executor
 

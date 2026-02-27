@@ -556,6 +556,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		if c.err != nil {
 			return fmt.Errorf("unable to execute step: %w", c.err)
 		}
+
+		if len(_step.Artifacts.Paths) != 0 {
+			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step, c.build)
+			if err != nil {
+				c.Logger.Errorf("unable to poll files for artifacts: %v", err)
+			}
+		}
 	}
 
 	// create an error group with the context for each stage

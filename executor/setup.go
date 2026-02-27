@@ -34,6 +34,10 @@ type Setup struct {
 	Driver string
 	// specifies the maximum log size
 	MaxLogSize uint
+	// specifies file size limit for artifacts
+	FileSizeLimit int
+	// specifies build file size limit for artifacts
+	BuildFileSizeLimit int
 	// specifies how long to wait after the build finishes
 	// for log streaming to complete
 	LogStreamingTimeout time.Duration
@@ -75,12 +79,12 @@ func (s *Setup) Darwin() (Engine, error) {
 func (s *Setup) Linux() (Engine, error) {
 	logrus.Trace("creating linux executor client from setup")
 
-	// create new Linux executor engine
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux#New
-	return linux.New(
+	// create options for Linux executor
+	opts := []linux.Opt{
 		linux.WithBuild(s.Build),
 		linux.WithMaxLogSize(s.MaxLogSize),
+		linux.WithFileSizeLimit(s.FileSizeLimit),
+		linux.WithBuildFileSizeLimit(s.BuildFileSizeLimit),
 		linux.WithLogStreamingTimeout(s.LogStreamingTimeout),
 		linux.WithPrivilegedImages(s.PrivilegedImages),
 		linux.WithEnforceTrustedRepos(s.EnforceTrustedRepos),
@@ -91,7 +95,11 @@ func (s *Setup) Linux() (Engine, error) {
 		linux.WithVersion(s.Version),
 		linux.WithLogger(s.Logger),
 		linux.WithOutputCtn(s.OutputCtn),
-	)
+	}
+	// create new Linux executor engine
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/linux#New
+	return linux.New(opts...)
 }
 
 // Local creates and returns a Vela engine capable of
@@ -99,10 +107,7 @@ func (s *Setup) Linux() (Engine, error) {
 func (s *Setup) Local() (Engine, error) {
 	logrus.Trace("creating local executor client from setup")
 
-	// create new Local executor engine
-	//
-	// https://pkg.go.dev/github.com/go-vela/worker/executor/local#New
-	return local.New(
+	opts := []local.Opt{
 		local.WithBuild(s.Build),
 		local.WithHostname(s.Hostname),
 		local.WithPipeline(s.Pipeline),
@@ -111,7 +116,12 @@ func (s *Setup) Local() (Engine, error) {
 		local.WithVersion(s.Version),
 		local.WithMockStdout(s.Mock),
 		local.WithOutputCtn(s.OutputCtn),
-	)
+	}
+
+	// create new Local executor engine
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/executor/local#New
+	return local.New(opts...)
 }
 
 // Windows creates and returns a Vela engine capable of
