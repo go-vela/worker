@@ -7,7 +7,10 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"maps"
+	"mime"
+	"net/http"
 	"path/filepath"
 	"strconv"
 
@@ -16,7 +19,6 @@ import (
 
 	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
-	"github.com/go-vela/server/storage"
 )
 
 // outputSvc handles communication with the outputs container during the build.
@@ -221,30 +223,6 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := o.client.Logger.WithField("artifact-outputs", ctn.Name)
 
-	creds, res, err := o.client.Vela.Build.GetSTSCreds(ctx, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
-		b.GetNumber())
-	if err != nil {
-		return fmt.Errorf("unable to get sts storage creds %w with response code %d", err, res.StatusCode)
-	}
-
-	stsStorageClient, err := storage.New(&storage.Setup{
-		Enable:    creds.Enable,
-		Driver:    creds.Driver,
-		Endpoint:  creds.Endpoint,
-		AccessKey: creds.AccessKey,
-		SecretKey: creds.SecretKey,
-		Bucket:    creds.Bucket,
-		Secure:    creds.Secure,
-		Token:     creds.SessionToken,
-	})
-	if err != nil {
-		return fmt.Errorf("unable to create sts storage client %w with response code %d", err, res.StatusCode)
-	}
-
-	if stsStorageClient == nil {
-		return fmt.Errorf("sts storage client is nil")
-	}
-
 	// grab file paths from the container
 	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, _step)
 	if err != nil {
@@ -259,7 +237,11 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 	for _, filePath := range filesPath {
 		fileName := filepath.Base(filePath)
 		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
-
+		url, r, err := o.client.Vela.Build.GetPresignedPutURL(ctx, fileName, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
+			b.GetNumber())
+		if err != nil {
+			return fmt.Errorf("unable to get presigned put url: %w with response code: %d", err, r.StatusCode)
+		}
 		// get file content from container
 		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
 		if err != nil {
@@ -284,20 +266,51 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 			strconv.FormatInt(b.GetNumber(), 10),
 			fileName)
 
-		obj := &api.Object{
-			Bucket: api.Bucket{
-				BucketName: creds.Bucket,
-			},
-			ObjectName: objectName,
-			FilePath:   filePath,
-		}
-		// upload file to storage
-		err = stsStorageClient.UploadObject(ctx, obj, reader, size)
+		logger.Debugf("uploading file %s to storage with object name %s", filePath, objectName)
+		err = uploadObject(ctx, reader, size, fileName, url.URL)
 		if err != nil {
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
 		}
 
 		o.client.Uploaded += size
+	}
+
+	return nil
+}
+
+// uploadObject uploads an object to a bucket in MinIO.ts.
+func uploadObject(ctx context.Context, reader io.Reader, size int64, filename, url string) error {
+	req, err := http.NewRequestWithContext(ctx, "PUT", url, reader)
+	if err != nil {
+		return fmt.Errorf("could not create PUT request: %w", err)
+	}
+
+	// Set the Content-Type header based on the file extension
+	ext := filepath.Ext(filename)
+	contentType := mime.TypeByExtension(ext)
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	req.Header.Set("Content-Type", contentType)
+
+	// Set the Content-Length header
+	req.ContentLength = size
+	putClient := new(http.Client)
+	// Perform the HTTP request to upload the object
+	resp, err := putClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not upload data to bucket: %v", err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			logrus.Warnf("could not close response body: %v", err)
+		}
+	}(resp.Body)
+
+	// Check for a successful response
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	return nil
