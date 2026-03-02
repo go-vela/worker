@@ -237,6 +237,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 	for _, filePath := range filesPath {
 		fileName := filepath.Base(filePath)
 		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
+
 		url, r, err := o.client.Vela.Build.GetPresignedPutURL(ctx, fileName, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
 			b.GetNumber())
 		if err != nil {
@@ -267,6 +268,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 			fileName)
 
 		logger.Debugf("uploading file %s to storage with object name %s", filePath, objectName)
+
 		err = uploadObject(ctx, reader, size, fileName, url.URL)
 		if err != nil {
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
@@ -287,19 +289,23 @@ func uploadObject(ctx context.Context, reader io.Reader, size int64, filename, u
 
 	// Set the Content-Type header based on the file extension
 	ext := filepath.Ext(filename)
+
 	contentType := mime.TypeByExtension(ext)
 	if contentType == "" {
 		contentType = "application/octet-stream"
 	}
+
 	req.Header.Set("Content-Type", contentType)
 
 	// Set the Content-Length header
 	req.ContentLength = size
 	putClient := new(http.Client)
 	// Perform the HTTP request to upload the object
+	//
+	//nolint:bodyclose // body closes on line 310
 	resp, err := putClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("could not upload data to bucket: %v", err)
+		return fmt.Errorf("could not upload data to bucket: %w", err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
