@@ -233,6 +233,9 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		return fmt.Errorf("no files found for file list: %v", _step.Artifacts.Paths)
 	}
 
+	// create http client for uploading files to storage
+	putClient := new(http.Client)
+
 	// process each file found
 	for _, filePath := range filesPath {
 		fileName := filepath.Base(filePath)
@@ -243,6 +246,13 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		if err != nil {
 			return fmt.Errorf("unable to get presigned put url: %w with response code: %d", err, r.StatusCode)
 		}
+
+		logger.Debugf("put url: %s", url)
+		if url == nil || url.URL == "" {
+			logger.Errorf("received empty presigned URL for file %s (response code: %d) - verify storage is enabled on the server", fileName, r.StatusCode)
+			continue
+		}
+
 		// get file content from container
 		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
 		if err != nil {
@@ -269,7 +279,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 
 		logger.Debugf("uploading file %s to storage with object name %s", filePath, objectName)
 
-		err = uploadObject(ctx, reader, size, fileName, url.URL)
+		err = uploadObject(ctx, putClient, reader, size, fileName, url.URL)
 		if err != nil {
 			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
 		}
@@ -281,7 +291,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 }
 
 // uploadObject uploads an object to a bucket in MinIO.ts.
-func uploadObject(ctx context.Context, reader io.Reader, size int64, filename, url string) error {
+func uploadObject(ctx context.Context, putClient *http.Client, reader io.Reader, size int64, filename, url string) error {
 	req, err := http.NewRequestWithContext(ctx, "PUT", url, reader)
 	if err != nil {
 		return fmt.Errorf("could not create PUT request: %w", err)
@@ -299,7 +309,7 @@ func uploadObject(ctx context.Context, reader io.Reader, size int64, filename, u
 
 	// Set the Content-Length header
 	req.ContentLength = size
-	putClient := new(http.Client)
+
 	// Perform the HTTP request to upload the object
 	//
 	//nolint:bodyclose // body closes on line 310
