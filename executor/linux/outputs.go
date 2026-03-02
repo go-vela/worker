@@ -247,12 +247,6 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 			return fmt.Errorf("unable to get presigned put url: %w with response code: %d", err, r.StatusCode)
 		}
 
-		logger.Debugf("put url: %s", url)
-		if url == nil || url.URL == "" {
-			logger.Errorf("received empty presigned URL for file %s (response code: %d) - verify storage is enabled on the server", fileName, r.StatusCode)
-			continue
-		}
-
 		// get file content from container
 		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
 		if err != nil {
@@ -292,7 +286,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 
 // uploadObject uploads an object to a bucket in MinIO.ts.
 func uploadObject(ctx context.Context, putClient *http.Client, reader io.Reader, size int64, filename, url string) error {
-	req, err := http.NewRequestWithContext(ctx, "PUT", url, reader)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, reader)
 	if err != nil {
 		return fmt.Errorf("could not create PUT request: %w", err)
 	}
