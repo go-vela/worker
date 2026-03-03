@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
@@ -235,6 +236,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 
 	// create http client for uploading files to storage
 	putClient := http.DefaultClient
+	putClient.Timeout = time.Second * 30
 
 	// process each file found
 	for _, filePath := range filesPath {
