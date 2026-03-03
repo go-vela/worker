@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
@@ -234,23 +235,26 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 	}
 
 	// create http client for uploading files to storage
-	putClient := new(http.Client)
+	putClient := http.DefaultClient
+	putClient.Timeout = time.Second * 30
 
 	// process each file found
 	for _, filePath := range filesPath {
 		fileName := filepath.Base(filePath)
 		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
 
-		url, r, err := o.client.Vela.Build.GetPresignedPutURL(ctx, fileName, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
+		url, _, err := o.client.Vela.Build.GetPresignedPutURL(ctx, fileName, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
 			b.GetNumber())
 		if err != nil {
-			return fmt.Errorf("unable to get presigned put url: %w with response code: %d", err, r.StatusCode)
+			logger.Errorf("unable to get presigned put url: %v", err)
+			continue
 		}
 
 		// get file content from container
 		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
 		if err != nil {
-			return fmt.Errorf("unable to poll file content for %s: %w", filePath, err)
+			logger.Errorf("unable to poll file content for %s: %v", filePath, err)
+			continue
 		}
 
 		// TODO: surface this skip to the user
@@ -275,7 +279,8 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 
 		err = uploadObject(ctx, putClient, reader, size, fileName, url.URL)
 		if err != nil {
-			return fmt.Errorf("unable to upload object %s: %w", fileName, err)
+			logger.Errorf("unable to upload object %s: %v", fileName, err)
+			continue
 		}
 
 		o.client.Uploaded += size
