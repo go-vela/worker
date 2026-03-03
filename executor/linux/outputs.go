@@ -234,7 +234,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 	}
 
 	// create http client for uploading files to storage
-	putClient := new(http.Client)
+	putClient := http.DefaultClient
 
 	// process each file found
 	for _, filePath := range filesPath {
