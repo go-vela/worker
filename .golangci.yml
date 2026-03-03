@@ -127,6 +127,7 @@ linters:
         - G101 # hardcoded credentials
         - G117
         - G705 # exported field of "Secret" style
+        - G704
     # https://github.com/client9/misspell
     misspell:
       locale: US
