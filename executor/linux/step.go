@@ -43,6 +43,8 @@ func (c *client) CreateStep(ctx context.Context, ctn *pipeline.Container) error 
 	// (PlanStep is too late to inject environment vars for the kubernetes runtime).
 	_step := api.StepFromBuildContainer(c.build, ctn)
 
+	logger.Debugf("DEBUG: build number: %d, build link: %s", c.build.GetNumber(), c.build.GetLink())
+
 	// update the step container environment
 	//
 	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Environment

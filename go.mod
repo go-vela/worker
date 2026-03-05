@@ -2,6 +2,8 @@ module github.com/go-vela/worker
 
 go 1.25.7
 
+replace github.com/go-vela/server => ../server
+
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/containerd/errdefs v1.0.0

@@ -538,11 +538,16 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
+		c.Logger.Debugf("DEBUG: build number in env %s, build link in env %s", _step.Environment["VELA_BUILD_NUMBER"], _step.Environment["VELA_BUILD_LINK"])
+
 		// perform any substitution on dynamic variables
 		err = _step.Substitute()
 		if err != nil {
 			return err
 		}
+
+		// setup commands script
+		_step.Script()
 
 		// inject no-substitution secrets for container
 		err = injectSecrets(_step, c.NoSubSecrets)

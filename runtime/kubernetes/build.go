@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+
 	// The k8s libraries have some quirks around yaml marshaling (see opts.go).
 	// So, just use the same library for all kubernetes-related YAML.
 	"sigs.k8s.io/yaml"
@@ -179,6 +180,8 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 
 		for _, _step := range _stage.Steps {
+			_step.Script()
+
 			err = c.setupContainerEnvironment(_step)
 			if err != nil {
 				return err
@@ -190,6 +193,8 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		if _step.Name == constants.InitName {
 			continue
 		}
+
+		_step.Script()
 
 		err = c.setupContainerEnvironment(_step)
 		if err != nil {
