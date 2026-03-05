@@ -2,8 +2,6 @@ module github.com/go-vela/worker
 
 go 1.25.7
 
-replace github.com/go-vela/server => ../server
-
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/containerd/errdefs v1.0.0
@@ -12,7 +10,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-vela/sdk-go v0.28.0-rc3
-	github.com/go-vela/server v0.28.0-rc3
+	github.com/go-vela/server v0.28.0-rc3.0.20260305194253-a88eed611600
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
