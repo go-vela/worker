@@ -9,7 +9,7 @@ require (
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.12.0
-	github.com/go-vela/sdk-go v0.28.0-rc3
+	github.com/go-vela/sdk-go v0.28.0-rc4
 	github.com/go-vela/server v0.28.0-rc5
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
