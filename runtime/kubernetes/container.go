@@ -202,18 +202,6 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// Executor.CreateBuild extends the environment AFTER calling Runtime.SetupBuild.
 	// So, configure the environment as late as possible (just before pod creation).
 
-	// check if the entrypoint is provided
-	if len(ctn.Entrypoint) > 0 {
-		// add entrypoint to container config
-		container.Args = ctn.Entrypoint
-	}
-
-	// check if the commands are provided
-	if len(ctn.Commands) > 0 {
-		// add commands to container config
-		container.Args = append(container.Args, ctn.Commands...)
-	}
-
 	// record the index for this container
 	c.containersLookup[ctn.ID] = len(c.Pod.Spec.Containers)
 
@@ -243,6 +231,18 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 			// add key/value environment to container config
 			container.Env = append(container.Env, v1.EnvVar{Name: k, Value: v})
 		}
+	}
+
+	// check if the entrypoint is provided
+	if len(ctn.Entrypoint) > 0 {
+		// add entrypoint to container config
+		container.Args = ctn.Entrypoint
+	}
+
+	// check if the commands are provided
+	if len(ctn.Commands) > 0 {
+		// add commands to container config
+		container.Args = append(container.Args, ctn.Commands...)
 	}
 
 	return nil
