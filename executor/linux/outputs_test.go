@@ -476,3 +476,61 @@ func TestLinux_Outputs_poll(t *testing.T) {
 		})
 	}
 }
+
+func Test_isHidden(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{
+			name: "normal file",
+			path: "/vela/outputs/report.txt",
+			want: false,
+		},
+		{
+			name: "nested normal file",
+			path: "/vela/outputs/subdir/report.txt",
+			want: false,
+		},
+		{
+			name: "hidden file",
+			path: "/vela/outputs/.hidden",
+			want: true,
+		},
+		{
+			name: "file inside hidden directory",
+			path: "/vela/outputs/.secret/report.txt",
+			want: true,
+		},
+		{
+			name: "hidden file inside normal directory",
+			path: "/vela/outputs/subdir/.hidden",
+			want: true,
+		},
+		{
+			name: "hidden directory deep in path",
+			path: "/vela/.hidden/subdir/report.txt",
+			want: true,
+		},
+		{
+			name: "plain filename no path",
+			path: "report.txt",
+			want: false,
+		},
+		{
+			name: "hidden filename no path",
+			path: ".hidden",
+			want: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := isHidden(test.path)
+			if got != test.want {
+				t.Errorf("isHidden(%q) = %v, want %v", test.path, got, test.want)
+			}
+		})
+	}
+}
