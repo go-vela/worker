@@ -179,6 +179,9 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			return err
 		}
 
+		// setup commands script
+		_step.Script()
+
 		c.Logger.Debug("injecting non-substituted secrets")
 		// inject no-substitution secrets for container
 		err = injectSecrets(_step, c.NoSubSecrets)

@@ -27,12 +27,15 @@ func Environment(c *pipeline.Container, b *api.Build, s *api.Step, version, reqT
 			workspace = constants.WorkspaceDefault
 		}
 
+		addr := c.Environment["VELA_SERVER_ADDR"]
+
 		// update environment variables
 		c.Environment["VELA_DISTRIBUTION"] = b.GetDistribution()
 		c.Environment["VELA_HOST"] = b.GetHost()
 		c.Environment["VELA_RUNTIME"] = b.GetRuntime()
 		c.Environment["VELA_VERSION"] = version
 		c.Environment["VELA_ID_TOKEN_REQUEST_TOKEN"] = reqToken
+		c.Environment["VELA_ID_TOKEN_REQUEST_URL"] = fmt.Sprintf("%s/api/v1/repos/%s/builds/%d/id_token", addr, b.GetRepo().GetFullName(), b.GetNumber())
 		c.Environment["VELA_OUTPUTS"] = "/vela/outputs/.env"
 		c.Environment["VELA_MASKED_OUTPUTS"] = "/vela/outputs/masked.env"
 		c.Environment["VELA_BASE64_OUTPUTS"] = "/vela/outputs/base64.env"

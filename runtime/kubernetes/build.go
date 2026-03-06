@@ -179,6 +179,8 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		}
 
 		for _, _step := range _stage.Steps {
+			_step.Script()
+
 			err = c.setupContainerEnvironment(_step)
 			if err != nil {
 				return err
@@ -190,6 +192,8 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 		if _step.Name == constants.InitName {
 			continue
 		}
+
+		_step.Script()
 
 		err = c.setupContainerEnvironment(_step)
 		if err != nil {

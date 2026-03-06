@@ -544,6 +544,9 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return err
 		}
 
+		// setup commands script
+		_step.Script()
+
 		// inject no-substitution secrets for container
 		err = injectSecrets(_step, c.NoSubSecrets)
 		if err != nil {
