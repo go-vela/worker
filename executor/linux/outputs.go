@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	envparse "github.com/hashicorp/go-envparse"
@@ -243,6 +244,12 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		fileName := filepath.Base(filePath)
 		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
 
+		// skip hidden files and files within hidden directories
+		if isHidden(filePath) {
+			logger.Debugf("skipping hidden file or directory: %s", filePath)
+			continue
+		}
+
 		url, _, err := o.client.Vela.Build.GetPresignedPutURL(ctx, fileName, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
 			b.GetNumber())
 		if err != nil {
@@ -287,6 +294,18 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 	}
 
 	return nil
+}
+
+// isHidden reports whether any component of the given path (file or directory)
+// starts with a ".", which indicates a hidden file or directory.
+func isHidden(path string) bool {
+	for part := range strings.SplitSeq(filepath.ToSlash(path), "/") {
+		if strings.HasPrefix(part, ".") {
+			return true
+		}
+	}
+
+	return false
 }
 
 // uploadObject uploads an object to a bucket in MinIO.ts.
