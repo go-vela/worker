@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/binary"
 	"errors"
 	"strings"
 
@@ -94,46 +93,49 @@ func (e *ExecService) ExecAttach(_ context.Context, execID string, _ client.Exec
 	// create a buffer to hold mock output
 	var buf bytes.Buffer
 
+	// write mock stdout using stdcopy format
+	stdoutWriter := NewStdWriter(&buf, stdcopy.Stdout)
+	stderrWriter := NewStdWriter(&buf, stdcopy.Stderr)
+
 	// check for specific test scenarios based on execID
 	if strings.Contains(execID, "error") {
-		writeStreamString(&buf, byte(stdcopy.Stderr), "mock exec error")
+		// write to stderr to simulate an error
+		_, _ = stderrWriter.Write([]byte("mock exec error"))
 	} else if strings.Contains(execID, "multiline") {
-		writeStreamString(&buf, byte(stdcopy.Stdout), "line1\nline2\nline3")
+		// write multiple lines for testing
+		_, _ = stdoutWriter.Write([]byte("line1\nline2\nline3"))
 	} else if strings.Contains(execID, "artifacts-find") {
-		writeStreamString(&buf, byte(stdcopy.Stdout), "/vela/artifacts/test_results/alpha.txt\n/vela/artifacts/test_results/beta.txt\n/vela/artifacts/build_results/alpha.txt\n/vela/artifacts/build_results/beta.txt")
+		// simulate find command for artifacts - return file paths
+		_, _ = stdoutWriter.Write([]byte("/vela/artifacts/test_results/alpha.txt\n/vela/artifacts/test_results/beta.txt\n/vela/artifacts/build_results/alpha.txt\n/vela/artifacts/build_results/beta.txt"))
 	} else if strings.Contains(execID, "test-results-xml") {
-		writeStreamString(&buf, byte(stdcopy.Stdout), "/vela/workspace/test-results/junit.xml\n/vela/workspace/test-results/report.xml")
+		// simulate find command for test results XML files
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/test-results/junit.xml\n/vela/workspace/test-results/report.xml"))
 	} else if strings.Contains(execID, "cypress-screenshots") {
-		writeStreamString(&buf, byte(stdcopy.Stdout), "/vela/workspace/cypress/screenshots/test1/screenshot1.png\n/vela/workspace/cypress/screenshots/test1/screenshot2.png\n/vela/workspace/cypress/screenshots/test2/error.png")
+		// simulate find command for cypress screenshots
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/cypress/screenshots/test1/screenshot1.png\n/vela/workspace/cypress/screenshots/test1/screenshot2.png\n/vela/workspace/cypress/screenshots/test2/error.png"))
 	} else if strings.Contains(execID, "cypress-videos") {
-		writeStreamString(&buf, byte(stdcopy.Stdout), "/vela/workspace/cypress/videos/test1.mp4\n/vela/workspace/cypress/videos/test2.mp4")
+		// simulate find command for cypress videos
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/cypress/videos/test1.mp4\n/vela/workspace/cypress/videos/test2.mp4"))
 	} else if strings.Contains(execID, "cypress-all") {
-		writeStreamString(&buf, byte(stdcopy.Stdout), "/vela/workspace/cypress/screenshots/test1/screenshot1.png\n/vela/workspace/cypress/screenshots/test2/error.png\n/vela/workspace/cypress/videos/test1.mp4\n/vela/workspace/cypress/videos/test2.mp4")
+		// simulate find command for all cypress artifacts (screenshots + videos)
+		_, _ = stdoutWriter.Write([]byte("/vela/workspace/cypress/screenshots/test1/screenshot1.png\n/vela/workspace/cypress/screenshots/test2/error.png\n/vela/workspace/cypress/videos/test1.mp4\n/vela/workspace/cypress/videos/test2.mp4"))
 	} else if strings.Contains(execID, "not-found") {
-		writeStreamString(&buf, byte(stdcopy.Stderr), "find: '/not-found': No such file or directory")
+		// simulate path not found
+		_, _ = stderrWriter.Write([]byte("find: '/not-found': No such file or directory"))
 	} else {
-		writeStreamString(&buf, byte(stdcopy.Stdout), "mock exec output")
+		// default mock output
+		_, _ = stdoutWriter.Write([]byte("mock exec output"))
 	}
 
 	// create a HijackedResponse with the mock data
 	response := client.ExecAttachResult{
 		HijackedResponse: client.HijackedResponse{
 			Reader: bufio.NewReader(&buf),
-			Conn:   &mockConn{}, // Use mock connection to avoid nil pointer dereference
+			Conn:   &mockConn{},
 		},
 	}
 
 	return response, nil
-}
-
-// writeStreamString writes a docker multiplexed stream frame to the buffer.
-func writeStreamString(buf *bytes.Buffer, stream byte, payload string) {
-	header := []byte{stream, 0, 0, 0, 0, 0, 0, 0}
-
-	//nolint:gosec // mock data that we control. overflow not possible
-	binary.BigEndian.PutUint32(header[4:], uint32(len(payload)))
-	_, _ = buf.Write(header)
-	_, _ = buf.WriteString(payload)
 }
 
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
