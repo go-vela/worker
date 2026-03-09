@@ -8,3 +8,8 @@ import "github.com/go-vela/server/constants"
 func (c *client) Driver() string {
 	return constants.DriverLinux
 }
+
+// StorageDriver outputs the configured storage driver.
+func (c *client) StorageDriver() string {
+	return constants.DriverMinio
+}

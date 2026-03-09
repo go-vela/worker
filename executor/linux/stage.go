@@ -29,14 +29,14 @@ func (c *client) CreateStage(ctx context.Context, s *pipeline.Stage) error {
 	logger := c.Logger.WithField("stage", s.Name)
 
 	// update the init log with progress
-	_log.AppendData([]byte(fmt.Sprintf("> Preparing step images for stage %s...\n", s.Name)))
+	_log.AppendData(fmt.Appendf(nil, "> Preparing step images for stage %s...\n", s.Name))
 
 	// create the steps for the stage
 	for _, _step := range s.Steps {
 		// update the container environment with stage name
 		_step.Environment["VELA_STEP_STAGE"] = s.Name
 
-		_log.AppendData([]byte(fmt.Sprintf("> Preparing step image %s...\n", _step.Image)))
+		_log.AppendData(fmt.Appendf(nil, "> Preparing step image %s...\n", _step.Image))
 
 		logger.Debugf("creating %s step", _step.Name)
 		// create the step
@@ -171,32 +171,16 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			return fmt.Errorf("unable to exec outputs container: %w", err)
 		}
 
-		opEnv = outputs.Sanitize(_step, opEnv)
-		maskEnv = outputs.Sanitize(_step, maskEnv)
-
-		// merge env from outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(opEnv)
-
-		// merge env from masked outputs
-		//
-		//nolint:errcheck // only errors with empty environment input, which does not matter here
-		_step.MergeEnv(maskEnv)
-
-		// add masked outputs to secret map so they can be masked in logs
-		for key := range maskEnv {
-			sec := &pipeline.StepSecret{
-				Target: key,
-			}
-			_step.Secrets = append(_step.Secrets, sec)
-		}
+		outputs.Process(_step, opEnv, maskEnv)
 
 		// perform any substitution on dynamic variables
 		err = _step.Substitute()
 		if err != nil {
 			return err
 		}
+
+		// setup commands script
+		_step.Script()
 
 		c.Logger.Debug("injecting non-substituted secrets")
 		// inject no-substitution secrets for container
@@ -216,6 +200,13 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		// the continue rule is set to true.
 		if _step.ExitCode != 0 && !_step.Ruleset.Continue {
 			stageStatus = constants.StatusFailure
+		}
+
+		if len(_step.Artifacts.Paths) != 0 {
+			err := c.outputs.pollFiles(ctx, c.OutputCtn, _step, c.build)
+			if err != nil {
+				c.Logger.Errorf("unable to poll files for artifacts: %v", err)
+			}
 		}
 	}
 

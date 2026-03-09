@@ -235,7 +235,7 @@ func TestKubernetes_SetupContainer(t *testing.T) {
 		container        *pipeline.Container
 		opts             []ClientOpt
 		wantPrivileged   bool
-		wantFromTemplate interface{}
+		wantFromTemplate any
 	}{
 		{
 			name:             "step-clone",

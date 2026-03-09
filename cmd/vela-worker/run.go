@@ -105,6 +105,8 @@ func run(ctx context.Context, c *cli.Command) error {
 			Executor: &executor.Setup{
 				Driver:              c.String("executor.driver"),
 				MaxLogSize:          c.Uint("executor.max_log_size"),
+				FileSizeLimit:       c.Int("storage.file-size-limit"),
+				BuildFileSizeLimit:  c.Int("storage.build-file-size-limit"),
 				LogStreamingTimeout: c.Duration("executor.log_streaming_timeout"),
 				EnforceTrustedRepos: c.Bool("executor.enforce-trusted-repos"),
 				OutputCtn:           outputsCtn,

@@ -23,7 +23,11 @@ import (
 // * the Docker version of v20.10 has a maximum API version of v1.41
 // * to maintain n-1, the API version is pinned to v1.40
 // .
-const Version = "v1.40"
+const (
+	Version = "v1.40"
+
+	MaxOutputsSize = 10 * 1024 * 1024 // 10MB
+)
 
 type config struct {
 	// specifies a list of privileged images to use for the Docker client
@@ -45,7 +49,7 @@ type client struct {
 // New returns an Engine implementation that
 // integrates with a Docker runtime.
 //
-//nolint:revive // ignore returning unexported client
+
 func New(opts ...ClientOpt) (*client, error) {
 	// create new Docker client
 	c := new(client)
@@ -90,7 +94,7 @@ func New(opts ...ClientOpt) (*client, error) {
 //
 // This function is intended for running tests only.
 //
-//nolint:revive // ignore returning unexported client
+
 func NewMock(opts ...ClientOpt) (*client, error) {
 	// create new Docker runtime client
 	c, err := New(opts...)

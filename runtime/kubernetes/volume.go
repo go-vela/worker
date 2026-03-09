@@ -95,9 +95,8 @@ func (c *client) InspectVolume(_ context.Context, b *pipeline.Build) ([]byte, er
 	// TODO: consider updating this command
 	//
 	// create output for inspecting volume
-	output := []byte(
-		fmt.Sprintf("$ kubectl get pod -o=jsonpath='{.spec.volumes}' %s\n", b.ID),
-	)
+	output :=
+		fmt.Appendf(nil, "$ kubectl get pod -o=jsonpath='{.spec.volumes}' %s\n", b.ID)
 
 	// marshal the volume information from the pod
 	volume, err := json.MarshalIndent(c.Pod.Spec.Volumes, "", " ")

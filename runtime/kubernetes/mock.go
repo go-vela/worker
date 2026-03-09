@@ -23,7 +23,7 @@ import (
 //
 // This function is intended for running tests only.
 //
-//nolint:revive // ignore returning unexported client
+
 func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	// create new Kubernetes client
 	c := new(client)

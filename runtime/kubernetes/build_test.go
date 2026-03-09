@@ -169,7 +169,7 @@ func TestKubernetes_SetupBuild(t *testing.T) {
 		failure          bool
 		pipeline         *pipeline.Build
 		opts             []ClientOpt
-		wantFromTemplate interface{}
+		wantFromTemplate any
 	}{
 		{
 			name:             "stages",

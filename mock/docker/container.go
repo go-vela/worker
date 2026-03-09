@@ -3,10 +3,12 @@
 package docker
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
 	"errors"
 	"io"
+	"net"
 	"strings"
 	"time"
 
@@ -15,6 +17,19 @@ import (
 	"github.com/moby/moby/client"
 	"github.com/moby/moby/client/pkg/stringid"
 )
+
+// mockConn is a mock implementation of net.Conn for testing purposes.
+// It provides no-op implementations of all net.Conn methods.
+type mockConn struct{}
+
+func (m *mockConn) Read(b []byte) (n int, err error)   { return 0, io.EOF }
+func (m *mockConn) Write(b []byte) (n int, err error)  { return len(b), nil }
+func (m *mockConn) Close() error                       { return nil }
+func (m *mockConn) LocalAddr() net.Addr                { return nil }
+func (m *mockConn) RemoteAddr() net.Addr               { return nil }
+func (m *mockConn) SetDeadline(t time.Time) error      { return nil }
+func (m *mockConn) SetReadDeadline(t time.Time) error  { return nil }
+func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
 
 // ContainerService implements all the container
 // related functions for the Docker mock.
@@ -246,6 +261,18 @@ func (c *ContainerService) ContainerWait(_ context.Context, ctn string, _ client
 		return result
 	}
 
+	if strings.Contains(ctn, "wait-timeout") {
+		errCh <- context.DeadlineExceeded
+
+		return result
+	}
+
+	if strings.Contains(ctn, "wait-error") {
+		errCh <- errors.New("container wait error")
+
+		return result
+	}
+
 	// create goroutine for responding to call
 	go func() {
 		// create response object to return
@@ -367,8 +394,59 @@ func (c *ContainerService) ContainerStatPath(_ context.Context, _ string, _ clie
 // a mocked call to copy content from a Docker container.
 //
 // https://pkg.go.dev/github.com/docker/docker/client#Client.CopyFromContainer
-func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, _ client.CopyFromContainerOptions) (client.CopyFromContainerResult, error) {
-	return client.CopyFromContainerResult{}, nil
+func (c *ContainerService) CopyFromContainer(_ context.Context, _ string, opts client.CopyFromContainerOptions) (client.CopyFromContainerResult, error) {
+	path := opts.SourcePath
+
+	if path == "not-found" {
+		return client.CopyFromContainerResult{}, cerrdefs.ErrNotFound
+	}
+	// create a tar archive in memory with the specified path and content
+	var buf bytes.Buffer
+
+	tw := tar.NewWriter(&buf)
+
+	// Determine content based on path for test scenarios
+	var content []byte
+	if strings.Contains(path, "artifacts") && strings.Contains(path, "alpha.txt") {
+		content = []byte("results")
+	} else if strings.Contains(path, "test-results") && strings.Contains(path, ".xml") {
+		content = []byte("<?xml version=\"1.0\"?><testsuites></testsuites>")
+	} else if strings.Contains(path, "cypress/screenshots") && strings.Contains(path, ".png") {
+		content = []byte("PNG_BINARY_DATA")
+	} else if strings.Contains(path, "cypress/videos") && strings.Contains(path, ".mp4") {
+		content = []byte("MP4_BINARY_DATA")
+	} else {
+		content = []byte("key=value")
+	}
+
+	hdr := &tar.Header{
+		Name: path,
+		Mode: 0600,
+		Size: int64(len(content)),
+	}
+
+	if err := tw.WriteHeader(hdr); err != nil {
+		return client.CopyFromContainerResult{}, err
+	}
+
+	if _, err := tw.Write(content); err != nil {
+		return client.CopyFromContainerResult{}, err
+	}
+
+	if err := tw.Close(); err != nil {
+		return client.CopyFromContainerResult{}, err
+	}
+
+	result := client.CopyFromContainerResult{
+		Content: io.NopCloser(&buf),
+		Stat: container.PathStat{
+			Name: path,
+			Size: int64(len(content)),
+			Mode: 0600,
+		},
+	}
+
+	return result, nil
 }
 
 // CopyToContainer is a helper function to simulate

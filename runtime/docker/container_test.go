@@ -409,11 +409,27 @@ func TestDocker_PollOutputsContainer(t *testing.T) {
 		name      string
 		failure   bool
 		container *pipeline.Container
+		path      string
+		wantBytes []byte
 	}{
 		{
-			name:      "outputs container",
-			failure:   false,
-			container: _container,
+			name:    "outputs container",
+			failure: false,
+			container: &pipeline.Container{
+				ID:    "outputs",
+				Image: "alpine:latest",
+			},
+			path:      "/vela/outputs/.env",
+			wantBytes: []byte("key=value"),
+		},
+		{
+			name:    "path not found",
+			failure: false,
+			container: &pipeline.Container{
+				ID:    "outputs",
+				Image: "alpine:latest",
+			},
+			path: "not-found",
 		},
 		{
 			name:      "no provided outputs container",
@@ -425,7 +441,7 @@ func TestDocker_PollOutputsContainer(t *testing.T) {
 	// run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err = _engine.PollOutputsContainer(context.Background(), test.container, "")
+			got, err := _engine.PollOutputsContainer(context.Background(), test.container, test.path)
 
 			if test.failure {
 				if err == nil {
@@ -437,6 +453,10 @@ func TestDocker_PollOutputsContainer(t *testing.T) {
 
 			if err != nil {
 				t.Errorf("PollOutputs returned err: %v", err)
+			}
+
+			if string(got) != string(test.wantBytes) {
+				t.Errorf("PollOutputsContainer is %s, want %s", string(got), string(test.wantBytes))
 			}
 		})
 	}

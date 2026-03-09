@@ -77,6 +77,22 @@ func (c *client) PollOutputsContainer(_ context.Context, ctn *pipeline.Container
 	return nil, nil
 }
 
+// PollFileNames grabs test results and attachments from provided path within a container.
+// This is a no-op for kubernetes. Pod environments cannot be dynamic.
+func (c *client) PollFileNames(_ context.Context, ctn *pipeline.Container, _ *pipeline.Container) ([]string, error) {
+	c.Logger.Tracef("no-op: gathering test results and attachments from container %s", ctn.ID)
+
+	return nil, nil
+}
+
+// PollFileContent captures the content and size of a file from the pipeline container.
+// This is a no-op for kubernetes. Pod environments cannot be dynamic.
+func (c *client) PollFileContent(_ context.Context, ctn *pipeline.Container, _ string) (io.Reader, int64, error) {
+	c.Logger.Tracef("no-op: gathering test results and attachments from container %s", ctn.ID)
+
+	return nil, 0, nil
+}
+
 // RunContainer creates and starts the pipeline container.
 func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *pipeline.Build) error {
 	c.Logger.Tracef("running container %s", ctn.ID)
@@ -96,7 +112,7 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, _ *p
 		ctx,
 		c.Pod.Name,
 		types.StrategicMergePatchType,
-		[]byte(fmt.Sprintf(imagePatch, ctn.ID, _image)),
+		fmt.Appendf(nil, imagePatch, ctn.ID, _image),
 		metav1.PatchOptions{},
 	)
 	if err != nil {
@@ -186,18 +202,6 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 	// Executor.CreateBuild extends the environment AFTER calling Runtime.SetupBuild.
 	// So, configure the environment as late as possible (just before pod creation).
 
-	// check if the entrypoint is provided
-	if len(ctn.Entrypoint) > 0 {
-		// add entrypoint to container config
-		container.Args = ctn.Entrypoint
-	}
-
-	// check if the commands are provided
-	if len(ctn.Commands) > 0 {
-		// add commands to container config
-		container.Args = append(container.Args, ctn.Commands...)
-	}
-
 	// record the index for this container
 	c.containersLookup[ctn.ID] = len(c.Pod.Spec.Containers)
 
@@ -227,6 +231,18 @@ func (c *client) setupContainerEnvironment(ctn *pipeline.Container) error {
 			// add key/value environment to container config
 			container.Env = append(container.Env, v1.EnvVar{Name: k, Value: v})
 		}
+	}
+
+	// check if the entrypoint is provided
+	if len(ctn.Entrypoint) > 0 {
+		// add entrypoint to container config
+		container.Args = ctn.Entrypoint
+	}
+
+	// check if the commands are provided
+	if len(ctn.Commands) > 0 {
+		// add commands to container config
+		container.Args = append(container.Args, ctn.Commands...)
 	}
 
 	return nil

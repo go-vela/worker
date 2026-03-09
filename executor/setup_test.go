@@ -72,6 +72,8 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 	want, err := linux.New(
 		linux.WithBuild(_build),
 		linux.WithMaxLogSize(2097152),
+		linux.WithFileSizeLimit(10),
+		linux.WithBuildFileSizeLimit(100),
 		linux.WithLogStreamingTimeout(1*time.Second),
 		linux.WithHostname("localhost"),
 		linux.WithPipeline(_pipeline),
@@ -84,14 +86,16 @@ func TestExecutor_Setup_Linux(t *testing.T) {
 	}
 
 	_setup := &Setup{
-		Build:      _build,
-		Client:     _client,
-		Driver:     constants.DriverLinux,
-		MaxLogSize: 2097152,
-		Hostname:   "localhost",
-		Pipeline:   _pipeline,
-		Runtime:    _runtime,
-		Version:    "v1.0.0",
+		Build:              _build,
+		Client:             _client,
+		Driver:             constants.DriverLinux,
+		MaxLogSize:         2097152,
+		FileSizeLimit:      10,
+		BuildFileSizeLimit: 100,
+		Hostname:           "localhost",
+		Pipeline:           _pipeline,
+		Runtime:            _runtime,
+		Version:            "v1.0.0",
 	}
 
 	// run test

@@ -21,7 +21,7 @@ const Version = "v1.44"
 // New returns a client that is capable of handling
 // Docker client calls and returning stub responses.
 //
-//nolint:revive // ignore unexported type as it is intentional
+
 func New() (*mock, error) {
 	return &mock{
 		ConfigService:       ConfigService{},

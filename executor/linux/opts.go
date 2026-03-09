@@ -47,6 +47,30 @@ func WithMaxLogSize(size uint) Opt {
 	}
 }
 
+// WithFileSizeLimit sets the maximum file size (in MB) for a single file upload in the executor client for Linux.
+func WithFileSizeLimit(limit int) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring file size limit in linux executor client")
+
+		// set the file size limit in the client
+		c.fileSizeLimit = int64(limit) * 1024 * 1024
+
+		return nil
+	}
+}
+
+// WithBuildFileSizeLimit sets the maximum total size (in MB) for all file uploads in a single build in the executor client for Linux.
+func WithBuildFileSizeLimit(limit int) Opt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring build file size limit in linux executor client")
+
+		// set the build file size limit in the client
+		c.buildFileSizeLimit = int64(limit) * 1024 * 1024
+
+		return nil
+	}
+}
+
 // WithLogStreamingTimeout sets the log streaming timeout in the executor client for Linux.
 func WithLogStreamingTimeout(timeout time.Duration) Opt {
 	return func(c *client) error {

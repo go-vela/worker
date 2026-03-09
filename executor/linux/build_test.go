@@ -190,7 +190,6 @@ func TestLinux_CreateBuild(t *testing.T) {
 				WithBuild(test.build),
 				WithPipeline(_pipeline),
 				WithRuntime(_runtime),
-
 				WithVelaClient(_client),
 			)
 			if err != nil {
@@ -1638,7 +1637,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 				}
 
 				// simulate two messages of the same type
-				for i := 0; i < 2; i++ {
+				for range 2 {
 					// ExecBuild calls PlanService()/PlanStep() before ExecService()/ExecStep()
 					// (ExecStage() calls PlanStep() before ExecStep()).
 					_engine.err = test.planFunc(_engine)(buildCtx, test.ctn)

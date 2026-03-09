@@ -61,7 +61,7 @@ type podTracker struct {
 }
 
 // HandlePodAdd is an AddFunc for cache.ResourceEventHandlerFuncs for Pods.
-func (p *podTracker) HandlePodAdd(newObj interface{}) {
+func (p *podTracker) HandlePodAdd(newObj any) {
 	newPod := p.getTrackedPod(newObj)
 	if newPod == nil {
 		// not valid or not our tracked pod
@@ -74,7 +74,7 @@ func (p *podTracker) HandlePodAdd(newObj interface{}) {
 }
 
 // HandlePodUpdate is an UpdateFunc for cache.ResourceEventHandlerFuncs for Pods.
-func (p *podTracker) HandlePodUpdate(oldObj, newObj interface{}) {
+func (p *podTracker) HandlePodUpdate(oldObj, newObj any) {
 	oldPod := p.getTrackedPod(oldObj)
 	newPod := p.getTrackedPod(newObj)
 
@@ -97,7 +97,7 @@ func (p *podTracker) HandlePodUpdate(oldObj, newObj interface{}) {
 }
 
 // HandlePodDelete is an DeleteFunc for cache.ResourceEventHandlerFuncs for Pods.
-func (p *podTracker) HandlePodDelete(oldObj interface{}) {
+func (p *podTracker) HandlePodDelete(oldObj any) {
 	oldPod := p.getTrackedPod(oldObj)
 	if oldPod == nil {
 		// not valid or not our tracked pod
@@ -111,7 +111,7 @@ func (p *podTracker) HandlePodDelete(oldObj interface{}) {
 
 // getTrackedPod tries to convert the obj into a Pod and makes sure it is the tracked Pod.
 // This should only be used by the funcs of cache.ResourceEventHandlerFuncs.
-func (p *podTracker) getTrackedPod(obj interface{}) *v1.Pod {
+func (p *podTracker) getTrackedPod(obj any) *v1.Pod {
 	var (
 		pod *v1.Pod
 		ok  bool

@@ -7,11 +7,19 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"maps"
+	"mime"
+	"net/http"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 
 	envparse "github.com/hashicorp/go-envparse"
 	"github.com/sirupsen/logrus"
 
+	api "github.com/go-vela/server/api/types"
 	"github.com/go-vela/server/compiler/types/pipeline"
 )
 
@@ -30,7 +38,7 @@ func (o *outputSvc) create(ctx context.Context, ctn *pipeline.Container, timeout
 
 	// Encode script content to Base64
 	script := base64.StdEncoding.EncodeToString(
-		[]byte(fmt.Sprintf("mkdir /vela/outputs\nsleep %d\n", timeout)),
+		fmt.Appendf(nil, "mkdir /vela/outputs\nsleep %d\n", timeout),
 	)
 
 	// set the entrypoint for the ctn
@@ -203,4 +211,141 @@ func (o *outputSvc) poll(ctx context.Context, ctn *pipeline.Container) (map[stri
 	}
 
 	return outputMap, maskMap, nil
+}
+
+// pollFiles polls the output for files from the sidecar container.
+func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _step *pipeline.Container, b *api.Build) error {
+	// exit if outputs container has not been configured
+	if len(ctn.Image) == 0 {
+		return fmt.Errorf("no outputs container configured")
+	}
+
+	// update engine logger with outputs metadata
+	//
+	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
+	logger := o.client.Logger.WithField("artifact-outputs", ctn.Name)
+
+	// grab file paths from the container
+	filesPath, err := o.client.Runtime.PollFileNames(ctx, ctn, _step)
+	if err != nil {
+		return fmt.Errorf("unable to poll file names: %w", err)
+	}
+
+	if len(filesPath) == 0 {
+		return fmt.Errorf("no files found for file list: %v", _step.Artifacts.Paths)
+	}
+
+	// create http client for uploading files to storage
+	putClient := http.DefaultClient
+	putClient.Timeout = time.Second * 30
+
+	// process each file found
+	for _, filePath := range filesPath {
+		fileName := filepath.Base(filePath)
+		logger.Debugf("processing file: %s (path: %s)", fileName, filePath)
+
+		// skip hidden files and files within hidden directories
+		if isHidden(filePath) {
+			logger.Debugf("skipping hidden file or directory: %s", filePath)
+			continue
+		}
+
+		url, _, err := o.client.Vela.Build.GetPresignedPutURL(ctx, fileName, b.GetRepo().GetOrg(), b.GetRepo().GetName(),
+			b.GetNumber())
+		if err != nil {
+			logger.Errorf("unable to get presigned put url: %v", err)
+			continue
+		}
+
+		// get file content from container
+		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
+		if err != nil {
+			logger.Errorf("unable to poll file content for %s: %v", filePath, err)
+			continue
+		}
+
+		// TODO: surface this skip to the user
+		if o.client.fileSizeLimit > 0 && size > o.client.fileSizeLimit {
+			logger.Infof("skipping file %s due to file size limit", filePath)
+			continue
+		}
+
+		if o.client.buildFileSizeLimit > 0 && size+o.client.Uploaded > o.client.buildFileSizeLimit {
+			logger.Infof("skipping file %s due to build file size limit", filePath)
+			continue
+		}
+
+		// create storage object path
+		objectName := fmt.Sprintf("%s/%s/%s/%s",
+			b.GetRepo().GetOrg(),
+			b.GetRepo().GetName(),
+			strconv.FormatInt(b.GetNumber(), 10),
+			fileName)
+
+		logger.Debugf("uploading file %s to storage with object name %s", filePath, objectName)
+
+		err = uploadObject(ctx, putClient, reader, size, fileName, url.URL)
+		if err != nil {
+			logger.Errorf("unable to upload object %s: %v", fileName, err)
+			continue
+		}
+
+		o.client.Uploaded += size
+	}
+
+	return nil
+}
+
+// isHidden reports whether any component of the given path (file or directory)
+// starts with a ".", which indicates a hidden file or directory.
+func isHidden(path string) bool {
+	for part := range strings.SplitSeq(filepath.ToSlash(path), "/") {
+		if strings.HasPrefix(part, ".") {
+			return true
+		}
+	}
+
+	return false
+}
+
+// uploadObject uploads an object to a bucket in MinIO.ts.
+func uploadObject(ctx context.Context, putClient *http.Client, reader io.Reader, size int64, filename, url string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, reader)
+	if err != nil {
+		return fmt.Errorf("could not create PUT request: %w", err)
+	}
+
+	// Set the Content-Type header based on the file extension
+	ext := filepath.Ext(filename)
+
+	contentType := mime.TypeByExtension(ext)
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	req.Header.Set("Content-Type", contentType)
+
+	// Set the Content-Length header
+	req.ContentLength = size
+
+	// Perform the HTTP request to upload the object
+	//
+	//nolint:bodyclose // body closes on line 310
+	resp, err := putClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not upload data to bucket: %w", err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			logrus.Warnf("could not close response body: %v", err)
+		}
+	}(resp.Body)
+
+	// Check for a successful response
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return nil
 }
