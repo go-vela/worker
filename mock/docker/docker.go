@@ -13,8 +13,8 @@ package docker
 //
 // For example (use the compatibility matrix above for reference):
 //
-// * the Docker version of v26.0 has a maximum API version of v1.45
-// * to maintain n-1, the API version is pinned to v1.44
+// * the Docker version of v29.2 has a maximum API version of v1.53
+// * to maintain n-1, the API version is pinned to v1.52
 // .
 const Version = "v1.52"
 
