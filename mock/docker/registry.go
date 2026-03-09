@@ -21,6 +21,6 @@ func (r *RegistryService) ImageSearch(_ context.Context, _ string, _ client.Imag
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// RegistryService satisfies the RegistrySearchClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
 var _ client.RegistrySearchClient = (*RegistryService)(nil)

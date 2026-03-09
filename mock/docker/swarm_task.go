@@ -15,8 +15,6 @@ type TaskService struct{}
 // TaskInspectWithRaw is a helper function to simulate
 // a mocked call to inspect a task for a Docker swarm
 // cluster and return the raw body received from the API.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.TaskInspectWithRaw
 func (t *TaskService) TaskInspect(_ context.Context, _ string, _ client.TaskInspectOptions) (client.TaskInspectResult, error) {
 	return client.TaskInspectResult{}, nil
 }
@@ -24,8 +22,6 @@ func (t *TaskService) TaskInspect(_ context.Context, _ string, _ client.TaskInsp
 // TaskList is a helper function to simulate
 // a mocked call to list tasks for a
 // Docker swarm cluster.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.TaskList
 func (t *TaskService) TaskList(_ context.Context, _ client.TaskListOptions) (client.TaskListResult, error) {
 	return client.TaskListResult{}, nil
 }
@@ -40,8 +36,6 @@ func (t *TaskService) TaskLogs(_ context.Context, _ string, _ client.TaskLogsOpt
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// ServiceService satisfies the ServiceAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#ServiceAPIClient
 var _ client.TaskAPIClient = (*TaskService)(nil)

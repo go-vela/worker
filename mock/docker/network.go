@@ -20,8 +20,6 @@ type NetworkService struct{}
 
 // NetworkCreate is a helper function to simulate
 // a mocked call to create a Docker network.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkCreate
 func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ client.NetworkCreateOptions) (client.NetworkCreateResult, error) {
 	// verify a network was provided
 	if len(name) == 0 {
@@ -52,8 +50,6 @@ func (n *NetworkService) NetworkCreate(_ context.Context, name string, _ client.
 
 // NetworkInspect is a helper function to simulate
 // a mocked call to inspect a Docker network.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkInspect
 func (n *NetworkService) NetworkInspect(_ context.Context, networkID string, _ client.NetworkInspectOptions) (client.NetworkInspectResult, error) {
 	// verify a network was provided
 	if len(networkID) == 0 {
@@ -92,16 +88,12 @@ func (n *NetworkService) NetworkInspect(_ context.Context, networkID string, _ c
 
 // NetworkList is a helper function to simulate
 // a mocked call to list Docker networks.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkList
 func (n *NetworkService) NetworkList(_ context.Context, _ client.NetworkListOptions) (client.NetworkListResult, error) {
 	return client.NetworkListResult{}, nil
 }
 
 // NetworkRemove is a helper function to simulate
 // a mocked call to remove Docker a network.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkRemove
 func (n *NetworkService) NetworkRemove(_ context.Context, network string, _ client.NetworkRemoveOptions) (client.NetworkRemoveResult, error) {
 	// verify a network was provided
 	if len(network) == 0 {
@@ -113,24 +105,18 @@ func (n *NetworkService) NetworkRemove(_ context.Context, network string, _ clie
 
 // NetworksPrune is a helper function to simulate
 // a mocked call to prune Docker networks.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworksPrune
 func (n *NetworkService) NetworkPrune(_ context.Context, _ client.NetworkPruneOptions) (client.NetworkPruneResult, error) {
 	return client.NetworkPruneResult{}, nil
 }
 
 // NetworkConnect is a helper function to simulate
 // a mocked call to connect to a Docker network.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkConnect
 func (n *NetworkService) NetworkConnect(_ context.Context, _ string, _ client.NetworkConnectOptions) (client.NetworkConnectResult, error) {
 	return client.NetworkConnectResult{}, nil
 }
 
 // NetworkDisconnect is a helper function to simulate
 // a mocked call to disconnect from a Docker network.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.NetworkDisconnect
 func (n *NetworkService) NetworkDisconnect(_ context.Context, _ string, _ client.NetworkDisconnectOptions) (client.NetworkDisconnectResult, error) {
 	return client.NetworkDisconnectResult{}, nil
 }
@@ -138,8 +124,6 @@ func (n *NetworkService) NetworkDisconnect(_ context.Context, _ string, _ client
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// NetworkService satisfies the NetworkAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#NetworkAPIClient
 var _ client.NetworkAPIClient = (*NetworkService)(nil)

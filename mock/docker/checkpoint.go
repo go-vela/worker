@@ -27,8 +27,6 @@ func (cp *CheckpointService) CheckpointList(_ context.Context, _ string, _ clien
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// ImageService satisfies the ImageAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#ConfigAPIClient
 var _ client.CheckpointAPIClient = (*CheckpointService)(nil)

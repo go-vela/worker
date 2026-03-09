@@ -36,8 +36,6 @@ type mock struct {
 
 // ClientVersion is a helper function to return
 // the version string associated with the mock.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ClientVersion
 func (m *mock) ClientVersion() string {
 	return m.Version
 }
@@ -51,8 +49,6 @@ func (m *mock) DaemonHost() string {
 // ServerVersion is a helper function to simulate
 // a mocked call to return information on the
 // Docker client and server host.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ServerVersion
 func (m *mock) ServerVersion(_ context.Context, _ client.ServerVersionOptions) (client.ServerVersionResult, error) {
 	return client.ServerVersionResult{}, nil
 }
@@ -74,8 +70,6 @@ func (m *mock) DialHijack(_ context.Context, _ string, _ string, _ map[string][]
 
 // Close is a helper function to simulate
 // closing the transport client for the mock.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.Close
 func (m *mock) Close() error {
 	return nil
 }
@@ -93,5 +87,5 @@ func (m *mock) HTTPClient() *http.Client {
 // that our mock satisfies the Go interface that the
 // Docker client expects.
 //
-// https://pkg.go.dev/github.com/docker/docker/client#CommonAPIClient
+// https://pkg.go.dev/github.com/moby/moby/client#CommonAPIClient
 var _ client.APIClient = (*mock)(nil)

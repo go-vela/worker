@@ -26,16 +26,12 @@ type ImageService struct{}
 
 // ImageImport is a helper function to simulate
 // a mocked call to import a Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageImport
 func (i *ImageService) ImageImport(_ context.Context, _ client.ImageImportSource, _ string, _ client.ImageImportOptions) (client.ImageImportResult, error) {
 	return nil, nil
 }
 
 // ImageList is a helper function to simulate
 // a mocked call to list Docker images.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageList
 func (i *ImageService) ImageList(_ context.Context, _ client.ImageListOptions) (client.ImageListResult, error) {
 	return client.ImageListResult{}, nil
 }
@@ -62,8 +58,6 @@ func (m *mockImagePullResponse) Wait(_ context.Context) error {
 
 // ImagePull is a helper function to simulate
 // a mocked call to pull a Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePull
 func (i *ImageService) ImagePull(_ context.Context, image string, _ client.ImagePullOptions) (client.ImagePullResponse, error) {
 	// verify an image was provided
 	if len(image) == 0 {
@@ -99,32 +93,24 @@ func (i *ImageService) ImagePull(_ context.Context, image string, _ client.Image
 
 // ImagePush is a helper function to simulate
 // a mocked call to push a Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagePush
 func (i *ImageService) ImagePush(_ context.Context, _ string, _ client.ImagePushOptions) (client.ImagePushResponse, error) {
 	return nil, nil
 }
 
 // ImageRemove is a helper function to simulate
 // a mocked call to remove a Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageRemove
 func (i *ImageService) ImageRemove(_ context.Context, _ string, _ client.ImageRemoveOptions) (client.ImageRemoveResult, error) {
 	return client.ImageRemoveResult{}, nil
 }
 
 // ImageTag is a helper function to simulate
 // a mocked call to tag a Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageTag
 func (i *ImageService) ImageTag(_ context.Context, _ client.ImageTagOptions) (client.ImageTagResult, error) {
 	return client.ImageTagResult{}, nil
 }
 
 // ImagesPrune is a helper function to simulate
 // a mocked call to prune Docker images.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImagesPrune
 func (i *ImageService) ImagePrune(_ context.Context, _ client.ImagePruneOptions) (client.ImagePruneResult, error) {
 	return client.ImagePruneResult{}, nil
 }
@@ -132,8 +118,6 @@ func (i *ImageService) ImagePrune(_ context.Context, _ client.ImagePruneOptions)
 // ImageInspectWithRaw is a helper function to simulate
 // a mocked call to inspect a Docker image and return
 // the raw body received from the API.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageInspectWithRaw
 func (i *ImageService) ImageInspect(_ context.Context, img string, _ ...client.ImageInspectOption) (client.ImageInspectResult, error) {
 	// verify an image was provided
 	if len(img) == 0 {
@@ -177,24 +161,18 @@ func (i *ImageService) ImageInspect(_ context.Context, img string, _ ...client.I
 // ImageHistory is a helper function to simulate
 // a mocked call to inspect the history for a
 // Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageHistory
 func (i *ImageService) ImageHistory(_ context.Context, _ string, _ ...client.ImageHistoryOption) (client.ImageHistoryResult, error) {
 	return client.ImageHistoryResult{}, nil
 }
 
 // ImageLoad is a helper function to simulate
 // a mocked call to load a Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageLoad
 func (i *ImageService) ImageLoad(_ context.Context, _ io.Reader, _ ...client.ImageLoadOption) (client.ImageLoadResult, error) {
 	return nil, nil
 }
 
 // ImageSave is a helper function to simulate
 // a mocked call to save a Docker image.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.ImageSave
 func (i *ImageService) ImageSave(_ context.Context, _ []string, _ ...client.ImageSaveOption) (client.ImageSaveResult, error) {
 	return nil, nil
 }
@@ -202,8 +180,6 @@ func (i *ImageService) ImageSave(_ context.Context, _ []string, _ ...client.Imag
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// ImageService satisfies the ImageAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#ImageAPIClient
 var _ client.ImageAPIClient = (*ImageService)(nil)

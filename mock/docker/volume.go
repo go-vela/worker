@@ -21,8 +21,6 @@ type VolumeService struct{}
 
 // VolumeCreate is a helper function to simulate
 // a mocked call to create a Docker volume.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeCreate
 func (v *VolumeService) VolumeCreate(_ context.Context, options client.VolumeCreateOptions) (client.VolumeCreateResult, error) {
 	// verify a volume was provided
 	if len(options.Name) == 0 {
@@ -61,8 +59,6 @@ func (v *VolumeService) VolumeCreate(_ context.Context, options client.VolumeCre
 
 // VolumeInspect is a helper function to simulate
 // a mocked call to inspect a Docker volume.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeInspect
 func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string, _ client.VolumeInspectOptions) (client.VolumeInspectResult, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
@@ -95,24 +91,18 @@ func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string, _ clie
 
 // VolumeList is a helper function to simulate
 // a mocked call to list Docker volumes.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeList
 func (v *VolumeService) VolumeList(_ context.Context, _ client.VolumeListOptions) (client.VolumeListResult, error) {
 	return client.VolumeListResult{}, nil
 }
 
 // VolumeUpdate is a helper function to simulate
 // a mocked call to update Docker volumes.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeUpdate
 func (v *VolumeService) VolumeUpdate(_ context.Context, _ string, _ client.VolumeUpdateOptions) (client.VolumeUpdateResult, error) {
 	return client.VolumeUpdateResult{}, nil
 }
 
 // VolumeRemove is a helper function to simulate
 // a mocked call to remove Docker a volume.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumeRemove
 func (v *VolumeService) VolumeRemove(_ context.Context, volumeID string, _ client.VolumeRemoveOptions) (client.VolumeRemoveResult, error) {
 	// verify a volume was provided
 	if len(volumeID) == 0 {
@@ -124,8 +114,6 @@ func (v *VolumeService) VolumeRemove(_ context.Context, volumeID string, _ clien
 
 // VolumesPrune is a helper function to simulate
 // a mocked call to prune Docker volumes.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#Client.VolumesPrune
 func (v *VolumeService) VolumePrune(_ context.Context, _ client.VolumePruneOptions) (client.VolumePruneResult, error) {
 	return client.VolumePruneResult{}, nil
 }
@@ -133,8 +121,6 @@ func (v *VolumeService) VolumePrune(_ context.Context, _ client.VolumePruneOptio
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// VolumeService satisfies the VolumeAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
-//
-// https://pkg.go.dev/github.com/docker/docker/client#VolumeAPIClient
 var _ client.VolumeAPIClient = (*VolumeService)(nil)

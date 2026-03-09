@@ -34,6 +34,6 @@ func (ib *ImageBuildService) BuildCancel(_ context.Context, _ string, _ client.B
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// ExecService satisfies the ExecAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
 var _ client.ImageBuildAPIClient = (*ImageBuildService)(nil)

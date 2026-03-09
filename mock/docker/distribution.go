@@ -22,6 +22,6 @@ func (d *DistributionService) DistributionInspect(_ context.Context, _ string, _
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// DistributionService satisfies the DistributionAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
 var _ client.DistributionAPIClient = (*DistributionService)(nil)

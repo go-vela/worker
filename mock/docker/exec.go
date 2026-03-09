@@ -141,6 +141,6 @@ func (e *ExecService) ExecAttach(_ context.Context, execID string, _ client.Exec
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
-// ExecService satisfies the ExecAPIClient interface that
+// service satisfies the APIClient interface that
 // the Docker client expects.
 var _ client.ExecAPIClient = (*ExecService)(nil)
