@@ -129,6 +129,8 @@ func (e *ExecService) ExecAttach(_ context.Context, execID string, _ client.Exec
 // writeStreamString writes a docker multiplexed stream frame to the buffer.
 func writeStreamString(buf *bytes.Buffer, stream byte, payload string) {
 	header := []byte{stream, 0, 0, 0, 0, 0, 0, 0}
+
+	//nolint:gosec // mock data that we control. overflow not possible
 	binary.BigEndian.PutUint32(header[4:], uint32(len(payload)))
 	_, _ = buf.Write(header)
 	_, _ = buf.WriteString(payload)
