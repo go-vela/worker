@@ -12,8 +12,9 @@ import (
 	"strings"
 
 	"github.com/containerd/errdefs"
-	dockerContainerTypes "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/moby/moby/api/pkg/stdcopy"
+	dockerContainerTypes "github.com/moby/moby/api/types/container"
+	mobyClient "github.com/moby/moby/client"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
@@ -27,7 +28,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	// send API call to inspect the container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspect
-	container, err := c.Docker.ContainerInspect(ctx, ctn.ID)
+	result, err := c.Docker.ContainerInspect(ctx, ctn.ID, mobyClient.ContainerInspectOptions{})
 	if err != nil {
 		return err
 	}
@@ -36,7 +37,7 @@ func (c *client) InspectContainer(ctx context.Context, ctn *pipeline.Container) 
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types#ContainerState
 	//nolint:gosec // exit codes are truncated by OS
-	ctn.ExitCode = int32(container.State.ExitCode)
+	ctn.ExitCode = int32(result.Container.State.ExitCode)
 
 	return nil
 }
@@ -48,10 +49,12 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 	// send API call to inspect the container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerInspect
-	container, err := c.Docker.ContainerInspect(ctx, ctn.ID)
+	result, err := c.Docker.ContainerInspect(ctx, ctn.ID, mobyClient.ContainerInspectOptions{})
 	if err != nil {
 		return err
 	}
+
+	container := result.Container
 
 	// if the container is paused, restarting or running
 	//
@@ -62,7 +65,9 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 		// send API call to kill the container
 		//
 		// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerKill
-		err := c.Docker.ContainerKill(ctx, ctn.ID, "SIGKILL")
+		_, err := c.Docker.ContainerKill(ctx, ctn.ID, mobyClient.ContainerKillOptions{
+			Signal: "SIGKILL",
+		})
 		if err != nil {
 			return err
 		}
@@ -71,7 +76,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 	// create options for removing container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types/container#RemoveOptions
-	opts := dockerContainerTypes.RemoveOptions{
+	opts := mobyClient.ContainerRemoveOptions{
 		Force:         true,
 		RemoveLinks:   false,
 		RemoveVolumes: true,
@@ -80,7 +85,7 @@ func (c *client) RemoveContainer(ctx context.Context, ctn *pipeline.Container) e
 	// send API call to remove the container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerRemove
-	err = c.Docker.ContainerRemove(ctx, ctn.ID, opts)
+	_, err = c.Docker.ContainerRemove(ctx, ctn.ID, opts)
 	if err != nil {
 		return err
 	}
@@ -149,30 +154,28 @@ func (c *client) RunContainer(ctx context.Context, ctn *pipeline.Container, b *p
 		hostConf.Privileged = true
 	}
 
+	createOpts := mobyClient.ContainerCreateOptions{
+		Config:           containerConf,
+		HostConfig:       hostConf,
+		NetworkingConfig: networkConf,
+		Name:             ctn.ID,
+	}
+
 	// send API call to create the container
 	//
 	// https://godoc.org/github.com/docker/docker/client#Client.ContainerCreate
 	_, err = c.Docker.ContainerCreate(
 		ctx,
-		containerConf,
-		hostConf,
-		networkConf,
-		nil,
-		ctn.ID,
+		createOpts,
 	)
 	if err != nil {
 		return err
 	}
 
-	// create options for starting container
-	//
-	// https://pkg.go.dev/github.com/docker/docker/api/types/container#StartOptions
-	opts := dockerContainerTypes.StartOptions{}
-
 	// send API call to start the container
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerStart
-	err = c.Docker.ContainerStart(ctx, ctn.ID, opts)
+	_, err = c.Docker.ContainerStart(ctx, ctn.ID, mobyClient.ContainerStartOptions{})
 	if err != nil {
 		return err
 	}
@@ -237,7 +240,7 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// create options for capturing container logs
 	//
 	// https://pkg.go.dev/github.com/docker/docker/api/types/container#LogsOptions
-	opts := dockerContainerTypes.LogsOptions{
+	opts := mobyClient.ContainerLogsOptions{
 		Follow:     true,
 		ShowStdout: true,
 		ShowStderr: true,
@@ -285,11 +288,13 @@ func (c *client) WaitContainer(ctx context.Context, ctn *pipeline.Container) err
 	// send API call to wait for the container completion
 	//
 	// https://pkg.go.dev/github.com/docker/docker/client#Client.ContainerWait
-	wait, errC := c.Docker.ContainerWait(ctx, ctn.ID, dockerContainerTypes.WaitConditionNotRunning)
+	waitResult := c.Docker.ContainerWait(ctx, ctn.ID, mobyClient.ContainerWaitOptions{
+		Condition: dockerContainerTypes.WaitConditionNotRunning,
+	})
 
 	select {
-	case <-wait:
-	case err := <-errC:
+	case <-waitResult.Result:
+	case err := <-waitResult.Error:
 		return err
 	}
 
@@ -302,8 +307,12 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 		return nil, nil
 	}
 
+	copyOpts := mobyClient.CopyFromContainerOptions{
+		SourcePath: path,
+	}
+
 	// copy file from outputs container
-	reader, _, err := c.Docker.CopyFromContainer(ctx, ctn.ID, path)
+	result, err := c.Docker.CopyFromContainer(ctx, ctn.ID, copyOpts)
 	if err != nil {
 		// early non-error exit if not found
 		if errdefs.IsNotFound(err) {
@@ -312,6 +321,8 @@ func (c *client) PollOutputsContainer(ctx context.Context, ctn *pipeline.Contain
 
 		return nil, err
 	}
+
+	reader := result.Content
 
 	defer reader.Close()
 

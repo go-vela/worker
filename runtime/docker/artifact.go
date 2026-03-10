@@ -13,8 +13,8 @@ import (
 	"strings"
 
 	"github.com/containerd/errdefs"
-	dockerContainerTypes "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/moby/moby/api/pkg/stdcopy"
+	mobyClient "github.com/moby/moby/client"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
 )
@@ -22,19 +22,19 @@ import (
 // execContainerLines runs `sh -c cmd` in the named container and
 // returns its stdout split by newline (error if anything on stderr).
 func (c *client) execContainerLines(ctx context.Context, containerID, cmd string) ([]string, error) {
-	execConfig := dockerContainerTypes.ExecOptions{
-		Tty:          true,
+	execConfig := mobyClient.ExecCreateOptions{
+		TTY:          true,
 		Cmd:          []string{"sh", "-c", cmd},
 		AttachStdout: true,
 		AttachStderr: true,
 	}
 
-	resp, err := c.Docker.ContainerExecCreate(ctx, containerID, execConfig)
+	resp, err := c.Docker.ExecCreate(ctx, containerID, execConfig)
 	if err != nil {
 		return nil, fmt.Errorf("create exec: %w", err)
 	}
 
-	attach, err := c.Docker.ContainerExecAttach(ctx, resp.ID, dockerContainerTypes.ExecAttachOptions{})
+	attach, err := c.Docker.ExecAttach(ctx, resp.ID, mobyClient.ExecAttachOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("attach exec: %w", err)
 	}
@@ -106,8 +106,12 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 		return nil, 0, nil
 	}
 
+	copyOpts := mobyClient.CopyFromContainerOptions{
+		SourcePath: path,
+	}
+
 	// copy file from outputs container
-	reader, _, err := c.Docker.CopyFromContainer(ctx, ctn.ID, path)
+	result, err := c.Docker.CopyFromContainer(ctx, ctn.ID, copyOpts)
 	if err != nil {
 		c.Logger.Debugf("PollFileContent CopyFromContainer failed for %q: %v", path, err)
 		// early non-error exit if not found
@@ -117,6 +121,8 @@ func (c *client) PollFileContent(ctx context.Context, ctn *pipeline.Container, p
 
 		return nil, 0, err
 	}
+
+	reader := result.Content
 
 	defer reader.Close()
 
