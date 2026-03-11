@@ -726,3 +726,74 @@ func TestLinux_DestroyService(t *testing.T) {
 		})
 	}
 }
+
+func TestLinux_DestroyService_UploadsFinalStatus(t *testing.T) {
+	// setup types
+	_build := testBuild()
+
+	gin.SetMode(gin.TestMode)
+
+	s := httptest.NewServer(server.FakeHandler())
+
+	_client, err := vela.NewClient(s.URL, "", nil)
+	if err != nil {
+		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_docker, err := docker.NewMock()
+	if err != nil {
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_engine, err := New(
+		WithBuild(_build),
+		WithPipeline(new(pipeline.Build)),
+		WithRuntime(_docker),
+		WithVelaClient(_client),
+	)
+	if err != nil {
+		t.Errorf("unable to create executor engine: %v", err)
+	}
+
+	ctn := &pipeline.Container{
+		ID:          "service_github_octocat_1_postgres",
+		Detach:      true,
+		Directory:   "/vela/src/github.com/github/octocat",
+		Environment: map[string]string{"FOO": "bar"},
+		Image:       "postgres:15-alpine",
+		Name:        "postgres",
+		Number:      1,
+		Ports:       []string{"5432:5432"},
+		Pull:        "not_present",
+	}
+
+	// pre-populate the services map with a service in "running" status,
+	// simulating a detached service that is still live when the build ends.
+	_service := new(api.Service)
+	_service.SetName(ctn.Name)
+	_service.SetNumber(ctn.Number)
+	_service.SetStatus("running")
+
+	_engine.services.Store(ctn.ID, _service)
+
+	err = _engine.DestroyService(context.Background(), ctn)
+	if err != nil {
+		t.Errorf("DestroyService returned err: %v", err)
+	}
+
+	// the service pointer stored in the map should have been updated to "success"
+	// by the service.Upload call inside DestroyService.
+	result, ok := _engine.services.Load(ctn.ID)
+	if !ok {
+		t.Fatal("service not found in services map after DestroyService")
+	}
+
+	got, ok := result.(*api.Service)
+	if !ok {
+		t.Fatal("services map value is not *api.Service")
+	}
+
+	if got.GetStatus() != "success" {
+		t.Errorf("service status after DestroyService = %q, want %q", got.GetStatus(), "success")
+	}
+}

@@ -331,9 +331,25 @@ func (c *client) DestroyService(ctx context.Context, ctn *pipeline.Container) er
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("service", ctn.Name)
 
+	// load the service from the client
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Load
+	_service, err := service.Load(ctn, &c.services)
+	if err != nil {
+		// create the service from the container
+		_service = api.ServiceFromContainerEnvironment(ctn)
+	}
+
+	// defer an upload of the service
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/internal/service#Upload
+	defer func() {
+		service.Upload(ctx, ctn, c.build, c.Vela, c.Logger, _service)
+	}()
+
 	logger.Debug("inspecting container")
 	// inspect the runtime container
-	err := c.Runtime.InspectContainer(ctx, ctn)
+	err = c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
