@@ -446,9 +446,27 @@ func (c *client) DestroyStep(ctx context.Context, ctn *pipeline.Container) error
 	// https://pkg.go.dev/github.com/sirupsen/logrus#Entry.WithField
 	logger := c.Logger.WithField("step", ctn.Name)
 
+	// load the step from the client
+	//
+	// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Load
+	_step, err := step.Load(ctn, &c.steps)
+	if err != nil {
+		// create the step from the container
+		_step = api.StepFromContainerEnvironment(ctn)
+	}
+
+	if _step != nil {
+		// defer an upload of the step
+		//
+		// https://pkg.go.dev/github.com/go-vela/worker/internal/step#Upload
+		defer func() {
+			step.Upload(ctx, ctn, c.build, c.Vela, c.Logger, _step)
+		}()
+	}
+
 	logger.Debug("inspecting container")
 	// inspect the runtime container
-	err := c.Runtime.InspectContainer(ctx, ctn)
+	err = c.Runtime.InspectContainer(ctx, ctn)
 	if err != nil {
 		return err
 	}
