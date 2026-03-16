@@ -984,6 +984,76 @@ func TestLinux_DestroyStep(t *testing.T) {
 	}
 }
 
+func TestLinux_DestroyStep_UploadsFinalStatus(t *testing.T) {
+	// setup types
+	_build := testBuild()
+
+	gin.SetMode(gin.TestMode)
+
+	s := httptest.NewServer(server.FakeHandler())
+
+	_client, err := vela.NewClient(s.URL, "", nil)
+	if err != nil {
+		t.Errorf("unable to create Vela API client: %v", err)
+	}
+
+	_docker, err := docker.NewMock()
+	if err != nil {
+		t.Errorf("unable to create docker runtime engine: %v", err)
+	}
+
+	_engine, err := New(
+		WithBuild(_build),
+		WithPipeline(new(pipeline.Build)),
+		WithRuntime(_docker),
+		WithVelaClient(_client),
+	)
+	if err != nil {
+		t.Errorf("unable to create executor engine: %v", err)
+	}
+
+	ctn := &pipeline.Container{
+		ID:          "step_github_octocat_1_echo",
+		Detach:      true,
+		Directory:   "/vela/src/github.com/github/octocat",
+		Environment: map[string]string{"FOO": "bar"},
+		Image:       "alpine:latest",
+		Name:        "echo",
+		Number:      1,
+		Pull:        "not_present",
+	}
+
+	// pre-populate the steps map with a step in "running" status,
+	// simulating a detached step that is still live when the build ends.
+	_step := new(api.Step)
+	_step.SetName(ctn.Name)
+	_step.SetNumber(ctn.Number)
+	_step.SetStatus("running")
+
+	_engine.steps.Store(ctn.ID, _step)
+
+	err = _engine.DestroyStep(context.Background(), ctn)
+	if err != nil {
+		t.Errorf("DestroyStep returned err: %v", err)
+	}
+
+	// the step pointer stored in the map should have been updated to "success"
+	// by the step.Upload call inside DestroyStep.
+	result, ok := _engine.steps.Load(ctn.ID)
+	if !ok {
+		t.Fatal("step not found in steps map after DestroyStep")
+	}
+
+	got, ok := result.(*api.Step)
+	if !ok {
+		t.Fatal("steps map value is not *api.Step")
+	}
+
+	if got.GetStatus() != "success" {
+		t.Errorf("step status after DestroyStep = %q, want %q", got.GetStatus(), "success")
+	}
+}
+
 func TestLinux_getSecretValues(t *testing.T) {
 	fileSecret, err := os.ReadFile("./testdata/step/secret_text.txt")
 	if err != nil {
