@@ -173,14 +173,16 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 
 		outputs.Process(_step, opEnv, maskEnv)
 
+		// setup commands script
+		//
+		// this is done before substitution to ensure that YAML scalars in commands blocks do not throw off substitution for runtime vars
+		_step.Script()
+
 		// perform any substitution on dynamic variables
 		err = _step.Substitute()
 		if err != nil {
 			return err
 		}
-
-		// setup commands script
-		_step.Script()
 
 		c.Logger.Debug("injecting non-substituted secrets")
 		// inject no-substitution secrets for container
