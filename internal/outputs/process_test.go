@@ -69,6 +69,19 @@ func TestOutputs_Process(t *testing.T) {
 			},
 		},
 		{
+			name: "masked outputs with an empty value",
+			ctn: &pipeline.Container{
+				Environment: map[string]string{"FOO": "bar"},
+			},
+			maskedOutputs: map[string]string{"MASKED_OUTPUT1": "masked_value1", "MASKED_OUTPUT2": ""},
+			wantCtn: &pipeline.Container{
+				Environment: map[string]string{"FOO": "bar", "MASKED_OUTPUT1": "masked_value1", "MASKED_OUTPUT2": ""},
+				Secrets: []*pipeline.StepSecret{
+					{Target: "MASKED_OUTPUT1"},
+				},
+			},
+		},
+		{
 			name: "outputs with attempted overwrite of existing env",
 			ctn: &pipeline.Container{
 				Environment: map[string]string{"FOO": "bar"},

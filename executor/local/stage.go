@@ -133,6 +133,14 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 
 		outputs.Process(_step, opEnv, maskEnv)
 
+		_step.Script()
+
+		// perform any substitution on dynamic variables
+		err = _step.Substitute()
+		if err != nil {
+			return err
+		}
+
 		// execute the step
 		err = c.ExecStep(ctx, _step)
 		if err != nil {

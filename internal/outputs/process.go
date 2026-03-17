@@ -38,9 +38,14 @@ func Process(c *pipeline.Container, outputs, maskedOutputs map[string]string) {
 	// add masked outputs to container secrets for masking in logs
 	if len(maskedOutputs) > 0 {
 		outputSecrets := make([]*pipeline.StepSecret, 0, len(maskedOutputs))
-		for key := range maskedOutputs {
+		for k, v := range maskedOutputs {
+			// skip empty values
+			if strings.TrimSpace(v) == "" {
+				continue
+			}
+
 			outputSecrets = append(outputSecrets, &pipeline.StepSecret{
-				Target: key,
+				Target: k,
 			})
 		}
 

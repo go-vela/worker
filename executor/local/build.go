@@ -313,6 +313,14 @@ func (c *client) ExecBuild(ctx context.Context) error {
 
 		outputs.Process(_step, opEnv, maskEnv)
 
+		_step.Script()
+
+		// perform any substitution on dynamic variables
+		err = _step.Substitute()
+		if err != nil {
+			return err
+		}
+
 		// execute the step
 		c.err = c.ExecStep(ctx, _step)
 		if c.err != nil {

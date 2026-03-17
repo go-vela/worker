@@ -116,6 +116,13 @@ func (c *client) PlanStep(ctx context.Context, ctn *pipeline.Container) error {
 		}
 
 		requestToken = tkn.GetToken()
+
+		// add request token to secrets for log masking
+		sec := &pipeline.StepSecret{
+			Target: "VELA_ID_TOKEN_REQUEST_TOKEN",
+		}
+
+		ctn.Secrets = append(ctn.Secrets, sec)
 	}
 
 	// update the step container environment

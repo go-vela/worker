@@ -538,14 +538,16 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
+		// setup commands script
+		//
+		// this is done before substitution to ensure that YAML scalars in commands blocks do not throw off substitution for runtime vars
+		_step.Script()
+
 		// perform any substitution on dynamic variables
 		err = _step.Substitute()
 		if err != nil {
 			return err
 		}
-
-		// setup commands script
-		_step.Script()
 
 		// inject no-substitution secrets for container
 		err = injectSecrets(_step, c.NoSubSecrets)
