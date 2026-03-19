@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -953,6 +954,26 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 }
 
 func (c *client) UpdateSCMAuth(ctx context.Context, ctn *pipeline.Container) error {
+	if ctn.Git != nil && len(ctn.Git.Token.Repositories) > 0 {
+		c.Logger.Infof("container %s requesting SCM token", ctn.ID)
+
+		input := &api.TokenRequest{
+			Repositories: ctn.Git.Token.Repositories,
+			Permissions:  ctn.Git.Token.Permissions,
+		}
+
+		tkn, _, err := c.Vela.Build.PostInstallToken(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber(), input)
+		if err != nil {
+			return fmt.Errorf("unable to post install token: %w", err)
+		}
+
+		ctn.Environment["VELA_NETRC_PASSWORD"] = tkn.GetToken()
+		ctn.Environment["VELA_GIT_TOKEN"] = tkn.GetToken()
+		ctn.Environment["VELA_GIT_TOKEN_EXPIRATION"] = strconv.FormatInt(tkn.GetExpiration(), 10)
+
+		return nil
+	}
+
 	// refresh SCM token if within 45 minutes of expiration
 	//
 	// this is an arbitrary range. We want the installation token to always be fresh for steps but don't want to refresh for every step.
@@ -963,10 +984,11 @@ func (c *client) UpdateSCMAuth(ctx context.Context, ctn *pipeline.Container) err
 		if err != nil {
 			return fmt.Errorf("unable to refresh SCM token: %w", err)
 		}
-
-		ctn.Environment["VELA_NETRC_PASSWORD"] = c.Vela.Authentication.SCMToken()
-		ctn.Environment["VELA_GIT_TOKEN"] = c.Vela.Authentication.SCMToken()
 	}
+
+	ctn.Environment["VELA_NETRC_PASSWORD"] = c.Vela.Authentication.SCMToken()
+	ctn.Environment["VELA_GIT_TOKEN"] = c.Vela.Authentication.SCMToken()
+	ctn.Environment["VELA_GIT_TOKEN_EXPIRATION"] = strconv.FormatInt(c.Vela.Authentication.SCMExpiration(), 10)
 
 	return nil
 }
