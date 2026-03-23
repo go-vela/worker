@@ -953,7 +953,9 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 	return err
 }
 
+// UpdateSCMAuth updates the SCM authentication information for a container.
 func (c *client) UpdateSCMAuth(ctx context.Context, ctn *pipeline.Container) error {
+	// if the container is requesting a token, fetch a new one and add it to the environment
 	if ctn.Git != nil && len(ctn.Git.Token.Repositories) > 0 {
 		c.Logger.Infof("container %s requesting SCM token", ctn.ID)
 
