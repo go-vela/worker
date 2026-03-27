@@ -17,7 +17,7 @@ require (
 	github.com/moby/moby/client v0.3.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sirupsen/logrus v1.9.4
-	github.com/urfave/cli/v3 v3.7.0
+	github.com/urfave/cli/v3 v3.8.0
 	golang.org/x/sync v0.20.0
 	gotest.tools/v3 v3.5.2
 	k8s.io/api v0.35.3
