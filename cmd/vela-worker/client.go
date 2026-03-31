@@ -24,7 +24,7 @@ func setupClient(s *Server, token string) (*vela.Client, error) {
 }
 
 // helper function to setup the vela API client for executor calls to update build resources.
-func setupExecClient(s *Server, buildToken, scmToken string, exp int64, build *api.Build) (*vela.Client, error) {
+func setupExecClient(s *Server, buildToken, scmToken string, build *api.Build) (*vela.Client, error) {
 	logrus.Debug("creating vela client from worker configuration")
 
 	vela, err := vela.NewClient(s.Address, "", nil)
@@ -32,7 +32,7 @@ func setupExecClient(s *Server, buildToken, scmToken string, exp int64, build *a
 		return nil, err
 	}
 
-	vela.Authentication.SetBuildTokenAuth(buildToken, scmToken, exp, build.GetRepo().GetFullName(), build.GetNumber())
+	vela.Authentication.SetBuildTokenAuth(buildToken, scmToken, build.GetRepo().GetFullName(), build.GetNumber())
 
 	return vela, nil
 }

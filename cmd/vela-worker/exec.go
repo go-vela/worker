@@ -148,7 +148,7 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		p.Prepare(item.Build.GetRepo().GetOrg(), item.Build.GetRepo().GetName(), item.Build.GetNumber(), false)
 
 		// setup exec client with scm token and build token
-		execBuildClient, err = setupExecClient(w.Config.Server, bt.GetToken(), p.Token, p.TokenExp, item.Build)
+		execBuildClient, err = setupExecClient(w.Config.Server, bt.GetToken(), p.Token, item.Build)
 		if err != nil {
 			return err
 		}
