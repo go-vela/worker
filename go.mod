@@ -8,8 +8,8 @@ require (
 	github.com/distribution/reference v0.6.0
 	github.com/docker/go-units v0.5.0
 	github.com/gin-gonic/gin v1.12.0
-	github.com/go-vela/sdk-go v0.28.0-rc5
-	github.com/go-vela/server v0.28.0-rc9
+	github.com/go-vela/sdk-go v0.28.0
+	github.com/go-vela/server v0.28.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
@@ -17,7 +17,7 @@ require (
 	github.com/moby/moby/client v0.3.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sirupsen/logrus v1.9.4
-	github.com/urfave/cli/v3 v3.7.0
+	github.com/urfave/cli/v3 v3.8.0
 	golang.org/x/sync v0.20.0
 	gotest.tools/v3 v3.5.2
 	k8s.io/api v0.35.3
@@ -49,7 +49,7 @@ require (
 	github.com/lestrrat-go/httprc/v3 v3.0.2 // indirect
 	github.com/lestrrat-go/jwx/v3 v3.0.13 // indirect
 	github.com/lestrrat-go/option/v2 v2.0.0 // indirect
-	github.com/lib/pq v1.12.0 // indirect
+	github.com/lib/pq v1.12.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.32 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
@@ -165,7 +165,7 @@ require (
 	go.opentelemetry.io/otel v1.42.0 // indirect
 	go.opentelemetry.io/otel/metric v1.42.0 // indirect
 	go.opentelemetry.io/otel/trace v1.42.0 // indirect
-	go.starlark.net v0.0.0-20260210143700-b62fd896b91b // indirect
+	go.starlark.net v0.0.0-20260326113308-fadfc96def35 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/arch v0.24.0 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
