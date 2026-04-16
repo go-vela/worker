@@ -303,6 +303,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		// skip hidden files and files within hidden directories
 		if isHidden(filePath) {
 			logger.Debugf("skipping hidden file or directory: %s", filePath)
+
 			skipped++
 
 			continue
@@ -314,6 +315,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 			streamLog(fmt.Sprintf("artifact %q could not be uploaded — the server did not provide an upload URL. "+
 				"This may indicate that artifact storage is not configured or the server encountered an error. "+
 				"Please contact your Vela administrator if this persists. (error: %v)", fileName, err))
+
 			failed++
 
 			continue
@@ -323,6 +325,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		reader, size, err := o.client.Runtime.PollFileContent(ctx, ctn, filePath)
 		if err != nil {
 			streamLog(fmt.Sprintf("unable to read artifact file %q from container: %v", filePath, err))
+
 			failed++
 
 			continue
@@ -334,6 +337,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		if o.client.fileSizeLimit > 0 && size > o.client.fileSizeLimit {
 			streamLog(fmt.Sprintf("skipping artifact %q — file size (%d bytes) exceeds the per-file limit (%d bytes)",
 				fileName, size, o.client.fileSizeLimit))
+
 			skipped++
 
 			continue
@@ -342,6 +346,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		if o.client.buildFileSizeLimit > 0 && size+o.client.Uploaded > o.client.buildFileSizeLimit {
 			streamLog(fmt.Sprintf("skipping artifact %q — uploading this file would exceed the per-build size limit (%d bytes). "+
 				"Total uploaded so far: %d bytes", fileName, o.client.buildFileSizeLimit, o.client.Uploaded))
+
 			skipped++
 
 			continue
@@ -359,6 +364,7 @@ func (o *outputSvc) pollFiles(ctx context.Context, ctn *pipeline.Container, _ste
 		err = uploadObject(ctx, putClient, reader, size, fileName, url.URL)
 		if err != nil {
 			streamLog(fmt.Sprintf("failed to upload artifact %q: %v", fileName, err))
+
 			failed++
 
 			continue
