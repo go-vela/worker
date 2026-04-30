@@ -532,28 +532,28 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
-		c.Logger.Infof("planning %s step", _step.Name)
-		// plan the step
-		c.err = c.PlanStep(ctx, _step)
-		if c.err != nil {
-			return fmt.Errorf("unable to plan step: %w", c.err)
-		}
-
 		// setup commands script
 		//
 		// this is done before substitution to ensure that YAML scalars in commands blocks do not throw off substitution for runtime vars
 		_step.Script()
 
 		// perform any substitution on dynamic variables
-		err = _step.Substitute()
-		if err != nil {
-			return err
+		c.err = _step.Substitute()
+		if c.err != nil {
+			return fmt.Errorf("unable to substitute step: %w", c.err)
 		}
 
 		// inject no-substitution secrets for container
-		err = injectSecrets(_step, c.NoSubSecrets)
-		if err != nil {
-			return err
+		c.err = injectSecrets(_step, c.NoSubSecrets)
+		if c.err != nil {
+			return fmt.Errorf("unable to inject secrets: %w", c.err)
+		}
+
+		c.Logger.Infof("planning %s step", _step.Name)
+		// plan the step
+		c.err = c.PlanStep(ctx, _step)
+		if c.err != nil {
+			return fmt.Errorf("unable to plan step: %w", c.err)
 		}
 
 		c.Logger.Infof("executing %s step", _step.Name)
