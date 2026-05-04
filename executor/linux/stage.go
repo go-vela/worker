@@ -158,13 +158,6 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}
 
-		logger.Debugf("planning %s step", _step.Name)
-		// plan the step
-		err = c.PlanStep(ctx, _step)
-		if err != nil {
-			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
-		}
-
 		// poll outputs
 		opEnv, maskEnv, err := c.outputs.poll(ctx, c.OutputCtn)
 		if c.err != nil {
@@ -189,6 +182,13 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 		err = injectSecrets(_step, c.NoSubSecrets)
 		if err != nil {
 			return err
+		}
+
+		logger.Debugf("planning %s step", _step.Name)
+		// plan the step
+		err = c.PlanStep(ctx, _step)
+		if err != nil {
+			return fmt.Errorf("unable to plan step %s: %w", _step.Name, err)
 		}
 
 		logger.Infof("executing %s step", _step.Name)
