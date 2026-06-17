@@ -574,7 +574,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	// refresh SCM auth once before stage fan-out to avoid parallel refresh storms
 	_, _, c.err = c.refreshSCMAuthIfNeeded(ctx)
 	if c.err != nil {
-		return fmt.Errorf("unable to refresh SCM auth before stage execution: %w", c.err)
+		c.Logger.Errorf("unable to refresh SCM auth before stage execution: %v", c.err)
 	}
 
 	// create an error group with the context for each stage
