@@ -78,6 +78,7 @@ func TestLinux_UpdateSCMAuth_ConcurrentRefresh(t *testing.T) {
 		wg.Add(1)
 
 		ctn := ctns[i]
+
 		go func() {
 			defer wg.Done()
 
@@ -157,6 +158,7 @@ func TestLinux_UpdateSCMAuth_ConcurrentNoRefresh(t *testing.T) {
 		wg.Add(1)
 
 		ctn := ctns[i]
+
 		go func() {
 			defer wg.Done()
 
@@ -179,6 +181,7 @@ func TestLinux_UpdateSCMAuth_ConcurrentNoRefresh(t *testing.T) {
 	}
 
 	wantExp := strconv.FormatInt(expiration, 10)
+
 	for i, ctn := range ctns {
 		if got, want := ctn.Environment["VELA_NETRC_PASSWORD"], "initial-token"; got != want {
 			t.Fatalf("container %d has unexpected VELA_NETRC_PASSWORD: got %q, want %q", i, got, want)
