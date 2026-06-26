@@ -177,6 +177,13 @@ func (i *ImageService) ImageSave(_ context.Context, _ []string, _ ...client.Imag
 	return nil, nil
 }
 
+// ImageAttestations is a helper function to simulate
+// a mocked call to retrieve attestations for a
+// Docker image.
+func (i *ImageService) ImageAttestations(_ context.Context, _ string, _ ...client.ImageAttestationsOption) (client.ImageAttestationsResult, error) {
+	return client.ImageAttestationsResult{}, nil
+}
+
 // WARNING: DO NOT REMOVE THIS UNDER ANY CIRCUMSTANCES
 //
 // This line serves as a quick and efficient way to ensure that our
