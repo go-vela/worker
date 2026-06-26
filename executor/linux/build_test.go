@@ -4,8 +4,12 @@ package linux
 
 import (
 	"context"
+	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -26,6 +30,172 @@ import (
 	"github.com/go-vela/worker/runtime/docker"
 	"github.com/go-vela/worker/runtime/kubernetes"
 )
+
+func TestLinux_UpdateSCMAuth_ConcurrentRefresh(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	var refreshCalls int32
+
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/install_token") {
+			atomic.AddInt32(&refreshCalls, 1)
+
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"token":"refreshed-token","expiration":4102444800}`))
+
+			return
+		}
+
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer s.Close()
+
+	apiClient, err := vela.NewClient(s.URL, "", nil)
+	if err != nil {
+		t.Fatalf("unable to create Vela API client: %v", err)
+	}
+
+	// Use a token expiring soon to force refresh for the first caller.
+	apiClient.Authentication.SetBuildTokenAuth("build-token", "initial-token", time.Now().Unix()+60, "github/octocat", 1)
+
+	engine := &client{
+		Logger: logrus.NewEntry(logrus.New()),
+		Vela:   apiClient,
+		build:  testBuild(),
+	}
+
+	const goroutines = 10
+
+	ctns := make([]*pipeline.Container, goroutines)
+	for i := range ctns {
+		ctns[i] = &pipeline.Container{Environment: map[string]string{}}
+	}
+
+	errCh := make(chan error, goroutines)
+
+	var wg sync.WaitGroup
+	for i := range ctns {
+		wg.Add(1)
+
+		ctn := ctns[i]
+
+		go func() {
+			defer wg.Done()
+
+			err := engine.UpdateSCMAuth(context.Background(), ctn)
+			errCh <- err
+		}()
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		if err != nil {
+			t.Fatalf("UpdateSCMAuth returned err: %v", err)
+		}
+	}
+
+	if got, want := atomic.LoadInt32(&refreshCalls), int32(1); got != want {
+		t.Fatalf("unexpected refresh call count: got %d, want %d", got, want)
+	}
+
+	for i, ctn := range ctns {
+		if got, want := ctn.Environment["VELA_NETRC_PASSWORD"], "refreshed-token"; got != want {
+			t.Fatalf("container %d has unexpected VELA_NETRC_PASSWORD: got %q, want %q", i, got, want)
+		}
+
+		if got, want := ctn.Environment["VELA_GIT_TOKEN"], "refreshed-token"; got != want {
+			t.Fatalf("container %d has unexpected VELA_GIT_TOKEN: got %q, want %q", i, got, want)
+		}
+
+		if got, want := ctn.Environment["VELA_GIT_TOKEN_EXPIRATION"], "4102444800"; got != want {
+			t.Fatalf("container %d has unexpected VELA_GIT_TOKEN_EXPIRATION: got %q, want %q", i, got, want)
+		}
+	}
+}
+
+func TestLinux_UpdateSCMAuth_ConcurrentNoRefresh(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	var refreshCalls int32
+
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/install_token") {
+			atomic.AddInt32(&refreshCalls, 1)
+		}
+
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer s.Close()
+
+	apiClient, err := vela.NewClient(s.URL, "", nil)
+	if err != nil {
+		t.Fatalf("unable to create Vela API client: %v", err)
+	}
+
+	// Use a token expiration far in the future so refresh is not needed.
+	expiration := time.Now().Unix() + int64((2 * time.Hour).Seconds())
+	apiClient.Authentication.SetBuildTokenAuth("build-token", "initial-token", expiration, "github/octocat", 1)
+
+	engine := &client{
+		Logger: logrus.NewEntry(logrus.New()),
+		Vela:   apiClient,
+		build:  testBuild(),
+	}
+
+	const goroutines = 10
+
+	ctns := make([]*pipeline.Container, goroutines)
+	for i := range ctns {
+		ctns[i] = &pipeline.Container{Environment: map[string]string{}}
+	}
+
+	errCh := make(chan error, goroutines)
+
+	var wg sync.WaitGroup
+	for i := range ctns {
+		wg.Add(1)
+
+		ctn := ctns[i]
+
+		go func() {
+			defer wg.Done()
+
+			err := engine.UpdateSCMAuth(context.Background(), ctn)
+			errCh <- err
+		}()
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		if err != nil {
+			t.Fatalf("UpdateSCMAuth returned err: %v", err)
+		}
+	}
+
+	if got, want := atomic.LoadInt32(&refreshCalls), int32(0); got != want {
+		t.Fatalf("unexpected refresh call count: got %d, want %d", got, want)
+	}
+
+	wantExp := strconv.FormatInt(expiration, 10)
+
+	for i, ctn := range ctns {
+		if got, want := ctn.Environment["VELA_NETRC_PASSWORD"], "initial-token"; got != want {
+			t.Fatalf("container %d has unexpected VELA_NETRC_PASSWORD: got %q, want %q", i, got, want)
+		}
+
+		if got, want := ctn.Environment["VELA_GIT_TOKEN"], "initial-token"; got != want {
+			t.Fatalf("container %d has unexpected VELA_GIT_TOKEN: got %q, want %q", i, got, want)
+		}
+
+		if got := ctn.Environment["VELA_GIT_TOKEN_EXPIRATION"]; got != wantExp {
+			t.Fatalf("container %d has unexpected VELA_GIT_TOKEN_EXPIRATION: got %q, want %q", i, got, wantExp)
+		}
+	}
+}
 
 func TestLinux_CreateBuild(t *testing.T) {
 	// setup types

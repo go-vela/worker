@@ -571,6 +571,12 @@ func (c *client) ExecBuild(ctx context.Context) error {
 		}
 	}
 
+	// refresh SCM auth once before stage fan-out to avoid parallel refresh storms
+	_, _, c.err = c.refreshSCMAuthIfNeeded(ctx)
+	if c.err != nil {
+		c.Logger.Errorf("unable to refresh SCM auth before stage execution: %v", c.err)
+	}
+
 	// create an error group with the context for each stage
 	//
 	// https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext
@@ -623,6 +629,39 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	}
 
 	return c.err
+}
+
+// refreshSCMAuthIfNeeded refreshes the shared SCM install token when it is
+// expired per SDK policy or within the worker's proactive refresh window.
+//
+// Access is synchronized because services, steps, and stages can call
+// UpdateSCMAuth concurrently during build execution.
+func (c *client) refreshSCMAuthIfNeeded(ctx context.Context) (string, int64, error) {
+	const proactiveRefreshWindow = 15 * time.Minute
+
+	c.scmAuthMu.Lock()
+	defer c.scmAuthMu.Unlock()
+
+	expiration := c.Vela.Authentication.SCMExpiration()
+	refreshNeeded := c.Vela.Authentication.IsSCMTokenExpired()
+
+	if !refreshNeeded && expiration != 0 {
+		expiresAt := time.Unix(expiration, 0)
+		refreshNeeded = time.Now().Add(proactiveRefreshWindow).After(expiresAt)
+	}
+
+	if refreshNeeded {
+		c.Logger.Info("refreshing SCM token")
+
+		_, err := c.Vela.Authentication.RefreshInstallToken(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber())
+		if err != nil {
+			return "", 0, fmt.Errorf("unable to refresh SCM token: %w", err)
+		}
+
+		expiration = c.Vela.Authentication.SCMExpiration()
+	}
+
+	return c.Vela.Authentication.SCMToken(), expiration, nil
 }
 
 // StreamBuild receives a StreamRequest and then
@@ -976,21 +1015,15 @@ func (c *client) UpdateSCMAuth(ctx context.Context, ctn *pipeline.Container) err
 		return nil
 	}
 
-	// refresh SCM token if within 45 minutes of expiration
-	//
-	// this is an arbitrary range. We want the installation token to always be fresh for steps but don't want to refresh for every step.
-	if c.Vela.Authentication.SCMExpiration() != 0 && time.Now().Unix() >= c.Vela.Authentication.SCMExpiration()-int64((45*time.Minute).Seconds()) {
-		c.Logger.Info("refreshing SCM token")
-
-		_, err := c.Vela.Authentication.RefreshInstallToken(ctx, c.build.GetRepo().GetOrg(), c.build.GetRepo().GetName(), c.build.GetNumber())
-		if err != nil {
-			return fmt.Errorf("unable to refresh SCM token: %w", err)
-		}
+	// refresh SCM token if expired per SDK expiration policy
+	token, expiration, err := c.refreshSCMAuthIfNeeded(ctx)
+	if err != nil {
+		return err
 	}
 
-	ctn.Environment["VELA_NETRC_PASSWORD"] = c.Vela.Authentication.SCMToken()
-	ctn.Environment["VELA_GIT_TOKEN"] = c.Vela.Authentication.SCMToken()
-	ctn.Environment["VELA_GIT_TOKEN_EXPIRATION"] = strconv.FormatInt(c.Vela.Authentication.SCMExpiration(), 10)
+	ctn.Environment["VELA_NETRC_PASSWORD"] = token
+	ctn.Environment["VELA_GIT_TOKEN"] = token
+	ctn.Environment["VELA_GIT_TOKEN_EXPIRATION"] = strconv.FormatInt(expiration, 10)
 
 	return nil
 }

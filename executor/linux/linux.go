@@ -53,6 +53,8 @@ type (
 
 		streamRequests chan message.StreamRequest
 
+		scmAuthMu sync.Mutex
+
 		err error
 	}
 
