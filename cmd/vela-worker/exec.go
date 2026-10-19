@@ -163,6 +163,12 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
 	execOutputCtn.Sanitize(w.Config.Runtime.Driver)
 
+	// outputs are not supported by the kubernetes runtime (output polling is a no-op),
+	// so an empty image keeps the outputs container out of the pod
+	if w.Config.Runtime.Driver == constants.DriverKubernetes {
+		execOutputCtn.Image = ""
+	}
+
 	// create logger with extra metadata
 	//
 	// https://pkg.go.dev/github.com/sirupsen/logrus#WithFields

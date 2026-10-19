@@ -581,9 +581,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 	}
 
 	// refresh SCM auth once before stage fan-out to avoid parallel refresh storms
-	_, _, c.err = c.refreshSCMAuthIfNeeded(ctx)
-	if c.err != nil {
-		c.Logger.Errorf("unable to refresh SCM auth before stage execution: %v", c.err)
+	//
+	// kubernetes containers received their credentials when the pod was assembled
+	if c.Runtime.Driver() != constants.DriverKubernetes {
+		_, _, c.err = c.refreshSCMAuthIfNeeded(ctx)
+		if c.err != nil {
+			c.Logger.Errorf("unable to refresh SCM auth before stage execution: %v", c.err)
+		}
 	}
 
 	// create an error group with the context for each stage
@@ -713,7 +717,7 @@ func (c *client) StreamBuild(ctx context.Context) error {
 	// allow the runtime to do log/event streaming setup at build-level
 	streams.Go(func() error {
 		// If needed, the runtime should handle synchronizing with
-		// AssembleBuild which runs concurrently with StreamBuild.
+		// AssembleBuild, which may still be running when StreamBuild starts.
 		return c.Runtime.StreamBuild(streamCtx, c.pipeline)
 	})
 
@@ -1009,13 +1013,15 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 }
 
 // updateSCMAuthForAllContainers updates the SCM authentication information
-// for every container in the pipeline. The shared install token is refreshed
-// first, so the pod starts with a full token lifetime; builds that outlive the
-// token are a known limitation of runtimes with a fixed container environment.
+// for every container in the pipeline that can run. The shared install token
+// is refreshed first, so the pod starts with a full token lifetime; builds that
+// outlive the token are a known limitation of runtimes with a fixed container
+// environment. If that refresh fails, the current token is kept unless it is
+// expired or about to expire.
 func (c *client) updateSCMAuthForAllContainers(ctx context.Context) error {
 	_, _, err := c.refreshSCMAuth(ctx, true)
 	if err != nil {
-		return err
+		c.Logger.Warnf("unable to refresh SCM token before assembling the build, using the current token: %v", err)
 	}
 
 	for _, _service := range c.pipeline.Services {
@@ -1031,6 +1037,10 @@ func (c *client) updateSCMAuthForAllContainers(ctx context.Context) error {
 		}
 
 		for _, _step := range _stage.Steps {
+			if c.neverRuns(_step) {
+				continue
+			}
+
 			err := c.UpdateSCMAuth(ctx, _step)
 			if err != nil {
 				return err
@@ -1039,7 +1049,7 @@ func (c *client) updateSCMAuthForAllContainers(ctx context.Context) error {
 	}
 
 	for _, _step := range c.pipeline.Steps {
-		if _step.Name == constants.InitName {
+		if _step.Name == constants.InitName || c.neverRuns(_step) {
 			continue
 		}
 
@@ -1061,6 +1071,20 @@ func (c *client) updateSCMAuthForAllContainers(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// neverRuns reports whether a step's ruleset skips it for every build status
+// it could run under, so it never needs SCM credentials. Errors are treated
+// as runnable to keep the credentials the step would have received.
+func (c *client) neverRuns(ctn *pipeline.Container) bool {
+	for _, status := range []string{constants.StatusSuccess, constants.StatusFailure} {
+		skip, err := step.Skip(ctn, c.build, status)
+		if err != nil || !skip {
+			return false
+		}
+	}
+
+	return true
 }
 
 // updateSCMAuthForExec updates the SCM authentication information for a
