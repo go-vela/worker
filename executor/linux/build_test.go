@@ -156,7 +156,9 @@ func TestLinux_UpdateSCMAuthForAllContainers(t *testing.T) {
 					atomic.AddInt32(&refreshCalls, 1)
 
 					if test.refreshFails {
+						w.Header().Set("Content-Type", "application/json")
 						w.WriteHeader(http.StatusInternalServerError)
+						_, _ = w.Write([]byte(`{"error":"unable to refresh install token"}`))
 
 						return
 					}
