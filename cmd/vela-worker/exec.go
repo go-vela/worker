@@ -161,6 +161,7 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 	// need to dereference to avoid executors sharing the last set outputs container config
 	execOutputCtn := *w.Config.Executor.OutputCtn
 	execOutputCtn.ID = fmt.Sprintf("outputs_%s", p.ID)
+	execOutputCtn.Sanitize(w.Config.Runtime.Driver)
 
 	// create logger with extra metadata
 	//
@@ -229,6 +230,7 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		Namespace:        w.Config.Runtime.Namespace,
 		PodsTemplateName: w.Config.Runtime.PodsTemplateName,
 		PodsTemplateFile: w.Config.Runtime.PodsTemplateFile,
+		PauseImage:       w.Config.Runtime.PauseImage,
 		PrivilegedImages: w.Config.Runtime.PrivilegedImages,
 		DropCapabilities: w.Config.Runtime.DropCapabilities,
 	})
@@ -344,6 +346,21 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		return nil
 	}
 
+	// add StreamBuild goroutine to WaitGroup
+	//
+	// StreamBuild must start before AssembleBuild: the kubernetes runtime
+	// waits in AssembleBuild for the pod informer that StreamBuild starts.
+	//
+	// log/event streaming uses buildCtx so that it is not subject to the timeout.
+	wg.Go(func() {
+		logger.Info("streaming build logs")
+		// execute the build with the executor
+		streamErr := _executor.StreamBuild(buildCtx)
+		if streamErr != nil {
+			logger.Errorf("unable to stream build logs: %v", streamErr)
+		}
+	})
+
 	logger.Info("assembling build")
 	// assemble the build with the executor
 	err = _executor.AssembleBuild(timeoutCtx)
@@ -351,18 +368,6 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		logger.Errorf("unable to assemble build: %v", err)
 		return nil
 	}
-
-	// add StreamBuild goroutine to WaitGroup
-
-	// log/event streaming uses buildCtx so that it is not subject to the timeout.
-	wg.Go(func() {
-		logger.Info("streaming build logs")
-		// execute the build with the executor
-		err = _executor.StreamBuild(buildCtx)
-		if err != nil {
-			logger.Errorf("unable to stream build logs: %v", err)
-		}
-	})
 
 	logger.Info("executing build")
 	// execute the build with the executor

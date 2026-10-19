@@ -37,6 +37,8 @@ type Setup struct {
 	PodsTemplateName string
 	// specifies the fallback path of a PipelinePodsTemplate in a local YAML file (only used by kubernetes; only used if PodsTemplateName not defined)
 	PodsTemplateFile string
+	// specifies the placeholder image for pipeline containers before they execute (only used by kubernetes)
+	PauseImage string
 	// specifies a list of privileged images to use for the runtime client
 	PrivilegedImages []string
 	// specifies a list of kernel capabilities to drop from container (only used by Docker)
@@ -78,6 +80,7 @@ func (s *Setup) Kubernetes() (Engine, error) {
 		kubernetes.WithHostVolumes(s.HostVolumes),
 		kubernetes.WithNamespace(s.Namespace),
 		kubernetes.WithPodsTemplate(s.PodsTemplateName, s.PodsTemplateFile),
+		kubernetes.WithPauseImage(s.PauseImage),
 		kubernetes.WithPrivilegedImages(s.PrivilegedImages),
 		kubernetes.WithLogger(s.Logger),
 	}

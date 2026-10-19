@@ -419,6 +419,15 @@ func (c *client) AssembleBuild(ctx context.Context) error {
 		_log.AppendData(buildOutput)
 	}
 
+	// kubernetes fixes container environments when the pod is created,
+	// so SCM credentials must be set before the runtime build is assembled
+	if c.Runtime.Driver() == constants.DriverKubernetes {
+		c.err = c.updateSCMAuthForAllContainers(ctx)
+		if c.err != nil {
+			return fmt.Errorf("unable to update SCM auth: %w", c.err)
+		}
+	}
+
 	// assemble runtime build just before any containers execute
 	c.err = c.Runtime.AssembleBuild(ctx, c.pipeline)
 	if c.err != nil {
@@ -990,6 +999,54 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 	}
 
 	return err
+}
+
+// updateSCMAuthForAllContainers updates the SCM authentication information
+// for every container in the pipeline.
+func (c *client) updateSCMAuthForAllContainers(ctx context.Context) error {
+	for _, _service := range c.pipeline.Services {
+		err := c.UpdateSCMAuth(ctx, _service)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, _stage := range c.pipeline.Stages {
+		if _stage.Name == constants.InitName {
+			continue
+		}
+
+		for _, _step := range _stage.Steps {
+			err := c.UpdateSCMAuth(ctx, _step)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	for _, _step := range c.pipeline.Steps {
+		if _step.Name == constants.InitName {
+			continue
+		}
+
+		err := c.UpdateSCMAuth(ctx, _step)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, _secret := range c.pipeline.Secrets {
+		if _secret.Origin.Empty() {
+			continue
+		}
+
+		err := c.UpdateSCMAuth(ctx, _secret.Origin)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // UpdateSCMAuth updates the SCM authentication information for a container.

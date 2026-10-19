@@ -30,6 +30,7 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	// create new fields
 	c.config = new(config)
+	c.config.PauseImage = pauseImage
 	c.Pod = new(v1.Pod)
 
 	c.containersLookup = map[string]int{}

@@ -45,7 +45,7 @@ func (c *client) InspectContainer(_ context.Context, ctn *pipeline.Container) er
 		// avoid a panic if the build ends without terminating all containers
 		if cst.State.Terminated == nil {
 			// steps that were not executed will still be "running" the pause image as expected.
-			if cst.Image == pauseImage || cst.Image == image.Parse(pauseImage) {
+			if cst.Image == c.config.PauseImage || cst.Image == image.Parse(c.config.PauseImage) {
 				return nil
 			}
 
@@ -142,7 +142,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		// the containers with the proper image.
 		//
 		// https://hub.docker.com/r/kubernetes/pause
-		Image:           image.Parse(pauseImage),
+		Image:           image.Parse(c.config.PauseImage),
 		Env:             []v1.EnvVar{},
 		Stdin:           false,
 		StdinOnce:       false,

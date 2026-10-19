@@ -109,6 +109,23 @@ func WithPodsTemplate(name string, path string) ClientOpt {
 	}
 }
 
+// WithPauseImage sets the placeholder image for pipeline containers in the runtime client for Kubernetes.
+func WithPauseImage(pauseImage string) ClientOpt {
+	return func(c *client) error {
+		c.Logger.Trace("configuring pause image in kubernetes runtime client")
+
+		// keep the default pause image when none is provided
+		if len(pauseImage) == 0 {
+			return nil
+		}
+
+		// set the runtime pause image in the kubernetes client
+		c.config.PauseImage = pauseImage
+
+		return nil
+	}
+}
+
 // WithPrivilegedImages sets the privileged images in the runtime client for Kubernetes.
 func WithPrivilegedImages(images []string) ClientOpt {
 	return func(c *client) error {
