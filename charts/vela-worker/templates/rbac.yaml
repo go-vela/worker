@@ -1,0 +1,39 @@
+{{- if and .Values.rbac.create (include "vela-worker.isKubernetes" .) }}
+{{- $fullname := include "vela-worker.fullname" . }}
+{{- $namespace := include "vela-worker.runtimeNamespace" . }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $fullname }}
+  namespace: {{ $namespace }}
+  labels:
+    {{- include "vela-worker.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list", "watch"]
+  {{- if include "vela-worker.podsTemplateName" . }}
+  - apiGroups: ["go-vela.github.io"]
+    resources: ["pipelinepodstemplates"]
+    verbs: ["get", "list", "watch"]
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $fullname }}
+  namespace: {{ $namespace }}
+  labels:
+    {{- include "vela-worker.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $fullname }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vela-worker.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

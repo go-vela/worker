@@ -132,7 +132,7 @@ func (s *secretSvc) exec(ctx context.Context, p *pipeline.SecretSlice) error {
 			continue
 		}
 
-		s.client.err = s.client.UpdateSCMAuth(ctx, _secret.Origin)
+		s.client.err = s.client.updateSCMAuthForExec(ctx, _secret.Origin)
 		if s.client.err != nil {
 			return fmt.Errorf("unable to update SCM auth: %w", s.client.err)
 		}

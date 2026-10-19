@@ -1,0 +1,12 @@
+{{- if and .Values.runtime.podsTemplate.create (include "vela-worker.isKubernetes" .) }}
+apiVersion: go-vela.github.io/v1alpha1
+kind: PipelinePodsTemplate
+metadata:
+  name: {{ include "vela-worker.podsTemplateName" . }}
+  namespace: {{ include "vela-worker.runtimeNamespace" . }}
+  labels:
+    {{- include "vela-worker.labels" . | nindent 4 }}
+spec:
+  template:
+    {{- toYaml .Values.runtime.podsTemplate.template | nindent 4 }}
+{{- end }}

@@ -415,6 +415,64 @@ func TestKubernetes_TailContainer(t *testing.T) {
 	}
 }
 
+func TestKubernetes_runningPauseImage(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name     string
+		statuses []v1.ContainerStatus
+		want     bool
+	}{
+		{
+			name: "running the pause image",
+			statuses: []v1.ContainerStatus{
+				{Name: _container.ID, State: v1.ContainerState{Running: &v1.ContainerStateRunning{}}, Image: image.Parse(pauseImage)},
+			},
+			want: true,
+		},
+		{
+			name: "pause image terminated while the step image is applied",
+			statuses: []v1.ContainerStatus{
+				{Name: _container.ID, State: v1.ContainerState{Terminated: &v1.ContainerStateTerminated{}}, Image: pauseImage},
+			},
+			want: true,
+		},
+		{
+			name: "running the step image",
+			statuses: []v1.ContainerStatus{
+				{Name: _container.ID, State: v1.ContainerState{Running: &v1.ContainerStateRunning{}}, Image: "target/vela-git:v0.4.0"},
+			},
+			want: false,
+		},
+		{
+			name:     "no status yet",
+			statuses: []v1.ContainerStatus{},
+			want:     false,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			pod := _pod.DeepCopy()
+			pod.Status.ContainerStatuses = test.statuses
+
+			_engine, err := NewMock(pod)
+			if err != nil {
+				t.Errorf("unable to create runtime engine: %v", err)
+			}
+
+			got, err := _engine.runningPauseImage(context.Background(), _container)
+			if err != nil {
+				t.Errorf("runningPauseImage returned err: %v", err)
+			}
+
+			if got != test.want {
+				t.Errorf("runningPauseImage is %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
 func TestKubernetes_WaitContainer(t *testing.T) {
 	// setup tests
 	tests := []struct {

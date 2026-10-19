@@ -1,0 +1,12 @@
+apiVersion: v2
+name: vela-worker
+description: Vela worker, running builds on the Kubernetes or Docker runtime
+type: application
+version: 0.1.0
+appVersion: v0.28.2
+home: https://go-vela.github.io/docs/
+sources:
+  - https://github.com/go-vela/worker
+keywords:
+  - vela
+  - ci

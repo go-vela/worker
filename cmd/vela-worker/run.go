@@ -123,6 +123,7 @@ func run(ctx context.Context, c *cli.Command) error {
 				Namespace:        c.String("runtime.namespace"),
 				PodsTemplateName: c.String("runtime.pods-template-name"),
 				PodsTemplateFile: c.String("runtime.pods-template-file"),
+				PauseImage:       c.String("runtime.pause-image"),
 				HostVolumes:      c.StringSlice("runtime.volumes"),
 				PrivilegedImages: c.StringSlice("runtime.privileged-images"),
 				DropCapabilities: c.StringSlice("runtime.drop-capabilities"),
