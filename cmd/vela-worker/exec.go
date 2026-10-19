@@ -346,11 +346,16 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 		return nil
 	}
 
+	logger.Info("assembling build")
+	// assemble the build with the executor
+	err = _executor.AssembleBuild(timeoutCtx)
+	if err != nil {
+		logger.Errorf("unable to assemble build: %v", err)
+		return nil
+	}
+
 	// add StreamBuild goroutine to WaitGroup
-	//
-	// StreamBuild must start before AssembleBuild: the kubernetes runtime
-	// waits in AssembleBuild for the pod informer that StreamBuild starts.
-	//
+
 	// log/event streaming uses buildCtx so that it is not subject to the timeout.
 	wg.Go(func() {
 		logger.Info("streaming build logs")
@@ -360,14 +365,6 @@ func (w *Worker) exec(ctx context.Context, index int, config *api.Worker) error 
 			logger.Errorf("unable to stream build logs: %v", streamErr)
 		}
 	})
-
-	logger.Info("assembling build")
-	// assemble the build with the executor
-	err = _executor.AssembleBuild(timeoutCtx)
-	if err != nil {
-		logger.Errorf("unable to assemble build: %v", err)
-		return nil
-	}
 
 	logger.Info("executing build")
 	// execute the build with the executor

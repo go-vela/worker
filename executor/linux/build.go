@@ -485,7 +485,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			return fmt.Errorf("unable to plan service: %w", c.err)
 		}
 
-		c.err = c.UpdateSCMAuth(ctx, _service)
+		c.err = c.updateSCMAuthForExec(ctx, _service)
 		if c.err != nil {
 			return fmt.Errorf("unable to update SCM auth: %w", c.err)
 		}
@@ -504,7 +504,7 @@ func (c *client) ExecBuild(ctx context.Context) error {
 			continue
 		}
 
-		c.err = c.UpdateSCMAuth(ctx, _step)
+		c.err = c.updateSCMAuthForExec(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to update SCM auth: %w", c.err)
 		}
@@ -646,6 +646,13 @@ func (c *client) ExecBuild(ctx context.Context) error {
 // Access is synchronized because services, steps, and stages can call
 // UpdateSCMAuth concurrently during build execution.
 func (c *client) refreshSCMAuthIfNeeded(ctx context.Context) (string, int64, error) {
+	return c.refreshSCMAuth(ctx, false)
+}
+
+// refreshSCMAuth refreshes the shared SCM install token when it is expired,
+// within the proactive refresh window, or when force is set. Tokens without
+// an expiration are never refreshed.
+func (c *client) refreshSCMAuth(ctx context.Context, force bool) (string, int64, error) {
 	const proactiveRefreshWindow = 15 * time.Minute
 
 	c.scmAuthMu.Lock()
@@ -656,7 +663,7 @@ func (c *client) refreshSCMAuthIfNeeded(ctx context.Context) (string, int64, err
 
 	if !refreshNeeded && expiration != 0 {
 		expiresAt := time.Unix(expiration, 0)
-		refreshNeeded = time.Now().Add(proactiveRefreshWindow).After(expiresAt)
+		refreshNeeded = force || time.Now().Add(proactiveRefreshWindow).After(expiresAt)
 	}
 
 	if refreshNeeded {
@@ -1002,8 +1009,15 @@ func (c *client) DestroyBuild(ctx context.Context) error {
 }
 
 // updateSCMAuthForAllContainers updates the SCM authentication information
-// for every container in the pipeline.
+// for every container in the pipeline. The shared install token is refreshed
+// first, so the pod starts with a full token lifetime; builds that outlive the
+// token are a known limitation of runtimes with a fixed container environment.
 func (c *client) updateSCMAuthForAllContainers(ctx context.Context) error {
+	_, _, err := c.refreshSCMAuth(ctx, true)
+	if err != nil {
+		return err
+	}
+
 	for _, _service := range c.pipeline.Services {
 		err := c.UpdateSCMAuth(ctx, _service)
 		if err != nil {
@@ -1047,6 +1061,19 @@ func (c *client) updateSCMAuthForAllContainers(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// updateSCMAuthForExec updates the SCM authentication information for a
+// container just before it executes. Kubernetes containers already received
+// their credentials when the pod was assembled, and their environment can no
+// longer change; updating it here would only change the values used for log
+// masking (and mint unused install tokens).
+func (c *client) updateSCMAuthForExec(ctx context.Context, ctn *pipeline.Container) error {
+	if c.Runtime.Driver() == constants.DriverKubernetes {
+		return nil
+	}
+
+	return c.UpdateSCMAuth(ctx, ctn)
 }
 
 // UpdateSCMAuth updates the SCM authentication information for a container.

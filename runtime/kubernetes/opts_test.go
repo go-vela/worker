@@ -194,6 +194,43 @@ func TestKubernetes_ClientOpt_WithPrivilegedImages(t *testing.T) {
 	}
 }
 
+func TestKubernetes_ClientOpt_WithPauseImage(t *testing.T) {
+	// setup tests
+	tests := []struct {
+		name       string
+		pauseImage string
+		want       string
+	}{
+		{
+			name:       "defined",
+			pauseImage: "registry.example.com/pause:3.10",
+			want:       "registry.example.com/pause:3.10",
+		},
+		{
+			name:       "empty",
+			pauseImage: "",
+			want:       pauseImage,
+		},
+	}
+
+	// run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_engine, err := New(
+				WithConfigFile("testdata/config"),
+				WithPauseImage(test.pauseImage),
+			)
+			if err != nil {
+				t.Errorf("WithPauseImage returned err: %v", err)
+			}
+
+			if _engine.config.PauseImage != test.want {
+				t.Errorf("WithPauseImage is %v, want %v", _engine.config.PauseImage, test.want)
+			}
+		})
+	}
+}
+
 func TestKubernetes_ClientOpt_WithLogger(t *testing.T) {
 	// setup tests
 	tests := []struct {

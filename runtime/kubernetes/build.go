@@ -149,9 +149,6 @@ func (c *client) StreamBuild(ctx context.Context, b *pipeline.Build) error {
 		break
 	}
 
-	// Populate the PodTracker caches before creating the pipeline pod
-	c.PodTracker.Start(ctx)
-
 	return nil
 }
 
@@ -215,8 +212,13 @@ func (c *client) AssembleBuild(ctx context.Context, b *pipeline.Build) error {
 	// setup containerTrackers now that all containers are defined.
 	c.PodTracker.TrackContainers(c.Pod.Spec.Containers)
 
-	// send signal to StreamBuild now that PodTracker is ready to be started.
+	// send signal to StreamBuild now that PodTracker is ready.
 	close(c.PodTracker.Ready)
+
+	// populate the PodTracker caches before creating the pipeline pod.
+	//
+	// the informer is not tied to the build timeout; RemoveBuild stops it.
+	c.PodTracker.Start(context.WithoutCancel(ctx))
 
 	// wait for the PodTracker caches to populate before creating the pipeline pod.
 	if ok := cache.WaitForCacheSync(ctx.Done(), c.PodTracker.PodSynced); !ok {

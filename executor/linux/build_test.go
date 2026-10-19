@@ -869,10 +869,8 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			if test.runtime == constants.DriverKubernetes {
 				go func() {
 					_mockRuntime := _runtime.(kubernetes.MockKubernetesRuntime)
-					// This handles waiting until runtime.AssembleBuild has prepared the PodTracker.
+					// This handles waiting until runtime.AssembleBuild has prepared and started the PodTracker.
 					_mockRuntime.WaitForPodTrackerReady()
-					// Normally, runtime.StreamBuild (which runs in a goroutine) calls PodTracker.Start.
-					_mockRuntime.StartPodTracker(context.Background())
 
 					_pod := testPodFor(_pipeline)
 
@@ -903,6 +901,15 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				t.Errorf("%s AssembleBuild returned err: %v", test.name, err)
 			}
 
+			// the kubernetes pod environment is fixed at creation, so SCM credentials must be set during assembly
+			if test.runtime == constants.DriverKubernetes {
+				for _, ctn := range scmAuthContainers(_pipeline) {
+					if _, ok := ctn.Environment["VELA_NETRC_PASSWORD"]; !ok {
+						t.Errorf("%s AssembleBuild did not set VELA_NETRC_PASSWORD for container %s", test.name, ctn.ID)
+					}
+				}
+			}
+
 			loggedError := false
 
 			for _, logEntry := range loggerHook.AllEntries() {
@@ -922,6 +929,39 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			}
 		})
 	}
+}
+
+// scmAuthContainers returns every container that receives SCM credentials.
+func scmAuthContainers(p *pipeline.Build) []*pipeline.Container {
+	containers := []*pipeline.Container{}
+
+	containers = append(containers, p.Services...)
+
+	for _, _stage := range p.Stages {
+		if _stage.Name == constants.InitName {
+			continue
+		}
+
+		containers = append(containers, _stage.Steps...)
+	}
+
+	for _, _step := range p.Steps {
+		if _step.Name == constants.InitName {
+			continue
+		}
+
+		containers = append(containers, _step)
+	}
+
+	for _, _secret := range p.Secrets {
+		if _secret.Origin.Empty() {
+			continue
+		}
+
+		containers = append(containers, _secret.Origin)
+	}
+
+	return containers
 }
 
 func TestLinux_ExecBuild(t *testing.T) {
