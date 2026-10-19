@@ -1,0 +1,10 @@
+Vela worker {{ include "vela-worker.fullname" . }} is running {{ .Values.replicaCount }} replica(s) on the {{ .Values.runtime.driver }} runtime.
+
+Each replica registers with {{ .Values.server.addr }} as <pod>.{{ include "vela-worker.fullname" . }}.{{ .Release.Namespace }}.svc.
+{{- if not (or .Values.server.secret .Values.server.existingSecret) }}
+
+No server secret is configured: register each worker with a registration token from the Vela server.
+{{- end }}
+
+Check the workers:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/instance={{ .Release.Name }}
