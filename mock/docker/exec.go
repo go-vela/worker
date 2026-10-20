@@ -129,10 +129,8 @@ func (e *ExecService) ExecAttach(_ context.Context, execID string, _ client.Exec
 
 	// create a HijackedResponse with the mock data
 	response := client.ExecAttachResult{
-		HijackedResponse: client.HijackedResponse{
-			Reader: bufio.NewReader(&buf),
-			Conn:   &mockConn{},
-		},
+		Reader: bufio.NewReader(&buf),
+		Conn:   &mockConn{},
 	}
 
 	return response, nil

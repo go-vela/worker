@@ -70,10 +70,8 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 	// set the VelaKubernetes fake client in the runtime client
 	c.VelaKubernetes = fakeVelaK8sClient.NewSimpleClientset(
 		&velav1alpha1.PipelinePodsTemplate{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: c.config.Namespace,
-				Name:      "mock-pipeline-pods-template",
-			},
+			Namespace: c.config.Namespace,
+			Name:      "mock-pipeline-pods-template",
 		},
 	)
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-vela/sdk-go/vela"
 	api "github.com/go-vela/server/api/types"
@@ -310,17 +309,13 @@ func testSteps(runtime string) *pipeline.Build {
 func testPod(useStages bool) *v1.Pod {
 	// https://github.com/go-vela/worker/blob/main/runtime/kubernetes/kubernetes_test.go#L83
 	pod := &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "github-octocat-1",
-			Namespace: "test",
-			Labels: map[string]string{
-				"pipeline": "github-octocat-1",
-			},
+		Name:      "github-octocat-1",
+		Namespace: "test",
+		Labels: map[string]string{
+			"pipeline": "github-octocat-1",
 		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Pod",
-		},
+		APIVersion: "v1",
+		Kind:       "Pod",
 		Status: v1.PodStatus{
 			Phase: v1.PodRunning,
 		},
