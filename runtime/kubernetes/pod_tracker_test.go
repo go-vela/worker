@@ -10,7 +10,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
 )
@@ -43,21 +42,19 @@ func TestNewPodTracker(t *testing.T) {
 		{
 			name: "error-with-pod-without-namespace",
 			pod: &v1.Pod{
-				ObjectMeta: metav1.ObjectMeta{Name: "test-pod"},
+				Name: "test-pod",
 			},
 			wantErr: true,
 		},
 		{
 			name: "fail-with-pod",
 			pod: &v1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "github-octocat-1-for-some-odd-reason-this-name-is-way-too-long-and-will-cause-an-error",
-					Namespace: _pod.Namespace,
-					Labels:    _pod.Labels,
-				},
-				TypeMeta: _pod.TypeMeta,
-				Spec:     _pod.Spec,
-				Status:   _pod.Status,
+				Name:      "github-octocat-1-for-some-odd-reason-this-name-is-way-too-long-and-will-cause-an-error",
+				Namespace: _pod.Namespace,
+				Labels:    _pod.Labels,
+				TypeMeta:  _pod.TypeMeta,
+				Spec:      _pod.Spec,
+				Status:    _pod.Status,
 			},
 			wantErr: true,
 		},

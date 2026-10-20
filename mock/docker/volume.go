@@ -15,6 +15,8 @@ import (
 	"github.com/moby/moby/client/pkg/stringid"
 )
 
+const scopeLocal = "local"
+
 // VolumeService implements all the volume
 // related functions for the Docker mock.
 type VolumeService struct{}
@@ -50,7 +52,7 @@ func (v *VolumeService) VolumeCreate(_ context.Context, options client.VolumeCre
 			Mountpoint: fmt.Sprintf("/var/lib/docker/volumes/%s/_data", stringid.GenerateRandomID()),
 			Name:       options.Name,
 			Options:    options.DriverOpts,
-			Scope:      "local",
+			Scope:      scopeLocal,
 		},
 	}
 
@@ -79,10 +81,10 @@ func (v *VolumeService) VolumeInspect(_ context.Context, volumeID string, _ clie
 	response := client.VolumeInspectResult{
 		Volume: volume.Volume{
 			CreatedAt:  time.Now().String(),
-			Driver:     "local",
+			Driver:     scopeLocal,
 			Mountpoint: fmt.Sprintf("/var/lib/docker/volumes/%s/_data", stringid.GenerateRandomID()),
 			Name:       volumeID,
-			Scope:      "local",
+			Scope:      scopeLocal,
 		},
 	}
 

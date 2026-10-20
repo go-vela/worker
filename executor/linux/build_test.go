@@ -34,11 +34,11 @@ import (
 func TestLinux_UpdateSCMAuth_ConcurrentRefresh(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	var refreshCalls int32
+	var refreshCalls atomic.Int32
 
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/install_token") {
-			atomic.AddInt32(&refreshCalls, 1)
+			refreshCalls.Add(1)
 
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{"token":"refreshed-token","expiration":4102444800}`))
@@ -96,7 +96,7 @@ func TestLinux_UpdateSCMAuth_ConcurrentRefresh(t *testing.T) {
 		}
 	}
 
-	if got, want := atomic.LoadInt32(&refreshCalls), int32(1); got != want {
+	if got, want := refreshCalls.Load(), int32(1); got != want {
 		t.Fatalf("unexpected refresh call count: got %d, want %d", got, want)
 	}
 
@@ -118,11 +118,11 @@ func TestLinux_UpdateSCMAuth_ConcurrentRefresh(t *testing.T) {
 func TestLinux_UpdateSCMAuth_ConcurrentNoRefresh(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	var refreshCalls int32
+	var refreshCalls atomic.Int32
 
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/install_token") {
-			atomic.AddInt32(&refreshCalls, 1)
+			refreshCalls.Add(1)
 		}
 
 		w.WriteHeader(http.StatusNotFound)
@@ -176,7 +176,7 @@ func TestLinux_UpdateSCMAuth_ConcurrentNoRefresh(t *testing.T) {
 		}
 	}
 
-	if got, want := atomic.LoadInt32(&refreshCalls), int32(0); got != want {
+	if got, want := refreshCalls.Load(), int32(0); got != want {
 		t.Fatalf("unexpected refresh call count: got %d, want %d", got, want)
 	}
 
