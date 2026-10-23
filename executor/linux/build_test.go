@@ -115,6 +115,123 @@ func TestLinux_UpdateSCMAuth_ConcurrentRefresh(t *testing.T) {
 	}
 }
 
+func TestLinux_UpdateSCMAuthForAllContainers(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name          string
+		failure       bool
+		refreshFails  bool
+		expiresIn     time.Duration
+		wantToken     string
+		wantRefreshes int32
+	}{
+		{
+			name:          "valid token is refreshed before assembly",
+			expiresIn:     2 * time.Hour,
+			wantToken:     "refreshed-token",
+			wantRefreshes: 1,
+		},
+		{
+			name:          "failed refresh keeps a valid token",
+			refreshFails:  true,
+			expiresIn:     2 * time.Hour,
+			wantToken:     "initial-token",
+			wantRefreshes: 1,
+		},
+		{
+			name:         "failed refresh of an expiring token fails",
+			failure:      true,
+			refreshFails: true,
+			expiresIn:    time.Minute,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var refreshCalls int32
+
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/install_token") {
+					atomic.AddInt32(&refreshCalls, 1)
+
+					if test.refreshFails {
+						w.Header().Set("Content-Type", "application/json")
+						w.WriteHeader(http.StatusInternalServerError)
+						_, _ = w.Write([]byte(`{"error":"unable to refresh install token"}`))
+
+						return
+					}
+
+					w.Header().Set("Content-Type", "application/json")
+					_, _ = w.Write([]byte(`{"token":"refreshed-token","expiration":4102444800}`))
+
+					return
+				}
+
+				w.WriteHeader(http.StatusNotFound)
+			}))
+			defer s.Close()
+
+			apiClient, err := vela.NewClient(s.URL, "", nil)
+			if err != nil {
+				t.Fatalf("unable to create Vela API client: %v", err)
+			}
+
+			apiClient.Authentication.SetBuildTokenAuth("build-token", "initial-token", time.Now().Add(test.expiresIn).Unix(), "github/octocat", 1)
+
+			_init := &pipeline.Container{ID: "step_github_octocat_1_init", Name: constants.InitName, Environment: map[string]string{}}
+			_test := &pipeline.Container{ID: "step_github_octocat_1_test", Name: "test", Environment: map[string]string{}}
+			_release := &pipeline.Container{
+				ID:          "step_github_octocat_1_release",
+				Name:        "release",
+				Environment: map[string]string{},
+				Ruleset: pipeline.Ruleset{
+					If: pipeline.Rules{
+						Branch: []string{"release"},
+						Status: []string{constants.StatusSuccess, constants.StatusFailure},
+					},
+				},
+			}
+
+			engine := &client{
+				Logger:   logrus.NewEntry(logrus.New()),
+				Vela:     apiClient,
+				build:    testBuild(),
+				pipeline: &pipeline.Build{Steps: pipeline.ContainerSlice{_init, _test, _release}},
+			}
+
+			err = engine.updateSCMAuthForAllContainers(context.Background())
+
+			if test.failure {
+				if err == nil {
+					t.Fatal("updateSCMAuthForAllContainers should have returned err")
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("updateSCMAuthForAllContainers returned err: %v", err)
+			}
+
+			if got := atomic.LoadInt32(&refreshCalls); got != test.wantRefreshes {
+				t.Errorf("unexpected refresh call count: got %d, want %d", got, test.wantRefreshes)
+			}
+
+			if got := _test.Environment["VELA_NETRC_PASSWORD"]; got != test.wantToken {
+				t.Errorf("runnable step has VELA_NETRC_PASSWORD %q, want %q", got, test.wantToken)
+			}
+
+			for _, ctn := range []*pipeline.Container{_init, _release} {
+				if _, ok := ctn.Environment["VELA_NETRC_PASSWORD"]; ok {
+					t.Errorf("step %s should not receive SCM credentials", ctn.Name)
+				}
+			}
+		})
+	}
+}
+
 func TestLinux_UpdateSCMAuth_ConcurrentNoRefresh(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -630,6 +747,9 @@ func TestLinux_AssembleBuild(t *testing.T) {
 		t.Errorf("unable to create Vela API client: %v", err)
 	}
 
+	// a valid SCM token, so the kubernetes runtime's forced refresh is observable
+	_client.Authentication.SetBuildTokenAuth("build-token", "initial-token", time.Now().Add(2*time.Hour).Unix(), _build.GetRepo().GetFullName(), _build.GetNumber())
+
 	streamRequests, done := message.MockStreamRequestsWithCancel(context.Background())
 	defer done()
 
@@ -869,10 +989,8 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			if test.runtime == constants.DriverKubernetes {
 				go func() {
 					_mockRuntime := _runtime.(kubernetes.MockKubernetesRuntime)
-					// This handles waiting until runtime.AssembleBuild has prepared the PodTracker.
+					// This handles waiting until runtime.AssembleBuild has prepared and started the PodTracker.
 					_mockRuntime.WaitForPodTrackerReady()
-					// Normally, runtime.StreamBuild (which runs in a goroutine) calls PodTracker.Start.
-					_mockRuntime.StartPodTracker(context.Background())
 
 					_pod := testPodFor(_pipeline)
 
@@ -903,6 +1021,18 @@ func TestLinux_AssembleBuild(t *testing.T) {
 				t.Errorf("%s AssembleBuild returned err: %v", test.name, err)
 			}
 
+			// the kubernetes pod environment is fixed at creation, so the refreshed
+			// SCM token must already be in every runnable container of the pod
+			if test.runtime == constants.DriverKubernetes {
+				_pod := _runtime.(kubernetes.MockKubernetesRuntime).GetPod()
+
+				for _, ctn := range scmAuthContainers(_engine, _pipeline) {
+					if got, want := podContainerEnv(_pod, ctn.ID, "VELA_NETRC_PASSWORD"), "ghs_123"; got != want {
+						t.Errorf("%s pod container %s has VELA_NETRC_PASSWORD %q, want %q", test.name, ctn.ID, got, want)
+					}
+				}
+			}
+
 			loggedError := false
 
 			for _, logEntry := range loggerHook.AllEntries() {
@@ -922,6 +1052,60 @@ func TestLinux_AssembleBuild(t *testing.T) {
 			}
 		})
 	}
+}
+
+// podContainerEnv returns the value of an environment variable in a pod container.
+func podContainerEnv(pod *v1.Pod, container, name string) string {
+	for _, ctn := range pod.Spec.Containers {
+		if ctn.Name != container {
+			continue
+		}
+
+		for _, env := range ctn.Env {
+			if env.Name == name {
+				return env.Value
+			}
+		}
+	}
+
+	return ""
+}
+
+// scmAuthContainers returns every container that receives SCM credentials.
+func scmAuthContainers(c *client, p *pipeline.Build) []*pipeline.Container {
+	containers := []*pipeline.Container{}
+
+	containers = append(containers, p.Services...)
+
+	for _, _stage := range p.Stages {
+		if _stage.Name == constants.InitName {
+			continue
+		}
+
+		for _, _step := range _stage.Steps {
+			if !c.neverRuns(_step) {
+				containers = append(containers, _step)
+			}
+		}
+	}
+
+	for _, _step := range p.Steps {
+		if _step.Name == constants.InitName || c.neverRuns(_step) {
+			continue
+		}
+
+		containers = append(containers, _step)
+	}
+
+	for _, _secret := range p.Secrets {
+		if _secret.Origin.Empty() {
+			continue
+		}
+
+		containers = append(containers, _secret.Origin)
+	}
+
+	return containers
 }
 
 func TestLinux_ExecBuild(t *testing.T) {
@@ -1788,7 +1972,7 @@ func TestLinux_StreamBuild(t *testing.T) {
 						t.Errorf("Kubernetes runtime SetupMock returned err: %v", err)
 					}
 
-					// Runtime.StreamBuild calls PodTracker.Start after the PodTracker is marked Ready
+					// Runtime.AssembleBuild marks the PodTracker Ready before it starts it
 					_runtime.(kubernetes.MockKubernetesRuntime).MarkPodTrackerReady()
 				}
 

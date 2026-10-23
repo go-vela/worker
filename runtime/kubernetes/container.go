@@ -45,7 +45,7 @@ func (c *client) InspectContainer(_ context.Context, ctn *pipeline.Container) er
 		// avoid a panic if the build ends without terminating all containers
 		if cst.State.Terminated == nil {
 			// steps that were not executed will still be "running" the pause image as expected.
-			if cst.Image == pauseImage || cst.Image == image.Parse(pauseImage) {
+			if c.isPauseImage(cst.Image) {
 				return nil
 			}
 
@@ -142,7 +142,7 @@ func (c *client) SetupContainer(ctx context.Context, ctn *pipeline.Container) er
 		// the containers with the proper image.
 		//
 		// https://hub.docker.com/r/kubernetes/pause
-		Image:           image.Parse(pauseImage),
+		Image:           image.Parse(c.config.PauseImage),
 		Env:             []v1.EnvVar{},
 		Stdin:           false,
 		StdinOnce:       false,
@@ -258,6 +258,19 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	// create function for periodically capturing
 	// the logs from the container with backoff
 	var logsFunc wait.ConditionFunc = func() (bool, error) {
+		// the container runs the pause image until the step is started; streaming
+		// before then returns the pause container's output instead of the step's
+		//
+		// if the status can't be read, fall back to streaming whatever is available
+		paused, err := c.runningPauseImage(ctx, ctn)
+		if err != nil {
+			c.Logger.Debugf("unable to check status for container %s: %v", ctn.ID, err)
+		}
+
+		if paused {
+			return false, nil
+		}
+
 		// create options for capturing the logs from the container
 		//
 		// https://pkg.go.dev/k8s.io/api/core/v1#PodLogOptions
@@ -326,6 +339,30 @@ func (c *client) TailContainer(ctx context.Context, ctn *pipeline.Container) (io
 	}
 
 	return logs, nil
+}
+
+// isPauseImage reports whether an image from a container status is the pause image.
+func (c *client) isPauseImage(img string) bool {
+	return img == c.config.PauseImage || img == image.Parse(c.config.PauseImage)
+}
+
+// runningPauseImage reports whether the status of the pipeline container
+// still shows the pause image, i.e. the step image has not replaced it yet.
+func (c *client) runningPauseImage(ctx context.Context, ctn *pipeline.Container) (bool, error) {
+	pod, err := c.Kubernetes.CoreV1().
+		Pods(c.config.Namespace).
+		Get(ctx, c.Pod.ObjectMeta.Name, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+
+	for _, cst := range pod.Status.ContainerStatuses {
+		if strings.EqualFold(cst.Name, ctn.ID) {
+			return c.isPauseImage(cst.Image), nil
+		}
+	}
+
+	return false, nil
 }
 
 // WaitContainer blocks until the pipeline container completes.

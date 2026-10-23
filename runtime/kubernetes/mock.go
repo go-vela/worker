@@ -30,6 +30,7 @@ func NewMock(_pod *v1.Pod, opts ...ClientOpt) (*client, error) {
 
 	// create new fields
 	c.config = new(config)
+	c.config.PauseImage = pauseImage
 	c.Pod = new(v1.Pod)
 
 	c.containersLookup = map[string]int{}
@@ -100,6 +101,7 @@ type MockKubernetesRuntime interface {
 	WaitForPodCreate(string, string)
 	SimulateResync(*v1.Pod)
 	SimulateStatusUpdate(*v1.Pod, []v1.ContainerStatus) error
+	GetPod() *v1.Pod
 }
 
 // SetupMock allows the Kubernetes runtime to perform additional Mock-related config.
@@ -109,6 +111,13 @@ type MockKubernetesRuntime interface {
 func (c *client) SetupMock() error {
 	// This assumes that c.Pod.ObjectMeta.Namespace and c.Pod.ObjectMeta.Name are filled in.
 	return c.PodTracker.setupMockFor(c.Pod)
+}
+
+// GetPod returns the pod spec the runtime assembled for the build.
+//
+// This function is intended for running tests only.
+func (c *client) GetPod() *v1.Pod {
+	return c.Pod
 }
 
 // MarkPodTrackerReady signals that PodTracker has been setup with ContainerTrackers.

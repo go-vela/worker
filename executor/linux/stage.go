@@ -141,7 +141,7 @@ func (c *client) ExecStage(ctx context.Context, s *pipeline.Stage, m *sync.Map) 
 			continue
 		}
 
-		c.err = c.UpdateSCMAuth(ctx, _step)
+		c.err = c.updateSCMAuthForExec(ctx, _step)
 		if c.err != nil {
 			return fmt.Errorf("unable to update SCM auth: %w", c.err)
 		}
