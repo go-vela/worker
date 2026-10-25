@@ -1,0 +1,78 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: target/vela-worker
+  # defaults to the chart appVersion
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# each replica registers with the server under its own stable address
+replicaCount: 1
+
+server:
+  # address of the Vela server, e.g. http://vela-server:8080
+  addr: ""
+  # shared secret for server-worker auth (VELA_SERVER_SECRET); leave empty to register the worker with a registration token instead
+  secret: ""
+  # use an existing Secret instead of server.secret
+  existingSecret: ""
+  existingSecretKey: VELA_SERVER_SECRET
+
+worker:
+  checkIn: 15m
+  buildLimit: 1
+  buildTimeout: 30m
+  logLevel: info
+  logFormat: json
+  # queue routes this worker pulls builds from; empty uses the server default
+  queueRoutes: []
+
+executor:
+  enforceTrustedRepos: false
+  # outputs are not supported on the kubernetes runtime
+  outputsImage: ""
+
+runtime:
+  # kubernetes runs each build as a pod; docker uses the node's Docker socket
+  driver: kubernetes
+  # namespace for build pods (kubernetes); defaults to the release namespace
+  namespace: ""
+  # placeholder image for build containers before they run (kubernetes)
+  pauseImage: ""
+  privilegedImages: []
+  volumes: []
+  # kernel capabilities to drop from build containers (docker)
+  dropCapabilities: []
+  podsTemplate:
+    # name of an existing PipelinePodsTemplate, or of the one created below
+    name: ""
+    # create a PipelinePodsTemplate from podsTemplate.template
+    create: false
+    # spec.template of the PipelinePodsTemplate (annotations, labels, dnsConfig, nodeSelector, tolerations, affinity, container securityContext)
+    template: {}
+  docker:
+    socketPath: /var/run/docker.sock
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+service:
+  port: 8080
+
+extraEnv: []
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

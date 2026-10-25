@@ -1,0 +1,157 @@
+{{- $fullname := include "vela-worker.fullname" . }}
+{{- $kubernetes := include "vela-worker.isKubernetes" . }}
+{{- $useSecret := or .Values.server.secret .Values.server.existingSecret }}
+{{- $podsTemplateName := include "vela-worker.podsTemplateName" . }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $fullname }}
+  labels:
+    {{- include "vela-worker.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ $fullname }}
+  replicas: {{ .Values.replicaCount }}
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      {{- include "vela-worker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "vela-worker.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/secret: {{ .Values.server.secret | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "vela-worker.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: worker
+          image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: VELA_WORKER_ADDR
+              value: "http://$(POD_NAME).{{ $fullname }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}"
+            - name: VELA_SERVER_ADDR
+              value: {{ required "server.addr is required" .Values.server.addr | quote }}
+            {{- if $useSecret }}
+            - name: VELA_SERVER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vela-worker.secretName" . }}
+                  key: {{ .Values.server.existingSecretKey }}
+            {{- end }}
+            - name: VELA_CHECK_IN
+              value: {{ .Values.worker.checkIn | quote }}
+            - name: VELA_BUILD_LIMIT
+              value: {{ .Values.worker.buildLimit | quote }}
+            - name: VELA_BUILD_TIMEOUT
+              value: {{ .Values.worker.buildTimeout | quote }}
+            - name: VELA_LOG_LEVEL
+              value: {{ .Values.worker.logLevel | quote }}
+            - name: VELA_LOG_FORMAT
+              value: {{ .Values.worker.logFormat | quote }}
+            - name: VELA_QUEUE_DRIVER
+              value: redis
+            {{- with .Values.worker.queueRoutes }}
+            - name: VELA_QUEUE_ROUTES
+              value: {{ join "," . | quote }}
+            {{- end }}
+            - name: VELA_EXECUTOR_DRIVER
+              value: linux
+            - name: VELA_EXECUTOR_ENFORCE_TRUSTED_REPOS
+              value: {{ .Values.executor.enforceTrustedRepos | quote }}
+            {{- with .Values.executor.outputsImage }}
+            - name: VELA_EXECUTOR_OUTPUTS_IMAGE
+              value: {{ . | quote }}
+            {{- end }}
+            - name: VELA_RUNTIME_DRIVER
+              value: {{ .Values.runtime.driver | quote }}
+            {{- with .Values.runtime.privilegedImages }}
+            - name: VELA_RUNTIME_PRIVILEGED_IMAGES
+              value: {{ join "," . | quote }}
+            {{- end }}
+            {{- with .Values.runtime.volumes }}
+            - name: VELA_RUNTIME_VOLUMES
+              value: {{ join "," . | quote }}
+            {{- end }}
+            {{- if $kubernetes }}
+            - name: VELA_RUNTIME_NAMESPACE
+              value: {{ include "vela-worker.runtimeNamespace" . | quote }}
+            {{- with .Values.runtime.pauseImage }}
+            - name: VELA_RUNTIME_PAUSE_IMAGE
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with $podsTemplateName }}
+            - name: VELA_RUNTIME_PODS_TEMPLATE_NAME
+              value: {{ . | quote }}
+            {{- end }}
+            {{- else }}
+            {{- with .Values.runtime.dropCapabilities }}
+            - name: VELA_RUNTIME_DROP_CAPABILITIES
+              value: {{ join "," . | quote }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if not $kubernetes }}
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+          {{- end }}
+      {{- if not $kubernetes }}
+      volumes:
+        - name: docker-socket
+          hostPath:
+            path: {{ .Values.runtime.docker.socketPath }}
+            type: Socket
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

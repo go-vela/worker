@@ -506,14 +506,8 @@ func TestKubernetes_AssembleBuild(t *testing.T) {
 				_engine.containersLookup[ctn.Name] = i
 			}
 
-			// StreamBuild and AssembleBuild coordinate their work, so, emulate
-			// executor.StreamBuild which calls runtime.StreamBuild concurrently.
-			go func() {
-				err := _engine.StreamBuild(context.Background(), test.pipeline)
-				if err != nil {
-					t.Errorf("unable to start PodTracker via StreamBuild")
-				}
-			}()
+			// AssembleBuild starts the PodTracker itself; stop it like RemoveBuild would.
+			defer _engine.PodTracker.Stop()
 
 			err = _engine.AssembleBuild(context.Background(), test.pipeline)
 
