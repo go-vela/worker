@@ -61,6 +61,15 @@ var Flags = []cli.Flag{
 			cli.File("/vela/runtime/pods_template_file"),
 		),
 	},
+	&cli.StringFlag{
+		Name:  "runtime.pause-image",
+		Usage: "image used as the placeholder for pipeline containers until they execute (only used by kubernetes)",
+		Sources: cli.NewValueSourceChain(
+			cli.EnvVar("VELA_RUNTIME_PAUSE_IMAGE"),
+			cli.EnvVar("RUNTIME_PAUSE_IMAGE"),
+			cli.File("/vela/runtime/pause_image"),
+		),
+	},
 	&cli.StringSliceFlag{
 		Name:  "runtime.privileged-images",
 		Usage: "list of images allowed to run in privileged mode for the runtime",

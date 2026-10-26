@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	pauseImage = "kubernetes/pause:latest"
+	pauseImage = "registry.k8s.io/pause:3.10"
 	imagePatch = `
 {
   "spec": {

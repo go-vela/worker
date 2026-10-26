@@ -24,6 +24,8 @@ type config struct {
 	Volumes []string
 	// PipelinePodsTemplateName has the name of the PipelinePodTemplate to retrieve from the Namespace
 	PipelinePodsTemplateName string
+	// PauseImage is the placeholder image for pipeline containers until they execute
+	PauseImage string
 }
 
 type client struct {
@@ -58,6 +60,7 @@ func New(opts ...ClientOpt) (*client, error) {
 
 	// create new fields
 	c.config = new(config)
+	c.config.PauseImage = pauseImage
 	c.Pod = new(v1.Pod)
 	c.containersLookup = map[string]int{}
 
