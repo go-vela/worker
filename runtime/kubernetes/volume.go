@@ -35,10 +35,8 @@ func (c *client) CreateVolume(_ context.Context, b *pipeline.Build) error {
 	//
 	// https://pkg.go.dev/k8s.io/api/core/v1#Volume
 	workspaceVolume := v1.Volume{
-		Name: b.ID,
-		VolumeSource: v1.VolumeSource{
-			EmptyDir: &v1.EmptyDirVolumeSource{},
-		},
+		Name:     b.ID,
+		EmptyDir: &v1.EmptyDirVolumeSource{},
 	}
 
 	// create the workspace volumeMount for the pod
@@ -68,10 +66,8 @@ func (c *client) CreateVolume(_ context.Context, b *pipeline.Build) error {
 			// add the volume to the set of pod volumes
 			c.Pod.Spec.Volumes = append(c.Pod.Spec.Volumes, v1.Volume{
 				Name: _volumeName,
-				VolumeSource: v1.VolumeSource{
-					HostPath: &v1.HostPathVolumeSource{
-						Path: _volume.Source,
-					},
+				HostPath: &v1.HostPathVolumeSource{
+					Path: _volume.Source,
 				},
 			})
 

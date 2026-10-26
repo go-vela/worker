@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-vela/server/compiler/types/pipeline"
 	"github.com/go-vela/server/constants"
@@ -80,17 +79,13 @@ var (
 	}
 
 	_pod = &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "github-octocat-1",
-			Namespace: "test",
-			Labels: map[string]string{
-				"pipeline": "github-octocat-1",
-			},
+		Name:      "github-octocat-1",
+		Namespace: "test",
+		Labels: map[string]string{
+			"pipeline": "github-octocat-1",
 		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Pod",
-		},
+		APIVersion: "v1",
+		Kind:       "Pod",
 		Status: v1.PodStatus{
 			Phase: v1.PodRunning,
 			ContainerStatuses: []v1.ContainerStatus{
@@ -148,10 +143,8 @@ var (
 			},
 			Volumes: []v1.Volume{
 				{
-					Name: "github-octocat-1",
-					VolumeSource: v1.VolumeSource{
-						EmptyDir: &v1.EmptyDirVolumeSource{},
-					},
+					Name:     "github-octocat-1",
+					EmptyDir: &v1.EmptyDirVolumeSource{},
 				},
 			},
 		},
@@ -269,17 +262,13 @@ var (
 	}
 
 	_stagesPod = &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "github-octocat-1",
-			Namespace: "test",
-			Labels: map[string]string{
-				"pipeline": "github-octocat-1",
-			},
+		Name:      "github-octocat-1",
+		Namespace: "test",
+		Labels: map[string]string{
+			"pipeline": "github-octocat-1",
 		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Pod",
-		},
+		APIVersion: "v1",
+		Kind:       "Pod",
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
@@ -312,10 +301,8 @@ var (
 			},
 			Volumes: []v1.Volume{
 				{
-					Name: "github-octocat-1",
-					VolumeSource: v1.VolumeSource{
-						EmptyDir: &v1.EmptyDirVolumeSource{},
-					},
+					Name:     "github-octocat-1",
+					EmptyDir: &v1.EmptyDirVolumeSource{},
 				},
 			},
 		},
