@@ -14,16 +14,16 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-envparse v0.1.0
 	github.com/joho/godotenv v1.5.1
-	github.com/moby/moby/api v1.56.1
-	github.com/moby/moby/client v0.6.2
+	github.com/moby/moby/api v1.57.0
+	github.com/moby/moby/client v0.6.3
 	github.com/prometheus/client_golang v1.25.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/urfave/cli/v3 v3.14.0
-	golang.org/x/sync v0.24.0
+	golang.org/x/sync v0.25.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/api v0.37.1
-	k8s.io/apimachinery v0.37.1
-	k8s.io/client-go v0.37.1
+	k8s.io/api v0.37.2
+	k8s.io/apimachinery v0.37.2
+	k8s.io/client-go v0.37.2
 	sigs.k8s.io/yaml v1.6.0
 )
 
